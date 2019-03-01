@@ -12,13 +12,13 @@ use App\Player;
 
 class PlayerCreation
 {
-	protected $player;
+    protected $player;
 
-	public function setupPlayer($coeff)
-	{
-		$this->player = new Player();
+    public function setupPlayer($coeff)
+    {
+        $this->player = new Player();
 
-		// player potential
+        // player potential
         $playerPotential = $this->setPlayerPotential($coeff);
 
         // player position
@@ -36,33 +36,33 @@ class PlayerCreation
         //save player to the database
 
         return $this->player;
-	}
+    }
 
-	private function setPlayerPotential($coeff)
-	{
-		return PlayerPotential::calculatePlayerPotential($coeff);
-	}
+    private function setPlayerPotential($coeff)
+    {
+        return PlayerPotential::calculatePlayerPotential($coeff);
+    }
 
-	private function setPlayerPosition()
-	{
-		return PlayerPosition::setRandomPosition();
-	}
+    private function setPlayerPosition()
+    {
+        return PlayerPosition::setRandomPosition();
+    }
 
-	private function setPlayerInitialAttributes($playerPotential, $playerPosition): array
-	{
-		$playerAttributesInstance = new PlayerInitialAttributes($playerPotential, $playerPosition);
-		return $playerAttributesInstance->getAllAttributeValues();
+    private function setPlayerInitialAttributes($playerPotential, $playerPosition): array
+    {
+        $playerAttributesInstance = new PlayerInitialAttributes($playerPotential, $playerPosition);
+        return $playerAttributesInstance->getAllAttributeValues();
 
-	}
+    }
 
-	private function setPlayerPositionList($initialAttributeValues): array
-	{
-		return PlayerPosition::setInitialPositionsBasedOnAttributes($initialAttributeValues);
-	}
+    private function setPlayerPositionList($initialAttributeValues): array
+    {
+        return PlayerPosition::setInitialPositionsBasedOnAttributes($initialAttributeValues);
+    }
 
-	private function setPlayerInfo()
-	{
-		$pr = new PlayerRepository();
-		return $pr->setPlayerInitialInfo();
-	}
+    private function setPlayerInfo()
+    {
+        $pr = new PlayerRepository();
+        return $pr->setPlayerInitialInfo();
+    }
 }
