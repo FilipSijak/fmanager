@@ -6,7 +6,7 @@ class PlayerPositionConfig
 {
     const POSITION_TECH_ATTRIBUTES = [
         'forward' => [
-            'primary' => ['finishing', 'dribbling', 'firstTouch'],
+            'primary' => ['finishing', 'dribbling', 'first_touch'],
             'secondary' => ['passing']
         ],
         'defending_middfielder' => [
@@ -14,7 +14,7 @@ class PlayerPositionConfig
             'secondary' => ['passing']
         ],
         'creative_middfielder' => [
-            'primary' => ['passing', 'firstTouch'],
+            'primary' => ['passing', 'first_touch'],
             'secondary' => ['finishing', 'dribbling']
         ],
         'center_back' => [
@@ -22,18 +22,18 @@ class PlayerPositionConfig
             'secondary' => []
         ],
         'winger' => [
-            'primary' => ['crossing', 'dribbling', 'firstTouch'],
+            'primary' => ['crossing', 'dribbling', 'first_touch'],
             'secondary' => ['passing']
         ],
         'wing_back' => [
             'primary' => ['crossing'],
-            'secondary' => ['passing', 'firstTouch', 'dribbling']
+            'secondary' => ['passing', 'first_touch', 'dribbling']
         ],
     ];
 
     const POSITION_MENTAL_ATTRIBUTES = [
         'forward' => [
-            'primary' => ['offTheBall', 'flair', 'composure'],
+            'primary' => ['of_the_ball', 'flair', 'composure'],
             'secondary' => []
         ],
         'defending_middfielder' => [
@@ -42,7 +42,7 @@ class PlayerPositionConfig
         ],
         'creative_middfielder' => [
             'primary' => ['creativity', 'flair'],
-            'secondary' => ['offTheBall', 'composure']
+            'secondary' => ['of_the_ball', 'composure']
         ],
         'center_back' => [
             'primary' => ['positioning', 'determination'],
@@ -50,10 +50,10 @@ class PlayerPositionConfig
         ],
         'wing_back' => [
             'primary' => ['positioning', 'workrate'],
-            'secondary' => ['offTheBall']
+            'secondary' => ['of_the_ball']
         ],
         'winger' => [
-            'primary' => ['flair', 'offTheBall'],
+            'primary' => ['flair', 'of_the_ball'],
             'secondary' => ['workrate']
         ],
     ];

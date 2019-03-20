@@ -8,19 +8,19 @@ use App\GameEngine\Player\PlayerPotential;
 
 class PlayerInitialAttributes
 {
-	protected $player_potential;
-	protected $player_all_attributes = [];
-	protected $player_position;
-	protected $player_main_attrs;
+    protected $player_potential;
+    protected $player_all_attributes = [];
+    protected $player_position;
+    protected $player_main_attrs;
     protected $commonAttributes = ['stamina', 'acceleration', 'strength'];
 
-	public function __construct($player_potential, $player_position)
-	{
-		$this->player_potential = $player_potential;
+    public function __construct($player_potential, $player_position)
+    {
+        $this->player_potential = $player_potential;
         $this->player_position = $player_position;
-	}
+    }
 
-	// player physical - i could add attribute in his fitness, it would be rating for physique
+    // player physical - i could add attribute in his fitness, it would be rating for physique
     // - it would only be his starting point, fitness attributes would change with his injuries
     // and age, not potential 
     // starting phisique would be identical to overall potential
@@ -56,7 +56,7 @@ class PlayerInitialAttributes
     protected function setPrimaryAttributes($attributes, $attributesCategory)
     {
         foreach ($attributes as $attribute) {
-            $this->player_all_attributes[$attribute] = (int) round(rand($this->player_potential->{$attributesCategory} - 15, $this->player_potential->{$attributesCategory}) / 10 );
+            $this->player_all_attributes[$attribute] = (int) round(rand($this->player_potential[$attributesCategory] - 15, $this->player_potential[$attributesCategory]) / 10 );
         }
     }
 
@@ -66,7 +66,7 @@ class PlayerInitialAttributes
     protected function setSecondaryAttributes($attributes, $attributesCategory)
     {
         foreach ($attributes as $attribute) {
-            $this->player_all_attributes[$attribute] = (int) round(rand($this->player_potential->{$attributesCategory} - 40, $this->player_potential->{$attributesCategory}) / 10 );
+            $this->player_all_attributes[$attribute] = (int) round(rand($this->player_potential[$attributesCategory] - 40, $this->player_potential[$attributesCategory]) / 10 );
         }
     }
 
@@ -84,14 +84,14 @@ class PlayerInitialAttributes
             foreach($attributeCategories as $category) {
                 if (!isset($this->player_all_attributes[$field])) {
 
-                    $minimumAttributeValue = self::setMinimumAttributeValue($this->player_potential->{$category});
+                    $minimumAttributeValue = self::setMinimumAttributeValue($this->player_potential[$category]);
 
                     if (isset($this->commonAttributes[$field])) {
                         dump($this->commonAttributes[$field]);
                         $minimumAttributeValue = $minimumAttributeValue + 3;
                     }
 
-                    $this->player_all_attributes[$field] = (int)round(rand(9, $this->player_potential->{$category} / 10));
+                    $this->player_all_attributes[$field] = (int)round(rand(9, $this->player_potential[$category] / 10));
                 }
             }
         }

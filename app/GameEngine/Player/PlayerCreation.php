@@ -19,22 +19,24 @@ class PlayerCreation
         $this->player = new Player();
 
         // player potential
-        $playerPotential = $this->setPlayerPotential($coeff);
-
+        $playerPotential = (array)$this->setPlayerPotential($coeff);
+        //dd($playerPotential);
         // player position
         $playerPosition = $this->setPlayerPosition();
-
+        //dd($playerPosition);
         // player attributes
         $initialAttributeValues = $this->setPlayerInitialAttributes($playerPotential, $playerPosition);
-
+        //dd($initialAttributeValues);
         // player other positions based on attributes
         $playerPositionList = $this->setPlayerPositionList($initialAttributeValues);
-
+        //dd($playerPositionList);
         // set player info
         $playerInfo = $this->setPlayerInfo();
-
+        //dd($playerInfo);
         //save player to the database
-
+        
+        $player_data = array_merge($playerPotential, $initialAttributeValues, $playerPositionList, $playerInfo);
+        dd($player_data);
         return $this->player;
     }
 

@@ -14,11 +14,11 @@ class PlayerTechAttrsConfig
     ];
 
     const SECONDARY_TECH_ATTRIBUTES = [
-        'forward' => array('technique', 'penaltyTaking'),
+        'forward' => array('technique', 'penalty_taking'),
         'defending_middfielder' => array('passing', 'heading'),
         'creative_middfielder' => array('technique', 'dribbling'),
         'center_back' => array(),
-        'wing_back' => array('marking', 'longThrows'),
+        'wing_back' => array('marking', 'long_throws'),
         'winger' => array('firstTouch')
     ];
 }

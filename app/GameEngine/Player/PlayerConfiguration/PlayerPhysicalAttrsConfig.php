@@ -6,9 +6,9 @@ class PlayerPhysicalAttrsConfig
 {
     const PHYSICAL_ATTRS_BY_TYPE = [
         'quick' => ['pace', 'agility', 'balance'],
-        'strong' => ['strength', 'naturalFitness'],
-        'endurable' => ['stamina', 'naturalFitness'],
-        'fast' => ['acceleration', 'balance', 'pace', 'naturalFitness'],
+        'strong' => ['strength', 'natural_fitness'],
+        'endurable' => ['stamina', 'natural_fitness'],
+        'fast' => ['acceleration', 'balance', 'pace', 'natural_fitness'],
     ];
 
     public static function getPhysicalTypeBasedOnPosition($position)
