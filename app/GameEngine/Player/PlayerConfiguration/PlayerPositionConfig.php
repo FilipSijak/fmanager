@@ -2,6 +2,9 @@
 
 namespace App\GameEngine\Player\PlayerConfiguration;
 
+/*
+ * Highest valued attributes for each position
+*/
 class PlayerPositionConfig
 {
     const POSITION_TECH_ATTRIBUTES = [

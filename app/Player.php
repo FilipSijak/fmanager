@@ -3,20 +3,12 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Position;
 
 class Player extends Model
 {
-    //
+    public function positions()
+    {
+        return $this->belongsToMany(Position::class, 'player_positions')->withPivot('player_id', 'position_id', 'position_grade');
+    }
 }
-
-/*
-	first_name
-	last_name
-	dob
-	country_id
-	players_clubs
-	players_contracts
-	
-	attributes
-	player_morale
-*/

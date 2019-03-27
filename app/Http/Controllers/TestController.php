@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 
 use App\GameEngine\Player\PlayerCreation;
 
+use App\Player;
+
 class TestController extends Controller
 {
     public function index()

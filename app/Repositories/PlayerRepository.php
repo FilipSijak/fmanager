@@ -27,7 +27,7 @@ class PlayerRepository
         return $data[rand(1, $end)];
     }
 
-    private function extractPlayersInfo(): array
+    private function extractPlayersInfo() : array
     {
         $rows = [];
         $count = 0;
@@ -42,17 +42,17 @@ class PlayerRepository
                 $data = [];
                 $data['first_name'] = $row[0];
                 $data['last_name'] = $row[1];
-                $data['age'] = rand(16, 37);
-                $data['country'] = 1;  //needs function
+                $data['country_id'] = 1;  //needs function
                 $rows[] = $data;
             }
+
             fclose($handle);
         }
 
         return $rows;
     }
 
-    public function getAverageGradeForSelectedPeriod(array $params):array
+    public function getAverageGradeForSelectedPeriod(array $params) : array
     {
         $query = "
             SELECT r1.*, month(games.created_at) as mnth
