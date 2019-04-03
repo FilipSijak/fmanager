@@ -2,6 +2,9 @@
 
 namespace App\GameEngine\Player\PlayerConfiguration;
 
+/*
+ * Player physical attributes
+*/
 class PlayerPhysicalAttrsConfig
 {
     const PHYSICAL_ATTRS_BY_TYPE = [

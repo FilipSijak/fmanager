@@ -2,6 +2,9 @@
 
 namespace App\GameEngine\Player\PlayerConfiguration;
 
+/*
+ * Player technical attributes
+*/
 class PlayerTechAttrsConfig
 {
     const PRIMARY_TECH_ATTRIBUTES = [

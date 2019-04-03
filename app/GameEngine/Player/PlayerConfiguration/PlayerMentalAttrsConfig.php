@@ -2,6 +2,9 @@
 
 namespace App\GameEngine\Player\PlayerConfiguration;
 
+/*
+ * Player mental attributes
+*/
 class PlayerMentalAttrsConfig
 {
     const PRIMARY_MENTAL_ATTRIBUTES = [

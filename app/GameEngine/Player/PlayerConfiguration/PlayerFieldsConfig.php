@@ -2,6 +2,9 @@
 
 namespace App\GameEngine\Player\PlayerConfiguration;
 
+/*
+ * All the attributes that players can have devided in groups
+*/
 class PlayerFieldsConfig
 {
     const TEHNICAL_FIELDS = [
