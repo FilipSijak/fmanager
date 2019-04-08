@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\GameEngine\GameData\InitialSeed\MiscellaneousData;
+namespace App\GameEngine\GameData;
 
 class Cities
 {
@@ -8,7 +8,8 @@ class Cities
         return [
             [ //1
                 'name' => 'London',
-                'population' => 12
+                'population' => 12,
+                'country_id' = 1
             ],''
             [//2
                 'name' => 'Bournemouth',

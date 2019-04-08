@@ -12,8 +12,8 @@ class PositionsTableSeeder extends Seeder
      */
     public function run()
     {
-        // check if table users is empty
-        if(DB::table('positions')->get()->count() == 0){
+        // check if table positions is empty
+        if (DB::table('positions')->get()->count() == 0) {
 
             $records = [];
 

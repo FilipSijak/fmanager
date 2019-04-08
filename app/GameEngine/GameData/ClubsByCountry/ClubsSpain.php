@@ -1,8 +1,8 @@
 <?php
 
-namespace AppBundle\GameEngine\GameData\InitialSeed\DataByCountry;
+namespace App\GameEngine\GameData\ClubsByCountry;
 
-class DataSpain
+class ClubsSpain
 {
     public static function clubs
     {

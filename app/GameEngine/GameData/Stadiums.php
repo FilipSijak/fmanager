@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\GameEngine\GameData\InitialSeed\MiscellaneousData;
+namespace App\GameEngine\GameData;
 
 class Stadiums
 {
@@ -11,8 +11,9 @@ class Stadiums
                 //1
                 'name' => 'Emirates Stadium',
                 'capacity' => 60260,
-                'city' => 1,
-                'club' => 1,
+                'city_id' => 1,
+                'country_id' => 1,
+                'club_id' => 1
             ],
             [
                 //2
