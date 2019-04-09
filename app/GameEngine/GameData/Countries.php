@@ -20,20 +20,20 @@ class Countries
             ],
             [
                 'name' => 'Italy',
-                'ranking' => 8400,
-                'quality' => 9600,
+                'ranking' => 8200,
+                'quality' => 7600,
                 'population' => 60,
             ],
             [
                 'name' => 'France',
-                'ranking' => 8400,
-                'quality' => 7600,
+                'ranking' => 7400,
+                'quality' => 8800,
                 'population' => 67,
             ],
             [
                 'name' => 'Germany',
-                'ranking' => 8400,
-                'quality' => 8500,
+                'ranking' => 9300,
+                'quality' => 9500,
                 'population' => 82,
             ],
         ];

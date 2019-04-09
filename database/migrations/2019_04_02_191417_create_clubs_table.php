@@ -19,7 +19,6 @@ class CreateClubsTable extends Migration
             $table->integer('country_id')->unsigned();
             $table->integer('city_id')->unsigned();
             $table->integer('stadium_id')->unsigned();
-            $table->foreign('stadium_id')->references('id')->on('stadiums');
             $table->integer('balance');
             $table->integer('rank');
         });

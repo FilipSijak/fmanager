@@ -17,10 +17,11 @@ class CreateStadiumsTable extends Migration
             $table->increments('id');
             $table->string('name');
             $table->integer('country_id')->unsigned();
-            $table->integer('country_id')->references('id')->on('countries');
+            $table->foreign('country_id')->references('id')->on('countries');
             $table->integer('city_id')->unsigned();
-            $table->integer('country_id')->references('id')->on('cities');
+            $table->foreign('city_id')->references('id')->on('cities');
             $table->integer('capacity');
+            $table->integer('club_id')->unsigned();
         });
     }
 

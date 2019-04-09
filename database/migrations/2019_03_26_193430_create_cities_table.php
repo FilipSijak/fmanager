@@ -16,8 +16,9 @@ class CreateCitiesTable extends Migration
         Schema::create('cities', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->integer('population');
-            $table->integer('country_id')->references('id')->on('countries');
+            $table->float('population', 8, 3);
+            $table->integer('country_id')->unsigned();
+            $table->foreign('country_id')->references('id')->on('countries');
         });
     }
 
