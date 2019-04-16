@@ -327,6 +327,70 @@ class Stadiums
                 'country_id' => 2,
                 'club_id' => 40,
             ],
+            [
+                //41
+                'name' => "Juventus Stadium",
+                'capacity' => 41.507,
+                'city_id' => 29,
+                'country_id' => 3,
+                'club_id' => 41,
+            ],
+            [
+                //42
+                'name' => "Stadion San Paolo",
+                'capacity' => 60.240,
+                'city_id' => 30,
+                'country_id' => 3,
+                'club_id' => 42,
+            ],
+            [
+                //42
+                'name' => "Giussepe Meazza",
+                'capacity' => 80.018,
+                'city_id' => 31,
+                'country_id' => 3,
+                'club_id' => 43,
+            ],
+            [
+                //43
+                'name' => "San Siro",
+                'capacity' => 80.018,
+                'city_id' => 31,
+                'country_id' => 3,
+                'club_id' => 44,
+            ],
+            [
+                //43
+                'name' => "Stadio Atleti Azzurri d'Italia",
+                'capacity' => 21.300,
+                'city_id' => 32,
+                'country_id' => 3,
+                'club_id' => 45,
+            ],
+            [
+                //44
+                'name' => "Stadio Olimpico",
+                'capacity' => 72.698,
+                'city_id' => 33,
+                'country_id' => 3,
+                'club_id' => 46,
+            ],
+            [
+                //45
+                'name' => "Stadio Olimpico Lazio",
+                'capacity' => 72.698,
+                'city_id' => 33,
+                'country_id' => 3,
+                'club_id' => 47,
+            ],
+            [
+                //46
+                'name' => "Stadio Olimpico Grande Torino",
+                'capacity' => 27.994,
+                'city_id' => 29,
+                'country_id' => 3,
+                'club_id' => 48,
+            ],
         ];
     }
 }

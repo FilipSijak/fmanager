@@ -4,7 +4,7 @@ namespace AppBundle\GameEngine\GameData\ClubsByCountry;
 
 class ClubsGermany
 {
-    public static function clubs
+    public static function clubs()
     {
         return [
             [

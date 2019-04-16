@@ -4,11 +4,14 @@ namespace AppBundle\GameEngine\GameData\ClubsByCountry;
 
 class ClubsGermany
 {
-    public static function clubs
+    public static function clubs()
     {
         return [
             [
                 'name' => 'Juventus',
+                'league_id' => 3,
+                'country' => 3,
+                'city' => 29,
                 'coefficient' => 126, // uefa competitions coefficient
                 'coeff1' => 23, // uefa coefficient for the last year to last five years
                 'coeff2' => 29,
@@ -18,6 +21,9 @@ class ClubsGermany
             ],
             [
                 'name' => 'Napoli',
+                'league_id' => 3,
+                'country' => 3,
+                'city' => 30,
                 'coefficient' => 78, // uefa competitions coefficient
                 'coeff1' => 16, // uefa coefficient for the last year to last five years
                 'coeff2' => 22,
@@ -27,6 +33,9 @@ class ClubsGermany
             ],
             [
                 'name' => 'Inter Milan',
+                'league_id' => 3,
+                'country' => 3,
+                'city' => 31,
                 'coefficient' => 16, // uefa competitions coefficient
                 'coeff1' => 0, // uefa coefficient for the last year to last five years
                 'coeff2' => 12,
@@ -36,6 +45,9 @@ class ClubsGermany
             ],
             [
                 'name' => 'AC Milan',
+                'league_id' => 3,
+                'country' => 3,
+                'city' => 31,
                 'coefficient' => 28, // uefa competitions coefficient
                 'coeff1' => 16, // uefa coefficient for the last year to last five years
                 'coeff2' => 0,
@@ -45,6 +57,9 @@ class ClubsGermany
             ],
             [
                 'name' => 'Atalanta',
+                'league_id' => 3,
+                'country' => 3,
+                'city' => 32,
                 'coefficient' => 11, // uefa competitions coefficient
                 'coeff1' => 0, // uefa coefficient for the last year to last five years
                 'coeff2' => 0,
@@ -54,6 +69,9 @@ class ClubsGermany
             ],
             [
                 'name' => 'AS Roma',
+                'league_id' => 3,
+                'country' => 3,
+                'city' => 33,
                 'coefficient' => 64, // uefa competitions coefficient
                 'coeff1' => 0, // uefa coefficient for the last year to last five years
                 'coeff2' => 12,
@@ -63,6 +81,9 @@ class ClubsGermany
             ],
             [
                 'name' => 'SS Lazio',
+                'league_id' => 3,
+                'country' => 3,
+                'city' => 33,
                 'coefficient' => 41, // uefa competitions coefficient
                 'coeff1' => 10, // uefa coefficient for the last year to last five years
                 'coeff2' => 0,

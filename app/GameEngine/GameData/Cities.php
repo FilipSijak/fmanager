@@ -146,6 +146,31 @@ class Cities
                 'population' => 0.051,
                 'country_id' => 2
             ],
+            [//29
+                'name' => 'Turin',
+                'population' => 0.878,
+                'country_id' => 3
+            ],
+            [//30
+                'name' => 'Naples',
+                'population' => 0.967,
+                'country_id' => 3
+            ],
+            [//31
+                'name' => 'Milan',
+                'population' => 1.372,
+                'country_id' => 3
+            ],
+            [//32
+                'name' => 'Bergamo',
+                'population' => 1.372,
+                'country_id' => 3
+            ],
+            [//33
+                'name' => 'Rome',
+                'population' => 2.872,
+                'country_id' => 3
+            ],
         ];
     }
 }
