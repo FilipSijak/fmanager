@@ -17,7 +17,6 @@ class CreateCountriesTable extends Migration
             $table->increments('id');
             $table->string('code')->unique();
             $table->string('name')->unique();
-            $table->integer('game_id');
             $table->integer('ranking')->nullable();
             $table->integer('population');
             $table->integer('gdp')->nullable();

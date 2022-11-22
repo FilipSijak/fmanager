@@ -38,7 +38,7 @@ class CreateStaffTable extends Migration
             );
 
             $table->increments('id');
-            $table->integer('game_id');
+            $table->integer('instance_id');
             $table->string('type');
             $table->string('first_name');
             $table->string('last_name');

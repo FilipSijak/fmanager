@@ -34,7 +34,7 @@ class CreatePlayersTable extends Migration
             );
 
             $table->increments('id');
-            $table->integer('game_id');
+            $table->integer('instance_id');
             $table->integer('club_id')->nullable();
             $table->integer('value')->nullable();
             $table->string('first_name', 30);

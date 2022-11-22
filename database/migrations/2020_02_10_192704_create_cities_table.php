@@ -15,7 +15,6 @@ class CreateCitiesTable extends Migration
     {
         Schema::create('cities', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('game_id');
             $table->string('name');
             $table->integer('population');
             $table->string('country_code');

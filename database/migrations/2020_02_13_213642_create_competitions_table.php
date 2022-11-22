@@ -15,7 +15,7 @@ class CreateCompetitionsTable extends Migration
     {
         Schema::create('competitions', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('game_id');
+            $table->integer('instance_id');
             $table->string('name');
             $table->string('country_code');
             $table->integer('rank');

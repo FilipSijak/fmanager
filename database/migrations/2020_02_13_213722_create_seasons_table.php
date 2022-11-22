@@ -15,7 +15,7 @@ class CreateSeasonsTable extends Migration
     {
         Schema::create('seasons', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('game_id');
+            $table->integer('instance_id');
             $table->date('start_date');
             $table->date('end_date');
         });
@@ -31,3 +31,4 @@ class CreateSeasonsTable extends Migration
         Schema::dropIfExists('seasons');
     }
 }
+
