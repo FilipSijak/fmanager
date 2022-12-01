@@ -43,14 +43,14 @@ return [
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
 
-        'test_db' => [
+        'test-mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
             'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '3360'),
-            'database' => env('TEST_DATABASE', 'forge'),
-            'username' => env('TEST_USER', 'forge'),
-            'password' => env('TEST_PASSWORD', ''),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('TEST_DATABASE', 'fmanager-test'),
+            'username' => env('TEST_USER', 'root'),
+            'password' => env('TEST_PASSWORD', 'password'),
             'unix_socket' => env('DB_SOCKET', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',

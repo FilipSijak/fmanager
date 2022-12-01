@@ -1,67 +1,69 @@
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('London', 7285000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Birmingham', 1013000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Glasgow', 619680, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Liverpool', 461000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Edinburgh', 450180, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Sheffield', 431607, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Manchester', 430000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Leeds', 424194, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Bristol', 402000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Cardiff', 321000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Coventry', 304000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Leicester', 294000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Bradford', 289376, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Belfast', 287500, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Nottingham', 287000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Kingston upon Hull', 262000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Plymouth', 253000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Stoke-on-Trent', 252000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Wolverhampton', 242000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Derby', 236000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Swansea', 230000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Southampton', 216000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Aberdeen', 213070, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Northampton', 196000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Dudley', 192171, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Portsmouth', 190000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Newcastle upon Tyne', 189150, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Sunderland', 183310, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Luton', 183000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Swindon', 180000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Southend-on-Sea', 176000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Walsall', 174739, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Bournemouth', 162000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Peterborough', 156000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Brighton', 156124, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Blackpool', 151000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Dundee', 146690, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('West Bromwich', 146386, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Reading', 148000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Oldbury/Smethwick (Warley)', 145542, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Middlesbrough', 145000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Huddersfield', 143726, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Oxford', 144000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Poole', 141000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Bolton', 139020, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Blackburn', 140000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Newport', 139000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Preston', 135000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Stockport', 132813, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Norwich', 124000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Rotherham', 121380, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Cambridge', 121000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Watford', 113080, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Ipswich', 114000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Slough', 112000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Exeter', 111000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Cheltenham', 106000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Gloucester', 107000, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Saint Helens', 106293, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Sutton Coldfield', 106001, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('York', 104425, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Oldham', 103931, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Basildon', 100924, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Wigan', 103608, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Bury', 78723, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Barnsley', 91297, 'GBR');
-INSERT INTO `base_cities` (`name`, `population`, `country_code`) VALUES ('Burnley', 73021, 'GBR');
+INSERT INTO `cities` (`name`, `population`, `country_code`)
+VALUES
+  ('London', 7285000, 'GBR'),
+  ('Birmingham', 1013000, 'GBR'),
+  ('Glasgow', 619680, 'GBR'),
+  ('Liverpool', 461000, 'GBR'),
+  ('Edinburgh', 450180, 'GBR'),
+  ('Sheffield', 431607, 'GBR'),
+  ('Manchester', 430000, 'GBR'),
+  ('Leeds', 424194, 'GBR'),
+  ('Bristol', 402000, 'GBR'),
+  ('Cardiff', 321000, 'GBR'),
+  ('Coventry', 304000, 'GBR'),
+  ('Leicester', 294000, 'GBR'),
+  ('Bradford', 289376, 'GBR'),
+  ('Belfast', 287500, 'GBR'),
+  ('Nottingham', 287000, 'GBR'),
+  ('Kingston upon Hull', 262000, 'GBR'),
+  ('Plymouth', 253000, 'GBR'),
+  ('Stoke-on-Trent', 252000, 'GBR'),
+  ('Wolverhampton', 242000, 'GBR'),
+  ('Derby', 236000, 'GBR'),
+  ('Swansea', 230000, 'GBR'),
+  ('Southampton', 216000, 'GBR'),
+  ('Aberdeen', 213070, 'GBR'),
+  ('Northampton', 196000, 'GBR'),
+  ('Dudley', 192171, 'GBR'),
+  ('Portsmouth', 190000, 'GBR'),
+  ('Newcastle upon Tyne', 189150, 'GBR'),
+  ('Sunderland', 183310, 'GBR'),
+  ('Luton', 183000, 'GBR'),
+  ('Swindon', 180000, 'GBR'),
+  ('Southend-on-Sea', 176000, 'GBR'),
+  ('Walsall', 174739, 'GBR'),
+  ('Bournemouth', 162000, 'GBR'),
+  ('Peterborough', 156000, 'GBR'),
+  ('Brighton', 156124, 'GBR'),
+  ('Blackpool', 151000, 'GBR'),
+  ('Dundee', 146690, 'GBR'),
+  ('West Bromwich', 146386, 'GBR'),
+  ('Reading', 148000, 'GBR'),
+  ('Oldbury/Smethwick (Warley)', 145542, 'GBR'),
+  ('Middlesbrough', 145000, 'GBR'),
+  ('Huddersfield', 143726, 'GBR'),
+  ('Oxford', 144000, 'GBR'),
+  ('Poole', 141000, 'GBR'),
+  ('Bolton', 139020, 'GBR'),
+  ('Blackburn', 140000, 'GBR'),
+  ('Newport', 139000, 'GBR'),
+  ('Preston', 135000, 'GBR'),
+  ('Stockport', 132813, 'GBR'),
+  ('Norwich', 124000, 'GBR'),
+  ('Rotherham', 121380, 'GBR'),
+  ('Cambridge', 121000, 'GBR'),
+  ('Watford', 113080, 'GBR'),
+  ('Ipswich', 114000, 'GBR'),
+  ('Slough', 112000, 'GBR'),
+  ('Exeter', 111000, 'GBR'),
+  ('Cheltenham', 106000, 'GBR'),
+  ('Gloucester', 107000, 'GBR'),
+  ('Saint Helens', 106293, 'GBR'),
+  ('Sutton Coldfield', 106001, 'GBR'),
+  ('York', 104425, 'GBR'),
+  ('Oldham', 103931, 'GBR'),
+  ('Basildon', 100924, 'GBR'),
+  ('Wigan', 103608, 'GBR'),
+  ('Bury', 78723, 'GBR'),
+  ('Barnsley', 91297, 'GBR'),
+  ('Burnley', 73021, 'GBR');

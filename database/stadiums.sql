@@ -1,48 +1,49 @@
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Amex Stadium', 'GBR', 35, 22374);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Anfield', 'GBR', 4, 45522);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Ashton Gate', 'GBR', 9, 21497);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Bramall Lane', 'GBR', 6, 32702);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Britannia Stadium', 'GBR', 18, 27902);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Cardiff City Stadium', 'GBR', 10, 26828);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Carrow Road', 'GBR', 50, 27033);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Craven Cottage', 'GBR', 1, 25700);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('DW Stadium', 'GBR', 65, 25138);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Elland Road', 'GBR', 8, 37697);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Emirates Stadium', 'GBR', 1, 60361);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Etihad Stadium', 'GBR', 7, 47805);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Ewood Park', 'GBR', 46, 31154);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Fratton Park', 'GBR', 26, 21100);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Gigg Lane', 'GBR', 66, 11840);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Goodison Park', 'GBR', 4, 40157);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Griffin Park', 'GBR', 1, 12763);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Hillsborough', 'GBR', 6, 39812);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('KC Stadium', 'GBR', 16, 25586);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('King Power Stadium', 'GBR', 12, 32262);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Liberty Stadium', 'GBR', 21, 20532);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Loftus Road', 'GBR', 1, 18360);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Memorial Stadium', 'GBR', 9, 12011);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Molineux', 'GBR', 19, 27828);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Oakwell', 'GBR', 67, 23009);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Old Trafford', 'GBR', 7, 75811);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Olympic Stadium', 'GBR', 1, 60000);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Portman Road', 'GBR', 54, 30311);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Pride Park', 'GBR', 20, 33597);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Ricoh Arena', 'GBR', 11, 32609);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Riverside', 'GBR', 41, 34988);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Selhurst Park', 'GBR', 1, 26309);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Seward Stadium', 'GBR', 33, 10700);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('St James Park', 'GBR', 27, 52387);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ("St Mary's Stadium", 'GBR', 22, 32689);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Stadium of Light', 'GBR', 28, 49000);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Stamford Bridge', 'GBR', 1, 41837);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('The Galpharm Stadium', 'GBR', 42, 24500);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('The Hawthorns', 'GBR', 38, 26272);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('The Valley', 'GBR', 1, 27111);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Turf Moor', 'GBR', 68, 22546);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('University of Bolton Stadium', 'GBR', 45, 28723);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Valley Parade', 'GBR', 13, 25136);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Vicarage Road', 'GBR', 53, 17477);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Villa Park', 'GBR', 2, 42788);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('Wembley', 'GBR', 1, 90000);
-INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`) VALUES ('White Hart Lane', 'GBR', 1, 36230);
+INSERT INTO `base_stadiums` (`name`, `country_code`, `city_id`, `capacity`)
+VALUES ('Amex Stadium', 'GBR', 35, 22374),
+ ('Anfield', 'GBR', 4, 45522),
+ ('Ashton Gate', 'GBR', 9, 21497),
+ ('Bramall Lane', 'GBR', 6, 32702),
+ ('Britannia Stadium', 'GBR', 18, 27902),
+ ('Cardiff City Stadium', 'GBR', 10, 26828),
+ ('Carrow Road', 'GBR', 50, 27033),
+ ('Craven Cottage', 'GBR', 1, 25700),
+  ('DW Stadium', 'GBR', 65, 25138),
+  ('Elland Road', 'GBR', 8, 37697),
+  ('Emirates Stadium', 'GBR', 1, 60361),
+  ('Etihad Stadium', 'GBR', 7, 47805),
+  ('Ewood Park', 'GBR', 46, 31154),
+  ('Fratton Park', 'GBR', 26, 21100),
+  ('Gigg Lane', 'GBR', 66, 11840),
+  ('Goodison Park', 'GBR', 4, 40157),
+  ('Griffin Park', 'GBR', 1, 12763),
+  ('Hillsborough', 'GBR', 6, 39812),
+  ('KC Stadium', 'GBR', 16, 25586),
+  ('King Power Stadium', 'GBR', 12, 32262),
+  ('Liberty Stadium', 'GBR', 21, 20532),
+  ('Loftus Road', 'GBR', 1, 18360),
+  ('Memorial Stadium', 'GBR', 9, 12011),
+  ('Molineux', 'GBR', 19, 27828),
+  ('Oakwell', 'GBR', 67, 23009),
+  ('Old Trafford', 'GBR', 7, 75811),
+  ('Olympic Stadium', 'GBR', 1, 60000),
+  ('Portman Road', 'GBR', 54, 30311),
+  ('Pride Park', 'GBR', 20, 33597),
+  ('Ricoh Arena', 'GBR', 11, 32609),
+  ('Riverside', 'GBR', 41, 34988),
+  ('Selhurst Park', 'GBR', 1, 26309),
+  ('Seward Stadium', 'GBR', 33, 10700),
+  ('St James Park', 'GBR', 27, 52387),
+  ("St Mary's Stadium", 'GBR', 22, 32689),
+  ('Stadium of Light', 'GBR', 28, 49000),
+  ('Stamford Bridge', 'GBR', 1, 41837),
+  ('The Galpharm Stadium', 'GBR', 42, 24500),
+  ('The Hawthorns', 'GBR', 38, 26272),
+  ('The Valley', 'GBR', 1, 27111),
+  ('Turf Moor', 'GBR', 68, 22546),
+  ('University of Bolton Stadium', 'GBR', 45, 28723),
+  ('Valley Parade', 'GBR', 13, 25136),
+  ('Vicarage Road', 'GBR', 53, 17477),
+  ('Villa Park', 'GBR', 2, 42788),
+  ('Wembley', 'GBR', 1, 90000),
+  ('White Hart Lane', 'GBR', 1, 36230);
 

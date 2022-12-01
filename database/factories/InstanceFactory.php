@@ -22,11 +22,11 @@ class InstanceFactory extends Factory
             'user_id' => User::factory()->create()->id,
             'club_id' => User::factory()->create()->id,
             'manager_id' => User::factory()->create()->id,
-            'game_date' => Carbon::create(),
-            'game_version' => $this->faker->numberBetween(1,10),
-            'game_hash' => $this->faker->randomAscii(),
-            'created_at' => Carbon::create(),
-            'updated_at' => Carbon::create()
+            'instance_date' => Carbon::create(),
+            'instance_version' => $this->faker->numberBetween(1,10),
+            'instance_hash' => $this->faker->randomAscii(),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now()
         ];
     }
 }

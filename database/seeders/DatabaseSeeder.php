@@ -1,7 +1,10 @@
 <?php
 
-use App\GameEngine\GameCreation\CreateGame;
+namespace Database\Seeders;
+
+/*use App\GameEngine\GameCreation\CreateGame;*/
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,20 +15,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $path = 'database/base_countries.sql';
+        $path = 'database/countries.sql';
         DB::unprepared(file_get_contents($path));
 
-        $path = 'database/base_cities.sql';
+        $path = 'database/cities.sql';
         DB::unprepared(file_get_contents($path));
 
-        $path = 'database/base_clubs.sql';
-        DB::unprepared(file_get_contents($path));
-
-        $path = 'database/base_stadiums.sql';
-        DB::unprepared(file_get_contents($path));
-
-        $path = 'database/base_competitions.sql';
-        DB::unprepared(file_get_contents($path));
+        (new ClubsSeeder)->run();
+        (new StadiumSeeder)->run();
+        (new CompetitionsSeeder)->run();
 
         $path = 'database/positions.sql';
         DB::unprepared(file_get_contents($path));
@@ -33,12 +31,12 @@ class DatabaseSeeder extends Seeder
         $path = 'database/competition_hierarchy.sql';
         DB::unprepared(file_get_contents($path));
 
-        if (env('APP_ENV') == 'local') {
+/*        if (env('APP_ENV') == 'local') {
             $gameInstance = new CreateGame(
                 1
             );
 
             $gameInstance->startNewGame();
-        }
+        }*/
     }
 }

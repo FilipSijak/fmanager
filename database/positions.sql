@@ -1,4 +1,5 @@
-INSERT INTO `positions` (`id`, `name`, `alias`) VALUES (1, 'Center back', 'CB'),
+INSERT INTO `positions` (`id`, `name`, `alias`) VALUES
+(1, 'Center back', 'CB'),
 (2, 'Left back', 'LB'),
 (3, 'Left wingback', 'LWB'),
 (4, 'Right back', 'RB'),
