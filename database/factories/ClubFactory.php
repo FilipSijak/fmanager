@@ -21,10 +21,10 @@ class ClubFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'instance_id' => Instance::factory()->make()->id,
+            'instance_id' => Instance::factory()->make(['id' => 1]),
             'country_code' => $this->faker->countryCode,
-            'city_id' => City::factory()->make()->id,
-            'stadium_id' => Stadium::factory()->make()->id,
+            'city_id' => City::factory()->make(['id' => 1]),
+            'stadium_id' => Stadium::factory()->make(['id']),
             'rank' => $this->faker->numberBetween(1, 200),
             'rank_academy' => $this->faker->numberBetween(1, 200),
             'rank_training' => $this->faker->numberBetween(1, 200)

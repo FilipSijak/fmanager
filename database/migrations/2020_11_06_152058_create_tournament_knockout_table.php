@@ -16,6 +16,7 @@ class CreateTournamentKnockoutTable extends Migration
         Schema::create('tournament_knockout', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('competition_id');
+            $table->integer('season_id');
             $table->json('summary');
         });
     }

@@ -14,12 +14,15 @@ class InitialSeed
 {
     public function seedFromBaseTables(int $instanceId): void
     {
+        $this->seedClubsFromBaseTable($instanceId);
+        $this->seedStadiumsFromBaseTable($instanceId);
+        $this->seedCompetitionsFromBaseTable($instanceId);
+    }
+
+    public function seedClubsFromBaseTable(int $instanceId): void
+    {
         $baseClubs = BaseClubs::all();
-        $baseStadiums = BaseStadiums::all();
-        $baseCompetitions = BaseCompetitions::all();
-        $clubs = [];
-        $competitions = [];
-        $stadiums = [];
+        $clubs     = [];
 
         foreach ($baseClubs as $baseClub) {
             $club = new Club();
@@ -36,11 +39,19 @@ class InitialSeed
             $clubs[] = $club->toArray();
         }
 
+        DB::table('clubs')->insert($clubs);
+    }
+
+    public function seedStadiumsFromBaseTable(int $instanceId): void
+    {
+        $baseStadiums = BaseStadiums::all();
+        $stadiums     = [];
+
         foreach ($baseStadiums as $baseStadium) {
             $stadium = new Stadium();
 
             $stadium->name         = $baseStadium->name;
-            $stadium->instance_id    = $instanceId;
+            $stadium->instance_id  = $instanceId;
             $stadium->country_code = $baseStadium->countryCode;
             $stadium->city_id      = $baseStadium->cityId;
             $stadium->capacity     = $baseStadium->capacity;
@@ -48,12 +59,20 @@ class InitialSeed
             $stadiums[] = $stadium->toArray();
         }
 
+        DB::table('stadiums')->insert($stadiums);
+    }
+
+    public function seedCompetitionsFromBaseTable(int $instanceId): void
+    {
+        $baseCompetitions = BaseCompetitions::all();
+        $competitions     = [];
+
         foreach ($baseCompetitions as $baseCompetition) {
             $competition = new Competition();
 
             $competition->name         = $baseCompetition->name;
             $competition->country_code = $baseCompetition->country_code;
-            $competition->instance_id     = $instanceId;
+            $competition->instance_id  = $instanceId;
             $competition->rank         = $baseCompetition->rank;
             $competition->type         = $baseCompetition->type;
             $competition->groups       = $baseCompetition->groups;
@@ -62,8 +81,6 @@ class InitialSeed
             $competitions[] = $competition->toArray();
         }
 
-        DB::table('clubs')->insert($clubs);
-        DB::table('stadiums')->insert($stadiums);
         DB::table('competitions')->insert($competitions);
     }
 }

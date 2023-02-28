@@ -20,13 +20,13 @@ class GameFactory extends Factory
      */
     public function definition()
     {
-        $homeTeamId = Club::factory()->make()->id;
-        $stadium = Stadium::factory()->make();
+        $homeTeamId = Club::factory()->create()->id;
+        $stadium = Stadium::factory()->make(['id']);
 
         return [
-            'competition_id' => Competition::factory()->make()->id,
+            'competition_id' => Competition::factory()->create()->id,
             'hometeam_id' => $homeTeamId,
-            'awayteam_id' => Club::factory()->make()->id,
+            'awayteam_id' => Club::factory()->create()->id,
             'stadium_id' => $stadium->id,
             'attendance' => $stadium->capacity,
             'match_start' => Carbon::now()->format('Y-m-d H:i'),

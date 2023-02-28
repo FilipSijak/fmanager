@@ -20,7 +20,7 @@ class BalanceFactory extends Factory
     public function definition()
     {
         return [
-            'club_id' => Club::factory()->make()->id,
+            'club_id' => Club::factory()->create()->id,
             'balance' => random_int(100000, 20000000),
             'debt' => random_int(100000, 20000000),
             'debt_expiration' => Carbon::now()->addYears(random_int(2, 15))

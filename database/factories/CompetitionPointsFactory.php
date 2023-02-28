@@ -20,9 +20,9 @@ class CompetitionPointsFactory extends Factory
     public function definition()
     {
         return [
-            'competition_id' => Competition::factory()->make()->id,
-            'season_id' => Season::factory()->make()->id,
-            'club_id' => Club::factory()->make()->id,
+            'competition_id' => Competition::factory()->create()->id,
+            'season_id' => Season::factory()->create()->id,
+            'club_id' => Club::factory()->create()->id,
             'points' => random_int(0, 120)
         ];
     }

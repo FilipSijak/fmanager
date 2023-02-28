@@ -20,9 +20,9 @@ class StadiumFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'instance_id' => Instance::factory()->make()->id,
+            'instance_id' => Instance::factory()->make(['id'])->id,
             'country_code' => $this->faker->countryCode,
-            'city_id' => City::factory()->make()->id,
+            'city_id' => City::factory()->create()->id,
             'capacity' => random_int(1000, 100000)
         ];
     }

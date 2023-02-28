@@ -23,7 +23,7 @@ class StaffFactory extends Factory
         $randomDay = random_int(1, 30);
 
         return [
-            'instance_id' => Instance::factory()->make()->id,
+            'instance_id' => Instance::factory()->make(['id'])->id,
             'type' => 'MANAGER',
             'first_name' => $this->faker->firstName,
             'last_name' => $this->faker->lastName,

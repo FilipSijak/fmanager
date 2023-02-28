@@ -10,4 +10,5 @@ class Stadium extends Model
     use HasFactory;
 
     protected $table = 'stadiums';
+    public $timestamps = false;
 }

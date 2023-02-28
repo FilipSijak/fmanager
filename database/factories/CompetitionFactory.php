@@ -18,7 +18,7 @@ class CompetitionFactory extends Factory
     public function definition()
     {
         return [
-            'instance_id' => Instance::factory()->make()->id,
+            'instance_id' => Instance::factory()->make('id')->id,
             'name' => $this->faker->name,
             'country_code' => $this->faker->countryCode,
             'rank' => random_int(1, 20),

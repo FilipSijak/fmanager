@@ -18,9 +18,9 @@ class CompetitionHierarchyFactory extends Factory
     public function definition()
     {
         return [
-            'competition_id' => Competition::factory()->make()->id,
-            'parent_competition_id' => Competition::factory()->make()->id,
-            'child_competition_id' => Competition::factory()->make()->id,
+            'competition_id' => Competition::factory()->create()->id,
+            'parent_competition_id' => Competition::factory()->create()->id,
+            'child_competition_id' => Competition::factory()->create()->id,
         ];
     }
 }

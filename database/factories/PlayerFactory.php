@@ -4,9 +4,9 @@ namespace Database\Factories;
 
 use App\Models\Club;
 use App\Models\Instance;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Services\PeopleService\PersonConfig\Player\PlayerFields;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Player>
@@ -35,8 +35,8 @@ class PlayerFactory extends Factory
         return array_merge
         (
             [
-                'instance_id' => Instance::factory()->make()->id,
-                'club_id' => Club::factory()->make()->id,
+                'instance_id' => Instance::factory()->make(['id'])->id,
+                'club_id' => Club::factory()->create()->id,
                 'value' => random_int(100000, 100000000),
                 'first_name' => $this->faker->firstName,
                 'last_name' => $this->faker->lastName,

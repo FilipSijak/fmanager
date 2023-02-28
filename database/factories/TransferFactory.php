@@ -21,10 +21,10 @@ class TransferFactory extends Factory
     public function definition()
     {
         return [
-            'season_id' => Season::factory()->make()->id,
-            'source_club_id' => Club::factory()->make()->id,
-            'target_club_id' => Club::factory()->make()->id,
-            'player_id' => Player::factory()->make()->id,
+            'season_id' => Season::factory()->create()->id,
+            'source_club_id' => Club::factory()->create()->id,
+            'target_club_id' => Club::factory()->create()->id,
+            'player_id' => Player::factory()->create()->id,
             'offer_date' => Carbon::now(),
             'transfer_date' => Carbon::now()->addMonth(),
             'transfer_status' => 0,
