@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureGameIsValid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,5 +19,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
+Route::middleware([EnsureGameIsValid::class])->group(function () {
+    Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
+});
+
+
 Route::get('/setNewGame', [\App\Http\Controllers\TestController::class, 'setNewGame']);
