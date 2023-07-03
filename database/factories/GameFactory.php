@@ -4,6 +4,8 @@ namespace Database\Factories;
 
 use App\Models\Club;
 use App\Models\Competition;
+use App\Models\Instance;
+use App\Models\Season;
 use App\Models\Stadium;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,13 +22,15 @@ class GameFactory extends Factory
      */
     public function definition()
     {
-        $homeTeamId = Club::factory()->create()->id;
-        $stadium = Stadium::factory()->make(['id']);
+        $homeTeamId = Club::factory()->make()->id;
+        $stadium = Stadium::factory()->make();
 
         return [
-            'competition_id' => Competition::factory()->create()->id,
+            'instance_id' => Instance::factory()->make()->id,
+            'season_id' => Season::factory()->make()->id,
+            'competition_id' => Competition::factory()->make()->id,
             'hometeam_id' => $homeTeamId,
-            'awayteam_id' => Club::factory()->create()->id,
+            'awayteam_id' => Club::factory()->make()->id,
             'stadium_id' => $stadium->id,
             'attendance' => $stadium->capacity,
             'match_start' => Carbon::now()->format('Y-m-d H:i'),

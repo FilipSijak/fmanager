@@ -7,7 +7,7 @@ use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerPosition;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 
-class PersonService
+class PersonService implements IPersonService
 {
     public function createPerson(\stdClass $playerPotential,int $instanceId, string $personType, int $clubAcademyRank)
     {

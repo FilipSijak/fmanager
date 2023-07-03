@@ -2,7 +2,6 @@
 
 namespace App\Services\CompetitionService\Competitions;
 
-
 use App\Models\Club;
 use App\Models\Game;
 
@@ -11,14 +10,14 @@ use Illuminate\Support\Collection;
 
 class Tournament
 {
-    public function createTournament(Collection $clubs)
+    public function createTournament(Collection|array $clubs, $instanceId = 1, $seasonId = 1)
     {
         $clubsCount = count($clubs);
         $halfSize   = ($clubsCount / 2);
         $rounds     = 0;
 
         if ($halfSize < 2) {
-            return;
+            return false;
         }
 
         $calcNumRounds = function ($n) use (&$calcNumRounds, &$rounds) {
@@ -48,6 +47,8 @@ class Tournament
             "third_placed"      => null,
             "finals_match"      => null,
             "third_place_match" => null,
+            "instance_id"       => $instanceId,
+            "season_id"         => $seasonId,
         ];
 
         for ($i = 1; $i <= $rounds; $i++) {
@@ -72,7 +73,7 @@ class Tournament
         return $this->summary;
     }
 
-    public function setTournamentFixtures(array $schedule, int $competitionId, string $startDate)
+    public function setTournamentFixtures($instanceId, $seasonId, array $schedule, int $competitionId, string $startDate)
     {
         $carbonDate = Carbon::parse($startDate);
         $firstGame  = $carbonDate->copy()->modify("next Tuesday");
@@ -83,20 +84,24 @@ class Tournament
         );
 
         foreach ($firstRoundPairs as $pair) {
-            $game = new Game();
+            $game    = new Game();
             $rematch = new Game();
 
+            $game->instance_id    = $instanceId;
+            $game->season_id      = $seasonId;
             $game->competition_id = $competitionId;
-            $game->hometeam_id = $pair->match1->homeTeamId;
-            $game->awayteam_id = $pair->match1->awayTeamId;
-            $game->match_start = $firstGame;
-            $game->stadium_id = Club::where('id', $pair->match1->homeTeamId)->first()->stadium_id;
+            $game->hometeam_id    = $pair->match1->homeTeamId;
+            $game->awayteam_id    = $pair->match1->awayTeamId;
+            $game->match_start    = $firstGame;
+            $game->stadium_id     = Club::where('id', $pair->match1->homeTeamId)->first()->stadium_id;
 
+            $rematch->instance_id    = $instanceId;
+            $rematch->season_id      = $seasonId;
             $rematch->competition_id = $competitionId;
-            $rematch->hometeam_id = $pair->match2->homeTeamId;
-            $rematch->awayteam_id = $pair->match2->awayTeamId;
-            $rematch->match_start = $firstGame->copy()->addWeek();
-            $rematch->stadium_id = Club::where('id', $pair->match2->homeTeamId)->first()->stadium_id;
+            $rematch->hometeam_id    = $pair->match2->homeTeamId;
+            $rematch->awayteam_id    = $pair->match2->awayTeamId;
+            $rematch->match_start    = $firstGame->copy()->addWeek();
+            $rematch->stadium_id     = Club::where('id', $pair->match2->homeTeamId)->first()->stadium_id;
 
             $game->save();
             $rematch->save();
@@ -123,24 +128,13 @@ class Tournament
 
     public function createTournamentGroups(array $clubs)
     {
-        $counter               = 0;
-        $currentGroup          = 1;
+        $currentGroup = 1;
         $clubsByGroup = [];
-
-        $groups = [
-            0  => 1,
-            4  => 2,
-            8  => 3,
-            12 => 4,
-            16 => 5,
-            20 => 6,
-        ];
-
         $groupCounter = 1;
 
         foreach ($clubs as $key => $club) {
-            if ($key %4 == 0) {
-                $currentGroup = $groupCounter;
+            if ($key % 4 == 0) {
+                $currentGroup                = $groupCounter;
                 $clubsByGroup[$currentGroup] = [];
                 $groupCounter++;
             }

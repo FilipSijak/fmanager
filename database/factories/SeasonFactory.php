@@ -19,7 +19,7 @@ class SeasonFactory extends Factory
     public function definition()
     {
         return [
-            'instance_id' => Instance::factory()->make(['id'])->id,
+            'instance_id' => Instance::factory()->make(['id' => 1])->id,
             'start_date' => Carbon::createFromFormat('d/m/Y',  '25/08/' . date('Y')),
             'end_date' => Carbon::createFromFormat('d/m/Y',  '28/08/' . date('Y'))
         ];

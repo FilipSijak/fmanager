@@ -3,10 +3,11 @@
 namespace App\Repositories;
 
 use App\Models\Player;
+use App\Repositories\Interfaces\IPlayerRepository;
 use App\Services\PersonService\PersonService;
 use Illuminate\Support\Facades\DB;
 
-class PlayerRepository
+class PlayerRepository implements IPlayerRepository
 {
     public function bulkPlayerInsert(int $instanceId, int $clubId, array $generatedPlayers)
     {

@@ -15,4 +15,9 @@ class Competition extends Model
     {
         return $this->belongsToMany(Club::class, 'competition_season');
     }
+
+    public function seasons()
+    {
+        return $this->belongsToMany(Season::class, 'competition_season');
+    }
 }

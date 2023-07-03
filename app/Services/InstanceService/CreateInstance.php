@@ -36,7 +36,7 @@ class CreateInstance
         $this->competitionRepository = $competitionRepository;
     }
 
-    public function instanceInit()
+    public function instanceInit(): Instance
     {
         $init = new InitialSeed();
         $this->storeInstance(1, 1, 1);
@@ -45,6 +45,8 @@ class CreateInstance
         $this->mapInitialCompetitionsToSeasonsWithClubs($this->season->id);
         $this->setCompetitionsForTheFirstSeason($this->competitionService, $this->season->id, $this->instance->id);
         $this->assignPlayersToClubs($this->personService, $this->instance->id);
+
+        return $this->instance;
     }
 
     public function storeInstance(int $userId, int $managerId, int $clubId): Instance
@@ -52,6 +54,8 @@ class CreateInstance
         $this->instance->user_id    = $userId;
         $this->instance->manager_id = $managerId;
         $this->instance->club_id    = $clubId;
+        $this->instance->instance_date = new Carbon('2023-08-20');
+        $this->instance->instance_hash = uniqid();
 
         $this->instance->save();
 
@@ -75,7 +79,7 @@ class CreateInstance
 
     public function mapInitialCompetitionsToSeasonsWithClubs(int $seasonId)
     {
-        $this->competitionRepository->setCompetitionsSeasons($seasonId);
+        $this->competitionRepository->setCompetitionsSeasons($this->instance->id, $seasonId);
     }
 
     public function setCompetitionsForTheFirstSeason(CompetitionService $competitionService, int $seasonId, int $instanceId)
@@ -90,7 +94,6 @@ class CreateInstance
 
                     if ($baseClubs->count()) {
                         try {
-                            $this->competitionRepository->setCompetitionPoints($seasonId, $baseClubs, $competition->id);
                             $competitionService->makeLeague($baseClubs->pluck('id')->toArray(), $competition->id, $seasonId, $instanceId);
                         } catch (\Exception $e) {
 

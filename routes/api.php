@@ -19,3 +19,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
+Route::get('/setNewGame', [\App\Http\Controllers\TestController::class, 'setNewGame']);

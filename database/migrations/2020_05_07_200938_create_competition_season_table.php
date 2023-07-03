@@ -15,9 +15,11 @@ class CreateCompetitionSeasonTable extends Migration
     {
         Schema::create('competition_season', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('competition_id')->unsigned();
-            $table->integer('season_id')->unsigned();
-            $table->integer('club_id')->unsigned()->nullable();
+            $table->integer('instance_id');
+            $table->integer('competition_id');
+            $table->integer('season_id');
+            $table->integer('club_id');
+            $table->integer('points')->nullable();
         });
     }
 
