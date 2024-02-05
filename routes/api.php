@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Middleware\EnsureGameIsValid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -14,14 +15,17 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
-
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-Route::middleware([EnsureGameIsValid::class])->group(function () {
-    Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
-});
-
-
+Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
 Route::get('/setNewGame', [\App\Http\Controllers\TestController::class, 'setNewGame']);
+/*Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
+    Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
+    return $request->user();
+});*/
+
+/*Route::middleware([EnsureGameIsValid::class])->group(function () {
+    Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
+});*/
+
+Route::get('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);
+

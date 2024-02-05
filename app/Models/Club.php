@@ -20,4 +20,9 @@ class Club extends Model
     {
         $this->belongsToMany(Season::class, 'competition_season');
     }
+
+    public function players()
+    {
+        return $this->hasMany(Player::class, 'club_id');
+    }
 }
