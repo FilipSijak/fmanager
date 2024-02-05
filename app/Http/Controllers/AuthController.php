@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
+    const UNPROCESSABLE = 422;
+
     public function register(Request $request)
     {
         $result = $request->validate([
@@ -41,7 +43,7 @@ class AuthController extends Controller
                         'Invalid credentials',
                     ],
                 ],
-            ], 422);
+            ], self::UNPROCESSABLE);
         }
 
         $user      = User::where('email', $request->email)->first();
