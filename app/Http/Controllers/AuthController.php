@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
     const UNPROCESSABLE = 422;
 
-    public function register(Request $request)
+    public function register(Request $request): JsonResponse
     {
-        $result = $request->validate([
+        $request->validate([
             'name'     => 'required',
             'email'    => 'required|email',
             'password' => 'required|min:6',
@@ -26,7 +27,7 @@ class AuthController extends Controller
         return response()->json($user);
     }
 
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         $request->validate([
             'email'    => 'email|required',
