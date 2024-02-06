@@ -48,8 +48,23 @@ class TransferService
         }
     }
 
-    public function transferRequestDecision()
+    public function transferRequestDecision($requestParams)
     {
+        switch ($requestParams['type']) {
+            case TransferTypes::FREE_TRANSFER:
+                // player decision
 
+                break;
+            case TransferTypes::LOAN_TRANSFER:
+                // club analysis (availability)
+                // player decision
+
+                break;
+            case TransferTypes::PERMANENT_TRANSFER:
+                // club analysis (valuation, availability, budget, etc.)
+                // player decision
+
+                break;
+        }
     }
 }
