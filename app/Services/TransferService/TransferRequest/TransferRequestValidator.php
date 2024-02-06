@@ -46,7 +46,7 @@ class TransferRequestValidator
     {
         $missingFields = [];
 
-        foreach (self::PERMANENT_TRANSFER_FIELDS as $field) {
+        foreach (self::LOAN_TRANSFER_FIELDS as $field) {
             if (!isset($requestParams[$field])) {
                 $missingFields[] = $field;
             }
@@ -59,7 +59,7 @@ class TransferRequestValidator
     {
         $missingFields = [];
 
-        foreach (self::PERMANENT_TRANSFER_FIELDS as $field) {
+        foreach (self::FREE_TRANSFER_FIELDS as $field) {
             if (!isset($requestParams[$field])) {
                 $missingFields[] = $field;
             }
