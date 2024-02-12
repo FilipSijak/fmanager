@@ -10,4 +10,5 @@ class TransferStatus extends Model
     use HasFactory;
 
     public $table = 'transfer_status';
+    public $timestamps = false;
 }
