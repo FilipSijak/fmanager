@@ -1,23 +1,35 @@
-FROM php:8.1-fpm-buster
+FROM php:8.1-fpm
 
-RUN apt-get update && apt-get install -y apt-utils ldap-utils zip unzip zlib1g-dev libzip-dev libldb-dev libldap2-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev && \
-                          rm -rf /var/lib/apt/lists/* && \
-                          docker-php-ext-configure ldap && \
-                          docker-php-ext-install ldap
+# Arguments defined in docker-compose.s.yml
+ARG user
+ARG uid
 
-RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
-RUN docker-php-ext-configure zip
-RUN docker-php-ext-install zip pdo_mysql gd
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer
+# Clear cache
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-RUN pecl install xdebug-2.8.1
+# Install PHP extensions
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-RUN docker-php-ext-enable xdebug
+# Get latest Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-COPY ./config/xdebug.ini .
-RUN cat xdebug.ini >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini && rm xdebug.ini
 
-COPY ./config/php.ini /usr/local/etc/php/
+# Create system user to run Composer and Artisan Commands
+RUN useradd -G www-data,root -u $uid -d /home/$user $user
+RUN mkdir -p /home/$user/.composer && \
+    chown -R $user:$user /home/$user
 
+# Set working directory
 WORKDIR /var/www
+
+USER $user
