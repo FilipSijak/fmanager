@@ -10,14 +10,20 @@ services:
         container_name: fmanager-container
         restart: unless-stopped
         working_dir: /var/www
-        environment:
-            - DB_HOST=host.docker.internal
-        extra_hosts:
-            - "host.docker.internal:host-gateway"
         volumes:
             - ./:/var/www
         networks:
             - fmananager
+
+    node:
+        image: node:18-buster
+        container_name: fmanager-node
+        tty: true
+        user: "1000:1000"
+        volumes:
+            - .:/var/www
+        working_dir: /var/www
+        command: bash -c "npm install"
     nginx:
         image: nginx:alpine
         container_name: fmanager-nginx
