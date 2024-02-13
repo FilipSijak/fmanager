@@ -16,3 +16,5 @@ yarn-error.log
 /.vscode
 test-integration.sh
 /app/Http/Controllers/TestController.php
+/public/css
+/public/js
