@@ -106,24 +106,3 @@ class CompetitionUpdaterTest extends TestCase
         );
     }
 }
-/*{"winner": null, "season_id": 1,
-    "first_group":
-    {
-        "rounds":
-        {
-            "1":
-            {
-                "pairs":
-                [
-                    {
-                        "match1": {
-                        "awayTeamId": 16, "homeTeamId": 1},
-                        "match2": {
-                        "awayTeamId": 1, "homeTeamId": 16},
-                        "winner": null, "match1Id": 381, "match2Id": 382
-                    }
-                ]
-          }
-          }
-      }
-}*/
