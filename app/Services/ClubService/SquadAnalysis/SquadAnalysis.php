@@ -10,6 +10,7 @@ class SquadAnalysis
     public function optimalNumbersCheckByPosition(Club $club):array
     {
         $players = $club->players()->get();
+
         $positionCount = PlayerCreateConfig::POSITION_COUNT;
         $positionShortage = [];
 
@@ -23,10 +24,17 @@ class SquadAnalysis
             $clubPlayersPositionMapping[$player->position]++;
         }
 
-        foreach ($positionCount as $position => $playerNumbers) {
+        foreach ($positionCount as $position => $clubDefinedPLayerNumbers) {
+            if (!isset($clubPlayersPositionMapping[$position])) {
+                $positionShortage[$position] = -$clubDefinedPLayerNumbers;
+
+                continue;
+            }
+
             $currentClubPositionPlayerNumbers = $clubPlayersPositionMapping[$position];
-            if ($currentClubPositionPlayerNumbers < $playerNumbers) {
-                $positionShortage[$position] = $currentClubPositionPlayerNumbers - $playerNumbers;
+
+            if ($currentClubPositionPlayerNumbers < $clubDefinedPLayerNumbers) {
+                $positionShortage[$position] = $currentClubPositionPlayerNumbers - $clubDefinedPLayerNumbers;
             }
         }
 

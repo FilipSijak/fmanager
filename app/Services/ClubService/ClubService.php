@@ -21,6 +21,11 @@ class ClubService
         $this->squadAnalysis->optimalNumbersCheckByPosition($club);
     }
 
+    public function clubFinancialSummary()
+    {
+
+    }
+
     public function transferHandler()
     {
 
