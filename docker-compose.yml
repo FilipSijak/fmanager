@@ -14,7 +14,21 @@ services:
             - ./:/var/www
         networks:
             - fmananager
-
+    fmanagerdb:
+        image: mysql:8.0
+        container_name: fmanager-db
+        restart: unless-stopped
+        environment:
+            MYSQL_DATABASE: fmanager
+            MYSQL_ROOT_PASSWORD: password
+            SERVICE_TAGS: dev
+            SERVICE_NAME: mysql
+        ports:
+            - 33069:3306
+        volumes:
+            - ./docker/mysql:/docker-entrypoint-initdb.d
+        networks:
+            - fmananager
     node:
         image: node:18-buster
         container_name: fmanager-node
