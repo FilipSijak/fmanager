@@ -35,14 +35,13 @@ class PlayerFactory extends Factory
         return array_merge
         (
             [
-                'instance_id' => Instance::factory()->make(['id'])->id,
-                'club_id' => Club::factory()->create()->id,
+                'instance_id' => Instance::factory()->make(['id' => 1])->id,
+                'club_id' => Club::factory()->make(['id' => 1])->id,
                 'value' => random_int(100000, 100000000),
                 'first_name' => $this->faker->firstName,
                 'last_name' => $this->faker->lastName,
                 'potential' => random_int(20,200),
-                'position' => 'Center back',
-                'alias' => 'CB',
+                'position' => 'CB',
                 'country_code' => $this->faker->countryCode,
                 'dob' => Carbon::now()->subYears(random_int(15, 42)),
             ],

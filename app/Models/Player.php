@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Player extends Model
 {
     public $timestamps = false;
+    use HasFactory;
 
     public function positions()
     {
