@@ -2,6 +2,7 @@
 
 namespace App\Services\InstanceService;
 
+use App\Events\NextDay;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Repositories\CompetitionRepository;
@@ -40,6 +41,8 @@ class InstanceService implements IInstanceService
     public function nextDay()
     {
         $currentGameDate = Carbon::parse($this->instance->instance_date);
+
+        event(new NextDay());
         // update player training progress, morale
 
         // update finances

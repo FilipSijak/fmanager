@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Events\NextDay;
+use App\Listeners\NexDayTransfersSubscriber;
+use App\Listeners\ProcessTransfers;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -18,6 +21,13 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+        NextDay::class => [
+            ProcessTransfers::class
+        ]
+    ];
+
+    protected $subscribe = [
+        NexDayTransfersSubscriber::class
     ];
 
     /**
