@@ -11,7 +11,7 @@ class NexDayTransfersSubscriber
 
     }
 
-    public function handleProcessTransferingPlayers($event)
+    public function handleProcessTransferringPlayers($event)
     {
 
     }
@@ -25,7 +25,7 @@ class NexDayTransfersSubscriber
 
         $events->listen(
             'App\Events\NextDay',
-            'App\Listeners\NexDayTransfersSubscriber@handleProcessTransferingPlayers'
+            'App\Listeners\NexDayTransfersSubscriber@handleProcessTransferringPlayers'
         );
     }
 }
