@@ -2,19 +2,58 @@
 
 namespace App\Services\TransferService;
 
+use App\Models\Club;
+use App\Models\Transfer;
+use App\Services\ClubService\ClubService;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 
 class TransferService
 {
     private TransferRequestValidator $transferRequestValidator;
+    private ClubService              $clubService;
 
-    public function __construct(TransferRequestValidator $transferRequestValidator)
+    public function __construct(
+        TransferRequestValidator $transferRequestValidator,
+        ClubService $clubService
+    )
     {
         $this->transferRequestValidator = $transferRequestValidator;
+        $this->clubService = $clubService;
     }
 
     public function processTransferBids()
     {
+        //get all transfers from the table
+        $transfers = Transfer::where('season_id', 1)->get();
+
+        foreach ($transfers as $transfer) {
+            $this->processTransfer($transfer);
+        }
+
+        // read offers and run analysis for clubs/players to make decisions
+
+        // upd
+
+        // go to transfers and send events to  source/target clubs/ players for them to make decisions
+    }
+
+    public function processTransfer(Transfer $transfer)
+    {
+        // if waiting for target club approval
+        if ($transfer->transfer_status == TransferStatusTypes::WAITING_TARGET_CLUB) {
+            $club = Club::where('id', $transfer->target_club_id == 1)->first();
+
+            $this->clubService->internalSquadAnalysis($club);
+            // analyse target club if they are happy to accept the offer
+            // analyse club squad positions
+            // analyse financial offer
+        }
+
+
+
+        // if waiting for player approval
+        // analyse contract offer
+        // analyse player ambition
 
     }
 

@@ -18,7 +18,7 @@ class ClubService
 
     public function internalSquadAnalysis(Club $club)
     {
-        $this->squadAnalysis->optimalNumbersCheckByPosition($club);
+        return $this->squadAnalysis->optimalNumbersCheckByPosition($club);
     }
 
     public function clubFinancialSummary()
