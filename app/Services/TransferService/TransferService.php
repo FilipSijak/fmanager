@@ -43,10 +43,9 @@ class TransferService
         if ($transfer->transfer_status == TransferStatusTypes::WAITING_TARGET_CLUB) {
             $club = Club::where('id', $transfer->target_club_id == 1)->first();
 
-            $this->clubService->internalSquadAnalysis($club);
-            // analyse target club if they are happy to accept the offer
-            // analyse club squad positions
-            // analyse financial offer
+            if ($this->clubService->clubSellingDecision($transfer)) {
+
+            }
         }
 
 

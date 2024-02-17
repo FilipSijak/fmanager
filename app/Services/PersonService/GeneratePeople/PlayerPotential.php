@@ -2,6 +2,7 @@
 
 namespace App\Services\PersonService\GeneratePeople;
 
+use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 
 class PlayerPotential extends PersonPotential
@@ -10,9 +11,9 @@ class PlayerPotential extends PersonPotential
     {
         $playerPotentialList = [];
         $rank                = $clubAcademyRank * 10;
-        $positionsCount      = PlayerCreateConfig::POSITION_COUNT;
+        $positionsCount      = SquadPlayersConfig::POSITION_COUNT;
 
-        for ($i = 1; $i <= PlayerCreateConfig::PLAYER_COUNT; $i++) {
+        for ($i = 1; $i <= SquadPlayersConfig::PLAYER_COUNT; $i++) {
             $newPlayer = new \stdClass();
 
             if ($i <= 5) {

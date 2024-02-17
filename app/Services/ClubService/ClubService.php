@@ -3,6 +3,7 @@
 namespace App\Services\ClubService;
 
 use App\Models\Club;
+use App\Models\Transfer;
 use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
 
 class ClubService

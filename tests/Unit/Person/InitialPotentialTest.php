@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Person;
 
+use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use App\Services\PersonService\GeneratePeople\PlayerCreateConfig;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use Tests\TestCase;
@@ -23,8 +24,8 @@ class InitialPotentialTest extends TestCase
             return $v->position == 'ST';
         }, ARRAY_FILTER_USE_BOTH);
 
-        $this->assertCount(PlayerCreateConfig::PLAYER_COUNT, $playerList);
-        $this->assertEquals(count($cbs), PlayerCreateConfig::POSITION_COUNT['CB']);
-        $this->assertEquals(count($st), PlayerCreateConfig::POSITION_COUNT['ST']);
+        $this->assertCount(SquadPlayersConfig::PLAYER_COUNT, $playerList);
+        $this->assertEquals(count($cbs), SquadPlayersConfig::POSITION_COUNT['CB']);
+        $this->assertEquals(count($st), SquadPlayersConfig::POSITION_COUNT['ST']);
     }
 }
