@@ -16,8 +16,8 @@ class PlayerPositionTable extends Migration
         Schema::create('player_position', function ($table) {
             $table->increments('id');
             $table->integer('player_id')->unsigned();
-            $table->string('position');
-            $table->integer('position_grade');
+            $table->integer('position_id')->unsigned();
+            $table->integer('position_grade')->unsigned();
         });
     }
 
