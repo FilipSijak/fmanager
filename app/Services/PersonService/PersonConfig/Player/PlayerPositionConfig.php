@@ -2,13 +2,24 @@
 
 namespace App\Services\PersonService\PersonConfig\Player;
 
-/*
- * Highest valued attributes for each position
-*/
-
 class PlayerPositionConfig
 {
-    const PLAYER_POSITIONS = ['CB', 'LB', 'LWB', 'RB', 'RWB', 'DMC', 'CM', 'AMC', 'LW', 'LF', 'RW', 'RF', 'CF', 'ST'];
+    const PLAYER_POSITIONS = [
+        1 => 'CB',
+        2 => 'LB',
+        3 => 'LWB',
+        4 => 'RB',
+        5 => 'RWB',
+        6 => 'DMC',
+        7 => 'CM',
+        8 => 'LW',
+        9 => 'LF',
+        10 => 'AMC',
+        11 => 'RW',
+        12 => 'RF',
+        13 => 'CF',
+        14 => 'ST'
+    ];
 
     const POSITION_TECH_ATTRIBUTES = [
         'CB'  => [

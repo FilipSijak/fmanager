@@ -4,7 +4,6 @@ namespace App\Services\ClubService\SquadAnalysis;
 
 use App\Models\Club;
 use App\Models\Player;
-use App\Services\PersonService\GeneratePeople\PlayerCreateConfig;
 
 class SquadAnalysis
 {

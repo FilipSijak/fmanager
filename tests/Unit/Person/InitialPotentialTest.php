@@ -3,7 +3,6 @@
 namespace Tests\Unit\Person;
 
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
-use App\Services\PersonService\GeneratePeople\PlayerCreateConfig;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use Tests\TestCase;
 

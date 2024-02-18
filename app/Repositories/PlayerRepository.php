@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Player;
 use App\Repositories\Interfaces\IPlayerRepository;
+use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\PersonService\PersonService;
 use Illuminate\Support\Facades\DB;
 
@@ -88,15 +89,17 @@ class PlayerRepository implements IPlayerRepository
     {
         $personService = new PersonService();
 
-        $insertSql = "INSERT INTO player_position(player_id, position, position_grade) VALUES";
+        $insertSql = "INSERT INTO player_position(player_id, position_id, position_grade) VALUES";
 
         foreach ($players as $player) {
 
             $attributes   = $player->getAttributes();
             $positionList = $personService->generatePlayerPositionList($attributes);
 
-            foreach ($positionList as $positionId => $grade) {
-                $insertSql .= "(" . $player->id . ", '" . $positionId . "', " . $grade . "),";
+            $playerPositions = array_flip(PlayerPositionConfig::PLAYER_POSITIONS);
+
+            foreach ($positionList as $position => $grade) {
+                $insertSql .= "(" . $player->id . ", '" . $playerPositions[$position] . "', " . $grade . "),";
             }
         }
 

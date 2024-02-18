@@ -6,7 +6,7 @@ use App\Models\Club;
 use App\Models\Player;
 use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
 use App\Services\InstanceService\InstanceData\InitialSeed;
-use App\Services\PersonService\GeneratePeople\PlayerCreateConfig;
+use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -31,7 +31,7 @@ class SquadAnalysisTest extends TestCase
         Player::factory()
               ->count(5)
               ->sequence(function (Sequence $sequence) {
-                return ['position' => PlayerCreateConfig::PLAYER_POSITIONS[$sequence->index]];
+                return ['position' => PlayerPositionConfig::PLAYER_POSITIONS[$sequence->index - 1]];
               })
               ->create();
 
