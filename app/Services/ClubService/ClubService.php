@@ -28,7 +28,6 @@ class ClubService
             return false;
         }
 
-        $this->squadAnalysis->isAcceptableTransfer($club, $player);
         // analyse financial offer
 
         return true;

@@ -16,14 +16,26 @@ class SquadAnalysis
     public function isAcceptableTransfer(Club $club, Player $player): bool
     {
         //position deficit equal or higher than
-        $this->isAcceptablePositionDeficit();
+        if (! $this->isAcceptablePositionDeficit($club, $player)) {
+            return false;
+        }
+
+        // squad key player
+        // compare player to other players
 
         return true;
     }
 
-    public function isAcceptablePositionDeficit()
+    public function isAcceptablePositionDeficit(Club $club, Player $player)
     {
+        $squadPositionsNumbers = $this->optimalNumbersCheckByPosition($club);
 
+        if (empty($squadPositionsNumbers) || !isset($squadPositionsNumbers[$player->position])) {
+            return true;
+        }
+
+        return SquadPlayersConfig::POSITION_COUNT[$player->position] + ($squadPositionsNumbers[$player->position]) >=
+            SquadPlayersConfig::MIN_PLAYER_COUNT_BY_POSITION[$player->position];
     }
 
     public function optimalNumbersCheckByPosition(Club $club):array

@@ -187,11 +187,6 @@ class PlayerPositionConfig
         ],
     ];
 
-    public static function getRandomPosition()
-    {
-        return self::PLAYER_POSITIONS[rand(0, count(self::PLAYER_POSITIONS) - 1)];
-    }
-
     // return array of primary and secondary attributes
     public static function getPositionMainAttributes($position)
     {
