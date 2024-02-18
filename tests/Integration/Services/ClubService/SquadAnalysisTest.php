@@ -31,7 +31,7 @@ class SquadAnalysisTest extends TestCase
         Player::factory()
               ->count(5)
               ->sequence(function (Sequence $sequence) {
-                return ['position' => PlayerPositionConfig::PLAYER_POSITIONS[$sequence->index - 1]];
+                return ['position' => PlayerPositionConfig::PLAYER_POSITIONS[$sequence->index + 1]];
               })
               ->create();
 
