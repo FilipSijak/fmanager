@@ -95,8 +95,8 @@ class PlayerRepository implements IPlayerRepository
             $attributes   = $player->getAttributes();
             $positionList = $personService->generatePlayerPositionList($attributes);
 
-            foreach ($positionList as $position => $grade) {
-                $insertSql .= "(" . $player->id . ", '" . $position . "', " . $grade . "),";
+            foreach ($positionList as $positionId => $grade) {
+                $insertSql .= "(" . $player->id . ", '" . $positionId . "', " . $grade . "),";
             }
         }
 

@@ -3,15 +3,34 @@
 namespace App\Services\ClubService\SquadAnalysis;
 
 use App\Models\Club;
+use App\Models\Player;
 use App\Services\PersonService\GeneratePeople\PlayerCreateConfig;
 
 class SquadAnalysis
 {
+    public function internalSquadAnalysis(Club $club)
+    {
+        return $this->optimalNumbersCheckByPosition($club);
+    }
+
+    public function isAcceptableTransfer(Club $club, Player $player): bool
+    {
+        //position deficit equal or higher than
+        $this->isAcceptablePositionDeficit();
+
+        return true;
+    }
+
+    public function isAcceptablePositionDeficit()
+    {
+
+    }
+
     public function optimalNumbersCheckByPosition(Club $club):array
     {
         $players = $club->players()->get();
 
-        $positionCount = PlayerCreateConfig::POSITION_COUNT;
+        $positionCount = SquadPlayersConfig::POSITION_COUNT;
         $positionShortage = [];
 
         $clubPlayersPositionMapping = [];

@@ -22,4 +22,18 @@ abstract class SquadPlayersConfig
         'RW'  => 2,
         'ST'  => 3,
     ];
+
+    const MIN_PLAYER_COUNT_BY_POSITION = [
+        'CB'  => 5,
+        'LB'  => 1,
+        'RB'  => 1,
+        'DMC' => 2,
+        'CM'  => 2,
+        'AMC' => 2,
+        'LF'  => 1,
+        'RF'  => 1,
+        'LW'  => 1,
+        'RW'  => 1,
+        'ST'  => 2,
+    ];
 }
