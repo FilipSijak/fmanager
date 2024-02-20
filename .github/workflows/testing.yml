@@ -1,0 +1,39 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  compile:
+    name: Compile CSS and JS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+        name: Compile
+        run: |
+          npm install
+          npm run prod
+
+  tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install PHP
+        uses: shivammathur/setup-php@/v2
+
+        with:
+          php-version: 8.1
+      - name: Run composer
+        run:
+          composer install --no-interaction
+      - name: Copy env file
+        run:
+          cp .env.example .env
+      - name: Run test suite
+        run:
+          vendor/bin/phpunit
