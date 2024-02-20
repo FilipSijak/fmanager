@@ -2,6 +2,7 @@
 
 namespace App\Services\InstanceService\InstanceData;
 
+use App\Models\Account;
 use App\Models\BaseData\BaseClubs;
 use App\Models\BaseData\BaseCompetitions;
 use App\Models\BaseData\BaseStadiums;
@@ -40,6 +41,26 @@ class InitialSeed
         }
 
         DB::table('clubs')->insert($clubs);
+
+        $clubs = Club::where('instance_id', $instanceId)->get();
+
+        foreach ($clubs as $club) {
+            $account = new Account();
+            $account->club_id = $club->id;
+
+            if ($club->rank > 15) {
+                $account->balance = $club->rank * 4 * 1000000;
+            } elseif ($club->rank >= 10 && $club->rank <= 15) {
+                $account->balance = $club->rank  * 1000000;
+            } else {
+                $account->balance = $club->rank * 100000;
+            }
+
+            $account->future_balance = $account->balance;
+            $account->allowed_debt = $account->balance;
+
+            $account->save();
+        }
     }
 
     public function seedStadiumsFromBaseTable(int $instanceId): void
