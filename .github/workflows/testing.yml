@@ -24,7 +24,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Install PHP
-        uses: shivammathur/setup-php@/master
+        uses: shivammathur/setup-php@v2
         with:
           php-version: 8.1
           extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
