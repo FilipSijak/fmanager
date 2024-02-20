@@ -1,7 +1,8 @@
 {
     "private": true,
     "scripts": {
-        "watch": "mix watch"
+        "watch": "mix watch",
+        "prod": "npm run production"
     },
     "devDependencies": {
         "@babel/core": "^7.23.9",
