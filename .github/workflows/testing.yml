@@ -1,7 +1,7 @@
 name: Tests
 
 on:
-  push:
+  merge:
     branches:
       - main
 
@@ -17,9 +17,11 @@ jobs:
           npm install
           npm run production
 
-  build-php:
+  create-deployment-artifacts:
     name: Install packages
     runs-on: ubuntu-latest
+    outputs:
+      deployment-matrix: ${{ steps.export-deployment-matrix.outputs.deployment-matrix }}
     steps:
       - uses: actions/checkout@v2
 
@@ -33,4 +35,26 @@ jobs:
           composer install --no-dev --no-interaction --prefer-dist
 
       - name: Create deployment artifact
-        run: tar -czf app.tar.gz --exclude=*.git --exclude=node_modules *
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: tar -czf "${GITHUB_SHA}"app.tar.gz --exclude=*.git --exclude=node_modules *
+
+      - name: Store artifact for distribution
+        uses: actions/upload-artifats@v2
+        with:
+          name: app-build
+          path: ${{github.sha}}.tar.gz
+
+      - name: Export deployment matrix
+        id: export-deployment-matrix
+        run: |
+          JSON="$(cat ./deployment.json)"
+          JSON="{JSON//'%'/'%25'}"
+          JSON="{JSON//$'\n'/'%0A'}"
+          JSON="{JSON//$'\r'/'%0D'}"
+          echo "::set-output name=deployment-matrix::$JSON"
+
+  prepare-release-on-server:
+    runs-on: ubuntu-latest
+    needs: create-deployment-artifacts
+
