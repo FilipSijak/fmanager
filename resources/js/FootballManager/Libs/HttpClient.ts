@@ -7,11 +7,12 @@ export interface IHttpClientRequestParameters<T> {
 }
 
 export interface IHttpClient {
-    get<T>(parameters: IHttpClientRequestParameters<T>): Promise<T>
-    post<T>(parameters: IHttpClientRequestParameters<T>): Promise<T>
+    get<T = never, R = AxiosResponse<T>>(path:string): Promise<T>
+    post<D, T, R = AxiosResponse<T>>(path: string, payload: D): Promise<R>
+    put<T>(parameters: IHttpClientRequestParameters<T>): Promise<T>
 }
 
-export class HttpClient
+export class HttpClient implements IHttpClient
 {
     private baseURL = '/api/';
     private axiosInstance!: AxiosInstance;
@@ -26,27 +27,37 @@ export class HttpClient
         })
     }
 
-    get<T>(parameters): Promise<AxiosResponse<T>> {
-        const { url } = parameters;
-
-        return this.axiosInstance.request<T>({
+    get<T = never, R = AxiosResponse<T>>(
+        path: string
+    ): Promise<R> {
+        return this.axiosInstance.request<T, R>({
             method: 'GET',
-            url: url,
+            url: path,
             baseURL:this.baseURL
         });
     }
 
-    post<T>(
+    post<D, T, R = AxiosResponse<T>>(
         path: string,
-        payload: any,
-        baseURL?: string
-    ): Promise<AxiosResponse<any>> {
-        return this.axiosInstance.request<T>({
+        payload: D
+    ): Promise<R> {
+        return this.axiosInstance.request<T, R>({
             method: 'POST',
             url: path,
             responseType: 'json',
             data: payload,
-            baseURL: baseURL || this.baseURL
+            baseURL: this.baseURL
+        });
+    }
+
+    put<T>(parameters): Promise<any> {
+        const { url } = parameters;
+
+        return this.axiosInstance.request<T>({
+            method: 'PATCH',
+            url: url,
+            baseURL:this.baseURL
         });
     }
 }
+
