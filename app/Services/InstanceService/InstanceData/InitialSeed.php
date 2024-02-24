@@ -58,6 +58,8 @@ class InitialSeed
 
             $account->future_balance = $account->balance;
             $account->allowed_debt = $account->balance;
+            $account->transfer_budget = $account->balance;
+            $account->salaries_yearly_budget = $account->balance * 2;
 
             $account->save();
         }

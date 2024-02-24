@@ -14,7 +14,7 @@ return new class extends Migration
             $table->integer('receiving_account');
             $table->integer('sending_account');
             $table->dateTime('transaction_date');
-            $table->double('amount');
+            $table->integer('amount');
             $table->integer('currency')->default(1);
         });
     }

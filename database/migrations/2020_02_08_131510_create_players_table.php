@@ -48,6 +48,7 @@ class CreatePlayersTable extends Migration
             $table->integer('physical')->nullable();
             $table->date('contract_start')->nullable();
             $table->date('contract_end')->nullable();
+            $table->integer('salary')->nullable();
 
             foreach ($allPlayerFields as $field) {
                 $table->integer($field);

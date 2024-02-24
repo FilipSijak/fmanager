@@ -11,9 +11,11 @@ return new class extends Migration
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
             $table->integer('club_id');
-            $table->double('balance');
-            $table->double('future_balance');
-            $table->double('allowed_debt');
+            $table->integer('balance');
+            $table->integer('future_balance');
+            $table->integer('allowed_debt');
+            $table->integer('transfer_budget');
+            $table->integer('salaries_yearly_budget');
         });
     }
 

@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->integer('account_id');
             $table->integer('receiving_account_id');
-            $table->double('installment');
+            $table->integer('installment');
             $table->date('expiration');
         });
     }
