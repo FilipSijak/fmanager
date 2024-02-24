@@ -22,10 +22,24 @@ class PlayerRepository implements IPlayerRepository
         foreach ($generatedPlayers as $key => $player) {
 
             $attributesCategories = $player->getAttributeCategoriesPotential();
+            $playerContractRandomEndingYear =  rand(2024, 2030);
+            $contractEndDate = date('Y-m-d', strtotime($playerContractRandomEndingYear . '-06-01'));
 
-            $playerInsertSQL      .= "(" . $instanceId . ",
+            $salary = 0;
+            $value = 0;
+
+            for ($k = 0.1, $i = 10; $i < 210; $i +=10, $k += 0.1) {
+                if ($player->potential > $i) {
+                    continue;
+                }
+
+                $value = $player->potential * $k * 100000;
+                $salary = $player->potential * $k * 1000;
+            }
+
+            $playerInsertSQL .= "(" . $instanceId . ",
                 " . $clubId . ",
-                100,
+                '" . $value . "',
                 '" . addslashes($player->first_name) . "',
                 '" . addslashes($player->last_name) . "',
                 '" . $player->potential . "',
@@ -36,7 +50,8 @@ class PlayerRepository implements IPlayerRepository
                 " . $attributesCategories->mental . ",
                 " . $attributesCategories->physical . ",
                 '" . date('Y-m-d') . "',
-                '" . date('Y-m-d') . "',
+                '" . $contractEndDate . "',
+                '" . $salary . "',
                 " . $player->corners . ",
                 " . $player->crossing . ",
                 " . $player->dribbling . ",
