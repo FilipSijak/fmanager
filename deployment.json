@@ -5,8 +5,8 @@
         "username": "root",
         "password": "filip1!Ff",
         "port": "22",
-        "beforeHooks": "",
-        "afterHooks": "",
+        "beforeHooks": "echo 1",
+        "afterHooks": "echo 2",
         "path": "/var/www/html"
     }
 ]
