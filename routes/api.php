@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClubController;
 use App\Http\Middleware\EnsureGameIsValid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,15 @@ Route::get('/setNewGame', [\App\Http\Controllers\TestController::class, 'setNewG
     Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
     return $request->user();
 });*/
+
+Route::group(
+    [
+        'prefix' => 'club'
+    ],
+    function () {
+        Route::get('/{club}', [ClubController::class, 'show']);
+    }
+);
 
 /*Route::middleware([EnsureGameIsValid::class])->group(function () {
     Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);

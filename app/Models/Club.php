@@ -25,4 +25,9 @@ class Club extends Model
     {
         return $this->hasMany(Player::class, 'club_id');
     }
+
+    public function stadium()
+    {
+        return $this->hasOne(Club::class, 'stadium_id');
+    }
 }
