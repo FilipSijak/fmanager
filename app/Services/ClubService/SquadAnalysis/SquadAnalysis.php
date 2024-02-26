@@ -25,7 +25,7 @@ class SquadAnalysis
         return true;
     }
 
-    public function isAcceptablePositionDeficit(Club $club, Player $player)
+    public function isAcceptablePositionDeficit(Club $club, Player $player): bool
     {
         $squadPositionsNumbers = $this->optimalNumbersCheckByPosition($club);
 

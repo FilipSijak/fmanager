@@ -6,8 +6,5 @@ use App\Models\Club;
 
 class FinanceService
 {
-    public function getClubFinancialReport(Club $club)
-    {
 
-    }
 }
