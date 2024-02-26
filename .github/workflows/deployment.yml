@@ -146,28 +146,28 @@ jobs:
             ln -s -f $STORAGE_PATH $RELEASE_PATH
             ln -s -n -f $RELEASE_PATH $ACTIVE_RELEASE_PATH
             service php8.1-fpm reload
-    run-after-hooks:
-      name: "${{ matrix.server.name }}: After hooks"
-      runs-on: ubuntu-latest
-      needs: [ create-deployment-artifacts, prepare-release-on-server, activate_release ]
-      strategy:
-        matrix:
-          server: ${{ fromJson(needs.create-deployment-artifacts.outputs.deployment-matrix) }}
-      steps:
-        - name: Run before hooks
-          uses: appleboy/ssh-action@master
-          env:
-            GITHUB_SHA: ${{ github.sha }}
-            RELEASE_PATH: ${{ matrix.server.path }}/releases/${{ github.sha }}
-            ACTIVE_RELEASE_PATH: ${{ matrix.server.path }}/current
-            STORAGE_PATH: ${{ matrix.server.path }}/storage
-            BASE_PATH: ${{ matrix.server.path }}
-            LARAVEL_ENV: ${{ secrets.LARAVEL_ENV }}
-          with:
-            host: ${{ matrix.server.ip }}
-            username: ${{ matrix.server.username }}
-            password: ${{ matrix.server.password }}
-            port: ${{ matrix.server.port }}
-            envs: GITHUB_SHA,RELEASE_PATH,ACTIVE_RELEASE_PATH,STORAGE_PATH,BASE_PATH,LARAVEL_ENV
-            script: |
-              ${{ matrix.server.afterHooks }}
+  run-after-hooks:
+    name: "${{ matrix.server.name }}: After hooks"
+    runs-on: ubuntu-latest
+    needs: [ create-deployment-artifacts, prepare-release-on-server, activate_release ]
+    strategy:
+      matrix:
+        server: ${{ fromJson(needs.create-deployment-artifacts.outputs.deployment-matrix) }}
+    steps:
+      - name: Run before hooks
+        uses: appleboy/ssh-action@master
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+          RELEASE_PATH: ${{ matrix.server.path }}/releases/${{ github.sha }}
+          ACTIVE_RELEASE_PATH: ${{ matrix.server.path }}/current
+          STORAGE_PATH: ${{ matrix.server.path }}/storage
+          BASE_PATH: ${{ matrix.server.path }}
+          LARAVEL_ENV: ${{ secrets.LARAVEL_ENV }}
+        with:
+          host: ${{ matrix.server.ip }}
+          username: ${{ matrix.server.username }}
+          password: ${{ matrix.server.password }}
+          port: ${{ matrix.server.port }}
+          envs: GITHUB_SHA,RELEASE_PATH,ACTIVE_RELEASE_PATH,STORAGE_PATH,BASE_PATH,LARAVEL_ENV
+          script: |
+            ${{ matrix.server.afterHooks }}
