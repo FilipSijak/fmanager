@@ -4,7 +4,7 @@ mix.ts('resources/js/app.tsx', 'public/js')
     .react()
     .extract(['react', 'react-dom']);
 
-mix.sass('resources/sass/global.scss', 'public/css');
+mix.sass('resources/sass/a_global.scss', 'public/css');
 
 // Cache busting
 if (mix.inProduction()) {

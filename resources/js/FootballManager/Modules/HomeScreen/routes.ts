@@ -3,7 +3,7 @@ import Home from "./Pages";
 
 export const HomeScreenRoutes: AppRoute[] = [
     {
-        path: '/',
+        path: '/dashboard',
         Component: Home
     }
 ];
