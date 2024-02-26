@@ -5,22 +5,25 @@ namespace App\Services\ClubService;
 use App\Models\Club;
 use App\Models\Player;
 use App\Models\Transfer;
+use App\Services\ClubService\FinancialAnalysis\ClubFinancialAnalysis;
 use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
 
 class ClubService
 {
-    private SquadAnalysis $squadAnalysis;
+    private SquadAnalysis         $squadAnalysis;
+    private ClubFinancialAnalysis $financialAnalysis;
 
     public function __construct(
-        SquadAnalysis $squadAnalysis
+        SquadAnalysis $squadAnalysis,
+        ClubFinancialAnalysis $financialAnalysis
     )
     {
         $this->squadAnalysis = $squadAnalysis;
+        $this->financialAnalysis = $financialAnalysis;
     }
 
     public function clubSellingDecision(Transfer $transfer): bool
     {
-        // analyse club squad
         $player = Player::find($transfer->player_id);
         $club = Club::find($transfer->target_club_id);
 
@@ -28,14 +31,12 @@ class ClubService
             return false;
         }
 
-        // analyse financial offer
+        if (!$this->financialAnalysis->isFinanciallyAcceptableTransfer($transfer)) {
+            // counteroffer?
+            return false;
+        }
 
         return true;
-    }
-
-    public function clubFinancialSummary()
-    {
-
     }
 
     public function transferHandler()

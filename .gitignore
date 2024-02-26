@@ -14,7 +14,7 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
-test-integration.sh
+integration-tests.sh
 /app/Http/Controllers/TestController.php
 /public/css
 /public/js
