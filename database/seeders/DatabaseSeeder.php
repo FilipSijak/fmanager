@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
         (new ClubsSeeder)->run();
         (new StadiumSeeder)->run();
         (new CompetitionsSeeder)->run();
+        (new TransferStatusSeeder)->run();
 
         $path = 'database/positions.sql';
         DB::unprepared(file_get_contents($path));
