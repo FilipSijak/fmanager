@@ -60,7 +60,6 @@ jobs:
     strategy:
       matrix:
         server: ${{ fromJson(needs.create-deployment-artifacts.outputs.deployment-matrix) }}
-
     steps:
       - uses: actions/download-artifact@v2
         with:
@@ -72,5 +71,5 @@ jobs:
           username: ${{ matrix.server.username }}
           password: ${{ matrix.server.password }}
           port: ${{ matrix.server.port }}
-          source: {{ github.sha }}.tar.gz
-          target: ${{ matrix.server.path }}//artifacts // /var/www/html/artifacts
+          source: ${{ github.sha }}.tar.gz
+          target: ${{ matrix.server.path }}/artifacts // /var/www/html/artifacts
