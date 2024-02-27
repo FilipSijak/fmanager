@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreatePlayersTable extends Migration
 {
-    private const TEHNICAL_FIELDS = [
+    private const TECHNICAL_FIELDS = [
         'corners', 'crossing', 'dribbling', 'finishing', 'first_touch', 'freeKick', 'heading', 'long_shots', 'long_throws', 'marking', 'passing', 'penalty_taking', 'tackling', 'technique',
     ];
 
@@ -14,7 +14,7 @@ class CreatePlayersTable extends Migration
         'aggression', 'anticipation', 'bravery', 'composure', 'concentration', 'creativity', 'decisions', 'determination', 'flair', 'leadership', 'of_the_ball', 'positioning', 'teamwork', 'workrate',
     ];
 
-    private const PHYSICAL_FILDS = [
+    private const PHYSICAL_FIELDS = [
         'acceleration', 'agility', 'balance', 'jumping', 'natural_fitness', 'pace', 'stamina', 'strength',
     ];
 
@@ -28,9 +28,9 @@ class CreatePlayersTable extends Migration
         Schema::create('players', function (Blueprint $table) {
 
             $allPlayerFields = array_merge(
-                self::TEHNICAL_FIELDS,
+                self::TECHNICAL_FIELDS,
                 self::MENTAL_FIELDS,
-                self::PHYSICAL_FILDS
+                self::PHYSICAL_FIELDS
             );
 
             $table->increments('id');

@@ -2,9 +2,9 @@
 
 namespace App\Services\PersonService\PersonConfig\Player;
 
-class PlayerFields
+abstract class PlayerFields
 {
-    const TEHNICAL_FIELDS = [
+    const TECHNICAL_FIELDS = [
         'corners', 'crossing', 'dribbling', 'finishing', 'first_touch', 'freeKick', 'heading', 'long_shots', 'long_throws', 'marking', 'passing', 'penalty_taking', 'tackling', 'technique',
     ];
 
@@ -12,7 +12,7 @@ class PlayerFields
         'aggression', 'anticipation', 'bravery', 'composure', 'concentration', 'creativity', 'decisions', 'determination', 'flair', 'leadership', 'of_the_ball', 'positioning', 'teamwork', 'workrate',
     ];
 
-    const PHYSICAL_FILDS = [
+    const PHYSICAL_FIELDS = [
         'acceleration', 'agility', 'balance', 'jumping', 'natural_fitness', 'pace', 'stamina', 'strength',
     ];
 

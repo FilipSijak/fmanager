@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PlayerResource extends JsonResource
@@ -14,8 +15,33 @@ class PlayerResource extends JsonResource
      */
     public function toArray($request)
     {
-        return [
-            'id' => $this->id
+        $attributeFields = array_merge(
+            PlayerFields::TECHNICAL_FIELDS,
+            PlayerFields::MENTAL_FIELDS,
+            PlayerFields::PHYSICAL_FIELDS
+        );
+
+        $fields  = [
+            'id' => $this->id,
+            'club_id' => $this->club_id,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+            'potential' => $this->potential,
+            'position' => $this->position,
+            'country_code' => $this->country_code,
+            'dob' => $this->dob,
+            'technical' => $this->technical,
+            'mental' => $this->mental,
+            'physical' => $this->physical,
+            'contract_start' => $this->contract_start,
+            'contract_end' => $this->contract_end,
+            'salary' => $this->salary,
         ];
+
+        foreach ($attributeFields as $field) {
+            $fields[$field] = $this->{$field};
+        }
+
+        return $fields;
     }
 }

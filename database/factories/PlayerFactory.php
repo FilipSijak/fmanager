@@ -21,9 +21,9 @@ class PlayerFactory extends Factory
     public function definition(): array
     {
         $playerFields = array_merge(
-            PlayerFields::TEHNICAL_FIELDS,
+            PlayerFields::TECHNICAL_FIELDS,
             PlayerFields::MENTAL_FIELDS,
-            PlayerFields::PHYSICAL_FILDS
+            PlayerFields::PHYSICAL_FIELDS
         );
 
         $playerFieldsValues = [];

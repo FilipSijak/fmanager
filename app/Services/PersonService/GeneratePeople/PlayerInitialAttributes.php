@@ -143,9 +143,9 @@ class PlayerInitialAttributes
         $attributeCategories = ['technical', 'mental', 'physical'];
 
         $allAbilityAttributes = array_merge(
-            PlayerFields::TEHNICAL_FIELDS,
+            PlayerFields::TECHNICAL_FIELDS,
             PlayerFields::MENTAL_FIELDS,
-            PlayerFields::PHYSICAL_FILDS
+            PlayerFields::PHYSICAL_FIELDS
         );
 
         foreach ($allAbilityAttributes as $field) {
