@@ -1,9 +1,14 @@
 import React from "react";
+import PlayerMenu from "../Components/PlayerMenu";
 
-const Index: React.FC = () => {
+const Player: React.FC = () => {
     return (
-        <div>Tactics page</div>
+        <>
+            <div>Player page</div>
+            <PlayerMenu></PlayerMenu>
+        </>
+
     );
 }
 
-export default Index;
+export default Player;
