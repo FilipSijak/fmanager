@@ -17,7 +17,7 @@ class Player extends Model
 
     public function club()
     {
-        return $this->belongsTo('App\Models\Club\Club');
+        return $this->belongsTo(Club::class);
     }
 
     public function getTableColumns()
