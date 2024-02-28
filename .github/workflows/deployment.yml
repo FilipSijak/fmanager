@@ -146,6 +146,9 @@ jobs:
             ln -s -f $STORAGE_PATH $RELEASE_PATH
             ln -s -n -f $RELEASE_PATH $ACTIVE_RELEASE_PATH
             service php8.1-fpm reload
+            npm install --production
+            npm run production
+
   run-after-hooks:
     name: "${{ matrix.server.name }}: After hooks"
     runs-on: ubuntu-latest
@@ -171,5 +174,3 @@ jobs:
           envs: GITHUB_SHA,RELEASE_PATH,ACTIVE_RELEASE_PATH,STORAGE_PATH,BASE_PATH,LARAVEL_ENV
           script: |
             ${{ matrix.server.afterHooks }}
-            npm install --production
-            npm run production
