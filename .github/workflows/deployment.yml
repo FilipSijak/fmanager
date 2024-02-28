@@ -31,10 +31,8 @@ jobs:
           php-version: 8.1
           extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
       - name: Run composer
-        run: |
+        run:
           composer install --no-dev --no-interaction --prefer-dist
-          npm install
-          npm run production
 
       - name: Create deployment artifact
         env:
@@ -173,3 +171,5 @@ jobs:
           envs: GITHUB_SHA,RELEASE_PATH,ACTIVE_RELEASE_PATH,STORAGE_PATH,BASE_PATH,LARAVEL_ENV
           script: |
             ${{ matrix.server.afterHooks }}
+            npm install --production
+            npm run production
