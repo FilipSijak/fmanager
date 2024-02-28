@@ -1,21 +1,9 @@
 name: Tests
 
 on:
-  merge:
+  push:
     branches:
       - main
-
-jobs:
-  build-front:
-    name: Compile CSS and JS
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - name: Compile CSS and JS
-        run: |
-          npm install
-          npm run production
 
   create-deployment-artifacts:
     name: Install packages
@@ -31,9 +19,12 @@ jobs:
           php-version: 8.1
           extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
       - name: Run composer
-        run:
+        run: |
           composer install --no-dev --no-interaction --prefer-dist
-
+      - name: Compile CSS and JS
+        run: |
+          npm install
+          npm run production
       - name: Create deployment artifact
         env:
           GITHUB_SHA: ${{ github.sha }}
