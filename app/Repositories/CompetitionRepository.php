@@ -7,16 +7,49 @@ use App\Models\Instance;
 use App\Repositories\Interfaces\ICompetitionRepository;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\GameService\GameService;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-class CompetitionRepository implements ICompetitionRepository
+class CompetitionRepository extends CoreRepository implements ICompetitionRepository
 {
     private CompetitionDataSource $competitionDataSource;
 
     public function __construct(CompetitionDataSource $competitionDataSource)
     {
         $this->competitionDataSource = $competitionDataSource;
+    }
+
+    public function competitionTable(int $competitionId): \Illuminate\Support\Collection
+    {
+        return DB::table('competition_season AS cs')
+            ->select('clubs.name', 'cs.points')
+            ->join('clubs', 'cs.club_id', '=', 'clubs.id')
+            ->where('season_id', $this->seasonId)
+            ->where('cs.instance_id', $this->instanceId)
+            ->where('competition_id', $competitionId)
+            ->orderBy('points', 'DESC')
+            ->get();
+    }
+
+    public function tournamentGroupsTables(int $competitionId)
+    {
+        return DB::table('tournament_groups AS tg')
+            ->select('tg.group_id', 'tg.points', 'clubs.name')
+            ->join('clubs', 'clubs.id', '=', 'tg.club_id')
+            ->where('tg.competition_id', $competitionId)
+            ->where('tg.instance_id', $this->instanceId)
+            ->where('tg.season_id', $this->seasonId)
+            ->orderBy('tg.group_id', 'ASC')
+            ->orderBy('tg.points', 'DESC')
+            ->get();
+    }
+
+    public function getCompetitionKnockoutStage(int $competitionId)
+    {
+        DB::table('tournament_knockout AS tk')
+            ->select('tk.summary')
+            ->where('instance_id', $this->instanceId)
+            ->where('season_id', $this->seasonId)
+            ->get();
     }
 
     public function setCompetitionsSeasons(int $instanceId, int $seasonId)
@@ -26,7 +59,10 @@ class CompetitionRepository implements ICompetitionRepository
 
     public function getScheduledGames(Instance $instance)
     {
-        return Game::where('instance_id', $instance->id)->where('match_start', $instance->instance_date)->where('winner', null)->get();
+        return Game::where('instance_id', $instance->id)
+                   ->where('match_start', $instance->instance_date)
+                   ->where('winner', null)
+                   ->get();
     }
 
     public function updatePointsTable(array $game)
