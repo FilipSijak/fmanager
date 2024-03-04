@@ -1,8 +1,11 @@
 import React from "react";
+import {Outlet} from "react-router-dom";
 
 const PlayerProfile: React.FC = () => {
     return (
-        <div>Player profile</div>
+        <>
+            <div>Player profileeee</div>
+        </>
     );
 }
 

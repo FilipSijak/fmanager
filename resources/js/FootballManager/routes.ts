@@ -5,7 +5,8 @@ import {PlayerRoutes} from "./Modules/Player/routes";
 export type AppRoute = {
     path: string,
     Component: any,
-    name?: string
+    name?: string,
+    childRoutes: AppRoute[]
 }
 
 let appRoutes: AppRoute[] = [];

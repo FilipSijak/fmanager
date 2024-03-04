@@ -16,13 +16,18 @@ export const App: React.FC = () => {
                     <LayoutContainer>
                         <Routes>
                             {routes.map(
-                                ({ path, Component }: AppRoute) => (
+                                ({ path, Component, childRoutes }: AppRoute) => (
+                                    childRoutes ?
+                                    <Route path={path} element={<Component />} >
+                                        {childRoutes.map(({ path, Component }: AppRoute) => {
+                                            return <Route path={path} element={<Component />} />
+                                        })}
+                                    </Route> :
                                     <Route path={path} element={<Component />} />
                                 )
                             )}
                         </Routes>
                     </LayoutContainer>
-
                 </BrowserRouter>
             </Provider>
         </React.StrictMode>

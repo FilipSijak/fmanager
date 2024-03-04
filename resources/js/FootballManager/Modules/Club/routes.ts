@@ -5,10 +5,12 @@ import Tactics from "./Pages/Tactics";
 export const ClubRoutes: AppRoute[] = [
     {
         path: '/squad',
-        Component: Squad
+        Component: Squad,
+        childRoutes: []
     },
     {
         path: '/tactics',
-        Component: Tactics
+        Component: Tactics,
+        childRoutes: []
     }
 ];

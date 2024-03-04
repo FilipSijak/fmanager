@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClubController;
+use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\PlayerController;
 use App\Http\Middleware\EnsureGameIsValid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;

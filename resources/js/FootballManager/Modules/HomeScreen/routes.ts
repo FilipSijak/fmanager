@@ -4,6 +4,7 @@ import Home from "./Pages";
 export const HomeScreenRoutes: AppRoute[] = [
     {
         path: '/',
-        Component: Home
+        Component: Home,
+        childRoutes: []
     }
 ];
