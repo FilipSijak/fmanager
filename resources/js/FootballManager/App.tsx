@@ -7,6 +7,10 @@ import {store} from "./store";
 import {LayoutHeader} from "./UI/LayoutHeader";
 import {LayoutContainer} from "./UI/LayoutContainer";
 import {LayoutSidebar} from "./UI/LayoutSidebar";
+import {PlayerService} from "./Modules/Player/Service/PlayerService";
+
+const ps = new PlayerService()
+ps.fetchPlayer()
 
 export const App: React.FC = () => {
     return (

@@ -34,6 +34,31 @@ Route::group(
     }
 );
 
+Route::group(
+    [
+        'prefix' => 'player'
+    ],
+    function () {
+        Route::get('/{playerId}', [PlayerController::class, 'show']);
+    }
+);
+
+Route::group(
+    [
+        'prefix' => 'competition'
+    ],
+    function () {
+        Route::get('/{competitionId}', [CompetitionController::class, 'show']);
+        Route::get('/{competitionId}/table', [CompetitionController::class, 'competitionTable']);
+        Route::get('/{competitionId}/tournament-groups-tables',
+           [CompetitionController::class, 'tournamentGroupsTables']
+        );
+        Route::get('/{competitionId}/knockout-phase',
+            [CompetitionController::class, 'competitionKnockoutPhase']
+        );
+    }
+);
+
 /*Route::middleware([EnsureGameIsValid::class])->group(function () {
     Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
 });*/
