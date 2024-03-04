@@ -2,15 +2,11 @@
 
 namespace App\Helpers;
 
-class ResponseHelper
+abstract class ResponseHelper
 {
-    /**
-     * @param array $data
-     * @param int   $statusCode
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public static function success(array $data = [], int $statusCode = 200)
+    const RESPONSE_SUCCESS_CODE = 200;
+
+    public static function success(array $data = [], int $statusCode = 200): \Illuminate\Http\JsonResponse
     {
         return response()->json(
             [
@@ -20,14 +16,7 @@ class ResponseHelper
         );
     }
 
-    /**
-     * @param string $message
-     * @param string $exception
-     * @param int    $statusCode
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public static function error(string $message, string $exception, int $statusCode = 400)
+    public static function error(string $message, string $exception, int $statusCode = 400): \Illuminate\Http\JsonResponse
     {
         return response()->json(
             [
