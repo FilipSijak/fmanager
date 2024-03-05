@@ -1,0 +1,249 @@
+{
+    "winner": null,
+    "season_id": 1,
+    "first_group": {
+        "rounds": {
+            "1": {
+                "pairs": [
+                    {
+                        "match1": {
+                            "awayTeamId": 16,
+                            "homeTeamId": 1
+                        },
+                        "match2": {
+                            "awayTeamId": 1,
+                            "homeTeamId": 16
+                        },
+                        "winner": null,
+                        "match1Id": 381,
+                        "match2Id": 382
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 15,
+                            "homeTeamId": 2
+                        },
+                        "match2": {
+                            "awayTeamId": 2,
+                            "homeTeamId": 15
+                        },
+                        "winner": null,
+                        "match1Id": 383,
+                        "match2Id": 384
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 14,
+                            "homeTeamId": 3
+                        },
+                        "match2": {
+                            "awayTeamId": 3,
+                            "homeTeamId": 14
+                        },
+                        "winner": null,
+                        "match1Id": 385,
+                        "match2Id": 386
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 13,
+                            "homeTeamId": 4
+                        },
+                        "match2": {
+                            "awayTeamId": 4,
+                            "homeTeamId": 13
+                        },
+                        "winner": null,
+                        "match1Id": 387,
+                        "match2Id": 388
+                    }
+                ]
+            },
+            "2": {
+                "pairs": [
+                    {
+                        "match1": {
+                            "awayTeamId": 16,
+                            "homeTeamId": 1
+                        },
+                        "match2": {
+                            "awayTeamId": 1,
+                            "homeTeamId": 16
+                        },
+                        "winner": 1,
+                        "match1Id": 381,
+                        "match2Id": 382
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 15,
+                            "homeTeamId": 2
+                        },
+                        "match2": {
+                            "awayTeamId": 2,
+                            "homeTeamId": 15
+                        },
+                        "winner": null,
+                        "match1Id": 383,
+                        "match2Id": 384
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 14,
+                            "homeTeamId": 3
+                        },
+                        "match2": {
+                            "awayTeamId": 3,
+                            "homeTeamId": 14
+                        },
+                        "winner": null,
+                        "match1Id": 385,
+                        "match2Id": 386
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 13,
+                            "homeTeamId": 4
+                        },
+                        "match2": {
+                            "awayTeamId": 4,
+                            "homeTeamId": 13
+                        },
+                        "winner": null,
+                        "match1Id": 387,
+                        "match2Id": 388
+                    }
+                ]
+            },
+            "3": {
+                "pairs": []
+            }
+        },
+        "num_rounds": 3
+    },
+    "instance_id": 1,
+    "finals_match": null,
+    "second_group": {
+        "rounds": {
+            "1": {
+                "pairs": [
+                    {
+                        "match1": {
+                            "awayTeamId": 12,
+                            "homeTeamId": 5
+                        },
+                        "match2": {
+                            "awayTeamId": 5,
+                            "homeTeamId": 12
+                        },
+                        "winner": null,
+                        "match1Id": 389,
+                        "match2Id": 390
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 11,
+                            "homeTeamId": 6
+                        },
+                        "match2": {
+                            "awayTeamId": 6,
+                            "homeTeamId": 11
+                        },
+                        "winner": null,
+                        "match1Id": 391,
+                        "match2Id": 392
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 10,
+                            "homeTeamId": 7
+                        },
+                        "match2": {
+                            "awayTeamId": 7,
+                            "homeTeamId": 10
+                        },
+                        "winner": null,
+                        "match1Id": 393,
+                        "match2Id": 394
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 9,
+                            "homeTeamId": 8
+                        },
+                        "match2": {
+                            "awayTeamId": 8,
+                            "homeTeamId": 9
+                        },
+                        "winner": null,
+                        "match1Id": 395,
+                        "match2Id": 396
+                    }
+                ]
+            },
+            "2": {
+                "pairs": [
+                    {
+                        "match1": {
+                            "awayTeamId": 16,
+                            "homeTeamId": 1
+                        },
+                        "match2": {
+                            "awayTeamId": 1,
+                            "homeTeamId": 16
+                        },
+                        "winner": null,
+                        "match1Id": 381,
+                        "match2Id": 382
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 15,
+                            "homeTeamId": 2
+                        },
+                        "match2": {
+                            "awayTeamId": 2,
+                            "homeTeamId": 15
+                        },
+                        "winner": null,
+                        "match1Id": 383,
+                        "match2Id": 384
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 14,
+                            "homeTeamId": 3
+                        },
+                        "match2": {
+                            "awayTeamId": 3,
+                            "homeTeamId": 14
+                        },
+                        "winner": null,
+                        "match1Id": 385,
+                        "match2Id": 386
+                    },
+                    {
+                        "match1": {
+                            "awayTeamId": 13,
+                            "homeTeamId": 4
+                        },
+                        "match2": {
+                            "awayTeamId": 4,
+                            "homeTeamId": 13
+                        },
+                        "winner": null,
+                        "match1Id": 387,
+                        "match2Id": 388
+                    }
+                ]
+            },
+            "3": {
+                "pairs": []
+            }
+        },
+        "num_rounds": 3
+    },
+    "third_placed": null,
+    "second_placed": null,
+    "third_place_match": null
+}
