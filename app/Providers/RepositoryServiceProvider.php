@@ -18,7 +18,6 @@ class RepositoryServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->bind(ICompetitionRepository::class, CompetitionRepository::class);
-        $this->app->bind(ICompetitionRepository::class, CompetitionRepository::class);
         $this->app->bind(IPlayerRepository::class, PlayerRepository::class);
     }
 
