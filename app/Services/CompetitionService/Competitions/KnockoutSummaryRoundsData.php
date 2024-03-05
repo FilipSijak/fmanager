@@ -14,7 +14,7 @@ class KnockoutSummaryRoundsData
     }
 
     /** Gets data needed for all the related games within a specific round */
-    public function getCurrentRound(string $knockoutSummary): array
+    public function getCurrentRound(string $knockoutSummary): array | int
     {
         $knockoutSummary = json_decode($knockoutSummary, true);
 
