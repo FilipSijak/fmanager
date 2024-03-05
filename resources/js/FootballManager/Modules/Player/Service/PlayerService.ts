@@ -4,7 +4,7 @@ export class PlayerService extends Service
 {
     fetchPlayer = () => {
         return this.httpClient.get('player/1').then((response) => {
-            console.log(response);
+            return response.data;
         })
     }
 }
