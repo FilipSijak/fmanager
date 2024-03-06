@@ -1,0 +1,62 @@
+{
+    "winner": null,
+    "season_id": 1,
+    "first_group": {
+        "rounds": {
+            "1": {
+                "pairs": [
+                    {
+                        "match1": {
+                            "awayTeamId": 2,
+                            "homeTeamId": 1
+                        },
+                        "match2": {
+                            "awayTeamId": 1,
+                            "homeTeamId": 2
+                        },
+                        "winner": null,
+                        "match1Id": 1,
+                        "match2Id": 2
+                    }
+                ]
+            },
+            "2": {
+                "pairs": []
+            },
+            "3": {
+                "pairs": []
+            }
+        },
+        "num_rounds": 3
+    },
+    "instance_id": 1,
+    "finals_match": null,
+    "second_group": {
+        "rounds": {
+            "1": {
+                "pairs": [
+                    {
+                        "match1": {
+                            "awayTeamId": 3,
+                            "homeTeamId": 4
+                        },
+                        "match2": {
+                            "awayTeamId": 4,
+                            "homeTeamId": 3
+                        },
+                        "winner": null,
+                        "match1Id": 3,
+                        "match2Id": 4
+                    }
+                ]
+            },
+            "2": {
+                "pairs": []
+            },
+            "3": {
+                "pairs": []
+            }
+        },
+        "num_rounds": 3
+    }
+}
