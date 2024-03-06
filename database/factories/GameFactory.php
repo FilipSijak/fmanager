@@ -33,11 +33,11 @@ class GameFactory extends Factory
             'awayteam_id' => Club::factory()->make()->id,
             'stadium_id' => $stadium->id,
             'attendance' => $stadium->capacity,
-            'match_start' => Carbon::now()->format('Y-m-d H:i'),
+            'match_start' => Carbon::now()->format('Y-m-d H:m:00'),
             'winner' => $homeTeamId,
-            'home_team_goals' => 2,
-            'away_team_goals' => 1,
-            'match_summary' => ''
+            'home_team_goals' => null,
+            'away_team_goals' => null,
+            'match_summary' => null
         ];
     }
 }

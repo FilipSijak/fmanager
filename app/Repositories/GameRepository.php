@@ -15,8 +15,8 @@ class GameRepository extends CoreRepository implements IGameRepository
                 'g.winner',
                 'g.home_team_goals',
                 'g.away_team_goals',
-                's.name',
-                'c1.name as home team',
+                's.name AS stadium_name',
+                'c1.name as home_team',
                 'c2.name as away_team'
             )
             ->join('stadiums AS s', 'g.stadium_id', '=', 's.id')
