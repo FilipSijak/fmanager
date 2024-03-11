@@ -48,7 +48,7 @@ class CompetitionController extends CoreController
     {
         $competitionTable = $this->competitionRepository->competitionTable($competitionId);
 
-        return ResponseHelper::success((array)$competitionTable, ResponseHelper::RESPONSE_SUCCESS_CODE);
+        return ResponseHelper::success($competitionTable->toArray(), ResponseHelper::RESPONSE_SUCCESS_CODE);
     }
 
     public function tournamentGroupsTables(int $competitionId): JsonResponse
@@ -74,6 +74,24 @@ class CompetitionController extends CoreController
         if ($summary) {
             return ResponseHelper::success(
                 $this->knockoutSummaryRoundsData->displayCurrentRound($summary),
+                ResponseHelper::RESPONSE_SUCCESS_CODE
+            );
+        }
+
+        return ResponseHelper::error(
+            'Unable to load knockout summary data',
+            '',
+            ResponseHelper::RESPONSE_ERROR_CODE
+        );
+    }
+
+    public function competitionKnockoutPhaseAllRounds($competitionId): JsonResponse
+    {
+        $summary = $this->competitionRepository->getCompetitionKnockoutStageSummary($competitionId);
+
+        if ($summary) {
+            return ResponseHelper::success(
+                $this->knockoutSummaryRoundsData->displayAllRounds($summary),
                 ResponseHelper::RESPONSE_SUCCESS_CODE
             );
         }

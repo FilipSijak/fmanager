@@ -69,7 +69,6 @@ class KnockoutSummaryRoundsData
      */
     public function displayAllRounds(string $summary): array
     {
-
         $summary = (array) json_decode($summary, true);
 
         $numRounds = $summary['first_group']['num_rounds'];
