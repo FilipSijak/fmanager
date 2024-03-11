@@ -2,11 +2,14 @@
 
 namespace App\Helpers;
 
+use Illuminate\Http\JsonResponse;
+
 abstract class ResponseHelper
 {
     const RESPONSE_SUCCESS_CODE = 200;
+    const RESPONSE_ERROR_CODE = 500;
 
-    public static function success(array $data = [], int $statusCode = 200): \Illuminate\Http\JsonResponse
+    public static function success(array $data = [], int $statusCode = 200): JsonResponse
     {
         return response()->json(
             [
@@ -16,7 +19,7 @@ abstract class ResponseHelper
         );
     }
 
-    public static function error(string $message, string $exception, int $statusCode = 400): \Illuminate\Http\JsonResponse
+    public static function error(string $message, string $exception, int $statusCode = 400): JsonResponse
     {
         return response()->json(
             [

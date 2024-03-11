@@ -7,6 +7,7 @@ use App\Models\Instance;
 use App\Repositories\Interfaces\ICompetitionRepository;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\GameService\GameService;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class CompetitionRepository extends CoreRepository implements ICompetitionRepository
@@ -18,7 +19,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
         $this->competitionDataSource = $competitionDataSource;
     }
 
-    public function competitionTable(int $competitionId): \Illuminate\Support\Collection
+    public function competitionTable(int $competitionId): Collection
     {
         return DB::table('competition_season AS cs')
             ->select('clubs.name', 'cs.points')
@@ -30,7 +31,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->get();
     }
 
-    public function tournamentGroupsTables(int $competitionId)
+    public function tournamentGroupsTables(int $competitionId): Collection
     {
         return DB::table('tournament_groups AS tg')
             ->select('tg.group_id', 'tg.points', 'clubs.name')
@@ -43,16 +44,18 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->get();
     }
 
-    public function getCompetitionKnockoutStage(int $competitionId)
+    public function getCompetitionKnockoutStageSummary(int $competitionId): string
     {
-        DB::table('tournament_knockout AS tk')
+        $result = DB::table('tournament_knockout AS tk')
             ->select('tk.summary')
             ->where('instance_id', $this->instanceId)
             ->where('season_id', $this->seasonId)
-            ->get();
+            ->first();
+
+        return $result->summary ?? '';
     }
 
-    public function setCompetitionsSeasons(int $instanceId, int $seasonId)
+    public function setCompetitionsSeasons(int $instanceId, int $seasonId): void
     {
         $this->competitionDataSource->storeInitialCompetitionSeasonClubs($instanceId, $seasonId);
     }
@@ -65,7 +68,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                    ->get();
     }
 
-    public function updatePointsTable(array $game)
+    public function updatePointsTable(array $game): void
     {
         $homeTeamPoints = 0;
         $awayTeamPoints = 0;
