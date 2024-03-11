@@ -53,6 +53,9 @@ Route::group(
         Route::get('/{competitionId}/tournament-groups-tables',
            [CompetitionController::class, 'tournamentGroupsTables']
         );
+        Route::get('/{competitionId}/knockout-phase-round-view-data',
+                   [CompetitionController::class, 'competitionKnockoutPhaseRoundViewData']
+        );
         Route::get('/{competitionId}/knockout-phase',
             [CompetitionController::class, 'competitionKnockoutPhase']
         );
