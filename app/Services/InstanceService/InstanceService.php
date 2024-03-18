@@ -34,9 +34,23 @@ class InstanceService implements IInstanceService
         $this->instance = Instance::all()->where('id', 1)->first();
     }
 
-    public function createNewGame()
+    public function createNewInstance(): bool | Instance
     {
-        $this->createInstance->instanceInit();
+        DB::beginTransaction();
+
+        try {
+            $instance = $this->createInstance->instanceInit();
+
+            if ($instance) {
+                DB::commit();
+            }
+
+            return $instance;
+        } catch (\Exception $exception) {
+            DB::rollBack();
+
+           return false;
+        }
     }
 
     public function nextDay()
