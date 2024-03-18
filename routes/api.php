@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Middleware\EnsureGameIsValid;
 use Illuminate\Http\Request;
@@ -19,7 +20,8 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
-Route::get('/setNewGame', [\App\Http\Controllers\TestController::class, 'setNewGame']);
+Route::get('/test/transactions', [\App\Http\Controllers\TestController::class, 'transactions']);
+Route::get('/startNewGame', [\App\Http\Controllers\InstanceController::class, 'startNewGame']);
 /*Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
     Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
     return $request->user();
@@ -40,6 +42,15 @@ Route::group(
     ],
     function () {
         Route::get('/{playerId}', [PlayerController::class, 'show']);
+    }
+);
+
+Route::group(
+    [
+        'prefix' => 'instance'
+    ],
+    function () {
+        Route::get('next-day', [InstanceController::class, 'nextDay']);
     }
 );
 
