@@ -10,7 +10,6 @@ use App\Repositories\GameRepository;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class CompetitionController extends CoreController
 {
@@ -21,7 +20,8 @@ class CompetitionController extends CoreController
     public function __construct(
         Request $request,
         CompetitionRepository $competitionRepository,
-        GameRepository $gameRepository
+        GameRepository $gameRepository,
+        KnockoutSummaryRoundsData $knockoutSummaryRoundsData
     )
     {
         parent::__construct($request);
@@ -32,7 +32,7 @@ class CompetitionController extends CoreController
         $this->gameRepository = $gameRepository;
         $this->gameRepository->setInstanceId($this->instanceId);
         $this->gameRepository->setSeasonId($this->seasonId);
-        $this->knockoutSummaryRoundsData = new KnockoutSummaryRoundsData($this->gameRepository);
+        $this->knockoutSummaryRoundsData = $knockoutSummaryRoundsData;
     }
 
     public function show(int $competitionId): CompetitionResource

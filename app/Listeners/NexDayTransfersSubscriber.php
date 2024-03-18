@@ -2,7 +2,6 @@
 
 namespace App\Listeners;
 
-use App\Events\NextDay;
 use App\Services\TransferService\TransferService;
 
 class NexDayTransfersSubscriber

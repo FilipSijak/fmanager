@@ -2,10 +2,7 @@
 
 namespace App\Providers;
 
-use App\Repositories\CompetitionRepository;
-use App\Repositories\Interfaces\ICompetitionRepository;
-use App\Repositories\Interfaces\IPlayerRepository;
-use App\Repositories\PlayerRepository;
+use App\Repositories\GameRepository;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -17,8 +14,12 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->bind(ICompetitionRepository::class, CompetitionRepository::class);
-        $this->app->bind(IPlayerRepository::class, PlayerRepository::class);
+        $this->app->bind(GameRepository::class, function () {
+            $gameRepo = new GameRepository();
+            $gameRepo->setSeasonId($this->app->request->header('seasonId'));
+            $gameRepo->setInstanceId($this->app->request->header('instanceId'));
+            return $gameRepo;
+        });
     }
 
     /**

@@ -10,6 +10,7 @@ use App\Services\CompetitionService\CompetitionService;
 use App\Services\GameService\GameService;
 use App\Services\PersonService\PersonService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class InstanceService implements IInstanceService
 {

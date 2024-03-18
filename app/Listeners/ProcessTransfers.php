@@ -15,7 +15,7 @@ class ProcessTransfers
      */
     public function __construct()
     {
-        //
+
     }
 
     /**
