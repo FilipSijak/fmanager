@@ -17,6 +17,7 @@ class CreateInstancesTable extends Migration
             $table->bigIncrements('id');
             $table->integer('user_id');
             $table->integer('manager_id')->nullable();
+            $table->integer('season_id')->nullable();
             $table->integer('club_id')->nullable();
             $table->date('instance_date')->nullable();
             $table->integer('instance_version')->nullable();

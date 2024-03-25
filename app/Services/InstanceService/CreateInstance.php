@@ -39,7 +39,7 @@ class CreateInstance
     public function instanceInit(): Instance
     {
         $init = new InitialSeed();
-        $this->storeInstance(1, 1, 1);
+        $this->storeInstance(1, 1, 1, 1);
         $init->seedFromBaseTables($this->instance->id);
         $this->startFirstSeason($this->instance->id);
         $this->mapInitialCompetitionsToSeasonsWithClubs($this->season->id);
@@ -49,10 +49,11 @@ class CreateInstance
         return $this->instance;
     }
 
-    public function storeInstance(int $userId, int $managerId, int $clubId): Instance
+    protected function storeInstance(int $userId, int $managerId, int $seasonId, int $clubId): Instance
     {
         $this->instance->user_id    = $userId;
         $this->instance->manager_id = $managerId;
+        $this->instance->season_id = $seasonId;
         $this->instance->club_id    = $clubId;
         $this->instance->instance_date = new Carbon('2023-08-20');
         $this->instance->instance_hash = uniqid();
