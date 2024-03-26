@@ -3,8 +3,10 @@
 namespace App\Services\TransferService;
 
 use App\Models\Club;
+use App\Models\Instance;
 use App\Models\Transfer;
 use App\Services\ClubService\ClubService;
+use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 
 class TransferService
@@ -14,7 +16,8 @@ class TransferService
 
     public function __construct(
         TransferRequestValidator $transferRequestValidator,
-        ClubService $clubService
+        ClubService $clubService,
+        SquadAnalysis $squadAnalysis
     )
     {
         $this->transferRequestValidator = $transferRequestValidator;
@@ -37,6 +40,42 @@ class TransferService
         // go to transfers and send events to  source/target clubs/ players for them to make decisions
     }
 
+    /**
+     * Check all non-player clubs if they need players
+     */
+    public function automaticTransferBids(Instance $instance)
+    {
+        // get all clubs for the instance
+        $clubs = Club::where('instance_id', $instance->id)->get();
+
+        // analyse clubs missing numbers for positions
+        foreach ($clubs as $club) {
+            $player = $this->clubService->playerForDeficitPosition($club);
+
+            if (!$player) {
+                continue;
+            }
+
+            try {
+                $transfer = new Transfer();
+                $transfer->season_id = 1;
+                $transfer->source_club_id = $club->id;
+                $transfer->target_club_id = $player->club_id;
+                $transfer->player_id = $player->id;
+                $transfer->offer_date = Instance::find(1)->instance_date;
+                $transfer->transfer_type = TransferTypes::PERMANENT_TRANSFER;
+                $transfer->amount = $player->value;
+
+                $transfer->save();
+            } catch (\Exception $exception) {
+                dd($player);
+            }
+        }
+
+        // do a luxury request if club has a lot of extra money
+        // filter clubs with loads of money
+    }
+
     public function processTransfer(Transfer $transfer)
     {
         // if waiting for target club approval
@@ -47,8 +86,6 @@ class TransferService
 
             }
         }
-
-
 
         // if waiting for player approval
         // analyse contract offer
