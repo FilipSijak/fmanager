@@ -2,6 +2,7 @@
 
 namespace App\Events;
 
+use App\Models\Instance;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -19,9 +20,9 @@ class NextDay
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(Instance $instance)
     {
-
+        $this->instance = $instance;
     }
 
     /**
