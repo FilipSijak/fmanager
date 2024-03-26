@@ -8,20 +8,26 @@ use App\Models\Transfer;
 use App\Services\ClubService\ClubService;
 use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
+use Illuminate\Http\Request;
 
 class TransferService
 {
     private TransferRequestValidator $transferRequestValidator;
     private ClubService              $clubService;
+    private string|array|null        $instanceId;
+    private string|array|null        $seasonId;
 
     public function __construct(
         TransferRequestValidator $transferRequestValidator,
         ClubService $clubService,
-        SquadAnalysis $squadAnalysis
+        SquadAnalysis $squadAnalysis,
+        Request $request
     )
     {
         $this->transferRequestValidator = $transferRequestValidator;
         $this->clubService = $clubService;
+        $this->instanceId = $request->header('instanceId');
+        $this->seasonId = $request->header('seasonId');
     }
 
     public function processTransferBids()
@@ -58,11 +64,11 @@ class TransferService
 
             try {
                 $transfer = new Transfer();
-                $transfer->season_id = 1;
+                $transfer->season_id = $this->seasonId;
                 $transfer->source_club_id = $club->id;
                 $transfer->target_club_id = $player->club_id;
                 $transfer->player_id = $player->id;
-                $transfer->offer_date = Instance::find(1)->instance_date;
+                $transfer->offer_date = Instance::find($this->instanceId)->instance_date;
                 $transfer->transfer_type = TransferTypes::PERMANENT_TRANSFER;
                 $transfer->amount = $player->value;
 
