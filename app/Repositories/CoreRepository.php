@@ -6,15 +6,15 @@ use App\Repositories\Interfaces\ICoreRepository;
 
 class CoreRepository implements ICoreRepository
 {
-    protected int $seasonId;
-    protected int $instanceId;
+    protected int|null $seasonId;
+    protected int|null $instanceId;
 
-    public function setSeasonId(int $seasonId)
+    public function setSeasonId(int|null $seasonId)
     {
         $this->seasonId = $seasonId;
     }
 
-    public function setInstanceId(int $instanceId)
+    public function setInstanceId(int|null $instanceId)
     {
         $this->instanceId = $instanceId;
     }

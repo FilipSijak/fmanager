@@ -11,4 +11,5 @@ enum TransferStatusTypes: int
     case WAITING_PAPERWORK = 4;
     case WAITING_TRANSFER_WINDOW = 5;
     case TRANSFER_COMPLETED = 6;
+    case TRANSFER_FAILED = 7;
 }

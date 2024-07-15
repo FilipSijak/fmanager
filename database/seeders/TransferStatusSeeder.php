@@ -22,6 +22,7 @@ class TransferStatusSeeder extends Seeder
             ['id' => 4, 'status' => 'WAITING_PAPERWORK'],
             ['id' => 5, 'status' => 'WAITING_TRANSFER_WINDOW'],
             ['id' => 6, 'status' => 'TRANSFER_COMPLETED'],
+            ['id' => 7, 'status' => 'TRANSFER_FAILED'],
         ];
 
         DB::table('transfer_status')->insert($transferStatusOptions);

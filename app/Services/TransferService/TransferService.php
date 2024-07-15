@@ -7,6 +7,7 @@ use App\Models\Instance;
 use App\Models\Transfer;
 use App\Services\ClubService\ClubService;
 use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
+use App\Services\PersonService\PersonTransferService;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use Illuminate\Http\Request;
 
@@ -14,18 +15,21 @@ class TransferService
 {
     private TransferRequestValidator $transferRequestValidator;
     private ClubService              $clubService;
-    private string|array|null        $instanceId;
-    private string|array|null        $seasonId;
+    private string|null              $instanceId;
+    private string|null              $seasonId;
+    private PersonTransferService    $personTransferService;
 
     public function __construct(
         TransferRequestValidator $transferRequestValidator,
         ClubService $clubService,
+        PersonTransferService $personTransferService,
         SquadAnalysis $squadAnalysis,
         Request $request
     )
     {
         $this->transferRequestValidator = $transferRequestValidator;
         $this->clubService = $clubService;
+        $this->personTransferService = $personTransferService;
         $this->instanceId = $request->header('instanceId');
         $this->seasonId = $request->header('seasonId');
     }
@@ -86,17 +90,24 @@ class TransferService
     {
         // if waiting for target club approval
         if ($transfer->transfer_status == TransferStatusTypes::WAITING_TARGET_CLUB) {
-            $club = Club::where('id', $transfer->target_club_id == 1)->first();
+            $club = Club::where('id', $transfer->target_club_id)->first();
 
             if ($this->clubService->clubSellingDecision($transfer)) {
-
+                // club approves, update status
             }
         }
 
         // if waiting for player approval
-        // analyse contract offer
-        // analyse player ambition
+        if ($transfer->transfer_status == TransferStatusTypes::WAITING_PLAYER) {
+            if ($this->personTransferService->isTransferAcceptable()) {
+                // update transfer with person approved
+            }
+        }
 
+        // counteroffer
+        if ($transfer->transfer_status == TransferStatusTypes::WAITING_SOURCE_CLUB) {
+            //is counteroffer acceptable
+        }
     }
 
     public function makeTransferRequest(array $requestParams)

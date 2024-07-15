@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
-Route::get('/test/transactions', [\App\Http\Controllers\TestController::class, 'transactions']);
 Route::get('/startNewGame', [\App\Http\Controllers\InstanceController::class, 'startNewGame']);
 /*Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
     Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
