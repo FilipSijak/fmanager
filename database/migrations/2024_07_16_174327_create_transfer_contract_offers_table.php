@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('transfer_contract_offer', function (Blueprint $table) {
+        Schema::create('transfer_contract_offers', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('transfer_id')->unsigned();
             $table->integer('salary')->unsigned();
