@@ -10,12 +10,14 @@ class PersonTransferService
 {
     public function isTransferAcceptable(Transfer $transfer): bool
     {
-        $player = Player::where('id', $transfer->player_id);
-        $buyingClub = Club::where('id', $transfer->source_club_id);
+        $player = Player::where('id', $transfer->player_id)->first();
+        $buyingClub = Club::where('id', $transfer->source_club_id)->first();
 
         // analyse player ambition
         /* @todo there is no ambition attribute on player atm so for now will use mental */
-        $this->playerAmbitionOnTransfer($player, $buyingClub);
+        if (!$this->playerAmbitionOnTransfer($player, $buyingClub)) {
+            return false;
+        }
 
         // analyse contract offer
         $this->analyseContractOffer();

@@ -2,9 +2,9 @@
 
 namespace App\Services\TransferService;
 
-enum TransferTypes:int
+abstract class TransferTypes
 {
-    case FREE_TRANSFER = 1;
-    case LOAN_TRANSFER = 2;
-    case PERMANENT_TRANSFER = 3;
+    const FREE_TRANSFER = 1;
+    const LOAN_TRANSFER = 2;
+    const PERMANENT_TRANSFER = 3;
 }

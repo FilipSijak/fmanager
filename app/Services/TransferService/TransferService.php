@@ -99,7 +99,7 @@ class TransferService
 
         // if waiting for player approval
         if ($transfer->transfer_status == TransferStatusTypes::WAITING_PLAYER) {
-            if ($this->personTransferService->isTransferAcceptable()) {
+            if ($this->personTransferService->isTransferAcceptable($transfer)) {
                 // update transfer with person approved
             }
         }

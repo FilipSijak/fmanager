@@ -3,13 +3,13 @@
 namespace App\Services\TransferService;
 
 // relates to transfer_status table
-enum TransferStatusTypes: int
+abstract class TransferStatusTypes
 {
-    case WAITING_TARGET_CLUB = 1;
-    case WAITING_SOURCE_CLUB = 2;
-    case WAITING_PLAYER = 3;
-    case WAITING_PAPERWORK = 4;
-    case WAITING_TRANSFER_WINDOW = 5;
-    case TRANSFER_COMPLETED = 6;
-    case TRANSFER_FAILED = 7;
+    const WAITING_TARGET_CLUB = 1;
+    const WAITING_SOURCE_CLUB = 2;
+    const WAITING_PLAYER = 3;
+    const WAITING_PAPERWORK = 4;
+    const WAITING_TRANSFER_WINDOW = 5;
+    const TRANSFER_COMPLETED = 6;
+    const TRANSFER_FAILED = 7;
 }
