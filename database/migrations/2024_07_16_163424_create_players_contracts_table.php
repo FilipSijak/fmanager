@@ -14,8 +14,22 @@ return new class extends Migration
     public function up()
     {
         Schema::create('players_contracts', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+            $table->increments('id');
+            $table->integer('player_id')->unsigned();
+            $table->integer('transfer_id')->unsigned();
+            $table->integer('salary')->unsigned();
+            $table->integer('appearance')->unsigned();
+            $table->integer('goal')->unsigned();
+            $table->integer('league')->unsigned();
+            $table->integer('promotion')->unsigned();
+            $table->integer('cup')->unsigned();
+            $table->integer('el')->unsigned();
+            $table->integer('cl')->unsigned();
+            $table->integer('pc_salary_raise')->unsigned();
+            $table->integer('pc_demotion_pay_cut')->unsigned();
+
+            $table->foreign('player_id')->references('id')->on('players')->onDelete('cascade');
+            $table->foreign('transfer_id')->references('id')->on('transfers')->onDelete('cascade');
         });
     }
 

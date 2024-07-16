@@ -20,16 +20,17 @@ class CreateTransfersTable extends Migration
          */
 
         Schema::create('transfers', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
             $table->integer('season_id');
             $table->integer('source_club_id');
             $table->integer('target_club_id')->nullable();
             $table->integer('player_id');
             $table->date('offer_date')->nullable();
             $table->date('transfer_date')->nullable();
-            $table->tinyInteger('transfer_status')->default(1);
+            $table->tinyInteger('player_status');
+            $table->tinyInteger('source_club_status');
+            $table->tinyInteger('target_club_status');
             $table->integer('transfer_type');
-            $table->integer('amount');
             $table->date('loan_start')->nullable();
             $table->date('loan_end')->nullable();
         });
