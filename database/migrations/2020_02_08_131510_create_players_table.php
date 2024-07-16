@@ -34,8 +34,9 @@ class CreatePlayersTable extends Migration
             );
 
             $table->increments('id');
-            $table->integer('instance_id');
+            $table->integer('instance_id')->index('instance_id');
             $table->integer('club_id')->nullable();
+            $table->integer('player_contract_id')->unsigned()->index('player_contract')->nullable();
             $table->integer('value')->nullable();
             $table->string('first_name', 30);
             $table->string('last_name', 30);
@@ -48,11 +49,12 @@ class CreatePlayersTable extends Migration
             $table->integer('physical')->nullable();
             $table->date('contract_start')->nullable();
             $table->date('contract_end')->nullable();
-            $table->integer('salary')->nullable();
 
             foreach ($allPlayerFields as $field) {
                 $table->integer($field);
             }
+
+            $table->foreign('player_contract_id')->references('id')->on('players_contracts');
         });
     }
 
