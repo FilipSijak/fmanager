@@ -19,7 +19,9 @@ return new class extends Migration
             $table->integer('transfer_id')->unsigned();
             $table->integer('salary')->unsigned();
             $table->integer('appearance')->unsigned();
+            $table->integer('clean_sheet')->unsigned();
             $table->integer('goal')->unsigned();
+            $table->integer('assist')->unsigned();
             $table->integer('league')->unsigned();
             $table->integer('promotion')->unsigned();
             $table->integer('cup')->unsigned();
