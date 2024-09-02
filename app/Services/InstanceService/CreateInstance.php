@@ -135,7 +135,7 @@ class CreateInstance
                 $generatedPlayers[] = $player;
             }
 
-            $playerRepository->bulkPlayerInsert($instanceId, $club->id, $generatedPlayers);
+            $playerRepository->bulkPlayerInsert($instanceId, $club, $generatedPlayers);
             $players = Player::where('club_id', $club->id)->get();
             $playerRepository->bulkAssignmentPlayersPositions($players);
         }
