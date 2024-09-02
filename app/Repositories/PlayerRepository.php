@@ -103,26 +103,26 @@ class PlayerRepository implements IPlayerRepository
     /**
      * @param $players
      */
-    public function bulkAssignmentPlayersPositions($players)
+    public function bulkAssignmentPlayersPositions($players): void
     {
         $personService = new PersonService();
-
-        $insertSql = "INSERT INTO player_position(player_id, position_id, position_grade) VALUES";
+        $playerPositionsData = [];
 
         foreach ($players as $player) {
 
             $attributes   = $player->getAttributes();
             $positionList = $personService->generatePlayerPositionList($attributes);
-
             $playerPositions = array_flip(PlayerPositionConfig::PLAYER_POSITIONS);
 
             foreach ($positionList as $position => $grade) {
-                $insertSql .= "(" . $player->id . ", '" . $playerPositions[$position] . "', " . $grade . "),";
+                $playerPositionsData[] = [
+                    'player_id' => $player->id,
+                    'position_id' => $playerPositions[$position],
+                    'position_grade' => $grade
+                ];
             }
         }
 
-        $insertSql = substr($insertSql, 0, -1);
-
-        DB::statement($insertSql);
+        DB::table('player_position')->insert($playerPositionsData);
     }
 }
