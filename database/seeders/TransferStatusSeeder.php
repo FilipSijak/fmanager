@@ -23,6 +23,9 @@ class TransferStatusSeeder extends Seeder
             ['id' => 5, 'status' => 'WAITING_TRANSFER_WINDOW'],
             ['id' => 6, 'status' => 'TRANSFER_COMPLETED'],
             ['id' => 7, 'status' => 'TRANSFER_FAILED'],
+            ['id' => 8, 'status' => 'TARGET_CLUB_APPROVED'],
+            ['id' => 9, 'status' => 'SOURCE_CLUB_APPROVED'],
+            ['id' => 10, 'status' => 'PLAYER_APPROVED'],
         ];
 
         DB::table('transfer_status')->insert($transferStatusOptions);

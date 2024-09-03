@@ -2,9 +2,11 @@
 
 namespace App\Services\TransferService;
 
+use App\Http\Requests\CreateTransferRequest;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Transfer;
+use App\Repositories\TransferRepository;
 use App\Services\ClubService\ClubService;
 use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
 use App\Services\PersonService\PersonTransferService;
@@ -24,7 +26,8 @@ class TransferService
         ClubService $clubService,
         PersonTransferService $personTransferService,
         SquadAnalysis $squadAnalysis,
-        Request $request
+        Request $request,
+        TransferRepository $transferRepository
     )
     {
         $this->transferRequestValidator = $transferRequestValidator;
@@ -32,6 +35,7 @@ class TransferService
         $this->personTransferService = $personTransferService;
         $this->instanceId = $request->header('instanceId');
         $this->seasonId = $request->header('seasonId');
+        $this->transferRepository = $transferRepository;
     }
 
     public function processTransferBids()
@@ -86,6 +90,10 @@ class TransferService
         // filter clubs with loads of money
     }
 
+    /**
+     * SOURCE_CLUB - club that made an offer
+     * TARGET_CLUB - club that owns the player
+     */
     public function processTransfer(Transfer $transfer)
     {
         // if waiting for target club approval
@@ -158,5 +166,10 @@ class TransferService
 
                 break;
         }
+    }
+
+    public function startTransferNegotiations(CreateTransferRequest $request)
+    {
+        $this->transferRepository->storeTransfer($request);
     }
 }

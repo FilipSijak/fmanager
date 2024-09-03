@@ -12,4 +12,7 @@ abstract class TransferStatusTypes
     const WAITING_TRANSFER_WINDOW = 5;
     const TRANSFER_COMPLETED = 6;
     const TRANSFER_FAILED = 7;
+    const TARGET_CLUB_APPROVED = 8;
+    const SOURCE_CLUB_APPROVED = 9;
+    const PLAYER_APPROVED = 10;
 }

@@ -5,6 +5,7 @@ use App\Http\Controllers\ClubController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\TransferController;
 use App\Http\Middleware\EnsureGameIsValid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -72,6 +73,15 @@ Route::group(
         Route::get('/{competitionId}/knockout-phase',
             [CompetitionController::class, 'competitionKnockoutPhase']
         );
+    }
+);
+
+Route::group(
+    [
+        'prefix' => 'transfer'
+    ],
+    function () {
+        Route::post('/', [TransferController::class, 'makeTransfer']);
     }
 );
 

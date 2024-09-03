@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Models\Club;
-use App\Models\Player;
 use App\Repositories\Interfaces\IPlayerRepository;
 use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;

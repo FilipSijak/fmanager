@@ -15,9 +15,7 @@ return new class extends Migration
     {
         Schema::create('transfer_types', function (Blueprint $table) {
             $table->id();
-            $table->string('FREE_TRANSFER', 30);
-            $table->string('LOAN_TRANSFER', 30);
-            $table->string('PERMANENT_TRANSFER', 30);
+            $table->string('type', 30);
         });
     }
 

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->integer('cup')->unsigned();
             $table->integer('el')->unsigned();
             $table->integer('cl')->unsigned();
+            $table->integer('agent_fee')->unsigned();
 
             $table->foreign('transfer_id')->references('id')->on('transfers')->onDelete('cascade');
         });

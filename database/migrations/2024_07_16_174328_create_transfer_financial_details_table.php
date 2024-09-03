@@ -16,14 +16,10 @@ return new class extends Migration
         Schema::create('transfer_financial_details', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('transfer_id')->unsigned();
-            $table->integer('transfer_contract_offer_id')->unsigned();
             $table->integer('amount')->unsigned();
-            $table->integer('installments')->unsigned();
-            $table->integer('fee')->unsigned();
-            $table->integer('agent_fee')->unsigned();
+            $table->integer('installments')->unsigned()->nullable();
 
             $table->foreign('transfer_id')->references('id')->on('transfers')->onDelete('cascade');
-            $table->foreign('transfer_contract_offer_id')->references('id')->on('transfer_contract_offers')->onDelete('cascade');
         });
     }
 
