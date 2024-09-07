@@ -94,21 +94,6 @@ class TransferService
         // filter clubs with loads of money
     }
 
-    public function processTransfer(Transfer $transfer): void
-    {
-        switch ($transfer->transfer_type) {
-            case TransferTypes::PERMANENT_TRANSFER:
-                $this->transferStatusUpdates->freeTransferUpdates($transfer);
-                break;
-            case TransferTypes::LOAN_TRANSFER:
-                $this->transferStatusUpdates->loanTransferUpdates($transfer);
-                break;
-            default:
-                $this->transferStatusUpdates->permanentTransferUpdates($transfer);
-        }
-
-    }
-
     public function makeTransferRequest(array $requestParams)
     {
         switch ($requestParams) {
@@ -162,5 +147,20 @@ class TransferService
     public function startTransferNegotiations(CreateTransferRequest $request)
     {
         $this->transferRepository->storeTransfer($request);
+    }
+
+    private function processTransfer(Transfer $transfer): void
+    {
+        switch ($transfer->transfer_type) {
+            case TransferTypes::PERMANENT_TRANSFER:
+                $this->transferStatusUpdates->freeTransferUpdates($transfer);
+                break;
+            case TransferTypes::LOAN_TRANSFER:
+                $this->transferStatusUpdates->loanTransferUpdates($transfer);
+                break;
+            default:
+                $this->transferStatusUpdates->permanentTransferUpdates($transfer);
+        }
+
     }
 }
