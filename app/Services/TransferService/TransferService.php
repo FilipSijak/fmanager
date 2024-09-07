@@ -20,6 +20,8 @@ class TransferService
     private string|null              $instanceId;
     private string|null              $seasonId;
     private PersonTransferService    $personTransferService;
+    private TransferRepository       $transferRepository;
+    private TransferStatusUpdates    $transferStatusUpdates;
 
     public function __construct(
         TransferRequestValidator $transferRequestValidator,
@@ -27,7 +29,8 @@ class TransferService
         PersonTransferService $personTransferService,
         SquadAnalysis $squadAnalysis,
         Request $request,
-        TransferRepository $transferRepository
+        TransferRepository $transferRepository,
+        TransferStatusUpdates $transferStatusUpdates
     )
     {
         $this->transferRequestValidator = $transferRequestValidator;
@@ -36,6 +39,7 @@ class TransferService
         $this->instanceId = $request->header('instanceId');
         $this->seasonId = $request->header('seasonId');
         $this->transferRepository = $transferRepository;
+        $this->transferStatusUpdates = $transferStatusUpdates;
     }
 
     public function processTransferBids()
@@ -90,32 +94,19 @@ class TransferService
         // filter clubs with loads of money
     }
 
-    /**
-     * SOURCE_CLUB - club that made an offer
-     * TARGET_CLUB - club that owns the player
-     */
-    public function processTransfer(Transfer $transfer)
+    public function processTransfer(Transfer $transfer): void
     {
-        // if waiting for target club approval
-        if ($transfer->transfer_status == TransferStatusTypes::WAITING_TARGET_CLUB) {
-            $club = Club::where('id', $transfer->target_club_id)->first();
-
-            if ($this->clubService->clubSellingDecision($transfer)) {
-                // club approves, update status
-            }
+        switch ($transfer->transfer_type) {
+            case TransferTypes::PERMANENT_TRANSFER:
+                $this->transferStatusUpdates->freeTransferUpdates($transfer);
+                break;
+            case TransferTypes::LOAN_TRANSFER:
+                $this->transferStatusUpdates->loanTransferUpdates($transfer);
+                break;
+            default:
+                $this->transferStatusUpdates->permanentTransferUpdates($transfer);
         }
 
-        // if waiting for player approval
-        if ($transfer->transfer_status == TransferStatusTypes::WAITING_PLAYER) {
-            if ($this->personTransferService->isTransferAcceptable($transfer)) {
-                // update transfer with person approved
-            }
-        }
-
-        // counteroffer
-        if ($transfer->transfer_status == TransferStatusTypes::WAITING_SOURCE_CLUB) {
-            //is counteroffer acceptable
-        }
     }
 
     public function makeTransferRequest(array $requestParams)
