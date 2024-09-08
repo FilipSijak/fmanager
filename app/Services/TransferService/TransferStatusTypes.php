@@ -15,4 +15,10 @@ abstract class TransferStatusTypes
     const TARGET_CLUB_APPROVED = 8;
     const SOURCE_CLUB_APPROVED = 9;
     const PLAYER_APPROVED = 10;
+    const SOURCE_CLUB_COUNTEROFFER = 11;
+    const TARGET_CLUB_COUNTEROFFER = 12;
+    const PLAYER_COUNTEROFFER = 13;
+    const PLAYER_DECLINED = 14;
+    const SOURCE_CLUB_DECLINED = 15;
+    const TARGET_CLUB_DECLINED = 16;
 }

@@ -144,7 +144,7 @@ class TransferService
         }
     }
 
-    public function startTransferNegotiations(CreateTransferRequest $request)
+    public function startTransferNegotiations(CreateTransferRequest $request): void
     {
         $this->transferRepository->storeTransfer($request);
     }
