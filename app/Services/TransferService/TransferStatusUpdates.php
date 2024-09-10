@@ -4,6 +4,8 @@ namespace App\Services\TransferService;
 
 use App\Models\Club;
 use App\Models\Transfer;
+use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
+use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 
 /**
  * SOURCE_CLUB - club that made an offer
@@ -11,6 +13,13 @@ use App\Models\Transfer;
  */
 class TransferStatusUpdates
 {
+    private TransferConsiderations $transferConsiderations;
+
+    public function __construct(TransferConsiderations $transferConsiderations)
+    {
+        $this->transferConsiderations = $transferConsiderations;
+    }
+
     private array $freeTransferActions = [
         TransferStatusTypes::WAITING_PLAYER => 'playerConsideration',
         TransferStatusTypes::PLAYER_COUNTEROFFER => 'playerCounterOffer',
@@ -22,9 +31,7 @@ class TransferStatusUpdates
 
     public function freeTransferUpdates(Transfer $transfer): void
     {
-        foreach ($this->freeTransferActions as $status) {
-            call_user_func([$this, $status], $transfer);
-        }
+        call_user_func([$this->transferConsiderations, $this->freeTransferActions[$transfer->source_club_status]], $transfer);
     }
 
     public function loanTransferUpdates(Transfer $transfer): void
@@ -82,35 +89,5 @@ class TransferStatusUpdates
         if ($transfer->transfer_status == TransferStatusTypes::WAITING_SOURCE_CLUB) {
             //is counteroffer acceptable
         }
-    }
-
-    private function playerConsideration(Transfer $transfer)
-    {
-
-    }
-
-    private function playerCounterOffer(Transfer $transfer)
-    {
-
-    }
-
-    private function requestPaperwork(Transfer $transfer)
-    {
-        // both player and club status updates to waiting for paperwork
-    }
-
-    private function waitingPaperwork(Transfer $transfer)
-    {
-        // do medical and complete or cancel transfer
-    }
-
-    private function cancelOrRenegotiateTransfer(Transfer $transfer)
-    {
-
-    }
-
-    private function targetClubConsideration($transfer)
-    {
-
     }
 }
