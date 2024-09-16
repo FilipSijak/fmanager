@@ -22,7 +22,7 @@ class PlayerConsideration
         // ranking conditions
         if ($player->potential / 10 > $sourceClub->rank) {
             // @todo
-            // check player ambition
+            // add and check player ambition and loyalty (ignore loyalty for free and loan transfers)
             // ambition needs to be >= club rank + 3 to decline
             // add age consideration
         }
