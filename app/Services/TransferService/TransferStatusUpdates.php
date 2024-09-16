@@ -4,7 +4,6 @@ namespace App\Services\TransferService;
 
 use App\Models\Club;
 use App\Models\Transfer;
-use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 
 /**
@@ -41,7 +40,7 @@ class TransferStatusUpdates
                 // target club needs to consider the offer
                 break;
             case TransferStatusTypes::WAITING_PLAYER:
-                // target club accepted
+                $this->transferConsiderations->playerConsideration($transfer);
             case TransferStatusTypes::PLAYER_APPROVED:
                 // request paperwork
             case TransferStatusTypes::WAITING_PAPERWORK:
@@ -56,7 +55,7 @@ class TransferStatusUpdates
                 // target club needs to consider the offer
                 break;
             case TransferStatusTypes::WAITING_PLAYER:
-                // target club accepted
+                $this->transferConsiderations->playerConsideration($transfer);
             case TransferStatusTypes::PLAYER_APPROVED:
                 // request paperwork
             case TransferStatusTypes::WAITING_PAPERWORK:
@@ -67,27 +66,6 @@ class TransferStatusUpdates
                 // SOURCE_CLUB_COUNTEROFFER or cancel the deal
             case TransferStatusTypes::PLAYER_DECLINED:
                 // improve player offer or cancel the deal
-        }
-
-
-        if ($transfer->transfer_status == TransferStatusTypes::WAITING_TARGET_CLUB) {
-            $club = Club::where('id', $transfer->target_club_id)->first();
-
-            if ($this->clubService->clubSellingDecision($transfer)) {
-                // club approves, update status
-            }
-        }
-
-        // if waiting for player approval
-        if ($transfer->transfer_status == TransferStatusTypes::WAITING_PLAYER) {
-            if ($this->personTransferService->isTransferAcceptable($transfer)) {
-                // update transfer with person approved
-            }
-        }
-
-        // counteroffer
-        if ($transfer->transfer_status == TransferStatusTypes::WAITING_SOURCE_CLUB) {
-            //is counteroffer acceptable
         }
     }
 }

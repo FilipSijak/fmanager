@@ -32,4 +32,13 @@ class TransferRepository extends CoreRepository
 
         return $transfer;
     }
+
+    public function updateTransferStatus(Transfer $transfer, int $sourceClubStatus): Transfer
+    {
+        $transfer->source_club_status = $sourceClubStatus;
+
+        $transfer->save();
+
+        return $transfer;
+    }
 }

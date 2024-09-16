@@ -3,34 +3,30 @@
 namespace App\Services\TransferService\TransferConsiderations;
 
 use App\Models\Transfer;
+use App\Repositories\TransferRepository;
+use App\Services\TransferService\TransferStatusTypes;
 
 class TransferConsiderations
 {
     private PlayerConsideration $playerConsideration;
+    private TransferRepository  $transferRepository;
 
     public function __construct(
-        PlayerConsideration $playerConsideration
+        PlayerConsideration $playerConsideration,
+        TransferRepository $transferRepository
     )
     {
         $this->playerConsideration = $playerConsideration;
+        $this->transferRepository = $transferRepository;
     }
 
-    public function playerConsideration(Transfer $transfer)
+    public function playerConsideration(Transfer $transfer): int
     {
-        $this->playerConsideration->considerOffer($transfer);
+        $playerDecision = $this->playerConsideration->considerOffer($transfer);
 
-        echo 'playerConsideration';
-    }
+        $this->transferRepository->updateTransferStatus($transfer, $playerDecision);
 
-    public function playerCounterOffer(Transfer $transfer)
-    {
-        echo 'playerCounterOffer';
-    }
-
-    public function requestPaperwork(Transfer $transfer)
-    {
-        // both player and club status updates to waiting for paperwork
-        echo ' requestPaperwork';
+        return $playerDecision;
     }
 
     public function waitingPaperwork(Transfer $transfer)
