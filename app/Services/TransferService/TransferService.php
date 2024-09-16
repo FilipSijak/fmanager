@@ -9,7 +9,6 @@ use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Services\ClubService\ClubService;
 use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
-use App\Services\PersonService\PersonTransferService;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use Illuminate\Http\Request;
 
@@ -19,14 +18,12 @@ class TransferService
     private ClubService              $clubService;
     private string|null              $instanceId;
     private string|null              $seasonId;
-    private PersonTransferService    $personTransferService;
     private TransferRepository       $transferRepository;
     private TransferStatusUpdates    $transferStatusUpdates;
 
     public function __construct(
         TransferRequestValidator $transferRequestValidator,
         ClubService $clubService,
-        PersonTransferService $personTransferService,
         SquadAnalysis $squadAnalysis,
         Request $request,
         TransferRepository $transferRepository,
@@ -35,7 +32,6 @@ class TransferService
     {
         $this->transferRequestValidator = $transferRequestValidator;
         $this->clubService = $clubService;
-        $this->personTransferService = $personTransferService;
         $this->instanceId = $request->header('instanceId');
         $this->seasonId = $request->header('seasonId');
         $this->transferRepository = $transferRepository;
