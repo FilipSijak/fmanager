@@ -20,8 +20,11 @@ class PlayerConsideration
         $offerContract = TransferContractOffer::where('transfer_id', $transfer->id)->get()->first();
 
         // ranking conditions
-        if ($player->potential / 10 < $sourceClub->rank) {
-            return TransferStatusTypes::PLAYER_DECLINED;
+        if ($player->potential / 10 > $sourceClub->rank) {
+            // @todo
+            // check player ambition
+            // ambition needs to be >= club rank + 3 to decline
+            // add age consideration
         }
 
         if (!$this->ifOfferAcceptable($offerContract, $playerContract, $player, $sourceClub)) {
@@ -55,25 +58,6 @@ class PlayerConsideration
         if ($requiredOffer < $offerTotal) {
             return false;
         }
-
-        return true;
-    }
-
-    private function playerAmbitionOnTransfer(Player $player, Club $sourceClub): bool
-    {
-        // club current marketing rank
-        /* @todo there is no marketing rank atm so will compare against the overall rank */
-        if ($player->mental / 10 - $sourceClub->rank > 2) {
-            /* @todo ask for 10% for every missing point, also add a sugar daddy on club table and make players more willing to go */
-            return false;
-        }
-
-        return true;
-    }
-
-    private function analyseContractOffer()
-    {
-        /* @todo once I have the table with financial tranfer details I can asses the contract from a player perspective */
 
         return true;
     }
