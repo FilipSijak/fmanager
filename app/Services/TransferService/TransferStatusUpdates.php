@@ -4,6 +4,7 @@ namespace App\Services\TransferService;
 
 use App\Models\Club;
 use App\Models\Transfer;
+use App\Repositories\TransferRepository;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 
 /**
@@ -13,10 +14,12 @@ use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 class TransferStatusUpdates
 {
     private TransferConsiderations $transferConsiderations;
+    private TransferRepository     $transferRepository;
 
-    public function __construct(TransferConsiderations $transferConsiderations)
+    public function __construct(TransferConsiderations $transferConsiderations, TransferRepository $transferRepository)
     {
         $this->transferConsiderations = $transferConsiderations;
+        $this->transferRepository = $transferRepository;
     }
 
     private array $freeTransferActions = [
@@ -55,16 +58,22 @@ class TransferStatusUpdates
                 break;
             case TransferStatusTypes::WAITING_PLAYER:
                 $this->transferConsiderations->playerConsideration($transfer);
+                break;
             case TransferStatusTypes::PLAYER_APPROVED:
                 // request paperwork
             case TransferStatusTypes::WAITING_PAPERWORK:
-            $this->transferConsiderations->waitingPaperwork($transfer);
+                $this->transferConsiderations->waitingPaperwork($transfer);
+                break;
             case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER:
                 // reconsider counteroffer, cancel transfer if needed
             case TransferStatusTypes::TARGET_CLUB_DECLINED:
                 // SOURCE_CLUB_COUNTEROFFER or cancel the deal
             case TransferStatusTypes::PLAYER_DECLINED:
                 // improve player offer or cancel the deal
+            case TransferStatusTypes::TRANSFER_COMPLETED:
+                //move player to source club and complete transfer
+                $this->transferRepository->transferPlayerToNewClub($transfer);
+                break;
         }
     }
 }

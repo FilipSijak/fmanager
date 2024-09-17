@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Http\Requests\CreateTransferRequest;
 use App\Models\Instance;
+use App\Models\Player;
 use App\Models\PlayerInjury;
 use App\Models\Transfer;
 use App\Models\TransferFinancialDetails;
@@ -60,5 +61,18 @@ class TransferRepository extends CoreRepository
         }
 
         return true;
+    }
+
+    public function transferPlayerToNewClub(Transfer $transfer)
+    {
+        $player = Player::where('id', $transfer->player_id)->first();
+
+        $player->club_id = $transfer->source_club_id;
+
+        $player->save();
+
+        // transfer offer contract to real contract
+
+        // start financial transaction process - add event
     }
 }
