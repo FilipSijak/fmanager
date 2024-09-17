@@ -8,6 +8,7 @@ use App\Models\PlayerInjury;
 use App\Models\Transfer;
 use App\Models\TransferFinancialDetails;
 use App\Services\TransferService\TransferStatusTypes;
+use Illuminate\Support\Facades\DB;
 
 class TransferRepository extends CoreRepository
 {
@@ -47,7 +48,12 @@ class TransferRepository extends CoreRepository
     public function processMedical(Transfer $transfer): bool
     {
         $instance = Instance::where('id', $this->instanceId)->first();
-        $playerInjury  = PlayerInjury::where('id', $transfer->player_id)->where('injury_end_date', '>', $instance->instance_date)->first();
+        $playerInjury = DB::table('player_injuries as pi')->select(
+            'it.severity'
+        )
+        ->join('injury_types as it', 'it.id', '=', 'pi.injury_id')
+        ->where('pi.injury_end_date', '>=', $instance->instance_date)
+        ->first();
 
         if ($playerInjury && $playerInjury->severity >= 4) {
             return false;

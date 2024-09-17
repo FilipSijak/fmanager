@@ -34,8 +34,13 @@ class TransferConsiderations
         // do medical and complete or cancel transfer
         $medical = $this->transferRepository->processMedical($transfer);
 
-        dd($medical);
+        if (!$medical) {
+            $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED);
+        }
         // update news feed for medical @todo
+
+        // complete transfer
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_COMPLETED);
     }
 
     public function cancelOrRenegotiateTransfer(Transfer $transfer)
