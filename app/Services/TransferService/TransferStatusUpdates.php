@@ -22,7 +22,6 @@ class TransferStatusUpdates
     private array $freeTransferActions = [
         TransferStatusTypes::WAITING_PLAYER => 'playerConsideration',
         TransferStatusTypes::PLAYER_COUNTEROFFER => 'playerCounterOffer',
-        TransferStatusTypes::PLAYER_APPROVED => 'requestPaperwork',
         TransferStatusTypes::WAITING_PAPERWORK => 'waitingPaperwork',
         TransferStatusTypes::PLAYER_DECLINED => 'cancelOrRenegotiateTransfer',
 
@@ -59,7 +58,7 @@ class TransferStatusUpdates
             case TransferStatusTypes::PLAYER_APPROVED:
                 // request paperwork
             case TransferStatusTypes::WAITING_PAPERWORK:
-                // if medical passed, finish transfer
+            $this->transferConsiderations->waitingPaperwork($transfer);
             case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER:
                 // reconsider counteroffer, cancel transfer if needed
             case TransferStatusTypes::TARGET_CLUB_DECLINED:

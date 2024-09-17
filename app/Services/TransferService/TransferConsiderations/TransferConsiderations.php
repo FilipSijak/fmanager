@@ -32,10 +32,10 @@ class TransferConsiderations
     public function waitingPaperwork(Transfer $transfer)
     {
         // do medical and complete or cancel transfer
-        // update news feed for medical
-        // do medical check - add natural fitness to player which determines his recovery and resistance to injuries
-        // check if any ongoing injuries
+        $medical = $this->transferRepository->processMedical($transfer);
 
+        dd($medical);
+        // update news feed for medical @todo
     }
 
     public function cancelOrRenegotiateTransfer(Transfer $transfer)

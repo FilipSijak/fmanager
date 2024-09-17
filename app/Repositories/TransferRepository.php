@@ -3,6 +3,8 @@
 namespace App\Repositories;
 
 use App\Http\Requests\CreateTransferRequest;
+use App\Models\Instance;
+use App\Models\PlayerInjury;
 use App\Models\Transfer;
 use App\Models\TransferFinancialDetails;
 use App\Services\TransferService\TransferStatusTypes;
@@ -40,5 +42,17 @@ class TransferRepository extends CoreRepository
         $transfer->save();
 
         return $transfer;
+    }
+
+    public function processMedical(Transfer $transfer): bool
+    {
+        $instance = Instance::where('id', $this->instanceId)->first();
+        $playerInjury  = PlayerInjury::where('id', $transfer->player_id)->where('injury_end_date', '>', $instance->instance_date)->first();
+
+        if ($playerInjury && $playerInjury->severity >= 4) {
+            return false;
+        }
+
+        return true;
     }
 }

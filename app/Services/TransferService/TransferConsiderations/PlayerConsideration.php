@@ -31,7 +31,7 @@ class PlayerConsideration
             return TransferStatusTypes::PLAYER_DECLINED;
         }
 
-        return TransferStatusTypes::PLAYER_APPROVED;
+        return TransferStatusTypes::WAITING_PAPERWORK;
     }
 
     public function ifOfferAcceptable(
@@ -55,7 +55,7 @@ class PlayerConsideration
             $requiredOffer = (($currentTotal) * $rankDiff) + $currentTotal;
         }
 
-        if ($requiredOffer < $offerTotal) {
+        if ($requiredOffer > $offerTotal) {
             return false;
         }
 
