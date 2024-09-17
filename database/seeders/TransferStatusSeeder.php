@@ -29,5 +29,15 @@ class TransferStatusSeeder extends Seeder
         ];
 
         DB::table('transfer_status')->insert($transferStatusOptions);
+
+        $transferTypes = [
+            ['id' => 1, 'type' => 'FREE_TRANSFER'],
+            ['id' => 2, 'type' => 'LOAN_TRANSFER'],
+            ['id' => 3, 'type' => 'PERMANENT_TRANSFER'],
+        ];
+
+        DB::table('transfer_types')->insert($transferTypes);
     }
+
+
 }

@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('injury_types', function (Blueprint $table) {
             $table->id();
             $table->string('type');
+            $table->integer('severity');
             $table->integer('duration_from');
             $table->integer('duration_to');
         });

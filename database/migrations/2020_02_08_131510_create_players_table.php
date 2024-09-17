@@ -44,7 +44,6 @@ class CreatePlayersTable extends Migration
             $table->integer('potential');
             $table->integer('ambition');
             $table->integer('loyalty');
-            $table->integer('natural_fitness');
             $table->string('position');
             $table->string('country_code');
             $table->date('dob')->nullable();
