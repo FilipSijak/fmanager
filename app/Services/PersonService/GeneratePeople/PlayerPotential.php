@@ -4,6 +4,7 @@ namespace App\Services\PersonService\GeneratePeople;
 
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use App\Services\PersonService\PersonConfig\PersonTypes;
+use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 
 class PlayerPotential extends PersonPotential
 {
@@ -46,6 +47,17 @@ class PlayerPotential extends PersonPotential
         }
 
         return $playerPotentialList;
+    }
+
+    public function generateFreeAgent(int $maxPotential): \stdClass
+    {
+        $newPlayer = new \stdClass();
+
+        $newPlayer->potential = rand(30, $maxPotential);
+        $newPlayer->position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1, 14)];
+        $newPlayer->potentialByCategory = $this->calculatePotentialByCategory($newPlayer->potential);
+
+        return $newPlayer;
     }
 
     public function getStaffPotentialAndRole(int $rank): array

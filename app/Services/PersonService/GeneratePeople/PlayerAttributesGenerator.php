@@ -7,12 +7,12 @@ use Faker\Factory;
 
 class PlayerAttributesGenerator
 {
-    public function generateAttributes(\stdClass $playerPotential)
+    public function generateAttributes(\stdClass $playerPotentialWithPosition)
     {
         $this->player = new \stdClass();
-        $this->player->position = $playerPotential->position;
-        $this->player->potentialByCategory = $playerPotential->potentialByCategory;
-        $this->player->potential = $playerPotential->potential;
+        $this->player->position = $playerPotentialWithPosition->position;
+        $this->player->potentialByCategory = $playerPotentialWithPosition->potentialByCategory;
+        $this->player->potential = $playerPotentialWithPosition->potential;
 
         $this->setInitialAttributes();
 

@@ -9,7 +9,7 @@ use App\Services\PersonService\PersonConfig\PersonTypes;
 
 class PersonService implements IPersonService
 {
-    public function createPerson(\stdClass $playerPotential,int $instanceId, string $personType, int $clubAcademyRank)
+    public function createPerson(\stdClass $playerPotential,int $instanceId, string $personType)
     {
         $personFactory = new PersonFactory();
 

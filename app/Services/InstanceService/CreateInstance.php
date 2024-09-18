@@ -27,6 +27,9 @@ class CreateInstance
     private CompetitionRepository $competitionRepository;
     private PlayerPotential       $playerPotentialGenerator;
 
+    const FREE_AGENTS_COUNT = 200;
+    const FREE_AGENTS_POTENTIAL_LIMIT = 150;
+
     public function __construct(
         CompetitionService $competitionService,
         PersonService $personService,
@@ -52,6 +55,7 @@ class CreateInstance
         $this->mapInitialCompetitionsToSeasonsWithClubs();
         $this->setCompetitionsForTheFirstSeason();
         $this->assignPlayersToClubs();
+        $this->generateFreeAgents();
 
         return $this->instance;
     }
@@ -147,8 +151,7 @@ class CreateInstance
                 $player = $this->personService->createPerson(
                     $playerPotential,
                     $this->instance->id,
-                    PersonTypes::PLAYER,
-                    $club->rank_academy
+                    PersonTypes::PLAYER
                 );
 
                 $generatedPlayers[] = $player;
@@ -162,6 +165,20 @@ class CreateInstance
 
     public function generateFreeAgents()
     {
+        $generatedPlayers = [];
 
+        for ($i = 0; $i < self::FREE_AGENTS_COUNT; $i++) {
+            $playerWithPositionAndPotential = $this->playerPotentialGenerator->generateFreeAgent(self::FREE_AGENTS_POTENTIAL_LIMIT);
+
+            $generatedPlayers[] = $this->personService->createPerson(
+                $playerWithPositionAndPotential,
+                $this->instance->id,
+                PersonTypes::PLAYER
+            );
+        }
+
+        $this->playerRepository->bulkPlayerInsert($this->instance->id, null, $generatedPlayers);
+        $players = Player::whereNull('club_id')->get();
+        $this->playerRepository->bulkAssignmentPlayersPositions($players);
     }
 }
