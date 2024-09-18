@@ -19,13 +19,10 @@ use Carbon\Carbon;
 
 class CreateInstance
 {
-    private Instance           $instance;
-    private                    $playerRepository;
-    private CompetitionService $competitionService;
-    /**
-     * @var null
-     */
-    private                       $season;
+    private Instance              $instance;
+    private PlayerRepository      $playerRepository;
+    private CompetitionService    $competitionService;
+    private Season                $season;
     private PersonService         $personService;
     private CompetitionRepository $competitionRepository;
     private PlayerPotential       $playerPotentialGenerator;
@@ -38,7 +35,6 @@ class CreateInstance
         PlayerRepository $playerRepository,
     )
     {
-        $this->season             = null;
         $this->competitionService = $competitionService;
         $this->personService      = $personService;
         $this->competitionRepository = $competitionRepository;
@@ -50,7 +46,7 @@ class CreateInstance
     {
         $init = new InitialSeed();
         // @todo create user and select club
-        $this->instance = $this->storeInstance(1, 1, 1, 1);
+        $this->storeInstance(1, 1, 1, 1);
         $init->seedFromBaseTables($this->instance->id);
         $this->startFirstSeason();
         $this->mapInitialCompetitionsToSeasonsWithClubs();
@@ -123,7 +119,9 @@ class CreateInstance
                     // need clubs for tournaments
                     $clubs = Club::all()->where('id', '>', 16);
 
-                    $this->competitionService->makeTournamentGroupStage($clubs, $competition->id, $this->season->id, $this->instance->id);
+                    $this->competitionService->makeTournamentGroupStage(
+                        $clubs, $competition->id, $this->season->id, $this->instance->id)
+                    ;
                 }
             } elseif ($competition->type == 'tournament' && !$competition->groups) {
                 $clubs = Club::all()->take(16);
@@ -137,7 +135,7 @@ class CreateInstance
 
     public function assignPlayersToClubs()
     {
-        $clubs                = Club::all();
+        $clubs = Club::all();
 
         foreach ($clubs as $club) {
             $academyRank = $club->rank_academy;
