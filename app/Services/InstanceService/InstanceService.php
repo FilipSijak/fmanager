@@ -14,12 +14,15 @@ use Illuminate\Support\Facades\DB;
 
 class InstanceService implements IInstanceService
 {
-    private CompetitionRepository $competitionRepository;
-    private Season                $season;
+    private CompetitionRepository  $competitionRepository;
+    private Season                 $season;
+    private GameService            $gameService;
+    private CompetitionService     $competitionService;
+    private CreateInstance         $createInstance;
+    private \Closure|null|Instance $instance;
 
     public function __construct(
         CompetitionService $competitionService,
-        PersonService $personService,
         CompetitionRepository $competitionRepository,
         CreateInstance $createInstance,
         GameService $gameService
@@ -29,7 +32,6 @@ class InstanceService implements IInstanceService
         $this->competitionRepository = $competitionRepository;
         $this->gameService = $gameService;
         $this->competitionService = $competitionService;
-
         $this->createInstance = $createInstance;
         $this->instance = Instance::all()->where('id', 1)->first();
     }
