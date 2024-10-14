@@ -3,6 +3,7 @@
 namespace App\Services\TransferService;
 
 use App\Http\Requests\CreateTransferRequest;
+use App\Http\Requests\FreeTransferRequest;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Transfer;
@@ -145,6 +146,11 @@ class TransferService
         $this->transferRepository->storeTransfer($request);
     }
 
+    public function freeTransferRequest(FreeTransferRequest $request)
+    {
+        $this->transferRepository->storeFreeTransfer($request);
+    }
+
     private function processTransfer(Transfer $transfer): void
     {
         switch ($transfer->transfer_type) {
@@ -157,6 +163,5 @@ class TransferService
             default:
                 $this->transferStatusUpdates->permanentTransferUpdates($transfer);
         }
-
     }
 }

@@ -16,17 +16,17 @@ return new class extends Migration
         Schema::create('transfer_contract_offers', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('transfer_id')->unsigned();
-            $table->integer('salary')->unsigned();
-            $table->integer('appearance')->unsigned();
-            $table->integer('assist')->unsigned();
-            $table->integer('goal')->unsigned();
-            $table->integer('league')->unsigned();
-            $table->integer('pc_promotion_salary_raise')->unsigned();
-            $table->integer('pc_demotion_salary_cut')->unsigned();
-            $table->integer('cup')->unsigned();
-            $table->integer('el')->unsigned();
-            $table->integer('cl')->unsigned();
-            $table->integer('agent_fee')->unsigned();
+            $table->integer('salary')->unsigned()->default(0);
+            $table->integer('appearance')->unsigned()->default(0);
+            $table->integer('assist')->unsigned()->default(0);
+            $table->integer('goal')->unsigned()->default(0);
+            $table->integer('league')->unsigned()->default(0);
+            $table->integer('pc_promotion_salary_raise')->unsigned()->default(0);
+            $table->integer('pc_demotion_salary_cut')->unsigned()->default(0);
+            $table->integer('cup')->unsigned()->default(0);
+            $table->integer('el')->unsigned()->default(0);
+            $table->integer('cl')->unsigned()->default(0);
+            $table->integer('agent_fee')->unsigned()->default(0);
 
             $table->foreign('transfer_id')->references('id')->on('transfers')->onDelete('cascade');
         });

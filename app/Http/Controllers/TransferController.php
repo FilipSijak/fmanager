@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateTransferRequest;
+use App\Http\Requests\FreeTransferRequest;
 use App\Services\TransferService\TransferService;
 
 class TransferController extends Controller
@@ -12,8 +13,13 @@ class TransferController extends Controller
         $this->transferService = $transferService;
     }
 
-    public function makeTransfer(CreateTransferRequest $request)
+    public function makeTransferRequest(CreateTransferRequest $request)
     {
         $this->transferService->startTransferNegotiations($request);
+    }
+
+    public function makeFreeTransferRequest(FreeTransferRequest $request)
+    {
+        $this->transferService->freeTransferRequest($request);
     }
 }

@@ -3,12 +3,15 @@
 namespace App\Repositories;
 
 use App\Http\Requests\CreateTransferRequest;
+use App\Http\Requests\FreeTransferRequest;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerInjury;
 use App\Models\Transfer;
+use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
 use App\Services\TransferService\TransferStatusTypes;
+use App\Services\TransferService\TransferTypes;
 use Illuminate\Support\Facades\DB;
 
 class TransferRepository extends CoreRepository
@@ -33,6 +36,38 @@ class TransferRepository extends CoreRepository
         $transferFinancialDetails->installments = $request->input('installments');
 
         $transferFinancialDetails->save();
+
+        return $transfer;
+    }
+
+    public function storeFreeTransfer(FreeTransferRequest $request): Transfer
+    {
+        $transfer = new Transfer;
+
+        $transfer->season_id = $this->seasonId;
+        $transfer->source_club_id = $request->input('source_club_id');
+        $transfer->player_id = $request->input('player_id');
+        $transfer->transfer_type = TransferTypes::FREE_TRANSFER;
+        $transfer->offer_date = Instance::where('id', $this->instanceId)->first()->instance_date;
+        $transfer->source_club_status = TransferStatusTypes::WAITING_PLAYER;
+
+        $transfer->save();
+
+        $contractOffer = new TransferContractOffer;
+
+        $contractOffer->transfer_id = $transfer->id;
+        $contractOffer->salary = $request->input('salary');
+        $contractOffer->appearance = $request->input('appearance');
+        $contractOffer->assist = $request->input('assist');
+        $contractOffer->goal = $request->input('goal');
+        $contractOffer->league = $request->input('league');
+        $contractOffer->pc_promotion_salary_raise = $request->input('pc_promotion_salary_raise');
+        $contractOffer->pc_demotion_salary_cut = $request->input('pc_demotion_salary_cut');
+        $contractOffer->cup = $request->input('cup');
+        $contractOffer->el = $request->input('el');
+        $contractOffer->salary = $request->input('agent_fee');
+
+        $contractOffer->save();
 
         return $transfer;
     }

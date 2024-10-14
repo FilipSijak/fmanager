@@ -6,10 +6,9 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class FreeTransferRequest extends FormRequest
 {
-
     public function authorize()
     {
-        return false;
+        return true;
     }
 
     public function rules()
@@ -18,15 +17,15 @@ class FreeTransferRequest extends FormRequest
             'source_club_id' => 'required|integer|exists:clubs,id',
             'player_id' => 'required|integer|exists:players,id',
             'salary' => 'required|integer',
-            'appearance' => 'required|integer',
-            'assist' => 'required|integer',
-            'goal' => 'required|integer',
-            'league' => 'required|integer',
-            'pc_promotion_salary_raise' => 'required|integer|between:0,100',
-            'pc_demotion_salary_cut' => 'required|integer|between:0,100',
-            'cup' => 'required|integer',
-            'el' => 'required|integer',
-            'agent_fee' => 'required|integer',
+            'appearance' => 'integer',
+            'assist' => 'integer',
+            'goal' => 'integer',
+            'league' => 'integer',
+            'pc_promotion_salary_raise' => 'integer|between:0,100',
+            'pc_demotion_salary_cut' => 'integer|between:0,100',
+            'cup' => 'integer',
+            'el' => 'integer',
+            'agent_fee' => 'integer',
         ];
     }
 }
