@@ -88,7 +88,9 @@ class TransferRepository extends CoreRepository
             'it.severity'
         )
         ->join('injury_types as it', 'it.id', '=', 'pi.injury_id')
+        ->join('players as p', 'p.id', '=', 'pi.player_id')
         ->where('pi.injury_end_date', '>=', $instance->instance_date)
+        ->where('p.id', '=', $transfer->player_id)
         ->first();
 
         if ($playerInjury && $playerInjury->severity >= 4) {

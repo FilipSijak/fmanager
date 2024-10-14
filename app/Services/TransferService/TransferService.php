@@ -9,7 +9,6 @@ use App\Models\Instance;
 use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Services\ClubService\ClubService;
-use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use Illuminate\Http\Request;
 
@@ -25,7 +24,6 @@ class TransferService
     public function __construct(
         TransferRequestValidator $transferRequestValidator,
         ClubService $clubService,
-        SquadAnalysis $squadAnalysis,
         Request $request,
         TransferRepository $transferRepository,
         TransferStatusUpdates $transferStatusUpdates
@@ -42,7 +40,9 @@ class TransferService
     public function processTransferBids()
     {
         //get all transfers from the table
-        $transfers = Transfer::where('season_id', 1)->get();
+        $transfers = Transfer::where('season_id', $this->seasonId)
+                             ->where('transfer_type', '!=', TransferStatusTypes::TRANSFER_FAILED)
+                             ->get();
 
         foreach ($transfers as $transfer) {
             $this->processTransfer($transfer);
