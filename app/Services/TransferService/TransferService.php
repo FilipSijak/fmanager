@@ -42,17 +42,12 @@ class TransferService
         //get all transfers from the table
         $transfers = Transfer::where('season_id', $this->seasonId)
                              ->where('transfer_type', '!=', TransferStatusTypes::TRANSFER_FAILED)
+                             ->where('transfer_type', '!=', TransferStatusTypes::TRANSFER_COMPLETED)
                              ->get();
 
         foreach ($transfers as $transfer) {
             $this->processTransfer($transfer);
         }
-
-        // read offers and run analysis for clubs/players to make decisions
-
-        // upd
-
-        // go to transfers and send events to  source/target clubs/ players for them to make decisions
     }
 
     /**
@@ -154,7 +149,7 @@ class TransferService
     private function processTransfer(Transfer $transfer): void
     {
         switch ($transfer->transfer_type) {
-            case TransferTypes::PERMANENT_TRANSFER:
+            case TransferTypes::FREE_TRANSFER:
                 $this->transferStatusUpdates->freeTransferUpdates($transfer);
                 break;
             case TransferTypes::LOAN_TRANSFER:

@@ -31,16 +31,32 @@ class TransferConsiderations
 
     public function waitingPaperwork(Transfer $transfer)
     {
-        // do medical and complete or cancel transfer
         $medical = $this->transferRepository->processMedical($transfer);
 
         if (!$medical) {
             $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED);
+            // update news feed for medical @todo
+            return 0;
         }
-        // update news feed for medical @todo
 
-        // complete transfer
-        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_COMPLETED);
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER);
+    }
+
+    public function transferPlayer(Transfer $transfer)
+    {
+        $this->transferRepository->transferPlayerToNewClub($transfer);
+
+        /*
+         * @todo
+         * move player to a new club
+         * copy contract from the offer and update his current contract with it
+         * remove contract offer
+         * start financial transfer between club if it's not a free transfer
+         * - deduct player signing fee from source club balance
+         * - deduct agent fee from source club balance
+         * - setup installments
+         * - reset player happiness
+         */
     }
 
     public function cancelOrRenegotiateTransfer(Transfer $transfer)

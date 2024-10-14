@@ -27,7 +27,7 @@ class TransferStatusUpdates
         TransferStatusTypes::PLAYER_COUNTEROFFER => 'playerCounterOffer',
         TransferStatusTypes::WAITING_PAPERWORK => 'waitingPaperwork',
         TransferStatusTypes::PLAYER_DECLINED => 'cancelOrRenegotiateTransfer',
-
+        TransferStatusTypes::MOVE_PLAYER => 'transferPlayer',
     ];
 
     public function freeTransferUpdates(Transfer $transfer): void

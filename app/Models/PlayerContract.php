@@ -11,4 +11,8 @@ class PlayerContract extends Model
 
     public $table = 'players_contracts';
     public $timestamps = false;
+
+    protected $fillable = ['salary', 'appearance', 'clean_sheet', 'goal',
+                           'assist', 'league', 'promotion', 'cup', 'el',
+                           'cl', 'pc_salary_raise', 'pc_demotion_pay_cut'];
 }

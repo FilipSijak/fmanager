@@ -53,4 +53,9 @@ class Player extends Model
     {
         return $this->attributesCategories["potentialByCategory"];
     }
+
+    public function playerContract()
+    {
+        return $this->belongsTo(PlayerContract::class);
+    }
 }

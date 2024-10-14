@@ -20,7 +20,9 @@ return new class extends Migration
             $table->integer('appearance')->unsigned()->default(0);
             $table->integer('assist')->unsigned()->default(0);
             $table->integer('goal')->unsigned()->default(0);
+            $table->integer('clean_sheet')->unsigned()->default(0);
             $table->integer('league')->unsigned()->default(0);
+            $table->integer('promotion')->unsigned()->default(0);
             $table->integer('pc_promotion_salary_raise')->unsigned()->default(0);
             $table->integer('pc_demotion_salary_cut')->unsigned()->default(0);
             $table->integer('cup')->unsigned()->default(0);

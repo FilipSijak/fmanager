@@ -21,4 +21,5 @@ abstract class TransferStatusTypes
     const PLAYER_DECLINED = 14;
     const SOURCE_CLUB_DECLINED = 15;
     const TARGET_CLUB_DECLINED = 16;
+    const MOVE_PLAYER = 17;
 }

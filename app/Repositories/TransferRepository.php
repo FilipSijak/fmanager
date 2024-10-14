@@ -6,6 +6,7 @@ use App\Http\Requests\CreateTransferRequest;
 use App\Http\Requests\FreeTransferRequest;
 use App\Models\Instance;
 use App\Models\Player;
+use App\Models\PlayerContract;
 use App\Models\PlayerInjury;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
@@ -103,13 +104,28 @@ class TransferRepository extends CoreRepository
     public function transferPlayerToNewClub(Transfer $transfer)
     {
         $player = Player::where('id', $transfer->player_id)->first();
-
         $player->club_id = $transfer->source_club_id;
 
         $player->save();
 
-        // transfer offer contract to real contract
+        $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)
+                                                      ->first()->toArray();
+        unset($transferContractOffer['transfer_id']);
+
+        if ($transfer->transfer_type == TransferTypes::FREE_TRANSFER) {;
+            $currentContract = new PlayerContract($transferContractOffer);
+        } else {
+            $currentContract = $player->playerContract()->first();
+            $currentContract->update($transferContractOffer);
+        }
+
+        $transferContractOffer->delete();
 
         // start financial transaction process - add event
+    }
+
+    public function removeTransfersAndOffers(Transfer $transfer)
+    {
+
     }
 }
