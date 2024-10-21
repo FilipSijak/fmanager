@@ -27,12 +27,10 @@ class ClubServiceTest extends TestCase
     {
         (new DatabaseSeeder())->run();
 
-        $financialAnalysis = new ClubFinancialAnalysis();
-        $squadAnalysis = new SquadAnalysis();
         $clubService = new ClubService(
-            $squadAnalysis,
-            $financialAnalysis,
-            new SearchService(new TransferSearchRepository()),
+            app()->make(SquadAnalysis::class),
+            app()->make(ClubFinancialAnalysis::class),
+            app()->make(SearchService::class),
             app()->make(ClubRepository::class)
         );
 

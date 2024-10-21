@@ -124,9 +124,9 @@ class CreateInstanceTest extends TestCase
 
         return (
             new CreateInstance(
-                $this->competitionService,
-                $this->personService,
-                $this->competitionRepository,
+                app()->make(CompetitionService::class),
+                app()->make(PersonService::class),
+                app()->make(CompetitionRepository::class),
                 app()->make(PlayerPotential::class),
                 app()->make(PlayerRepository::class)
             )
