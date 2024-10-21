@@ -127,8 +127,8 @@ class CreateInstanceTest extends TestCase
                 $this->competitionService,
                 $this->personService,
                 $this->competitionRepository,
-                new PlayerPotential(),
-                new PlayerRepository()
+                app()->make(PlayerPotential::class),
+                app()->make(PlayerRepository::class)
             )
         );
     }

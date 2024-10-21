@@ -33,7 +33,7 @@ class ClubServiceTest extends TestCase
             $squadAnalysis,
             $financialAnalysis,
             new SearchService(new TransferSearchRepository()),
-            new ClubRepository()
+            app()->make(ClubRepository::class)
         );
 
         Club::factory()->create();
