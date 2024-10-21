@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Http\Requests\CreateTransferRequest;
 use App\Http\Requests\FreeTransferRequest;
+use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
@@ -11,6 +12,7 @@ use App\Models\PlayerInjury;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
+use App\Services\TransferService\TransferFinancialSettlement;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
 use Illuminate\Support\Facades\DB;
@@ -106,22 +108,22 @@ class TransferRepository extends CoreRepository
         $player = Player::where('id', $transfer->player_id)->first();
         $player->club_id = $transfer->source_club_id;
 
-        $player->save();
-
-        $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)
-                                                      ->first()->toArray();
+        $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)->first()->toArray();
         unset($transferContractOffer['transfer_id']);
 
-        if ($transfer->transfer_type == TransferTypes::FREE_TRANSFER) {;
+        if ($transfer->transfer_type == TransferTypes::FREE_TRANSFER) {
             $currentContract = new PlayerContract($transferContractOffer);
         } else {
             $currentContract = $player->playerContract()->first();
-            $currentContract->update($transferContractOffer);
+            $transferFinancialSettlement = new TransferFinancialSettlement;
+            $transferFinancialSettlement->transferMoneyBetweenClubs($transfer);
         }
 
+        $currentContract->save($transferContractOffer);
         $transferContractOffer->delete();
 
-        // start financial transaction process - add event
+        $player->club_id = $transfer->source_club_id;
+        $player->save();
     }
 
     public function removeTransfersAndOffers(Transfer $transfer)

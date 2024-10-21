@@ -77,6 +77,9 @@ class TransferStatusUpdates
             case TransferStatusTypes::TRANSFER_FAILED:
                 $this->transferRepository->removeTransfersAndOffers($transfer);
                 break;
+            case TransferStatusTypes::MOVE_PLAYER:
+                $this->transferRepository->transferPlayerToNewClub($transfer);
+                break;
         }
     }
 }
