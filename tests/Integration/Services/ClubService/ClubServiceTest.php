@@ -6,10 +6,13 @@ use App\Models\Account;
 use App\Models\Club;
 use App\Models\Player;
 use App\Models\Transfer;
+use App\Repositories\ClubRepository;
+use App\Repositories\TransferSearchRepository;
 use App\Services\ClubService\ClubService;
 use App\Services\ClubService\FinancialAnalysis\ClubFinancialAnalysis;
 use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
+use App\Services\SearchService\SearchService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
@@ -26,7 +29,12 @@ class ClubServiceTest extends TestCase
 
         $financialAnalysis = new ClubFinancialAnalysis();
         $squadAnalysis = new SquadAnalysis();
-        $clubService = new ClubService($squadAnalysis, $financialAnalysis);
+        $clubService = new ClubService(
+            $squadAnalysis,
+            $financialAnalysis,
+            new SearchService(new TransferSearchRepository()),
+            new ClubRepository()
+        );
 
         Club::factory()->create();
         Account::factory()->create();

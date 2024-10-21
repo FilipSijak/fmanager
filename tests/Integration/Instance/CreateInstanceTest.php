@@ -11,12 +11,14 @@ use App\Models\Player;
 use App\Models\Season;
 use App\Models\User;
 use App\Repositories\CompetitionRepository;
+use App\Repositories\PlayerRepository;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\InstanceService\InstanceData\InitialSeed;
+use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\PersonService;
 use Database\Seeders\ClubsSeeder;
 use Database\Seeders\DatabaseSeeder;
@@ -120,6 +122,14 @@ class CreateInstanceTest extends TestCase
         );
         $this->personService = new PersonService();
 
-        return (new CreateInstance($this->competitionService, $this->personService, $this->competitionRepository));
+        return (
+            new CreateInstance(
+                $this->competitionService,
+                $this->personService,
+                $this->competitionRepository,
+                new PlayerPotential(),
+                new PlayerRepository()
+            )
+        );
     }
 }
