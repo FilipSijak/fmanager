@@ -108,18 +108,17 @@ class TransferRepository extends CoreRepository
         $player = Player::where('id', $transfer->player_id)->first();
         $player->club_id = $transfer->source_club_id;
 
-        $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)->first()->toArray();
-        unset($transferContractOffer['transfer_id']);
+        $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)->first();
 
         if ($transfer->transfer_type == TransferTypes::FREE_TRANSFER) {
-            $currentContract = new PlayerContract($transferContractOffer);
+            $currentContract = new PlayerContract($transferContractOffer->toArray());
         } else {
             $currentContract = $player->playerContract()->first();
             $transferFinancialSettlement = new TransferFinancialSettlement;
             $transferFinancialSettlement->transferMoneyBetweenClubs($transfer);
         }
 
-        $currentContract->save($transferContractOffer);
+        $currentContract->save($transferContractOffer->toArray());
         $transferContractOffer->delete();
 
         $player->club_id = $transfer->source_club_id;

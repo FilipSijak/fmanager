@@ -8,11 +8,12 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Transfer;
 use App\Repositories\TransferRepository;
+use App\Services\BaseService;
 use App\Services\ClubService\ClubService;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use Illuminate\Http\Request;
 
-class TransferService
+class TransferService extends BaseService
 {
     private TransferRequestValidator $transferRequestValidator;
     private ClubService              $clubService;
