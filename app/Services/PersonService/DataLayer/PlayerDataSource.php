@@ -7,10 +7,11 @@ use Illuminate\Support\Facades\DB;
 class PlayerDataSource
 {
     public function createContractForGeneratedPlayerByPotential(
+        int $playerId,
         int $potential,
         string $position,
         int $marketingValue
-    ): int
+    ):void
     {
         $salary = 0;
         $appearance = 0;
@@ -42,8 +43,9 @@ class PlayerDataSource
             $demotion = 0.2;
         }
 
-        return DB::table('players_contracts')->insertGetId(
+        DB::table('players_contracts')->insert(
             [
+                'player_id' => $playerId,
                 'salary' => $salary,
                 'appearance' => $appearance,
                 'clean_sheet' => $cleanSheet,

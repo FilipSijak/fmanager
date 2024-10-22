@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('players_contracts', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('player_id')->unsigned()->index('player_id')->nullable();
             $table->integer('salary')->unsigned();
             $table->integer('appearance')->unsigned()->nullable();
             $table->integer('clean_sheet')->unsigned()->nullable();
@@ -27,6 +28,8 @@ return new class extends Migration
             $table->integer('cl')->unsigned()->nullable();
             $table->decimal('pc_salary_raise')->unsigned()->nullable();
             $table->decimal('pc_demotion_pay_cut')->unsigned()->nullable();
+
+            $table->foreign('player_id')->references('id')->on('players');
         });
     }
 

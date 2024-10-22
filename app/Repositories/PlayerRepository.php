@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\DB;
 
 class PlayerRepository implements IPlayerRepository
 {
-    public function bulkPlayerInsert(int $instanceId, Club $club = null, array $generatedPlayers): void
+    public function bulkPlayerInsert(
+        int $instanceId,
+        Club $club = null, /*when creating free players*/
+        array $generatedPlayers): void
     {
         $playerDataSource = new PlayerDataSource();
 
@@ -21,8 +24,6 @@ class PlayerRepository implements IPlayerRepository
             $playerContractRandomEndingYear =  rand(2024, 2030);
             $contractEndDate = date('Y-m-d', strtotime($playerContractRandomEndingYear . '-06-01'));
             $value = 0;
-            $playerMarketingRank = 0;
-            $playerContractID = null;
 
             if ($club)
             {
@@ -42,12 +43,6 @@ class PlayerRepository implements IPlayerRepository
                 } else {
                     $playerMarketingRank = $player->potential - (($player->potential - $clubRank) / 2);
                 }
-
-                $playerContractID = $playerDataSource->createContractForGeneratedPlayerByPotential(
-                    $player->potential,
-                    $player->position,
-                    $playerMarketingRank
-                );
             } else {
                 $playerMarketingRank = $player->potential;
             }
@@ -111,11 +106,14 @@ class PlayerRepository implements IPlayerRepository
                 $playerData['club_id'] = $club->id;
             }
 
-            if ($playerContractID) {
-                $playerData['player_contract_id'] = $playerContractID;
-            }
+            $playerId = DB::table('players')->insertGetId($playerData);
 
-            DB::table('players')->insert($playerData);
+            $playerDataSource->createContractForGeneratedPlayerByPotential(
+                $playerId,
+                $player->potential,
+                $player->position,
+                $playerMarketingRank
+            );
         }
     }
 

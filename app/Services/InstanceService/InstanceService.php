@@ -49,6 +49,8 @@ class InstanceService implements IInstanceService
 
             return $instance;
         } catch (\Exception $exception) {
+            echo $exception->getMessage();
+
             DB::rollBack();
 
            return false;

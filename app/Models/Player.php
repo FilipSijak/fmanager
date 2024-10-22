@@ -56,6 +56,6 @@ class Player extends Model
 
     public function playerContract()
     {
-        return $this->belongsTo(PlayerContract::class);
+        return $this->hasOne(PlayerContract::class);
     }
 }

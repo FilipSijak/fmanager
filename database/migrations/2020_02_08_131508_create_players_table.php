@@ -56,8 +56,6 @@ class CreatePlayersTable extends Migration
             foreach ($allPlayerFields as $field) {
                 $table->integer($field);
             }
-
-            $table->foreign('player_contract_id')->references('id')->on('players_contracts');
         });
     }
 
