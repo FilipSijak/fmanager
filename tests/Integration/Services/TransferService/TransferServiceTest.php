@@ -20,16 +20,19 @@ class TransferServiceTest extends TestCase
     /** @test  */
     public function itIsAbleToProcessFreeTransfers()
     {
+        $buyingClubId = 1;
         $player = Player::factory()->create(
             [
+                'id' => 1,
                 'club_id' => null,
             ]
         );
 
         $transfer = Transfer::factory()->create(
             [
+                'id' => 1,
                 'season_id' => 1,
-                'source_club_id' => 1,
+                'source_club_id' => $buyingClubId,
                 'player_id' => $player->id,
                 'transfer_type' => TransferTypes::FREE_TRANSFER,
                 'source_club_status' => TransferStatusTypes::MOVE_PLAYER,
@@ -43,6 +46,21 @@ class TransferServiceTest extends TestCase
         $transferService->setSeasonId(1);
         $transferService->processTransferBids($transfer);
 
-        $this->assertTrue(true);
+        //player has a new contract and a new club
+        $player = Player::where('id', $player->id)->first();
+        $this->assertEquals($player->club_id, $buyingClubId);
+
+        $playerContract = PlayerContract::where('player_id', $player->id)->first();
+        $this->assertEquals($player->id, $playerContract->player_id);
+
+        // transfer contract offer was deleted
+        $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)->first();
+        $this->assertEquals(null, $transferContractOffer);
+    }
+
+    /** @test */
+    public function isAbleToProcessPermanentTransfers()
+    {
+
     }
 }

@@ -118,6 +118,7 @@ class TransferRepository extends CoreRepository
             $transferFinancialSettlement->transferMoneyBetweenClubs($transfer);
         }
 
+        $currentContract->player_id = $transfer->player_id;
         $currentContract->save($transferContractOffer->toArray());
         $transferContractOffer->delete();
 
