@@ -56,8 +56,8 @@ class PlayerDataSource
                 'cup' => $cup,
                 'el' => $el,
                 'cl' => $cl,
-                'pc_salary_raise' => $salaryRise,
-                'pc_demotion_pay_cut' => $demotion,
+                'pc_promotion_salary_raise' => $salaryRise,
+                'pc_demotion_salary_cut' => $demotion,
             ]
         );
     }

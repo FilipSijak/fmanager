@@ -14,5 +14,5 @@ class PlayerContract extends Model
 
     protected $fillable = ['salary', 'appearance', 'clean_sheet', 'goal',
                            'assist', 'league', 'promotion', 'cup', 'el',
-                           'cl', 'pc_salary_raise', 'pc_demotion_pay_cut'];
+                           'cl', 'pc_promotion_salary_raise', 'pc_demotion_salary_cut'];
 }

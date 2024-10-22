@@ -28,7 +28,6 @@ class TransferContractOfferFactory extends Factory
             'pc_demotion_salary_cut' => 0,
             'cup' => $this->faker->numberBetween(1000, 10000),
             'el' => $this->faker->numberBetween(1000, 10000),
-            'agent_fee' =>0,
             'promotion' => $this->faker->numberBetween(1000, 10000),
             'clean_sheet' => $this->faker->numberBetween(1000, 10000)
         ];

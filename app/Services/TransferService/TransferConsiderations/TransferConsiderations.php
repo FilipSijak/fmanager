@@ -46,6 +46,8 @@ class TransferConsiderations
     {
         $this->transferRepository->transferPlayerToNewClub($transfer);
 
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_COMPLETED);
+
         /*
          * @todo
          * move player to a new club
@@ -56,7 +58,9 @@ class TransferConsiderations
          * - deduct agent fee from source club balance
          * - setup installments
          * - reset player happiness
+         * set transfer status to TRANSFER_COMPLETED
          */
+
     }
 
     public function cancelOrRenegotiateTransfer(Transfer $transfer)

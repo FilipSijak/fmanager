@@ -68,7 +68,6 @@ class TransferRepository extends CoreRepository
         $contractOffer->pc_demotion_salary_cut = $request->input('pc_demotion_salary_cut');
         $contractOffer->cup = $request->input('cup');
         $contractOffer->el = $request->input('el');
-        $contractOffer->salary = $request->input('agent_fee');
 
         $contractOffer->save();
 
@@ -112,6 +111,7 @@ class TransferRepository extends CoreRepository
 
         if ($transfer->transfer_type == TransferTypes::FREE_TRANSFER) {
             $currentContract = new PlayerContract($transferContractOffer->toArray());
+            $currentContract->save();
         } else {
             $currentContract = $player->playerContract()->first();
             $transferFinancialSettlement = new TransferFinancialSettlement;
@@ -119,7 +119,8 @@ class TransferRepository extends CoreRepository
         }
 
         $currentContract->player_id = $transfer->player_id;
-        $currentContract->save($transferContractOffer->toArray());
+        $currentContract->update($transferContractOffer->toArray());
+
         $transferContractOffer->delete();
 
         $player->club_id = $transfer->source_club_id;

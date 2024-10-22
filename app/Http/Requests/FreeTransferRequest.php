@@ -25,7 +25,6 @@ class FreeTransferRequest extends FormRequest
             'pc_demotion_salary_cut' => 'integer|between:0,100',
             'cup' => 'integer',
             'el' => 'integer',
-            'agent_fee' => 'integer',
         ];
     }
 }
