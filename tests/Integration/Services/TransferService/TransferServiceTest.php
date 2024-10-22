@@ -20,10 +20,6 @@ class TransferServiceTest extends TestCase
     /** @test  */
     public function itIsAbleToProcessFreeTransfers()
     {
-        $this->withHeaders([
-                               'seasonId' => 1,
-                           ]);
-
         $player = Player::factory()->create(
             [
                 'club_id' => null,

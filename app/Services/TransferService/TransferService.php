@@ -17,8 +17,8 @@ class TransferService extends BaseService
 {
     private TransferRequestValidator $transferRequestValidator;
     private ClubService              $clubService;
-    private string|null              $instanceId;
-    private string|null              $seasonId;
+    protected int|null               $instanceId;
+    protected int|null               $seasonId;
     private TransferRepository       $transferRepository;
     private TransferStatusUpdates    $transferStatusUpdates;
 

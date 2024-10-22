@@ -4,8 +4,8 @@ namespace App\Services;
 
 class BaseService
 {
-    protected int $seasonId;
-    private int   $instanceId;
+    protected int|null $seasonId;
+    protected int|null   $instanceId;
 
     public function setSeasonId(int $seasonId)
     {
