@@ -73,6 +73,38 @@ class TransferServiceTest extends TestCase
             ]
         );
 
+        $transfer = $this->setupTransferBetweenTwoClubs($buyingClubId, $sellingClubId, $player->id);
+        $transferContractOffer = TransferContractOffer::factory()->create(['transfer_id' => $transfer->id, 'salary' => 20000]);
+        $transferService = app()->make(TransferService::class);
+
+        $transferService->setSeasonId(1);
+        $transferService->processTransferBids($transfer);
+
+        //player has a new contract and a new club
+        $player = Player::where('id', $player->id)->first();
+        $this->assertEquals($player->club_id, $buyingClubId);
+
+        $playerContract = PlayerContract::where('player_id', $player->id)->first();
+        $this->assertEquals($transferContractOffer->salary, $playerContract->salary);
+
+        $sellingClubAccountAfterTransfer = Account::where('club_id', $sellingClubId)->first();
+        $buyingClubAccountAfterTransfer = Account::where('club_id', $buyingClubId)->first();
+
+        $this->assertEquals(20000, $sellingClubAccountAfterTransfer->balance);
+        $this->assertEquals(0, $buyingClubAccountAfterTransfer->balance);
+
+        $this->assertEquals(20000, $sellingClubAccountAfterTransfer->transfer_budget);
+        $this->assertEquals(0, $buyingClubAccountAfterTransfer->transfer_budget);
+    }
+
+    /** @test */
+    public function itIsAbleToCompleteTransfersWithInstallments()
+    {
+
+    }
+
+    private function setupTransferBetweenTwoClubs(int $buyingClubId, int $sellingClubId, int $playerId)
+    {
         Club::factory()->create(
             ['id' => 1]
         );
@@ -87,7 +119,7 @@ class TransferServiceTest extends TestCase
                 'season_id' => 1,
                 'source_club_id' => $buyingClubId,
                 'target_club_id' => $sellingClubId,
-                'player_id' => $player->id,
+                'player_id' => $playerId,
                 'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
                 'source_club_status' => TransferStatusTypes::MOVE_PLAYER,
             ]
@@ -120,38 +152,11 @@ class TransferServiceTest extends TestCase
         PlayerContract::factory()->create(
             [
                 'id' => 1,
-                'player_id' => $player->id,
+                'player_id' => $playerId,
                 'salary' => 10000,
             ]
         );
 
-        /*
-         * player has moved clubs
-         * money has been transferred
-         * player has a new contract
-         * transfer contract offer was deleted
-         */
-
-        $transferContractOffer = TransferContractOffer::factory()->create(['transfer_id' => $transfer->id, 'salary' => 20000]);
-
-        $transferService = app()->make(TransferService::class);
-        $transferService->setSeasonId(1);
-        $transferService->processTransferBids($transfer);
-
-        //player has a new contract and a new club
-        $player = Player::where('id', $player->id)->first();
-        $this->assertEquals($player->club_id, $buyingClubId);
-
-        $playerContract = PlayerContract::where('player_id', $player->id)->first();
-        $this->assertEquals($transferContractOffer->salary, $playerContract->salary);
-
-        $sellingClubAccountAfterTransfer = Account::where('club_id', $sellingClubId)->first();
-        $buyingClubAccountAfterTransfer = Account::where('club_id', $buyingClubId)->first();
-
-        $this->assertEquals(20000, $sellingClubAccountAfterTransfer->balance);
-        $this->assertEquals(0, $buyingClubAccountAfterTransfer->balance);
-
-        $this->assertEquals(20000, $sellingClubAccountAfterTransfer->transfer_budget);
-        $this->assertEquals(0, $buyingClubAccountAfterTransfer->transfer_budget);
+        return $transfer;
     }
 }
