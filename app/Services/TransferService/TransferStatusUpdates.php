@@ -39,14 +39,16 @@ class TransferStatusUpdates
     {
         switch ($transfer->source_club_status) {
             case TransferStatusTypes::WAITING_TARGET_CLUB:
-                // target club needs to consider the offer
                 break;
             case TransferStatusTypes::WAITING_PLAYER:
                 $this->transferConsiderations->playerConsideration($transfer);
             case TransferStatusTypes::PLAYER_APPROVED:
-                // request paperwork
+                break;
             case TransferStatusTypes::WAITING_PAPERWORK:
-                // if medical passed, finish transfer
+                break;
+            case TransferStatusTypes::MOVE_PLAYER:
+                $this->transferRepository->transferPlayerToNewClub($transfer);
+                break;
         }
     }
 

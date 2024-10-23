@@ -28,6 +28,7 @@ return new class extends Migration
             $table->integer('cup')->unsigned()->default(0);
             $table->integer('el')->unsigned()->default(0);
             $table->integer('cl')->unsigned()->default(0);
+            $table->integer('loan_contribution_pc')->unsigned()->default(0);
 
             $table->foreign('transfer_id')->references('id')->on('transfers')->onDelete('cascade');
         });

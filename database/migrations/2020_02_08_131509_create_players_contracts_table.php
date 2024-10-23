@@ -28,6 +28,7 @@ return new class extends Migration
             $table->integer('cl')->unsigned()->nullable();
             $table->decimal('pc_promotion_salary_raise')->unsigned()->nullable();
             $table->decimal('pc_demotion_salary_cut')->unsigned()->nullable();
+            $table->integer('loan_contribution_pc')->unsigned()->default(0);
 
             $table->foreign('player_id')->references('id')->on('players');
         });

@@ -105,6 +105,14 @@ class TransferRepository extends CoreRepository
     public function transferPlayerToNewClub(Transfer $transfer)
     {
         $player = Player::where('id', $transfer->player_id)->first();
+
+        if ($transfer->transfer_type == TransferTypes::LOAN_TRANSFER) {
+            $player->loan_club_id = $transfer->source_club_id;;
+            $player->update();
+
+            return;
+        }
+
         $player->club_id = $transfer->source_club_id;
 
         $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)->first();
