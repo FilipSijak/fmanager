@@ -18,7 +18,7 @@ class SearchService
         $this->transferSearchRepository = $transferSearchRepository;
     }
 
-    public function transferSearchForPlayerByAttributes(Club $club, array $playerAttributes)
+    public function transferSearchForPlayerByAttributes(Club $club, array $playerAttributes): Collection
     {
         $searchableAttribute = [];
 
@@ -28,7 +28,7 @@ class SearchService
             }
         }
 
-        return $this->transferSearchRepository->playersByAttributes($club->id, $searchableAttribute);
+        return $this->transferSearchRepository->playersByAttributes($club, $searchableAttribute);
     }
 
     public function playerComparison(Player $playerOne, Player $playerTwo)

@@ -4,14 +4,18 @@ namespace App\Services\TransferService;
 
 use App\Http\Requests\CreateTransferRequest;
 use App\Http\Requests\FreeTransferRequest;
+use App\Models\Account;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Transfer;
+use App\Models\TransferFinancialDetails;
 use App\Repositories\TransferRepository;
+use App\Repositories\TransferSearchRepository;
 use App\Services\BaseService;
 use App\Services\ClubService\ClubService;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransferService extends BaseService
 {
@@ -21,13 +25,16 @@ class TransferService extends BaseService
     protected int|null               $seasonId;
     private TransferRepository       $transferRepository;
     private TransferStatusUpdates    $transferStatusUpdates;
+    const LUXURY_TRANSFER_BALANCE = 50000000;
+    private TransferSearchRepository $transferSearchRepository;
 
     public function __construct(
         TransferRequestValidator $transferRequestValidator,
         ClubService $clubService,
         Request $request,
         TransferRepository $transferRepository,
-        TransferStatusUpdates $transferStatusUpdates
+        TransferStatusUpdates $transferStatusUpdates,
+        TransferSearchRepository $transferSearchRepository
     )
     {
         $this->transferRequestValidator = $transferRequestValidator;
@@ -36,6 +43,7 @@ class TransferService extends BaseService
         $this->seasonId = $request->header('seasonId');
         $this->transferRepository = $transferRepository;
         $this->transferStatusUpdates = $transferStatusUpdates;
+        $this->transferSearchRepository = $transferSearchRepository;
     }
 
     public function processTransferBids()

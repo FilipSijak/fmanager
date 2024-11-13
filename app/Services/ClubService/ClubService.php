@@ -11,6 +11,7 @@ use App\Services\ClubService\FinancialAnalysis\ClubFinancialAnalysis;
 use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\SearchService\SearchService;
+use Illuminate\Support\Collection;
 
 class ClubService
 {
@@ -49,7 +50,16 @@ class ClubService
         return true;
     }
 
-    public function playerForDeficitPosition(Club $club)
+    public function playerDeficitByPosition(Club $club): bool|Collection
+    {
+        if (empty($this->squadAnalysis->optimalNumbersCheckByPosition($club))) {
+            return false;
+        }
+
+        return Collect($this->squadAnalysis->optimalNumbersCheckByPosition($club));
+    }
+
+    public function playerForDeficitPosition1(Club $club)
     {
         if (empty($this->squadAnalysis->optimalNumbersCheckByPosition($club))) {
             return false;
@@ -80,15 +90,17 @@ class ClubService
                 $club,
                 $currentAveragePlayerAttributesByPosition
             );
+
             $foundPlayers = $foundPlayers->filter(function ($player) use($clubBudget, $club) {
                 return $player->value < $clubBudget->transfer_budget &&
-                       $player->potential >= $club->rank;
+                       $player->potential >= $club->rank * 10 - 20;
             });
 
             // pick the best player from the rest
             return $foundPlayers->where('potential', $foundPlayers->max('potential'))->first();
         }
     }
+
 
     public function transferHandler()
     {
