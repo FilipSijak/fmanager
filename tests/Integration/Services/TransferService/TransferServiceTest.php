@@ -4,16 +4,25 @@ namespace Tests\Integration\Services\TransferService;
 
 use App\Models\Account;
 use App\Models\Club;
+use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Models\Season;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
+use App\Repositories\TransferRepository;
+use App\Repositories\TransferSearchRepository;
+use App\Services\ClubService\ClubService;
+use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
+use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use App\Services\TransferService\TransferService;
 use App\Services\TransferService\TransferStatusTypes;
+use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
+use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Http\Request;
 use Tests\TestCase;
 
 class TransferServiceTest extends TestCase
@@ -176,5 +185,90 @@ class TransferServiceTest extends TestCase
         }
 
         return $transfer;
+    }
+
+    /** @test */
+    public function itCanRunAutomaticBidsForPlayers()
+    {
+        Instance::factory()->create(
+            [
+                'id' => 1
+            ]
+        );
+
+        $buyingClub = Club::factory()->create(
+            ['id' => 1, 'instance_id' => 1, 'rank' => 10]
+        );
+
+        $sellingClub = Club::factory()->create(
+            ['id' => 2, 'instance_id' => 1, 'rank' => 10]
+        );
+
+        Account::factory()->create(
+            [
+                'club_id' => $buyingClub->id,
+                'transfer_budget' => 68000000,
+            ]
+        );
+
+        Account::factory()->create(
+            [
+                'club_id' => $sellingClub->id,
+                'transfer_budget' => 68000000,
+            ]
+        );
+
+        foreach (SquadPlayersConfig::POSITION_COUNT as $position => $playerCount) {
+            if ($position == 'ST') {
+                // break so the club is missing strikers and makes bids for them
+                break;
+            }
+
+            Player::factory()
+                  ->count($playerCount)
+                  ->sequence(function (Sequence $sequence) use ($position) {
+                      return [
+                          'club_id' => 1,
+                          'position' => $position,
+                          'potential' => 100,
+                      ];
+                  })
+                  ->create();
+        }
+
+        foreach (SquadPlayersConfig::POSITION_COUNT as $position => $playerCount) {
+            Player::factory()
+                  ->count($playerCount)
+                  ->sequence(function (Sequence $sequence) use ($position) {
+                      return [
+                          'club_id' => 2,
+                          'position' => $position,
+                          'value' => 10000,
+                          'potential' => 100,
+                      ];
+                  })
+                  ->create();
+        }
+
+        $transferRepository = app()->make(TransferRepository::class);
+        $transferRequestValidator = app()->make(TransferRequestValidator::class);
+        $transferSearchRepository = app()->make(TransferSearchRepository::class);
+        $clubService = app()->make(ClubService::class);
+        $request = new Request();
+        $transferStatusUpdates =  app()->make(TransferStatusUpdates::class);
+
+        $transferService = new TransferService(
+            $transferRequestValidator,
+            $clubService,
+            $request,
+            $transferRepository,
+            $transferStatusUpdates,
+            $transferSearchRepository
+        );
+        $transferService->setSeasonId(1);
+        $transferService->setInstanceId(1);
+        $transferService->automaticTransferBids();
+
+        $this->assertCount(1, Transfer::all());
     }
 }
