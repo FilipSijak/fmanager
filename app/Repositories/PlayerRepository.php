@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Club;
+use App\Models\Player;
 use App\Repositories\Interfaces\IPlayerRepository;
 use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
@@ -11,32 +12,29 @@ use Illuminate\Support\Facades\DB;
 
 class PlayerRepository implements IPlayerRepository
 {
+    private PlayerDataSource $playerDataSource;
+
+    public function __construct(PlayerDataSource $playerDataSource)
+    {
+        $this->playerDataSource = $playerDataSource;
+    }
+
     public function bulkPlayerInsert(
         int $instanceId,
         Club $club = null, /*when creating free players*/
         array $generatedPlayers): void
     {
-        $playerDataSource = new PlayerDataSource();
-
         foreach ($generatedPlayers as $player) {
 
             $attributesCategories = $player->getAttributeCategoriesPotential();
             $playerContractRandomEndingYear =  rand(2024, 2030);
             $contractEndDate = date('Y-m-d', strtotime($playerContractRandomEndingYear . '-06-01'));
-            $value = 0;
+            $playerValue = 0;
 
             if ($club)
             {
                 $clubRank = $club->rank * 10;
-
-                for ($k = 0.1, $i = 10; $i <= 200; $i +=10, $k += 0.06) {
-                    if ($player->potential > $i) {
-                        continue;
-                    }
-
-                    $value = 180 * round(pow($player->potential, $k), 2) * 1000;
-                    break;
-                }
+                $playerValue = $this->calculatePlayerValueWithinClub($player);
 
                 if ($clubRank > $player->potential) {
                     $playerMarketingRank = $player->potential + (($clubRank - $player->potential) / 2);
@@ -49,7 +47,7 @@ class PlayerRepository implements IPlayerRepository
 
             $playerData = [
                 'instance_id' => $instanceId,
-                'value' => $value,
+                'value' => $playerValue,
                 'first_name' => $player->first_name,
                 'last_name' => $player->last_name,
                 'marketing_rank' => $playerMarketingRank,
@@ -108,11 +106,8 @@ class PlayerRepository implements IPlayerRepository
 
             $playerId = DB::table('players')->insertGetId($playerData);
 
-            $playerDataSource->createContractForGeneratedPlayerByPotential(
-                $playerId,
-                $player->potential,
-                $player->position,
-                $playerMarketingRank
+            $this->playerDataSource->createContractForGeneratedPlayerByPotential(
+                $playerId
             );
         }
     }
@@ -141,5 +136,24 @@ class PlayerRepository implements IPlayerRepository
         }
 
         DB::table('player_position')->insert($playerPositionsData);
+    }
+
+    public function calculatePlayerValueWithinClub(Player $player): float
+    {
+        for ($k = 0.1, $i = 10; $i <= 200; $i +=10, $k += 0.06) {
+            if ($player->potential > $i) {
+                continue;
+            }
+
+            $value = 180 * round(pow($player->potential, $k), 2) * 1000;
+            break;
+        }
+
+        return $value;
+    }
+
+    public function contractBasedOnPotential(Player $player): array
+    {
+        return $this->playerDataSource->contractBasedOnPotential($player);
     }
 }

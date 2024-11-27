@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Repositories\GameRepository;
+use App\Repositories\PlayerRepository;
 use App\Repositories\TransferRepository;
 use App\Repositories\TransferSearchRepository;
 use Illuminate\Support\ServiceProvider;
@@ -31,7 +32,7 @@ class RepositoryServiceProvider extends ServiceProvider
         });
 
         $this->app->bind(TransferRepository::class, function () {
-            $transferRepository = new TransferRepository();
+            $transferRepository = new TransferRepository($this->app->make(PlayerRepository::class));
             $transferRepository->setSeasonId($this->app->request->header('seasonId'));
             $transferRepository->setInstanceId($this->app->request->header('instanceId'));
             return $transferRepository;

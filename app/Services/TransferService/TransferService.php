@@ -7,7 +7,9 @@ use App\Http\Requests\FreeTransferRequest;
 use App\Models\Account;
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Player;
 use App\Models\Transfer;
+use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
 use App\Repositories\TransferRepository;
 use App\Repositories\TransferSearchRepository;
@@ -74,35 +76,28 @@ class TransferService extends BaseService
             $clubBudget = (Account::where('club_id', $club->id)->first())->transfer_budget;
 
             if (!$deficitPositions) {
-                var_dump('no deficit');
+                $randomChanceForLuxury = rand(1, 10);
+                if ($clubBudget > self::LUXURY_TRANSFER_BALANCE && $randomChanceForLuxury == 1) {
+                    // look for players that with better rank for a position with the lowest potential within the club
+                }
                 continue;
             }
 
             foreach ($deficitPositions as $position => $deficitNumber) {
+
                 // find suitable player and make a transfer
                 $players = $this->transferSearchRepository->findPlayersByPositionForClub($club, $position);
                 $selectedPlayer = $players->where('value', '<=', $clubBudget)->first();
                 // if there is a bigger budget go for another transfer
 
+                if (!$selectedPlayer) {
+                    continue;
+                }
+
                 DB::beginTransaction();
 
                 try {
-                    $transfer = new Transfer();
-                    $transfer->season_id = $this->seasonId;
-                    $transfer->source_club_id = $club->id;
-                    $transfer->target_club_id = $selectedPlayer->club_id;
-                    $transfer->player_id = $selectedPlayer->id;
-                    $transfer->offer_date = Instance::find($this->instanceId)->instance_date;
-                    $transfer->transfer_type = TransferTypes::PERMANENT_TRANSFER;
-
-                    $transferFinancialDetails = new TransferFinancialDetails();
-                    $transfer->save();
-
-                    $transferFinancialDetails->amount = 10;
-                    $transferFinancialDetails->transfer_id = $transfer->id;
-                    $transferFinancialDetails->installments = 0;
-
-                    $transferFinancialDetails->save();
+                    $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails($selectedPlayer, $club);
 
                     $clubBudget -= $transfer->amount;
 
@@ -112,11 +107,6 @@ class TransferService extends BaseService
                 }
             }
         }
-
-        // do a luxury request if club has a lot of extra money (50M or more)
-        // filter clubs with loads of money
-        // set % chance of hitting an offer
-        // if it hits, take the club rank and look for
     }
 
     public function makeTransferRequest(array $requestParams)

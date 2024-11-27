@@ -257,6 +257,9 @@ class TransferServiceTest extends TestCase
         $request = new Request();
         $transferStatusUpdates =  app()->make(TransferStatusUpdates::class);
 
+        $transferRepository->setSeasonId(1);
+        $transferRepository->setInstanceId(1);
+
         $transferService = new TransferService(
             $transferRequestValidator,
             $clubService,

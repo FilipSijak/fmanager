@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Player;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +36,7 @@ class TransferSearchRepository extends CoreRepository
     {
         $instance = Instance::find($club->instance_id);
 
-        return DB::table('players AS p')
+        $collection = DB::table('players AS p')
             ->select('p.*')
             ->leftJoin('transfers AS t', function ($query) use ($instance) {
                 $query->on('t.player_id', '=', 'p.id')
@@ -48,9 +49,11 @@ class TransferSearchRepository extends CoreRepository
             ->where('p.potential', '>=', $club->rank * 10 - 20)
             ->orderBy('p.potential', 'desc')
             ->get();
+
+        return Player::hydrate($collection->toArray());
     }
 
-    public function filterTopPlayerByPosition(string $position)
+    public function findLuxuryPlayersForPosition(Club $club, string $position)
     {
 
     }

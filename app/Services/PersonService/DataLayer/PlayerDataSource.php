@@ -2,17 +2,40 @@
 
 namespace App\Services\PersonService\DataLayer;
 
+use App\Models\Player;
 use Illuminate\Support\Facades\DB;
 
 class PlayerDataSource
 {
     public function createContractForGeneratedPlayerByPotential(
         int $playerId,
-        int $potential,
-        string $position,
-        int $marketingValue
     ):void
     {
+        $player = Player::where('id', $playerId)->firstOrFail();
+        $contract = $this->contractBasedOnPotential($player);
+
+        DB::table('players_contracts')->insert(
+            [
+                'player_id' => $playerId,
+                'salary' => $contract['salary'],
+                'appearance' => $contract['appearance'],
+                'clean_sheet' => $contract['clean_sheet'],
+                'goal' => $contract['goal'],
+                'assist' => $contract['assist'],
+                'league' => $contract['league'],
+                'promotion' => $contract['promotion'],
+                'cup' => $contract['cup'],
+                'el' => $contract['el'],
+                'cl' => $contract['cl'],
+                'pc_promotion_salary_raise' => $contract['salary_raise'],
+                'pc_demotion_salary_cut' => $contract['demotion'],
+            ]
+        );
+    }
+
+    public function contractBasedOnPotential(
+        Player $player
+    ): array {
         $salary = 0;
         $appearance = 0;
         $cleanSheet = 0;
@@ -27,13 +50,13 @@ class PlayerDataSource
         $demotion = 0;
 
         for ($k = 0.1, $i = 10; $i < 210; $i +=10, $k += 0.1) {
-            if ($potential > $i) {
+            if ($player->potential > $i) {
                 continue;
             }
 
-            $salary = (($potential * $k * 1000) * ($marketingValue / 100)) / 3;
-            $appearance = $potential * $k * 50;
-            $cleanSheet = $position == 'GK' ? $potential * $k * 50 : NULL;
+            $salary = (($player->potential * $k * 1000) * ($player->marketing_rank / 100)) / 3;
+            $appearance = $player->potential * $k * 50;
+            $cleanSheet = $player->position == 'GK' ? $player->potential * $k * 50 : 0;
             $goal = $assist = $appearance;
             $league = $promotion = $salary * 4;
             $cup = $salary * 2;
@@ -43,22 +66,19 @@ class PlayerDataSource
             $demotion = 0.2;
         }
 
-        DB::table('players_contracts')->insert(
-            [
-                'player_id' => $playerId,
-                'salary' => $salary,
-                'appearance' => $appearance,
-                'clean_sheet' => $cleanSheet,
-                'goal' => $goal,
-                'assist' => $assist,
-                'league' => $league,
-                'promotion' => $promotion,
-                'cup' => $cup,
-                'el' => $el,
-                'cl' => $cl,
-                'pc_promotion_salary_raise' => $salaryRise,
-                'pc_demotion_salary_cut' => $demotion,
-            ]
-        );
+        return [
+            'salary' => $salary,
+            'appearance' => $appearance,
+            'clean_sheet' => $cleanSheet,
+            'goal' => $goal,
+            'assist' => $assist,
+            'league' => $league,
+            'promotion' => $promotion,
+            'cup' => $cup,
+            'el' => $el,
+            'cl' => $cl,
+            'salary_raise' => $salaryRise,
+            'demotion' => $demotion,
+        ];
     }
 }

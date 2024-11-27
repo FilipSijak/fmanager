@@ -8,10 +8,10 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
-use App\Models\PlayerInjury;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
+use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\TransferService\TransferFinancialSettlement;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
@@ -19,6 +19,13 @@ use Illuminate\Support\Facades\DB;
 
 class TransferRepository extends CoreRepository
 {
+    private PlayerRepository $playerRepository;
+
+    public function __construct(PlayerRepository $playerRepository)
+    {
+        $this->playerRepository = $playerRepository;
+    }
+
     public function storeTransfer(CreateTransferRequest $request): Transfer
     {
         $transfer = new Transfer;
@@ -135,8 +142,46 @@ class TransferRepository extends CoreRepository
         $player->save();
     }
 
-    public function removeTransfersAndOffers(Transfer $transfer)
-    {
+    public function makeAutomaticTransferWithFinancialDetails(
+        Player $player,
+        Club $club,
+    ): Transfer {
+        $transfer = new Transfer();
+        $transfer->season_id = $this->seasonId;
+        $transfer->source_club_id = $club->id;
+        $transfer->target_club_id = $player->club_id;
+        $transfer->player_id = $player->id;
+        $transfer->offer_date = Instance::find($this->instanceId)->instance_date;
+        $transfer->transfer_type = TransferTypes::PERMANENT_TRANSFER;
 
+        $transferFinancialDetails = new TransferFinancialDetails();
+        $transfer->save();
+
+        $transferFinancialDetails->amount = $this->playerRepository->calculatePlayerValueWithinClub($player);
+        $transferFinancialDetails->transfer_id = $transfer->id;
+        $transferFinancialDetails->installments = 0;
+        $transferFinancialDetails->save();
+
+        $contractOffer = $this->playerRepository->contractBasedOnPotential($player);
+
+        DB::table('transfer_contract_offers')->insert(
+            [
+                'transfer_id' => $transfer->id,
+                'salary' => $contractOffer['salary'],
+                'appearance' => $contractOffer['appearance'],
+                'clean_sheet' => $contractOffer['clean_sheet'],
+                'goal' => $contractOffer['goal'],
+                'assist' => $contractOffer['assist'],
+                'league' => $contractOffer['league'],
+                'promotion' => $contractOffer['promotion'],
+                'cup' => $contractOffer['cup'],
+                'el' => $contractOffer['el'],
+                'cl' => $contractOffer['cl'],
+                'pc_promotion_salary_raise' => $contractOffer['salary_raise'],
+                'pc_demotion_salary_cut' => $contractOffer['demotion']
+            ]
+        );
+
+        return $transfer;
     }
 }
