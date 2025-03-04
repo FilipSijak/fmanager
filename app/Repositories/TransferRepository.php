@@ -11,7 +11,6 @@ use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
-use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\TransferService\TransferFinancialSettlement;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
@@ -144,7 +143,7 @@ class TransferRepository extends CoreRepository
 
     public function makeAutomaticTransferWithFinancialDetails(
         Player $player,
-        Club $club,
+        Club $club, // buying club
     ): Transfer {
         $transfer = new Transfer();
         $transfer->season_id = $this->seasonId;

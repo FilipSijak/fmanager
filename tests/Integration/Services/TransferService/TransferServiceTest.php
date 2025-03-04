@@ -188,7 +188,7 @@ class TransferServiceTest extends TestCase
     }
 
     /** @test */
-    public function itCanRunAutomaticBidsForPlayers()
+    public function itCanRunAutomaticBidsForMissingPositions()
     {
         Instance::factory()->create(
             [
