@@ -12,7 +12,7 @@ class Player extends Model
 
     public function positions()
     {
-        return $this->belongsToMany('App\Models\Position');
+        return $this->belongsToMany(Position::class);
     }
 
     public function club()
@@ -22,7 +22,7 @@ class Player extends Model
 
     public function contract()
     {
-        return $this->hasOne(PlayerContract::class);
+        return $this->belongsTo(PlayerContract::class);
     }
 
     public function getTableColumns()

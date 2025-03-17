@@ -102,10 +102,12 @@ class PlayerRepository implements IPlayerRepository
 
             $playerId = DB::table('players')->insertGetId($playerData);
 
-            $this->playerDataSource->createContractForGeneratedPlayerByPotential(
+            $contractId = $this->playerDataSource->createContractForGeneratedPlayerByPotential(
                 $playerId,
                 $instanceId
             );
+
+            Player::where('id', $playerId)->update(['contract_id' => $contractId]);
         }
     }
 
