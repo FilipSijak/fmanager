@@ -15,6 +15,7 @@ use App\Repositories\TransferRepository;
 use App\Repositories\TransferSearchRepository;
 use App\Services\BaseService;
 use App\Services\ClubService\ClubService;
+use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -29,6 +30,10 @@ class TransferService extends BaseService
     private TransferStatusUpdates    $transferStatusUpdates;
     const LUXURY_TRANSFER_BALANCE = 50000000;
     private TransferSearchRepository $transferSearchRepository;
+    /**
+     * @var false
+     */
+    private bool $forceLuxuryBids;
 
     public function __construct(
         TransferRequestValidator $transferRequestValidator,
@@ -46,6 +51,7 @@ class TransferService extends BaseService
         $this->transferRepository = $transferRepository;
         $this->transferStatusUpdates = $transferStatusUpdates;
         $this->transferSearchRepository = $transferSearchRepository;
+        $this->forceLuxuryBids = false;
     }
 
     public function processTransferBids()
@@ -62,6 +68,14 @@ class TransferService extends BaseService
     }
 
     /**
+     * Force luxury transfers when having a rich owner or money to invest
+     */
+    public function setForceLuxuryBids(bool $forceLuxuryTransferBids = true): void
+    {
+        $this->forceLuxuryBids = $forceLuxuryTransferBids;
+    }
+
+    /**
      * Check all non-player clubs if they need players
      * Run every day during the transfer window, run weekly outside
      */
@@ -69,34 +83,64 @@ class TransferService extends BaseService
     {
         $clubs = Club::where('instance_id', $this->instanceId)->get();
 
-        // analyse clubs missing numbers for positions
         foreach ($clubs as $club) {
             $deficitPositions= $this->clubService->playerDeficitByPosition($club);
 
             $clubBudget = (Account::where('club_id', $club->id)->first())->transfer_budget;
+            $randomChanceForLuxury = rand(1, 10);
 
-            if (!$deficitPositions) {
-                $randomChanceForLuxury = rand(1, 10);
-                if ($clubBudget > self::LUXURY_TRANSFER_BALANCE && $randomChanceForLuxury == 1) {
-                    // look for players that with better rank for a position with the lowest potential within the club
+            // if the club is covered in all positions, check if there is an opportunity on the transfer market for luxury transfers
+            if (
+                !$deficitPositions &&
+                (($clubBudget > self::LUXURY_TRANSFER_BALANCE && $randomChanceForLuxury == 1)  || $this->forceLuxuryBids)
+            ) {
+                $position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1,14)];
+                $listedPlayer = $this->transferSearchRepository->getHighestListedPlayer(
+                    $club,
+                    TransferTypes::PERMANENT_TRANSFER,
+                    $position,
+                    $clubBudget
+                );
+
+                if (!$listedPlayer) {
+                    $selectedPlayer = $this->transferSearchRepository->findLuxuryPlayersForPosition(
+                        $club,
+                        $position,
+                        $clubBudget
+                    );
                 }
+
+                if ($listedPlayer || $selectedPlayer) {
+                    try {
+                        DB::beginTransaction();
+
+                        $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
+                            $selectedPlayer,
+                            $club
+                        );
+
+                        $clubBudget -= $transfer->amount;
+
+                        DB::commit();
+                    } catch (\Exception $exception) {
+                        DB::rollBack();
+                    }
+                }
+
                 continue;
             }
 
             foreach ($deficitPositions as $position => $deficitNumber) {
-
-                // find suitable player and make a transfer
                 $players = $this->transferSearchRepository->findPlayersByPositionForClub($club, $position);
                 $selectedPlayer = $players->where('value', '<=', $clubBudget)->first();
-                // if there is a bigger budget go for another transfer
 
                 if (!$selectedPlayer) {
                     continue;
                 }
 
-                DB::beginTransaction();
-
                 try {
+                    DB::beginTransaction();
+
                     $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails($selectedPlayer, $club);
 
                     $clubBudget -= $transfer->amount;

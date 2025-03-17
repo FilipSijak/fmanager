@@ -57,24 +57,26 @@ class TransferSearchRepository extends CoreRepository
         return Player::hydrate($collection->toArray());
     }
 
-    public function findLuxuryPlayersForPosition(Club $club, string $position)
+    public function findLuxuryPlayersForPosition(Club $club, string $position, int $clubBudget): Collection
     {
         $highestPotentialPlayer = Player::where('position', $position)
-                                      ->where('club_id', $club->id)
-                                      ->orderBy('potential', 'DESC')
-                                      ->first();
+            ->where('club_id', $club->id)
+            ->where('value', '<=', $clubBudget)
+            ->where('p.instance_id', $this->instanceId)
+            ->orderBy('potential', 'DESC')
+            ->first();
 
         return Player::where('position', $position)
-                     ->where('potential', '>', $highestPotentialPlayer->potential)
-                     ->first();
+            ->where('potential', '>', $highestPotentialPlayer->potential)
+            ->first();
     }
 
-    public function getHighestListedPlayer(Club $club, int $transferType, string $position): Player|null
+    public function getHighestListedPlayer(Club $club, int $transferType, string $position, int $clubBudget): Player|null
     {
         $highestPotentialPlayer = Player::where('position', $position)
-                                        ->where('club_id', $club->id)
-                                        ->orderBy('potential', 'DESC')
-                                        ->first();
+            ->where('club_id', $club->id)
+            ->orderBy('potential', 'DESC')
+            ->first();
 
         $player =  DB::table('players AS p')
             ->select('p.*')
@@ -82,9 +84,35 @@ class TransferSearchRepository extends CoreRepository
             ->where('tl.transfer_type', '=', $transferType)
             ->where('p.potential', '>', $highestPotentialPlayer ? $highestPotentialPlayer->potential : 0)
             ->where('p.club_id', '<>', $club->id)
+            ->where('p.value', '<=', $clubBudget)
+            ->where('p.instance_id', $this->instanceId)
             ->orderBy('p.potential', 'desc')
             ->get();
 
         return Player::hydrate($player->toArray())->first();
+    }
+
+    public function findFreePlayersForPosition(string $position)
+    {
+        Player::where('instance_id', $this->instanceId)
+            ->whereNull('club_id')
+            ->where('position', '=', $position);
+    }
+
+    public function findPlayersWithUnprotectedContracts(string $position)
+    {
+        $instance = Instance::find($this->instanceId);
+
+        $player = DB::table('players AS p')
+            ->select('p.*')
+            ->join('player_contracts AS pc', 'p.id', '=', 'pc.player_id')
+            ->leftJoin('player_contracts AS pc', function ($query) use ($instance) {
+                $query->on('t.player_id', '=', 'p.id')
+                      ->whereRaw("
+                        `t`.`offer_date` > DATE_SUB('" . $instance->instance_date . "', INTERVAL 2 year)
+                        AND p.club_id <> " . $club->id . "
+                    ");
+            })
+            ;
     }
 }

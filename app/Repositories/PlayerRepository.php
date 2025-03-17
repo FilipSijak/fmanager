@@ -27,8 +27,6 @@ class PlayerRepository implements IPlayerRepository
         foreach ($generatedPlayers as $player) {
 
             $attributesCategories = $player->getAttributeCategoriesPotential();
-            $playerContractRandomEndingYear =  rand(2024, 2030);
-            $contractEndDate = date('Y-m-d', strtotime($playerContractRandomEndingYear . '-06-01'));
             $playerValue = 0;
 
             if ($club)
@@ -60,8 +58,6 @@ class PlayerRepository implements IPlayerRepository
                 'technical' => $attributesCategories->technical,
                 'mental' => $attributesCategories->mental,
                 'physical' => $attributesCategories->physical,
-                'contract_start' =>  date('Y-m-d'),
-                'contract_end' => $contractEndDate,
                 'corners' => $player->corners,
                 'crossing' => $player->crossing,
                 'dribbling' => $player->dribbling,
@@ -107,7 +103,8 @@ class PlayerRepository implements IPlayerRepository
             $playerId = DB::table('players')->insertGetId($playerData);
 
             $this->playerDataSource->createContractForGeneratedPlayerByPotential(
-                $playerId
+                $playerId,
+                $instanceId
             );
         }
     }

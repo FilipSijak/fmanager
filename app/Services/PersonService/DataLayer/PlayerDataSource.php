@@ -2,6 +2,7 @@
 
 namespace App\Services\PersonService\DataLayer;
 
+use App\Models\Instance;
 use App\Models\Player;
 use Illuminate\Support\Facades\DB;
 
@@ -9,14 +10,20 @@ class PlayerDataSource
 {
     public function createContractForGeneratedPlayerByPotential(
         int $playerId,
+        int $instanceId,
     ):void
     {
         $player = Player::where('id', $playerId)->firstOrFail();
+        $instance = Instance::where('id', $instanceId)->firstOrFail();
         $contract = $this->contractBasedOnPotential($player);
+        $instanceYear = date('Y', strtotime( $instance->instance_date));
+        $contractEndDate = date('Y-m-d', rand($instanceYear, (int) $instanceYear + 5) . '-06-01');
 
         DB::table('players_contracts')->insert(
             [
                 'player_id' => $playerId,
+                'contract_start' => $instance->instance_date,
+                'contract_end' => $contractEndDate,
                 'salary' => $contract['salary'],
                 'appearance' => $contract['appearance'],
                 'clean_sheet' => $contract['clean_sheet'],

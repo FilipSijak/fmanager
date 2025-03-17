@@ -16,6 +16,7 @@ class PlayerResource extends JsonResource
     public function toArray($request)
     {
         $playerClub = $this->club()->first();
+        $playerContract = $this->contract()->first();
         $attributeFields = array_merge(
             PlayerFields::TECHNICAL_FIELDS,
             PlayerFields::MENTAL_FIELDS,
@@ -37,8 +38,8 @@ class PlayerResource extends JsonResource
             'technical' => $this->technical,
             'mental' => $this->mental,
             'physical' => $this->physical,
-            'contract_start' => $this->contract_start,
-            'contract_end' => $this->contract_end,
+            'contract_start' => $playerContract ? $playerContract->contract_start : null,
+            'contract_end' => $playerContract ? $playerContract->contract_end : null,
             'salary' => $this->salary,
         ];
 

@@ -20,6 +20,11 @@ class Player extends Model
         return $this->belongsTo(Club::class);
     }
 
+    public function contract()
+    {
+        return $this->hasOne(PlayerContract::class);
+    }
+
     public function getTableColumns()
     {
         $columns = $this->getConnection()->select(

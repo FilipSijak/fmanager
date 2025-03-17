@@ -51,8 +51,6 @@ class CreatePlayersTable extends Migration
             $table->integer('technical')->nullable();
             $table->integer('mental')->nullable();
             $table->integer('physical')->nullable();
-            $table->date('contract_start')->nullable();
-            $table->date('contract_end')->nullable();
             $table->date('loan_start')->nullable();
             $table->date('loan_end')->nullable();
 
