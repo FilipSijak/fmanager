@@ -105,14 +105,14 @@ class TransferSearchRepository extends CoreRepository
 
         $player = DB::table('players AS p')
             ->select('p.*')
-            ->join('player_contracts AS pc', 'p.id', '=', 'pc.player_id')
             ->leftJoin('player_contracts AS pc', function ($query) use ($instance) {
-                $query->on('t.player_id', '=', 'p.id')
+                $query->on('pc.player_id', '=', 'p.id')
                       ->whereRaw("
-                        `t`.`offer_date` > DATE_SUB('" . $instance->instance_date . "', INTERVAL 2 year)
-                        AND p.club_id <> " . $club->id . "
+                        `pc`.`contract_end` > DATE_SUB('" . $instance->instance_date . "', INTERVAL 6 months)
                     ");
             })
-            ;
+            ->first();
+
+        return Player::hydrate($player->toArray())->first();
     }
 }
