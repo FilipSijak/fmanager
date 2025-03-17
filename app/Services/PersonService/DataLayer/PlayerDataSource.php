@@ -28,7 +28,6 @@ class PlayerDataSource
 
         return DB::table('players_contracts')->insertGetId(
             [
-                'player_id' => $playerId,
                 'contract_start' => $contractStart,
                 'contract_end' => $contractEndDate,
                 'salary' => $contract['salary'],
