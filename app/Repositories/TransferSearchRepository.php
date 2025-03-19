@@ -71,7 +71,13 @@ class TransferSearchRepository extends CoreRepository
             ->first();
     }
 
-    public function getHighestListedPlayer(Club $club, int $transferType, string $position, int $clubBudget): Player|null
+    public function getListedPlayer(
+        Club $club,
+        int $transferType,
+        string $position,
+        int $clubBudget,
+        $luxury = false
+    ): Player|null
     {
         $highestPotentialPlayer = Player::where('position', $position)
             ->where('club_id', $club->id)
@@ -92,14 +98,28 @@ class TransferSearchRepository extends CoreRepository
         return Player::hydrate($player->toArray())->first();
     }
 
-    public function findFreePlayersForPosition(string $position)
+    public function findFreePlayerForPosition(Club $club, string $position, bool $luxury = false)
     {
-        Player::where('instance_id', $this->instanceId)
-            ->whereNull('club_id')
-            ->where('position', '=', $position);
+        $highestPotentialPlayer = null;
+
+        if ($luxury) {
+            $highestPotentialPlayer = Player::where('position', $position)
+                                            ->where('club_id', $club->id)
+                                            ->orderBy('potential', 'DESC')
+                                            ->first();
+        }
+
+        return DB::table('players AS p')
+            ->select('p.*')
+            ->whereNull('p.contract_id')
+            ->where('p.potential', '>=',  $club->rank * 10 - 20)
+            ->when($luxury, function ($query) use ($highestPotentialPlayer) {
+                $query->where('p.potential', '>', $highestPotentialPlayer->potential);
+            })
+            ->first();
     }
 
-    public function findPlayersWithUnprotectedContracts(string $position)
+    public function findPlayersWithUnprotectedContracts(Club $club, string $position)
     {
         $instance = Instance::find($this->instanceId);
 
@@ -111,6 +131,10 @@ class TransferSearchRepository extends CoreRepository
                         `pc`.`contract_end` > DATE_SUB('" . $instance->instance_date . "', INTERVAL 6 months)
                     ");
             })
+            ->where('p.club_id', '<>', $club->id)
+            ->where('p.potential', '>=', $club->rank * 10 - 20)
+            ->where('p.position', '=', $position)
+            ->orderBy('p.potential', 'desc')
             ->first();
 
         return Player::hydrate($player->toArray())->first();

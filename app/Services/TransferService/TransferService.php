@@ -95,14 +95,19 @@ class TransferService extends BaseService
                 (($clubBudget > self::LUXURY_TRANSFER_BALANCE && $randomChanceForLuxury == 1)  || $this->forceLuxuryBids)
             ) {
                 $position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1,14)];
-                $listedPlayer = $this->transferSearchRepository->getHighestListedPlayer(
-                    $club,
-                    TransferTypes::PERMANENT_TRANSFER,
-                    $position,
-                    $clubBudget
-                );
 
-                if (!$listedPlayer) {
+                $selectedPlayer = $this->transferSearchRepository->findPlayersWithUnprotectedContracts($club, $position);
+
+                if (!$selectedPlayer) {
+                    $selectedPlayer = $this->transferSearchRepository->getListedPlayer(
+                        $club,
+                        TransferTypes::PERMANENT_TRANSFER,
+                        $position,
+                        $clubBudget
+                    );
+                }
+
+                if (!$selectedPlayer) {
                     $selectedPlayer = $this->transferSearchRepository->findLuxuryPlayersForPosition(
                         $club,
                         $position,
@@ -110,7 +115,7 @@ class TransferService extends BaseService
                     );
                 }
 
-                if ($listedPlayer || $selectedPlayer) {
+                if ($selectedPlayer) {
                     try {
                         DB::beginTransaction();
 
@@ -131,8 +136,17 @@ class TransferService extends BaseService
             }
 
             foreach ($deficitPositions as $position => $deficitNumber) {
-                $players = $this->transferSearchRepository->findPlayersByPositionForClub($club, $position);
-                $selectedPlayer = $players->where('value', '<=', $clubBudget)->first();
+                $selectedPlayer =  $this->transferSearchRepository->findFreePlayerForPosition($club, $position);
+
+                if (!$selectedPlayer) {
+                    $selectedPlayer =  $this->transferSearchRepository->findFreePlayerForPosition($club, $position);
+                }
+
+                if (!$selectedPlayer) {
+                    $players = $this->transferSearchRepository->findPlayersByPositionForClub($club, $position);
+                    $selectedPlayer = $players->where('value', '<=', $clubBudget)->first();
+                }
+
 
                 if (!$selectedPlayer) {
                     continue;
