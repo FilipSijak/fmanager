@@ -2,6 +2,7 @@
 
 namespace Tests\Integration\Services\TransferService;
 
+use App\Models\Account;
 use App\Models\Club;
 use App\Models\Player;
 use App\Models\TransferList;
@@ -19,14 +20,19 @@ class TransferSearchTest extends TestCase
     {
         $position = 'CB';
         $buyingClub = Club::factory()->create(['id' => 2]);
+        Account::factory()->create(['club_id' => $buyingClub->id, 'transfer_budget' => 1000000]);
+        $sellingClub = Club::factory()->create(['id' => 1]);
         $listedPlayer = Player::factory()->create(
             [
-                'club_id' => 1,
+                'club_id' => $sellingClub->id,
                 'position' => $position,
                 'potential' => 120,
+                'instance_id' => 1,
+                'value' => 50000,
             ]
         );
 
+        // highest potential player in the same position from buying club
         Player::factory()->create(
             [
                 'club_id' => $buyingClub->id,
@@ -36,13 +42,16 @@ class TransferSearchTest extends TestCase
         );
 
         TransferList::factory()->create(
-            ['player_id' =>  $listedPlayer->id, 'club_id' => $buyingClub->id, 'transfer_type' => TransferTypes::PERMANENT_TRANSFER]
+            ['player_id' =>  $listedPlayer->id, 'club_id' => $sellingClub->id, 'transfer_type' => TransferTypes::PERMANENT_TRANSFER]
         );
 
         $transferSearchRepository = new TransferSearchRepository();
+        $transferSearchRepository->setInstanceId(1);
+        $clubBudget = $buyingClub->account->transfer_budget;
 
-        $result = $transferSearchRepository->getHighestListedPlayer($buyingClub, TransferTypes::PERMANENT_TRANSFER, $position);
+        $player = $transferSearchRepository->findListedPlayer($buyingClub, TransferTypes::PERMANENT_TRANSFER, $position, $clubBudget);
 
-        $this->assertInstanceOf(Player::class, $result);
+        $this->assertInstanceOf(Player::class, $player);
+        $this->assertEquals($listedPlayer->id, $player->id);
     }
 }

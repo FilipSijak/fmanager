@@ -30,4 +30,9 @@ class Club extends Model
     {
         return $this->hasOne(Club::class, 'stadium_id');
     }
+
+    public function account()
+    {
+        return $this->hasOne(Account::class, 'club_id');
+    }
 }

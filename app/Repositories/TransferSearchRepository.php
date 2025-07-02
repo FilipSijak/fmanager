@@ -73,35 +73,33 @@ class TransferSearchRepository extends CoreRepository
             ->first();
     }
 
-    public function findListedPlayers(
-        Club $club,
+    public function findListedPlayer(
+        Club $buyingClub,
         int $transferType,
         string $position,
-        int $clubBudget,
-        $luxury = false
+        ?int $clubBudget = 0
     ): Player|null
     {
         $highestPotentialPlayer = Player::where('position', $position)
-            ->where('club_id', $club->id)
+            ->where('club_id', $buyingClub->id)
             ->orderBy('potential', 'DESC')
             ->first();
 
-        $player =  DB::table('players AS p')
+        $players = DB::table('players AS p')
             ->select('p.*')
             ->join('transfer_list AS tl', 'tl.player_id', '=', 'p.id')
+            ->where('p.club_id', '<>', $buyingClub->id)
             ->where('tl.transfer_type', '=', $transferType)
             ->when($transferType == TransferTypes::PERMANENT_TRANSFER, function ($query) use ($highestPotentialPlayer) {
                 return $query->where('p.potential', '>', $highestPotentialPlayer ? $highestPotentialPlayer->potential : 0);
             })
-            ->where('p.club_id', '<>', $club->id)
             ->when($transferType == TransferTypes::PERMANENT_TRANSFER, function ($query) use ($clubBudget){
                 return $query->where('p.value', '<=', $clubBudget);
             })
-            ->where('p.instance_id', $this->instanceId)
             ->orderBy('p.potential', 'desc')
             ->get();
 
-        return Player::hydrate($player->toArray())->first();
+        return Player::hydrate($players->toArray())->first();
     }
 
     public function findListedLoanPlayers(
@@ -109,7 +107,6 @@ class TransferSearchRepository extends CoreRepository
         string $position,
     ) :?Player
     {
-
         // find average potential for players within club
         // loan offer should be fore more than that
         $averagePlayerPotentialForClub = DB::table('players AS p')

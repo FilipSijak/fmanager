@@ -86,14 +86,14 @@ class TransferService extends BaseService
             // if the club is covered in all positions, check if there is an opportunity on the transfer market for luxury transfers
             if (
                 !$deficitPositions &&
-                (($clubBudget > self::LUXURY_TRANSFER_BALANCE && $randomChanceForLuxury == 1)  || $this->forceLuxuryBids)
+                (($clubBudget > self::LUXURY_TRANSFER_BALANCE && $randomChanceForLuxury == 1) || $this->forceLuxuryBids)
             ) {
                 $position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1,14)];
 
                 $selectedPlayer = $this->transferSearchRepository->findPlayersWithUnprotectedContracts($club, $position);
 
                 if (!$selectedPlayer) {
-                    $selectedPlayer = $this->transferSearchRepository->findListedPlayers(
+                    $selectedPlayer = $this->transferSearchRepository->findListedPlayer(
                         $club,
                         TransferTypes::PERMANENT_TRANSFER,
                         $position,
