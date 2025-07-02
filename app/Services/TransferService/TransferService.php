@@ -6,11 +6,7 @@ use App\Http\Requests\CreateTransferRequest;
 use App\Http\Requests\FreeTransferRequest;
 use App\Models\Account;
 use App\Models\Club;
-use App\Models\Instance;
-use App\Models\Player;
 use App\Models\Transfer;
-use App\Models\TransferContractOffer;
-use App\Models\TransferFinancialDetails;
 use App\Repositories\TransferRepository;
 use App\Repositories\TransferSearchRepository;
 use App\Services\BaseService;
@@ -28,7 +24,7 @@ class TransferService extends BaseService
     protected int|null               $seasonId;
     private TransferRepository       $transferRepository;
     private TransferStatusUpdates    $transferStatusUpdates;
-    const LUXURY_TRANSFER_BALANCE = 50000000;
+    const LUXURY_TRANSFER_BALANCE =  50000000;
     private TransferSearchRepository $transferSearchRepository;
     /**
      * @var false
@@ -84,11 +80,9 @@ class TransferService extends BaseService
         $clubs = Club::where('instance_id', $this->instanceId)->get();
 
         foreach ($clubs as $club) {
-            $deficitPositions= $this->clubService->playerDeficitByPosition($club);
-
+            $deficitPositions = $this->clubService->playerDeficitByPosition($club);
             $clubBudget = (Account::where('club_id', $club->id)->first())->transfer_budget;
             $randomChanceForLuxury = rand(1, 10);
-
             // if the club is covered in all positions, check if there is an opportunity on the transfer market for luxury transfers
             if (
                 !$deficitPositions &&
@@ -99,7 +93,7 @@ class TransferService extends BaseService
                 $selectedPlayer = $this->transferSearchRepository->findPlayersWithUnprotectedContracts($club, $position);
 
                 if (!$selectedPlayer) {
-                    $selectedPlayer = $this->transferSearchRepository->getListedPlayer(
+                    $selectedPlayer = $this->transferSearchRepository->findListedPlayers(
                         $club,
                         TransferTypes::PERMANENT_TRANSFER,
                         $position,
@@ -119,12 +113,10 @@ class TransferService extends BaseService
                     try {
                         DB::beginTransaction();
 
-                        $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
+                        $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
                             $selectedPlayer,
                             $club
                         );
-
-                        $clubBudget -= $transfer->amount;
 
                         DB::commit();
                     } catch (\Exception $exception) {
@@ -135,18 +127,33 @@ class TransferService extends BaseService
                 continue;
             }
 
+            if (empty($deficitPositions)) {
+                continue;
+            }
+
             foreach ($deficitPositions as $position => $deficitNumber) {
                 $selectedPlayer =  $this->transferSearchRepository->findFreePlayerForPosition($club, $position);
+                $transferType = TransferTypes::FREE_TRANSFER;
 
                 if (!$selectedPlayer) {
-                    $selectedPlayer =  $this->transferSearchRepository->findFreePlayerForPosition($club, $position);
+                    $selectedPlayer = $this->transferSearchRepository->findListedLoanPlayers($club, $position);
+                    $transferType = TransferTypes::LOAN_TRANSFER;
+                }
+
+                if (!$selectedPlayer) {
+                    $selectedPlayer = $this->transferSearchRepository->findListedPlayers(
+                        $club,
+                        TransferTypes::PERMANENT_TRANSFER,
+                        $position,
+                        $clubBudget
+                    );
                 }
 
                 if (!$selectedPlayer) {
                     $players = $this->transferSearchRepository->findPlayersByPositionForClub($club, $position);
                     $selectedPlayer = $players->where('value', '<=', $clubBudget)->first();
+                    $transferType = TransferTypes::PERMANENT_TRANSFER;
                 }
-
 
                 if (!$selectedPlayer) {
                     continue;
@@ -155,8 +162,9 @@ class TransferService extends BaseService
                 try {
                     DB::beginTransaction();
 
-                    $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails($selectedPlayer, $club);
-
+                    $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
+                        $selectedPlayer, $club, $transferType
+                    );
                     $clubBudget -= $transfer->amount;
 
                     DB::commit();

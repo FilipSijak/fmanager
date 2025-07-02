@@ -127,12 +127,11 @@ class TransferRepository extends CoreRepository
             $currentContract = new PlayerContract($transferContractOffer->toArray());
             $currentContract->save();
         } else {
-            $currentContract = $player->playerContract()->first();
+            $currentContract = $player->contract()->first();
             $transferFinancialSettlement = new TransferFinancialSettlement;
             $transferFinancialSettlement->transferMoneyBetweenClubs($transfer);
         }
 
-        $currentContract->player_id = $transfer->player_id;
         $currentContract->update($transferContractOffer->toArray());
 
         $transferContractOffer->delete();
@@ -144,6 +143,7 @@ class TransferRepository extends CoreRepository
     public function makeAutomaticTransferWithFinancialDetails(
         Player $player,
         Club $club, // buying club
+        int $transferType = TransferTypes::PERMANENT_TRANSFER
     ): Transfer {
         $transfer = new Transfer();
         $transfer->season_id = $this->seasonId;
@@ -151,7 +151,7 @@ class TransferRepository extends CoreRepository
         $transfer->target_club_id = $player->club_id;
         $transfer->player_id = $player->id;
         $transfer->offer_date = Instance::find($this->instanceId)->instance_date;
-        $transfer->transfer_type = TransferTypes::PERMANENT_TRANSFER;
+        $transfer->transfer_type = $transferType;
 
         $transferFinancialDetails = new TransferFinancialDetails();
         $transfer->save();

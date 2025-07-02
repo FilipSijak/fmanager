@@ -13,7 +13,7 @@ services:
         volumes:
             - ./:/var/www
         networks:
-            - fmananager
+            - fmanager
     fmanagerdb:
         image: mysql:8.0
         container_name: fmanager-db
@@ -28,7 +28,7 @@ services:
         volumes:
             - ./docker/mysql:/docker-entrypoint-initdb.d
         networks:
-            - fmananager
+            - fmanager
     node:
         image: node:18-buster
         container_name: fmanager-node
@@ -48,8 +48,8 @@ services:
             - ./:/var/www
             - ./docker/nginx:/etc/nginx/conf.d/
         networks:
-            - fmananager
+            - fmanager
 networks:
-    fmananager:
+    fmanager:
         driver: bridge
 
