@@ -59,18 +59,21 @@ class TransferSearchRepository extends CoreRepository
         return Player::hydrate($collection->toArray());
     }
 
-    public function findLuxuryPlayersForPosition(Club $club, string $position, int $clubBudget): Collection
+    public function findLuxuryPlayersForPosition(Club $buyingClub, string $position, int $clubBudget): Player
     {
         $highestPotentialPlayer = Player::where('position', $position)
-            ->where('club_id', $club->id)
-            ->where('value', '<=', $clubBudget)
-            ->where('p.instance_id', $this->instanceId)
+            ->where('club_id', $buyingClub->id)
+            ->where('instance_id', $this->instanceId)
             ->orderBy('potential', 'DESC')
             ->first();
 
-        return Player::where('position', $position)
+        $players = Player::where('position', $position)
             ->where('potential', '>', $highestPotentialPlayer->potential)
-            ->first();
+            ->where('club_id', '<>', $buyingClub->id)
+            ->where('value', '<=', $clubBudget)
+            ->get();
+
+        return Player::hydrate($players->toArray())->first();
     }
 
     public function findListedPlayer(

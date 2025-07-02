@@ -221,18 +221,6 @@ class TransferServiceTest extends TestCase
         $this->assertCount(1, Transfer::all());
     }
 
-    /** @test */
-    public function itCanMakeLoanRequest()
-    {
-
-    }
-
-    /** @test */
-    public function itCanMakeAutomaticLuxuryBids()
-    {
-
-    }
-
     private function setupTransferBetweenTwoClubs(int $buyingClubId, int $sellingClubId, int $playerId, int $transferType)
     {
         Club::factory()->create(

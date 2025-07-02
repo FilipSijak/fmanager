@@ -54,4 +54,41 @@ class TransferSearchTest extends TestCase
         $this->assertInstanceOf(Player::class, $player);
         $this->assertEquals($listedPlayer->id, $player->id);
     }
+
+    /** @test */
+    public function itCanFindLuxuryPlayer()
+    {
+        $position = 'CB';
+        $buyingClub = Club::factory()->create(['id' => 2]);
+        Account::factory()->create(['club_id' => $buyingClub->id, 'transfer_budget' => 60000000]);
+        $sellingClub = Club::factory()->create(['id' => 1]);
+        $luxuryPlayer = Player::factory()->create(
+            [
+                'club_id' => $sellingClub->id,
+                'position' => $position,
+                'potential' => 120,
+                'instance_id' => 1,
+                'value' => 500000,
+            ]
+        );
+
+        // highest potential player in the same position from buying club
+        Player::factory()->create(
+            [
+                'club_id' => $buyingClub->id,
+                'position' => $position,
+                'potential' => 100,
+                'instance_id' => 1,
+            ]
+        );
+
+        $transferSearchRepository = new TransferSearchRepository();
+        $transferSearchRepository->setInstanceId(1);
+        $clubBudget = $buyingClub->account->transfer_budget;
+
+        $player = $transferSearchRepository->findLuxuryPlayersForPosition($buyingClub, $position, $clubBudget);
+
+        $this->assertInstanceOf(Player::class, $player);
+        $this->assertEquals($luxuryPlayer->id, $player->id);
+    }
 }
