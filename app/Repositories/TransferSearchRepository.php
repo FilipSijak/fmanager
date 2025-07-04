@@ -150,7 +150,11 @@ class TransferSearchRepository extends CoreRepository
         return Player::hydrate($players->toArray())->first();
     }
 
-    public function findPlayersWithUnprotectedContracts(Club $club, string $position, int $clubBudget): ?Player
+    public function findPlayersWithUnprotectedContracts(
+        Club $club,
+        string $position,
+        int $clubBudget
+    ): ?Player
     {
         $instance = Instance::find($this->instanceId);
 
@@ -159,14 +163,13 @@ class TransferSearchRepository extends CoreRepository
             ->join('players_contracts AS pc', function ($query) use ($instance) {
                 $query->on('pc.id', '=', 'p.contract_id')
                       ->whereRaw("
-                        `pc`.`contract_end` BETWEEN DATE_ADD('" . $instance->instance_date . "', INTERVAL 6 month)
-                        AND DATE_ADD('" . $instance->instance_date . "', INTERVAL 15 month)
+                        `pc`.`contract_end` BETWEEN DATE('" . $instance->instance_date . "')
+                        AND DATE_ADD('" . $instance->instance_date . "', INTERVAL 6 MONTH)
                     ");
             })
             ->where('p.club_id', '<>', $club->id)
             ->where('p.potential', '>=', $club->rank * 10 - 20)
             ->where('p.position', '=', $position)
-            ->whereRaw('p.value * 0.6 <= ' . $clubBudget)
             ->orderBy('p.potential', 'desc')
             ->get();
 

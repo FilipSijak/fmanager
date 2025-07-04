@@ -13,7 +13,7 @@ use App\Services\TransferService\TransferTypes;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
-class TransferSearchTest extends TestCase
+class TransferSearchRepositoryTest extends TestCase
 {
     use DatabaseMigrations;
 
@@ -52,6 +52,44 @@ class TransferSearchTest extends TestCase
         $clubBudget = $buyingClub->account->transfer_budget;
 
         $player = $transferSearchRepository->findListedPlayer($buyingClub, TransferTypes::PERMANENT_TRANSFER, $position, $clubBudget);
+
+        $this->assertInstanceOf(Player::class, $player);
+        $this->assertEquals($listedPlayer->id, $player->id);
+    }
+
+    /** @test */
+    public function itCanFindPlayersListedForLoan()
+    {
+        $position = 'CB';
+        $buyingClub = Club::factory()->create(['id' => 2]);
+        $sellingClub = Club::factory()->create(['id' => 1]);
+
+        $listedPlayer = Player::factory()->create(
+            [
+                'club_id' => $sellingClub->id,
+                'position' => $position,
+                'potential' => 120,
+                'instance_id' => 1,
+                'value' => 50000,
+            ]
+        );
+
+        TransferList::factory()->create(
+            ['player_id' =>  $listedPlayer->id, 'club_id' => $sellingClub->id, 'transfer_type' => TransferTypes::LOAN_TRANSFER]
+        );
+
+        Player::factory()->create(
+            [
+                'club_id' => $buyingClub->id,
+                'position' => $position,
+                'potential' => 100,
+            ]
+        );
+
+        $transferSearchRepository = new TransferSearchRepository();
+        $transferSearchRepository->setInstanceId(1);
+
+        $player = $transferSearchRepository->findListedLoanPlayers($buyingClub, $position);
 
         $this->assertInstanceOf(Player::class, $player);
         $this->assertEquals($listedPlayer->id, $player->id);
@@ -111,7 +149,7 @@ class TransferSearchTest extends TestCase
                 'contract_id' => 1,
             ]
         );
-        PlayerContract::factory()->create(['id' => 1, 'contract_end' => '2024-07-20']);
+        PlayerContract::factory()->create(['id' => 1, 'contract_end' => '2024-01-20']);
         Instance::factory()->create(['id' =>'1', 'instance_date' => '2023-08-20']);
 
         $transferSearchRepository = new TransferSearchRepository();

@@ -90,39 +90,7 @@ class TransferService extends BaseService
             ) {
                 $position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1,14)];
 
-                $selectedPlayer = $this->transferSearchRepository->findPlayersWithUnprotectedContracts($club, $position);
-
-                if (!$selectedPlayer) {
-                    $selectedPlayer = $this->transferSearchRepository->findListedPlayer(
-                        $club,
-                        TransferTypes::PERMANENT_TRANSFER,
-                        $position,
-                        $clubBudget
-                    );
-                }
-
-                if (!$selectedPlayer) {
-                    $selectedPlayer = $this->transferSearchRepository->findLuxuryPlayersForPosition(
-                        $club,
-                        $position,
-                        $clubBudget
-                    );
-                }
-
-                if ($selectedPlayer) {
-                    try {
-                        DB::beginTransaction();
-
-                        $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
-                            $selectedPlayer,
-                            $club
-                        );
-
-                        DB::commit();
-                    } catch (\Exception $exception) {
-                        DB::rollBack();
-                    }
-                }
+                $this->luxuryTransferAttempt($club, $clubBudget, $position);
 
                 continue;
             }
@@ -131,47 +99,7 @@ class TransferService extends BaseService
                 continue;
             }
 
-            foreach ($deficitPositions as $position => $deficitNumber) {
-                $selectedPlayer =  $this->transferSearchRepository->findFreePlayerForPosition($club, $position);
-                $transferType = TransferTypes::FREE_TRANSFER;
-
-                if (!$selectedPlayer) {
-                    $selectedPlayer = $this->transferSearchRepository->findListedLoanPlayers($club, $position);
-                    $transferType = TransferTypes::LOAN_TRANSFER;
-                }
-
-                if (!$selectedPlayer) {
-                    $selectedPlayer = $this->transferSearchRepository->findListedPlayers(
-                        $club,
-                        TransferTypes::PERMANENT_TRANSFER,
-                        $position,
-                        $clubBudget
-                    );
-                }
-
-                if (!$selectedPlayer) {
-                    $players = $this->transferSearchRepository->findPlayersByPositionForClub($club, $position);
-                    $selectedPlayer = $players->where('value', '<=', $clubBudget)->first();
-                    $transferType = TransferTypes::PERMANENT_TRANSFER;
-                }
-
-                if (!$selectedPlayer) {
-                    continue;
-                }
-
-                try {
-                    DB::beginTransaction();
-
-                    $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
-                        $selectedPlayer, $club, $transferType
-                    );
-                    $clubBudget -= $transfer->amount;
-
-                    DB::commit();
-                } catch (\Exception $exception) {
-                    DB::rollBack();
-                }
-            }
+            $this->playerDeficitTransferAttempt($club, $deficitPositions, $clubBudget);
         }
     }
 
@@ -246,6 +174,84 @@ class TransferService extends BaseService
                 break;
             default:
                 $this->transferStatusUpdates->permanentTransferUpdates($transfer);
+        }
+    }
+
+    private function playerDeficitTransferAttempt($club, $deficitPositions, $clubBudget): void
+    {
+        foreach ($deficitPositions as $position => $deficitNumber) {
+            $selectedPlayer = $this->transferSearchRepository->findFreePlayerForPosition($club, $position);
+            $transferType = TransferTypes::FREE_TRANSFER;
+
+            if (!$selectedPlayer) {
+                $selectedPlayer = $this->transferSearchRepository->findListedLoanPlayers($club, $position);
+                $transferType = TransferTypes::LOAN_TRANSFER;
+            }
+
+            if (!$selectedPlayer) {
+                $selectedPlayer = $this->transferSearchRepository->findListedPlayer(
+                    $club,
+                    TransferTypes::PERMANENT_TRANSFER,
+                    $position,
+                    $clubBudget
+                );
+            }
+
+            if (!$selectedPlayer) {
+                $players = $this->transferSearchRepository->findPlayersByPositionForClub($club, $position);
+                $selectedPlayer = $players->where('value', '<=', $clubBudget)->first();
+                $transferType = TransferTypes::PERMANENT_TRANSFER;
+            }
+
+            if (!$selectedPlayer) {
+                continue;
+            }
+
+            try {
+                DB::beginTransaction();
+
+                $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
+                    $selectedPlayer, $club, $transferType
+                );
+                $clubBudget -= $transfer->amount;
+
+                DB::commit();
+            } catch (\Exception $exception) {
+                DB::rollBack();
+            }
+        }
+    }
+
+    private function luxuryTransferAttempt($club, $clubBudget, $position): void
+    {
+        $selectedPlayer = $this->transferSearchRepository->findPlayersWithUnprotectedContracts($club, $position, $clubBudget)
+        ?? $this->transferSearchRepository->findListedPlayer
+        (
+            $club,
+            TransferTypes::PERMANENT_TRANSFER,
+            $position,
+            $clubBudget
+        )
+        ?? $this->transferSearchRepository->findLuxuryPlayersForPosition
+        (
+            $club,
+            $position,
+            $clubBudget
+        );
+
+        if ($selectedPlayer) {
+            try {
+                DB::beginTransaction();
+
+                $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
+                    $selectedPlayer,
+                    $club
+                );
+
+                DB::commit();
+            } catch (\Exception $exception) {
+                DB::rollBack();
+            }
         }
     }
 }
