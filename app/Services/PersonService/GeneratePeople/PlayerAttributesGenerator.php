@@ -54,12 +54,19 @@ class PlayerAttributesGenerator
             38 => 0.75,
             41 => 0.67,
         ];
-        $ageBracketsKeys = array_keys($agePotentialBrackets);
 
-        foreach ($agePotentialBrackets as $age => $potential) {
-            if ($currentAge >= $age && next($ageBracketsKeys) && $currentAge < next($ageBracketsKeys)) {
-                $this->player->potential = $this->player->max_potential * $potential;
+        $ages = array_keys($agePotentialBrackets);
+        sort($ages);
+
+        for ($i = 0; $i < count($ages) - 1; $i++) {
+            if ($currentAge >= $ages[$i] && $currentAge < $ages[$i + 1]) {
+                $this->player->potential = $this->player->max_potential * $agePotentialBrackets[$ages[$i]];
+                break;
             }
+        }
+
+        if ($currentAge >= end($ages)) {
+            $this->player->potential = $this->player->max_potential * $agePotentialBrackets[end($ages)];
         }
     }
 
