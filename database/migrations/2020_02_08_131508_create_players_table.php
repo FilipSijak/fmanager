@@ -43,6 +43,7 @@ class CreatePlayersTable extends Migration
             $table->string('last_name', 30);
             $table->integer('marketing_rank');
             $table->integer('potential');
+            $table->integer('max_potential');
             $table->integer('ambition');
             $table->integer('loyalty');
             $table->string('position');

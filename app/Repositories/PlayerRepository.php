@@ -50,6 +50,7 @@ class PlayerRepository implements IPlayerRepository
                 'last_name' => $player->last_name,
                 'marketing_rank' => $playerMarketingRank,
                 'potential' => $player->potential,
+                'max_potential' => $player->max_potential,
                 'ambition' => rand(floor(($player->potentail / 10)), 20),
                 'loyalty' => rand(1, 20),
                 'position' => $player->position,

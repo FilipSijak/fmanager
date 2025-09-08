@@ -3,6 +3,7 @@
 namespace App\Services\PersonService\GeneratePeople;
 
 use App\Services\PersonService\PersonConfig\PersonTypes;
+use Carbon\Carbon;
 use Faker\Factory;
 
 class PlayerAttributesGenerator
@@ -12,13 +13,12 @@ class PlayerAttributesGenerator
         $this->player = new \stdClass();
         $this->player->position = $playerPotentialWithPosition->position;
         $this->player->potentialByCategory = $playerPotentialWithPosition->potentialByCategory;
-        $this->player->potential = $playerPotentialWithPosition->potential;
+        $this->player->max_potential = $playerPotentialWithPosition->potential;
 
         $this->setInitialAttributes();
-
         $this->setPlayerPositionList();
-
         $this->setPersonInfo();
+        $this->setMaxPotential();
 
         return $this->player;
     }
@@ -34,6 +34,32 @@ class PlayerAttributesGenerator
 
         foreach ($playerInitialAttributes as $attribute => $value) {
             $this->player->{$attribute} = $value;
+        }
+    }
+
+    protected function setMaxPotential()
+    {
+        $currentAge = Carbon::parse($this->player->dob)->age;
+
+        $agePotentialBrackets = [
+            16 => 0.85,
+            18 => 0.9,
+            21 => 0.95,
+            24 => 1,
+            29 => 0.98,
+            30 => 0.95,
+            32 => 0.92,
+            33 => 0.89,
+            35 => 0.83,
+            38 => 0.75,
+            41 => 0.67,
+        ];
+        $ageBracketsKeys = array_keys($agePotentialBrackets);
+
+        foreach ($agePotentialBrackets as $age => $potential) {
+            if ($currentAge >= $age && next($ageBracketsKeys) && $currentAge < next($ageBracketsKeys)) {
+                $this->player->potential = $this->player->max_potential * $potential;
+            }
         }
     }
 
