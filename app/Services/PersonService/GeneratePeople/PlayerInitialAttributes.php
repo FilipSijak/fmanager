@@ -16,17 +16,21 @@ class PlayerInitialAttributes
     protected $commonAttributes    = ['stamina', 'acceleration', 'strength'];
     protected $playerPotentialByCategory;
 
-    public function __construct(
-        array $playerPotentialByCategory,
-        string $playerPosition
-    ) {
-        $this->playerPosition            = $playerPosition;
-        $this->playerPotentialByCategory = $playerPotentialByCategory;
+    public function setPlayerPosition(string $playerPosition)
+    {
+        $this->playerPosition = $playerPosition;
 
-        $this->setAttributes();
+        return $this;
     }
 
-    protected function setAttributes()
+    public function setPlayerPotentialByCategory(array $playerPotentialByCategory)
+    {
+        $this->playerPotentialByCategory = $playerPotentialByCategory;
+
+        return $this;
+    }
+
+    public function initAllAttributes(): array
     {
         $mainAttributes = PlayerPositionConfig::getPositionMainAttributes($this->playerPosition);
 
@@ -35,6 +39,8 @@ class PlayerInitialAttributes
             $this->setSecondaryAttributes($importanceList['secondary'], $attributesCategory);
             $this->setOtherAttributes();
         }
+
+        return $this->playerAllAttributes;
     }
 
     /**
@@ -174,11 +180,6 @@ class PlayerInitialAttributes
         }
     }
 
-    /**
-     * @param int $playerPotential
-     *
-     * @return int
-     */
     protected function setMinimumAttributeValue(int $playerPotential): int
     {
         $potentialDescription = PersonPotential::personPotentialLabel($playerPotential);
@@ -194,13 +195,5 @@ class PlayerInitialAttributes
         ];
 
         return $potentialMinimumAttributesRanges[$potentialDescription];
-    }
-
-    /**
-     * @return array
-     */
-    public function getAllAttributes(): array
-    {
-        return $this->playerAllAttributes;
     }
 }

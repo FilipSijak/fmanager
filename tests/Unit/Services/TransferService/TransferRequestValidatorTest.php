@@ -46,7 +46,7 @@ class TransferRequestValidatorTest extends TestCase
         $this->assertNotEmpty($permanentTransferValidationFail);
     }
 
-    public function loanTransferRequestData(): array
+    public static function loanTransferRequestData(): array
     {
         return [
             'Loan transfer required fields' => [
@@ -71,7 +71,7 @@ class TransferRequestValidatorTest extends TestCase
         ];
     }
 
-    public function freeTransferRequestData(): array
+    public static function freeTransferRequestData(): array
     {
         return [
             'Free transfer required fields' => [
@@ -86,7 +86,7 @@ class TransferRequestValidatorTest extends TestCase
         ];
     }
 
-    public function permanentTransferRequestData(): array
+    public static function permanentTransferRequestData(): array
     {
         return [
             'Free transfer required fields' => [
