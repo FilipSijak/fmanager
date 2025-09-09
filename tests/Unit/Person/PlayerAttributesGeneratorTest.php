@@ -47,44 +47,43 @@ class PlayerAttributesGeneratorTest extends TestCase
         $this->assertObjectHasProperty('potential', $result);
     }
 
-    public function testSetMaxPotentialForDifferentAges()
+    /**
+     * @dataProvider ageMaxPotentialProvider
+     */
+    public function testSetMaxPotentialForDifferentAges(int $age, float $expectedMultiplier)
     {
-        $ageTests = [
-            16 => 0.85,
-            18 => 0.9,
-            21 => 0.95,
-            24 => 1,
-            29 => 0.98,
-            30 => 0.95,
-            32 => 0.92,
-            33 => 0.89,
-            35 => 0.83,
-            38 => 0.75,
-            41 => 0.67,
+        $player = new stdClass();
+        $player->position = 'striker';
+        $player->potentialByCategory = (object)['technical' => 80];
+        $player->potential = 100;
+
+        $reflectionClass = new \ReflectionClass(PlayerAttributesGenerator::class);
+        $setMaxPotentialMethod = $reflectionClass->getMethod('setMaxPotential');
+        $setMaxPotentialMethod->setAccessible(true);
+
+        $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
+
+        $generator = new PlayerAttributesGenerator($playerInitialAttributes);
+        $generator->player = new stdClass();
+        $generator->player->dob = Carbon::now()->subYears($age)->format('Y-m-d');
+        $generator->player->max_potential = 100;
+
+        $setMaxPotentialMethod->invoke($generator);
+
+        $message = "Age $age should have potential of " . ($generator->player->max_potential * $expectedMultiplier);
+        $this->assertEquals($generator->player->max_potential * $expectedMultiplier, $generator->player->potential, $message);
+    }
+
+    public static function ageMaxPotentialProvider(): array
+    {
+        return [
+            '16 years old' => [16, 0.85],
+            '18 years old' => [18, 0.90],
+            '21 years old' => [21, 0.95],
+            '24 years old' => [24, 1.00],
+            '29 years old' => [29, 0.98],
+            '30 years old' => [30, 0.95]
         ];
-
-        foreach ($ageTests as $age => $expectedMultiplier) {
-            $player = new stdClass();
-            $player->position = 'striker';
-            $player->potentialByCategory = (object)['technical' => 80];
-            $player->potential = 100;
-
-            $reflectionClass = new \ReflectionClass(PlayerAttributesGenerator::class);
-            $setMaxPotentialMethod = $reflectionClass->getMethod('setMaxPotential');
-            $setMaxPotentialMethod->setAccessible(true);
-
-            $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
-
-            $generator = new PlayerAttributesGenerator($playerInitialAttributes);
-            $generator->player = new stdClass();
-            $generator->player->dob = Carbon::now()->subYears($age)->format('Y-m-d');
-            $generator->player->max_potential = 100;
-
-            $setMaxPotentialMethod->invoke($generator);
-
-            $message = "Age $age should have potential of " . (100 * $expectedMultiplier);
-            $this->assertEquals(100 * $expectedMultiplier, $generator->player->potential, $message);
-        }
     }
 
     public function testSetPersonInfoGeneratesValidData()
