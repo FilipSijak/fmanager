@@ -3,11 +3,12 @@
 namespace Tests\Unit\Competition;
 
 use App\Services\CompetitionService\Competitions\League;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class LeagueTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_can_generate_all_season_games_for_x_clubs()
     {
         $clubs = [1,2,3,4,5,6,7,8];
@@ -19,7 +20,7 @@ class LeagueTest extends TestCase
         $this->assertEquals(count($games), $totalGames);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_for_an_odd_number_of_clubs()
     {
         $clubs = [1,2,3,4,5,6,7];
@@ -29,7 +30,7 @@ class LeagueTest extends TestCase
         $league->generateLeagueGames($clubs);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_for_three_clubs_only()
     {
         $clubs = [1,2,3];
@@ -39,7 +40,7 @@ class LeagueTest extends TestCase
         $league->generateLeagueGames($clubs);
     }
 
-    /** @test */
+    #[Test]
     public function it_throws_exception_for_more_than_twenty_clubs()
     {
         $clubs = [];

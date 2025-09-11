@@ -4,11 +4,12 @@ namespace Tests\Unit\Person;
 
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class InitialPotentialTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function it_can_create_player_potential_based_on_club_rank()
     {
         $clubAcademyRank = 15;

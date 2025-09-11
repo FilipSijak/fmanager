@@ -5,11 +5,12 @@ namespace Tests\Unit\Competition;
 use App\Repositories\GameRepository;
 use App\Services\CompetitionService\Competitions\KnockoutSummary;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class KnockoutSummaryTest extends TestCase
 {
-    /** @test */
+    #[Test]
     public function itCanGetCurrentRoundData()
     {
         $summary = file_get_contents(__DIR__ . '/../../fixtures/knockoutSummary.json');
@@ -22,7 +23,7 @@ class KnockoutSummaryTest extends TestCase
         $this->assertCount($expectedNumberOfPairsFirstGroup, $currentRoundData['first_group']);
     }
 
-    /** @test */
+    #[Test]
     public function itCanGetCurrentRoundDataFromTwoRounds()
     {
         $summary = file_get_contents(__DIR__ . '/../../fixtures/knockoutSummaryTwoRounds.json');
@@ -37,7 +38,7 @@ class KnockoutSummaryTest extends TestCase
         $this->assertEquals($expectedSecondRoundFirsPairWinner,$secondRoundFirsPairWinner);
     }
 
-    /** @test */
+    #[Test]
     public function itCanGeFinalsGame()
     {
         $summary = file_get_contents(__DIR__ . '/../../fixtures/knockoutSummaryFinals.json');

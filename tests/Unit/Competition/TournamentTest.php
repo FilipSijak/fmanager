@@ -8,13 +8,14 @@ use App\Repositories\CompetitionRepository;
 use App\Services\CompetitionService\Competitions\Tournament;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class TournamentTest extends TestCase
 {
     use DatabaseMigrations;
 
-    /** @test */
+    #[Test]
     public function it_can_create_groups_from_array_of_clubs()
     {
         $tournament = new Tournament();
@@ -35,7 +36,7 @@ class TournamentTest extends TestCase
         $this->assertEquals(4, count($clubsByGroups[1]));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_tournament()
     {
         $tournament = new Tournament();
@@ -57,7 +58,7 @@ class TournamentTest extends TestCase
         $this->assertEquals(2, count($summary["second_group"]["rounds"][1]["pairs"]));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_update_tournament_summary()
     {
         $competitionRepoMock = $this->createMock(CompetitionRepository::class);

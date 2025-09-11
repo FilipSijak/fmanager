@@ -3,14 +3,14 @@
 namespace Tests\Unit\Services\TransferService;
 
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class TransferRequestValidatorTest extends TestCase
 {
-    /**
-     * @test
-     * @dataProvider loanTransferRequestData
-     */
+    #[Test]
+    #[DataProvider('loanTransferRequestData')]
     public function itValidatesLoanTransferRequest($expected, $failed)
     {
         $loanValidationSuccess = (new TransferRequestValidator())->validateLoanTransferRequest($expected);
@@ -20,10 +20,8 @@ class TransferRequestValidatorTest extends TestCase
         $this->assertNotEmpty($loanValidationFail);
     }
 
-    /**
-     * @test
-     * @dataProvider permanentTransferRequestData
-     */
+    #[Test]
+    #[DataProvider('permanentTransferRequestData')]
     public function itValidatesFreeTransferRequest($expected, $failed)
     {
         $freeTransferValidationSuccess = (new TransferRequestValidator())->validateFreeTransferRequest($expected);
@@ -33,10 +31,8 @@ class TransferRequestValidatorTest extends TestCase
         $this->assertNotEmpty($freeTransferValidationFail);
     }
 
-    /**
-     * @test
-     * @dataProvider loanTransferRequestData
-     */
+    #[Test]
+    #[DataProvider('loanTransferRequestData')]
     public function itValidatesPermanentTransferRequest($expected, $failed)
     {
         $permanentTransferValidationSuccess = (new TransferRequestValidator())->validatePermanentTransferRequest($expected);

@@ -1,12 +1,19 @@
 <?php
 
-namespace Tests\Unit\Services\PersonService\GeneratePeople;
+namespace Tests\Unit\Person;
 
 use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerInitialAttributes;
 use Carbon\Carbon;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+
+interface FakerDateTimeExtendedInterface
+{
+    public function dateTimeBetween($startDate = '-30 years', $endDate = 'now', $timezone = null);
+}
+
 
 class PlayerAttributesGeneratorTest extends TestCase
 {
@@ -30,8 +37,9 @@ class PlayerAttributesGeneratorTest extends TestCase
         $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
 
         $this->playerAttributesGenerator = new PlayerAttributesGenerator($playerInitialAttributes);
+        $this->playerAttributesGenerator->setPlayerDetails($player);
 
-        $result = $this->playerAttributesGenerator->generateAttributes($player);
+        $result = $this->playerAttributesGenerator->generateAttributes();
 
         $this->assertEquals('striker', $result->position);
         $this->assertEquals($player->potentialByCategory, $result->potentialByCategory);
@@ -47,31 +55,40 @@ class PlayerAttributesGeneratorTest extends TestCase
         $this->assertObjectHasProperty('potential', $result);
     }
 
-    /**
-     * @dataProvider ageMaxPotentialProvider
-     */
-    public function testSetMaxPotentialForDifferentAges(int $age, float $expectedMultiplier)
+    #[DataProvider('ageMaxPotentialProvider')]
+    public function testCurrentPotentialForDifferentAges(int $age, float $expectedMultiplier)
     {
         $player = new stdClass();
-        $player->position = 'striker';
+        $player->position = 'CB';
         $player->potentialByCategory = (object)['technical' => 80];
         $player->potential = 100;
 
-        $reflectionClass = new \ReflectionClass(PlayerAttributesGenerator::class);
-        $setMaxPotentialMethod = $reflectionClass->getMethod('setMaxPotential');
-        $setMaxPotentialMethod->setAccessible(true);
+        $fakerMock = $this->getMockBuilder(FakerDateTimeExtendedInterface::class)
+                          ->onlyMethods(['dateTimeBetween'])
+                          ->getMock();
+        $playerInitialAttributesMock = $this->createPlayerInitialAttributesMock($player);
 
-        $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
 
-        $generator = new PlayerAttributesGenerator($playerInitialAttributes);
-        $generator->player = new stdClass();
-        $generator->player->dob = Carbon::now()->subYears($age)->format('Y-m-d');
-        $generator->player->max_potential = 100;
+        $mockDob = new \DateTime(date("Y") - $age .'-01-01');
 
-        $setMaxPotentialMethod->invoke($generator);
+        $fakerMock->expects($this->any())
+                  ->method('dateTimeBetween')
+                  ->with('-40 years', '-16 years')
+                  ->willReturn($mockDob);
 
-        $message = "Age $age should have potential of " . ($generator->player->max_potential * $expectedMultiplier);
-        $this->assertEquals($generator->player->max_potential * $expectedMultiplier, $generator->player->potential, $message);
+        // Create generator with the mock dependency
+        $generator = new PlayerAttributesGenerator($playerInitialAttributesMock);
+        $reflection    = new \ReflectionClass($generator);
+        $fakerProperty = $reflection->getProperty('faker');
+        $fakerProperty->setValue($generator, $fakerMock);
+
+        // Call the method
+        $generator->setPlayerDetails($player);
+        $generatedPlayer = $generator->generateAttributes();
+
+
+        $message = "Age $age should have potential of " . ($generatedPlayer->max_potential * $expectedMultiplier);
+        $this->assertEquals($generatedPlayer->max_potential * $expectedMultiplier, $generatedPlayer->potential, $message);
     }
 
     public static function ageMaxPotentialProvider(): array
@@ -82,7 +99,12 @@ class PlayerAttributesGeneratorTest extends TestCase
             '21 years old' => [21, 0.95],
             '24 years old' => [24, 1.00],
             '29 years old' => [29, 0.98],
-            '30 years old' => [30, 0.95]
+            '30 years old' => [30, 0.95],
+            '32 years old' => [32, 0.92],
+            '33 years old' => [33, 0.89],
+            '35 years old' => [35, 0.83],
+            '38 years old' => [38, 0.75],
+            '41 years old' => [41, 0.67]
         ];
     }
 
@@ -99,15 +121,17 @@ class PlayerAttributesGeneratorTest extends TestCase
         $player->potentialByCategory = null;
         $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
         $generator = new PlayerAttributesGenerator($playerInitialAttributes);
-        $generator->player = new stdClass();
+
+        $player = new \ReflectionProperty(PlayerAttributesGenerator::class, 'player');
+        $player->setAccessible(true);
 
         $setPersonInfoMethod->invoke($generator);
 
-        $this->assertIsString($generator->player->first_name);
-        $this->assertIsString($generator->player->last_name);
-        $this->assertIsString($generator->player->country_code);
+        $this->assertIsString($player->first_name);
+        $this->assertIsString($player->last_name);
+        $this->assertIsString($player->country_code);
 
-        $dob = Carbon::parse($generator->player->dob);
+        $dob = Carbon::parse($player->dob);
         $this->assertTrue($dob->age >= 16 && $dob->age <= 40, "Age should be between 16 and 40 but was {$dob->age}");
     }
 
