@@ -22,6 +22,10 @@ class PlayerAttributesGenerator
         41 => 0.67,
     ];
 
+    private $faker;
+
+    private $player;
+
     public function __construct(
         private readonly PlayerInitialAttributes $playerInitialAttributes
     )
@@ -29,17 +33,32 @@ class PlayerAttributesGenerator
         $this->faker = Factory::create();
     }
 
-    public function generateAttributes(stdClass $playerPotentialWithPosition)
+    public function setPlayerDetails(stdClass $playerPotentialWithPosition)
     {
         $this->player = new \stdClass();
         $this->player->position = $playerPotentialWithPosition->position;
         $this->player->potentialByCategory = $playerPotentialWithPosition->potentialByCategory;
         $this->player->max_potential = $playerPotentialWithPosition->potential;
 
+        $startDate = '-40 years';
+        $endDate   = '-16 years';
+
+        $dob =  $this->faker->dateTimeBetween($startDate, $endDate);
+        $dob = date_format($dob, 'Y-m-d');
+
+        $this->player->first_name   = $this->faker->firstNameMale;
+        $this->player->last_name    = $this->faker->lastName;
+        $this->player->country_code = $this->faker->countryCode;
+        $this->player->dob          = $dob;
+
+        return $this;
+    }
+
+    public function generateAttributes()
+    {
         $this->setInitialAttributes();
         $this->setPlayerPositionList();
-        $this->setPersonInfo();
-        $this->setMaxPotential();
+        $this->setCurrentPotential();
 
         return $this->player;
     }
@@ -55,7 +74,7 @@ class PlayerAttributesGenerator
         }
     }
 
-    protected function setMaxPotential()
+    protected function setCurrentPotential()
     {
         $currentAge = Carbon::parse($this->player->dob)->age;
 
@@ -79,19 +98,5 @@ class PlayerAttributesGenerator
     protected function setPlayerPositionList()
     {
         $this->player->positions = [$this->player->position];
-    }
-
-    protected function setPersonInfo()
-    {
-        $startDate = '-40 years';
-        $endDate   = '-16 years';
-
-        $dob =  $this->faker->dateTimeBetween($startDate, $endDate, $timezone = null);
-        $dob = date_format($dob, 'Y-m-d');
-
-        $this->player->first_name   = $this->faker->firstNameMale;
-        $this->player->last_name    = $this->faker->lastName;
-        $this->player->country_code = $this->faker->countryCode;
-        $this->player->dob          = $dob;
     }
 }

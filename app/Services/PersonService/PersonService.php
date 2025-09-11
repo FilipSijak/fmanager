@@ -15,8 +15,8 @@ class PersonService implements IPersonService
 
         switch ($personType) {
             case PersonTypes::PLAYER:
-                $attributesGenerator = new PlayerAttributesGenerator();
-                $generatedAttributes = $attributesGenerator->generateAttributes($playerPotential);
+                $attributesGenerator = app(PlayerAttributesGenerator::class);
+                $generatedAttributes = $attributesGenerator->setPlayerDetails($playerPotential)->generateAttributes();
 
                 $player = $personFactory->createPlayer($generatedAttributes, $instanceId);
                 break;
