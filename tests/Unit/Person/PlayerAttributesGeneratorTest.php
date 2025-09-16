@@ -14,10 +14,10 @@ interface FakerDateTimeExtendedInterface
     public function dateTimeBetween($startDate = '-30 years', $endDate = 'now', $timezone = null);
 }
 
-
 class PlayerAttributesGeneratorTest extends TestCase
 {
     private PlayerAttributesGenerator $playerAttributesGenerator;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -67,8 +67,6 @@ class PlayerAttributesGeneratorTest extends TestCase
                           ->onlyMethods(['dateTimeBetween'])
                           ->getMock();
         $playerInitialAttributesMock = $this->createPlayerInitialAttributesMock($player);
-
-
         $mockDob = new \DateTime(date("Y") - $age .'-01-01');
 
         $fakerMock->expects($this->any())
@@ -76,16 +74,14 @@ class PlayerAttributesGeneratorTest extends TestCase
                   ->with('-40 years', '-16 years')
                   ->willReturn($mockDob);
 
-        // Create generator with the mock dependency
         $generator = new PlayerAttributesGenerator($playerInitialAttributesMock);
         $reflection    = new \ReflectionClass($generator);
         $fakerProperty = $reflection->getProperty('faker');
         $fakerProperty->setValue($generator, $fakerMock);
 
-        // Call the method
+
         $generator->setPlayerDetails($player);
         $generatedPlayer = $generator->generateAttributes();
-
 
         $message = "Age $age should have potential of " . ($generatedPlayer->max_potential * $expectedMultiplier);
         $this->assertEquals($generatedPlayer->max_potential * $expectedMultiplier, $generatedPlayer->potential, $message);
@@ -110,22 +106,17 @@ class PlayerAttributesGeneratorTest extends TestCase
 
     public function testSetPersonInfoGeneratesValidData()
     {
-        // Create a reflection to access protected method
-        $reflectionClass = new \ReflectionClass(PlayerAttributesGenerator::class);
-        $setPersonInfoMethod = $reflectionClass->getMethod('setPersonInfo');
-        $setPersonInfoMethod->setAccessible(true);
-
-        // Create an instance and set up the player property
         $player = new stdClass();
         $player->position = 'striker';
         $player->potentialByCategory = null;
+        $player->potential = 100;
         $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
         $generator = new PlayerAttributesGenerator($playerInitialAttributes);
 
-        $player = new \ReflectionProperty(PlayerAttributesGenerator::class, 'player');
-        $player->setAccessible(true);
-
-        $setPersonInfoMethod->invoke($generator);
+        $generator->setPlayerDetails($player);
+        $generatorReflection = new \ReflectionObject($generator);
+        $player = $generatorReflection->getProperty('player');
+        $player = $player->getValue($generator);
 
         $this->assertIsString($player->first_name);
         $this->assertIsString($player->last_name);
