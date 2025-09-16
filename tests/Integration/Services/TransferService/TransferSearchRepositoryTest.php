@@ -11,13 +11,14 @@ use App\Models\TransferList;
 use App\Repositories\TransferSearchRepository;
 use App\Services\TransferService\TransferTypes;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class TransferSearchRepositoryTest extends TestCase
 {
     use DatabaseMigrations;
 
-    /** @test */
+    #[Test]
     public function itCanGetListedPlayer()
     {
         $position = 'CB';
@@ -57,7 +58,7 @@ class TransferSearchRepositoryTest extends TestCase
         $this->assertEquals($listedPlayer->id, $player->id);
     }
 
-    /** @test */
+    #[Test]
     public function itCanFindPlayersListedForLoan()
     {
         $position = 'CB';
@@ -95,7 +96,7 @@ class TransferSearchRepositoryTest extends TestCase
         $this->assertEquals($listedPlayer->id, $player->id);
     }
 
-    /** @test */
+    #[Test]
     public function itCanFindLuxuryPlayer()
     {
         $position = 'CB';
@@ -132,7 +133,7 @@ class TransferSearchRepositoryTest extends TestCase
         $this->assertEquals($luxuryPlayer->id, $player->id);
     }
 
-    /** @test */
+    #[Test]
     public function itCanFindPlayerWithUnprotectedContract()
     {
         $position = 'CB';

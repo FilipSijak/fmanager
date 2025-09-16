@@ -23,13 +23,14 @@ use App\Services\TransferService\TransferTypes;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Http\Request;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class TransferServiceTest extends TestCase
 {
     use DatabaseMigrations;
 
-    /** @test  */
+    #[Test]
     public function itIsAbleToCompleteFreeTransfers()
     {
         $buyingClubId = 1;
@@ -70,7 +71,7 @@ class TransferServiceTest extends TestCase
         $this->assertEquals(null, $transferContractOffer);
     }
 
-    /** @test */
+    #[Test]
     public function isAbleToCompletePermanentTransferWithoutInstallments()
     {
         $buyingClubId = 1;
@@ -107,7 +108,7 @@ class TransferServiceTest extends TestCase
         $this->assertEquals(0, $buyingClubAccountAfterTransfer->transfer_budget);
     }
 
-    /** @test */
+    #[Test]
     public function itIsAbleToCompleteTransfersWithInstallments()
     {
         $newClub = 1;
@@ -130,7 +131,7 @@ class TransferServiceTest extends TestCase
         $this->assertEquals($player->loan_club_id, $newClub);
     }
 
-    /** @test */
+    #[Test]
     public function itCanRunAutomaticBidsForMissingPositions()
     {
         Instance::factory()->create(

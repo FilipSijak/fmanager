@@ -23,6 +23,7 @@ use App\Services\PersonService\PersonService;
 use Database\Seeders\ClubsSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CreateInstanceTest extends TestCase
@@ -38,7 +39,7 @@ class CreateInstanceTest extends TestCase
         $this->userId         = User::factory()->make(['id' => 1])->id;
     }
 
-    /** @test */
+    #[Test]
     public function it_can_setup_a_new_game()
     {
         $createInstance = $this->getNewInstance();

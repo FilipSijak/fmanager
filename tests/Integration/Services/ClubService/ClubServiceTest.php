@@ -16,13 +16,14 @@ use App\Services\SearchService\SearchService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ClubServiceTest extends TestCase
 {
     use DatabaseMigrations;
 
-    /** @test  */
+    #[Test]
     public function it_can_make_a_transfer_decision()
     {
         (new DatabaseSeeder())->run();

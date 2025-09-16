@@ -8,13 +8,14 @@ use App\Models\Transfer;
 use App\Services\ClubService\FinancialAnalysis\ClubFinancialAnalysis;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class FinancialAnalysisTest extends TestCase
 {
     use DatabaseMigrations;
 
-    /** @test  */
+    #[Test]
     public function it_can_check_transfer_offer_is_acceptable()
     {
         (new DatabaseSeeder())->run();

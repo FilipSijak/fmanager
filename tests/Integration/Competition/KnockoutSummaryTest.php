@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 use function GuzzleHttp\Promise\all;
 
@@ -18,7 +19,7 @@ class KnockoutSummaryTest extends TestCase
 {
     use DatabaseMigrations;
 
-    /** @test */
+    #[Test]
     public function itChecksGameInfoForTheCurrentRound()
     {
         (new DatabaseSeeder())->run();

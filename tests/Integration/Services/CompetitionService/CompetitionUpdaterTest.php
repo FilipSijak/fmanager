@@ -15,6 +15,7 @@ use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CompetitionUpdaterTest extends TestCase
@@ -22,7 +23,7 @@ class CompetitionUpdaterTest extends TestCase
 
     use DatabaseMigrations;
 
-    /** @test */
+    #[Test]
     public function it_can_update_league_and_tournament_group_points()
     {
         $competitionRepository = new CompetitionRepository((new CompetitionDataSource()));

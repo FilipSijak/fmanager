@@ -4,11 +4,12 @@ namespace Tests\Integration\Competition;
 
 use App\Services\CompetitionService\Competitions\League;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CompetitionSourceTest extends TestCase
 {
-    /* @test */
+    #[Test]
     public function it_can_store_league_matches()
     {
         /*$competitionDataSource = new CompetitionDataSource();
