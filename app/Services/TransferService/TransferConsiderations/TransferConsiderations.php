@@ -9,24 +9,41 @@ use App\Services\TransferService\TransferStatusTypes;
 class TransferConsiderations
 {
     private PlayerConsideration $playerConsideration;
+    private ClubConsideration $clubConsideration;
     private TransferRepository  $transferRepository;
 
     public function __construct(
         PlayerConsideration $playerConsideration,
+        ClubConsideration $clubConsideration,
         TransferRepository $transferRepository
     )
     {
         $this->playerConsideration = $playerConsideration;
+        $this->clubConsideration = $clubConsideration;
         $this->transferRepository = $transferRepository;
     }
 
-    public function playerConsideration(Transfer $transfer): int
+    public function playerDecision(Transfer $transfer): int
     {
         $playerDecision = $this->playerConsideration->considerOffer($transfer);
 
         $this->transferRepository->updateTransferStatus($transfer, $playerDecision);
 
         return $playerDecision;
+    }
+
+    public function sellingClubDecision(Transfer $transfer): bool
+    {
+        $decision = $this->clubConsideration->considerOffer($transfer);
+
+        if (!$decision) {
+            // decide for counteroffer or declining the offer
+            // update transfer status
+            // counter offer should update transfer financials and then decisions will have to be made by transfer source club
+
+        }
+
+        return true;
     }
 
     public function waitingPaperwork(Transfer $transfer)

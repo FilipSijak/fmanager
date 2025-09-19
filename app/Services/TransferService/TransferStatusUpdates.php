@@ -16,7 +16,9 @@ class TransferStatusUpdates
     private TransferConsiderations $transferConsiderations;
     private TransferRepository     $transferRepository;
 
-    public function __construct(TransferConsiderations $transferConsiderations, TransferRepository $transferRepository)
+    public function __construct(
+        TransferConsiderations $transferConsiderations,
+        TransferRepository $transferRepository)
     {
         $this->transferConsiderations = $transferConsiderations;
         $this->transferRepository = $transferRepository;
@@ -41,9 +43,7 @@ class TransferStatusUpdates
             case TransferStatusTypes::WAITING_TARGET_CLUB:
                 break;
             case TransferStatusTypes::WAITING_PLAYER:
-                $this->transferConsiderations->playerConsideration($transfer);
-            case TransferStatusTypes::PLAYER_APPROVED:
-                break;
+                $this->transferConsiderations->playerDecision($transfer);
             case TransferStatusTypes::WAITING_PAPERWORK:
                 break;
             case TransferStatusTypes::MOVE_PLAYER:
@@ -56,31 +56,43 @@ class TransferStatusUpdates
     {
         switch ($transfer->source_club_status) {
             case TransferStatusTypes::WAITING_TARGET_CLUB:
-                // target club needs to consider the offer
+                $this->transferConsiderations->sellingClubDecision($transfer);
                 break;
             case TransferStatusTypes::WAITING_PLAYER:
-                $this->transferConsiderations->playerConsideration($transfer);
+                $this->transferConsiderations->playerDecision($transfer);
                 break;
-            case TransferStatusTypes::PLAYER_APPROVED:
-                // request paperwork
             case TransferStatusTypes::WAITING_PAPERWORK:
                 $this->transferConsiderations->waitingPaperwork($transfer);
                 break;
+            case TransferStatusTypes::WAITING_TRANSFER_WINDOW:
+                // check if transfer window started and move player if so
+                $this->transferRepository->transferPlayerToNewClub($transfer);
+                break;
+            case TransferStatusTypes::MOVE_PLAYER:
+                $this->transferRepository->transferPlayerToNewClub($transfer);
+                break;
+            case TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER:
+                // SOURCE_CLUB_COUNTEROFFER
             case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER:
-                // reconsider counteroffer, cancel transfer if needed
-            case TransferStatusTypes::TARGET_CLUB_DECLINED:
-                // SOURCE_CLUB_COUNTEROFFER or cancel the deal
+                // TARGET_CLUB_COUNTEROFFER
+            case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER_ACCEPTED:
+                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
+            case TransferStatusTypes::PLAYER_COUNTEROFFER:
+                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
+            case TransferStatusTypes::PLAYER_COUNTEROFFER_ACCEPTED:
+                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
+            case TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER:
+                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
             case TransferStatusTypes::PLAYER_DECLINED:
-                // improve player offer or cancel the deal
+                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
+            case TransferStatusTypes::TARGET_CLUB_DECLINED:
+                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
             case TransferStatusTypes::TRANSFER_COMPLETED:
                 //move player to source club and complete transfer
                 $this->transferRepository->transferPlayerToNewClub($transfer);
                 break;
             case TransferStatusTypes::TRANSFER_FAILED:
                 $this->transferRepository->removeTransfersAndOffers($transfer);
-                break;
-            case TransferStatusTypes::MOVE_PLAYER:
-                $this->transferRepository->transferPlayerToNewClub($transfer);
                 break;
         }
     }
