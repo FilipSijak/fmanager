@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,5 +35,12 @@ class Club extends Model
     public function account()
     {
         return $this->hasOne(Account::class, 'club_id');
+    }
+
+    public function scopeRatedTop(Builder $query)
+    {
+        return $query->with('players', function ($query) {
+            return $query->orderBy('potential', 'desc')->limit(3);
+        });
     }
 }

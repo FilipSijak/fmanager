@@ -54,6 +54,9 @@ class TransferStatusUpdates
 
     public function permanentTransferUpdates(Transfer $transfer): void
     {
+        //TARGET - selling club
+        //SOURCE - offering club
+
         switch ($transfer->source_club_status) {
             case TransferStatusTypes::WAITING_TARGET_CLUB:
                 $this->transferConsiderations->sellingClubDecision($transfer);
@@ -72,27 +75,29 @@ class TransferStatusUpdates
                 $this->transferRepository->transferPlayerToNewClub($transfer);
                 break;
             case TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER:
-                // SOURCE_CLUB_COUNTEROFFER
+                $this->transferRepository->transferFeeCounterOffer($transfer, TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER);
+                break;
             case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER:
-                // TARGET_CLUB_COUNTEROFFER
-            case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER_ACCEPTED:
-                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
+                $this->transferRepository->transferFeeCounterOffer($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER);
+                break;
+            case TransferStatusTypes::COUNTEROFFER_ACCEPTED:
+                $this->transferRepository->makePlayerContractOffer($transfer);
             case TransferStatusTypes::PLAYER_COUNTEROFFER:
-                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
             case TransferStatusTypes::PLAYER_COUNTEROFFER_ACCEPTED:
-                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
+                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER);
+                break;
             case TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER:
-                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
+                $this->transferConsiderations->playerDecision($transfer);
+                break;
             case TransferStatusTypes::PLAYER_DECLINED:
-                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
+                $this->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED);
             case TransferStatusTypes::TARGET_CLUB_DECLINED:
-                // TARGET_CLUB_COUNTEROFFER_ACCEPTED
+                $this->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED);
             case TransferStatusTypes::TRANSFER_COMPLETED:
-                //move player to source club and complete transfer
                 $this->transferRepository->transferPlayerToNewClub($transfer);
                 break;
             case TransferStatusTypes::TRANSFER_FAILED:
-                $this->transferRepository->removeTransfersAndOffers($transfer);
+                $this->transferRepository->removeTransferAndPlayerOffers($transfer);
                 break;
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -57,5 +58,10 @@ class Player extends Model
     public function contract()
     {
         return $this->belongsTo(PlayerContract::class);
+    }
+
+    public function scopeKeyPlayers(Builder $query)
+    {
+        return $query->orderBy('potential', 'desc')->limit(3);
     }
 }

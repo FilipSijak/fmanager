@@ -20,7 +20,6 @@ class TransferFactory extends Factory
             'offer_date' => Carbon::now(),
             'transfer_date' => Carbon::now()->addMonth(),
             'source_club_status' => 1,
-            'target_club_status' => 1,
             'transfer_type' => 3,
             'loan_start' => null,
             'loan_end' => null

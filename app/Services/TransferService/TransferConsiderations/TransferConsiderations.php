@@ -43,6 +43,8 @@ class TransferConsiderations
 
         }
 
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_PLAYER);
+
         return true;
     }
 

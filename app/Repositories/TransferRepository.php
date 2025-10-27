@@ -161,6 +161,33 @@ class TransferRepository extends CoreRepository
         $transferFinancialDetails->installments = 0;
         $transferFinancialDetails->save();
 
+        $this->makePlayerContractOffer($transfer);
+
+        return $transfer;
+    }
+
+    public function transferFeeCounterOffer(Transfer $transfer, int $type)
+    {
+        if ($type === TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER) {
+            // target club approves or declines transfer or updates with a counteroffer
+            // we only check for financial side and no other squad deficits at that point
+
+            $decision = true;
+
+            if ($decision) {
+                $this->updateTransferStatus($transfer,TransferStatusTypes::COUNTEROFFER_ACCEPTED);
+            }
+        }
+        // routes for source or target club
+        // if it's a source club counteroffer, target club has to review, and vice versa
+        // we only check for financial side and no other squad deficits at that point
+        // update transfer to decline or TARGET_CLUB_COUNTEROFFER_ACCEPTED
+    }
+
+    public function makePlayerContractOffer(Transfer $transfer)
+    {
+        $player = Player::find($transfer->player_id);
+
         $contractOffer = $this->playerRepository->contractBasedOnPotential($player);
 
         DB::table('transfer_contract_offers')->insert(
@@ -181,6 +208,11 @@ class TransferRepository extends CoreRepository
             ]
         );
 
-        return $transfer;
+        $this->updateTransferStatus($transfer,TransferStatusTypes::WAITING_PLAYER);
+    }
+
+    public function removeTransferAndPlayerOffers(Transfer $transfer)
+    {
+
     }
 }

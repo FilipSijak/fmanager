@@ -12,17 +12,33 @@ class SquadAnalysis
         return $this->optimalNumbersCheckByPosition($club);
     }
 
-    public function isAcceptableTransfer(Club $club, Player $player): bool
+    public function isAcceptableTransfer(Club $club, Player $player): \stdClass
     {
+        $response = new \stdClass();
+        $response->key_player = false;
+        $response->best_in_position = false;
+        $response->acceptable_transfer = true;
+        $response->position_deficit = false;
+
         //position deficit equal or higher than
         if (! $this->isAcceptablePositionDeficit($club, $player)) {
-            return false;
+            $response->position_deficit = true;
+            $response->acceptable_transfer = false;
         }
 
         // squad key player
+        $clubTopPlayers = $club->players()->keyPlayers()->get();
+
+        foreach ($clubTopPlayers as $ratedPlayer) {
+            if ($player->potential > $ratedPlayer->potential) {
+                $response->key_player = true;
+            }
+        }
+
+
         // compare player to other players
 
-        return true;
+        return $response;
     }
 
     public function isAcceptablePositionDeficit(Club $club, Player $player): bool
