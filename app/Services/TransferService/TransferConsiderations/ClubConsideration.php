@@ -2,40 +2,40 @@
 
 namespace App\Services\TransferService\TransferConsiderations;
 
+use App\DataModels\ClubFinancialDecision;
+use App\DataModels\ClubTransferDecision;
 use App\Models\Club;
 use App\Models\Player;
 use App\Models\Transfer;
-use App\Services\ClubService\FinancialAnalysis\ClubFinancialAnalysis;
-use App\Services\ClubService\SquadAnalysis\SquadAnalysis;
+use App\Services\TransferService\TransferEntityAnalysis\ClubFinancialTransferAnalysis;
+use App\Services\TransferService\TransferEntityAnalysis\SquadTransferAnalysis;
 
 
 class ClubConsideration
 {
-    private SquadAnalysis $squadAnalysis;
-    private ClubFinancialAnalysis $clubFinancialAnalysis;
+    private SquadTransferAnalysis $squadTransferAnalysis;
+    private ClubFinancialTransferAnalysis $clubFinancialTransferAnalysis;
 
     public function __construct(
-        SquadAnalysis $squadAnalysis,
-        ClubFinancialAnalysis $clubFinancialAnalysis
+        SquadTransferAnalysis $squadTransferAnalysis,
+        ClubFinancialTransferAnalysis $clubFinancialTransferAnalysis
     ) {
-        $this->squadAnalysis = $squadAnalysis;
-        $this->clubFinancialAnalysis = $clubFinancialAnalysis;
+        $this->squadTransferAnalysis = $squadTransferAnalysis;
+        $this->clubFinancialTransferAnalysis = $clubFinancialTransferAnalysis;
     }
 
-    public function considerOffer(Transfer $transfer): bool
+    public function considerOffer(Transfer $transfer): ClubTransferDecision
     {
         $player = Player::find($transfer->player_id);
         $club = Club::find($transfer->target_club_id);
+        $playerImportance = $this->squadTransferAnalysis->isAcceptableTransfer($club, $player);
+        $clubTransferDecision = new ClubTransferDecision();
+        $financialDecision = $this->clubFinancialTransferAnalysis->isFinanciallyAcceptableTransfer($transfer, $playerImportance);
 
-        if (!$this->squadAnalysis->isAcceptableTransfer($club, $player)) {
-            return false;
+        if (!$financialDecision->isAcceptableTransfer() && $financialDecision->getCounterOffer()) {
+            $clubTransferDecision->setCounterOffer($financialDecision->getCounterOffer());
         }
 
-        if (!$this->clubFinancialAnalysis->isFinanciallyAcceptableTransfer($transfer)) {
-            // counteroffer?
-            return false;
-        }
-
-        return true;
+        return $clubTransferDecision;
     }
 }

@@ -53,5 +53,7 @@ class SellingClubTransferDecisionsTest extends TestCase
         $decision = $transferConsiderations->sellingClubDecision($transfer);
 
         $this->assertTrue($decision);
+
+        // check transfer has updated transfer status to waiting player
     }
 }

@@ -36,11 +36,23 @@ class TransferConsiderations
     {
         $decision = $this->clubConsideration->considerOffer($transfer);
 
-        if (!$decision) {
-            // decide for counteroffer or declining the offer
-            // update transfer status
-            // counter offer should update transfer financials and then decisions will have to be made by transfer source club
+        if (!$decision->getAcceptableTransfer()) {
 
+            if ($decision->getCounterOffer()) {
+
+                $transferFinancialDetails = $transfer->transferFinancialDetails()->first();
+
+                $transferFinancialDetails->amount = $decision->getCounterOffer();
+                $transferFinancialDetails->save();
+
+                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER);
+
+                return false;
+            }
+
+            $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_DECLINED);
+
+            return false;
         }
 
         $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_PLAYER);

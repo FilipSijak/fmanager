@@ -110,6 +110,8 @@ class TransferRepository extends CoreRepository
 
     public function transferPlayerToNewClub(Transfer $transfer)
     {
+        // if outside of transfer window, update status for
+
         $player = Player::where('id', $transfer->player_id)->first();
 
         if ($transfer->transfer_type == TransferTypes::LOAN_TRANSFER) {
@@ -177,6 +179,8 @@ class TransferRepository extends CoreRepository
             if ($decision) {
                 $this->updateTransferStatus($transfer,TransferStatusTypes::COUNTEROFFER_ACCEPTED);
             }
+        } else {
+            // check if source club can afford the counter offer
         }
         // routes for source or target club
         // if it's a source club counteroffer, target club has to review, and vice versa

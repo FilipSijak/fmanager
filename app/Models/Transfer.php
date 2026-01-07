@@ -10,4 +10,9 @@ class Transfer extends Model
     use HasFactory;
 
     public $timestamps = false;
+
+    public function transferFinancialDetails()
+    {
+        return $this->hasOne(TransferFinancialDetails::class);
+    }
 }

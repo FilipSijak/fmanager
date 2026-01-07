@@ -10,8 +10,8 @@ use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Repositories\TransferSearchRepository;
 use App\Services\BaseService;
-use App\Services\ClubService\ClubService;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
+use App\Services\TransferService\TransferEntityAnalysis\ClubTransferAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -19,21 +19,20 @@ use Illuminate\Support\Facades\DB;
 class TransferService extends BaseService
 {
     private TransferRequestValidator $transferRequestValidator;
-    private ClubService              $clubService;
+    private ClubTransferAnalysis     $clubTransferAnalysis;
     protected int|null               $instanceId;
     protected int|null               $seasonId;
     private TransferRepository       $transferRepository;
     private TransferStatusUpdates    $transferStatusUpdates;
-    const LUXURY_TRANSFER_BALANCE =  50000000;
     private TransferSearchRepository $transferSearchRepository;
-    /**
-     * @var false
-     */
+
+    const int LUXURY_TRANSFER_BALANCE = 50000000;
+
     private bool $forceLuxuryBids;
 
     public function __construct(
         TransferRequestValidator $transferRequestValidator,
-        ClubService $clubService,
+        ClubTransferAnalysis $clubTransferAnalysis,
         Request $request,
         TransferRepository $transferRepository,
         TransferStatusUpdates $transferStatusUpdates,
@@ -41,7 +40,7 @@ class TransferService extends BaseService
     )
     {
         $this->transferRequestValidator = $transferRequestValidator;
-        $this->clubService = $clubService;
+        $this->clubTransferAnalysis = $clubTransferAnalysis;
         $this->instanceId = $request->header('instanceId');
         $this->seasonId = $request->header('seasonId');
         $this->transferRepository = $transferRepository;
@@ -80,7 +79,7 @@ class TransferService extends BaseService
         $clubs = Club::where('instance_id', $this->instanceId)->get();
 
         foreach ($clubs as $club) {
-            $deficitPositions = $this->clubService->playerDeficitByPosition($club);
+            $deficitPositions = $this->clubTransferAnalysis->playerDeficitByPosition($club);
             $clubBudget = (Account::where('club_id', $club->id)->first())->transfer_budget;
             $randomChanceForLuxury = rand(1, 10);
             // if the club is covered in all positions, check if there is an opportunity on the transfer market for luxury transfers
@@ -177,7 +176,7 @@ class TransferService extends BaseService
         }
     }
 
-    private function playerDeficitTransferAttempt($club, $deficitPositions, $clubBudget): void
+    private function playerDeficitTransferAttempt(Club $club, array $deficitPositions, int $clubBudget): void
     {
         foreach ($deficitPositions as $position => $deficitNumber) {
             $selectedPlayer = $this->transferSearchRepository->findFreePlayerForPosition($club, $position);
@@ -222,7 +221,7 @@ class TransferService extends BaseService
         }
     }
 
-    private function luxuryTransferAttempt($club, $clubBudget, $position): void
+    private function luxuryTransferAttempt(Club $club, int $clubBudget, string $position): void
     {
         $selectedPlayer = $this->transferSearchRepository->findPlayersWithUnprotectedContracts($club, $position, $clubBudget)
         ?? $this->transferSearchRepository->findListedPlayer
