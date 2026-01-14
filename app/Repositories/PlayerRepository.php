@@ -138,7 +138,7 @@ class PlayerRepository implements IPlayerRepository
         DB::table('player_position')->insert($playerPositionsData);
     }
 
-    public function calculatePlayerValueWithinClub(Player $player): float
+    public function calculatePlayerValueWithinClub(Player $player): int
     {
         for ($k = 0.1, $i = 10; $i <= 200; $i +=10, $k += 0.06) {
             if ($player->potential > $i) {

@@ -11,6 +11,7 @@ use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
+use App\Services\TransferService\TransferEntityAnalysis\PlayerValuation;
 use App\Services\TransferService\TransferFinancialSettlement;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
@@ -146,7 +147,7 @@ class TransferRepository extends CoreRepository
         Player $player,
         Club $club, // buying club
         int $transferType = TransferTypes::PERMANENT_TRANSFER
-    ): Transfer {
+    ): Transfer|null {
         $transfer = new Transfer();
         $transfer->season_id = $this->seasonId;
         $transfer->source_club_id = $club->id;
@@ -156,9 +157,16 @@ class TransferRepository extends CoreRepository
         $transfer->transfer_type = $transferType;
 
         $transferFinancialDetails = new TransferFinancialDetails();
+        $playerValuation = new PlayerValuation();
+        $amount = $playerValuation->buyingClubValuation($player, $club);
+
+        if (!$amount) {
+            return null;
+        }
+
         $transfer->save();
 
-        $transferFinancialDetails->amount = $this->playerRepository->calculatePlayerValueWithinClub($player);
+        $transferFinancialDetails->amount = $playerValuation->$amount;
         $transferFinancialDetails->transfer_id = $transfer->id;
         $transferFinancialDetails->installments = 0;
         $transferFinancialDetails->save();
@@ -180,7 +188,10 @@ class TransferRepository extends CoreRepository
                 $this->updateTransferStatus($transfer,TransferStatusTypes::COUNTEROFFER_ACCEPTED);
             }
         } else {
-            // check if source club can afford the counter offer
+            if ($transfer->canClubAffordTransfer(Club::find($transfer->source_club_id))) {
+                // check if source club can afford the counter offer
+                // check source club max player valuation
+            }
         }
         // routes for source or target club
         // if it's a source club counteroffer, target club has to review, and vice versa

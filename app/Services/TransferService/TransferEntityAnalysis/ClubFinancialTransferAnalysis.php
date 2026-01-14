@@ -8,7 +8,6 @@ use App\Models\Account;
 use App\Models\Player;
 use App\Models\Transfer;
 use App\Models\TransferFinancialDetails;
-use stdClass;
 
 class ClubFinancialTransferAnalysis
 {
