@@ -38,7 +38,8 @@ class TransferService extends BaseService
         Request $request,
         TransferRepository $transferRepository,
         TransferStatusUpdates $transferStatusUpdates,
-        TransferSearchRepository $transferSearchRepository
+        TransferSearchRepository $transferSearchRepository,
+        private readonly TransferServiceHandler $transferServiceHandler,
     )
     {
         $this->transferRequestValidator = $transferRequestValidator;
@@ -100,7 +101,7 @@ class TransferService extends BaseService
                 continue;
             }
 
-            $this->playerDeficitTransferAttempt($club, $deficitPositions, $clubBudget);
+            $this->transferServiceHandler->playerDeficitTransferAttempt($club, $deficitPositions, $clubBudget);
         }
     }
 
@@ -175,52 +176,6 @@ class TransferService extends BaseService
                 break;
             default:
                 $this->transferStatusUpdates->permanentTransferUpdates($transfer);
-        }
-    }
-
-    private function playerDeficitTransferAttempt(Club $club, Collection $deficitPositions, int $clubBudget): void
-    {
-        foreach ($deficitPositions as $position => $deficitNumber) {
-            $urgentTransfer = SquadPlayersConfig::POSITION_COUNT[$position] - $deficitNumber <= SquadPlayersConfig::MIN_PLAYER_COUNT_BY_POSITION[$position];
-            $selectedPlayer = $this->transferSearchRepository->findFreePlayerForPosition($club, $position);
-            $transferType = TransferTypes::FREE_TRANSFER;
-
-            if (!$selectedPlayer) {
-                $selectedPlayer = $this->transferSearchRepository->findListedLoanPlayers($club, $position);
-                $transferType = TransferTypes::LOAN_TRANSFER;
-            }
-
-            if (!$selectedPlayer) {
-                $selectedPlayer = $this->transferSearchRepository->findListedPlayer(
-                    $club,
-                    TransferTypes::PERMANENT_TRANSFER,
-                    $position,
-                    $clubBudget
-                );
-            }
-
-            if (!$selectedPlayer) {
-                $players = $this->transferSearchRepository->findPlayersByPositionForClub($club, $position);
-                $selectedPlayer = $players->where('value', '<=', $clubBudget)->first();
-                $transferType = TransferTypes::PERMANENT_TRANSFER;
-            }
-
-            if (!$selectedPlayer) {
-                continue;
-            }
-
-            try {
-                DB::beginTransaction();
-
-                $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
-                    $selectedPlayer, $club, $transferType, $urgentTransfer
-                );
-                $clubBudget -= $transfer->amount;
-
-                DB::commit();
-            } catch (\Exception $exception) {
-                DB::rollBack();
-            }
         }
     }
 
