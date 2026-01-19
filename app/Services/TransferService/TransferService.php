@@ -10,6 +10,7 @@ use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Repositories\TransferSearchRepository;
 use App\Services\BaseService;
+use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TransferService\TransferEntityAnalysis\ClubTransferAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
@@ -180,6 +181,7 @@ class TransferService extends BaseService
     private function playerDeficitTransferAttempt(Club $club, Collection $deficitPositions, int $clubBudget): void
     {
         foreach ($deficitPositions as $position => $deficitNumber) {
+            $urgentTransfer = SquadPlayersConfig::POSITION_COUNT[$position] - $deficitNumber <= SquadPlayersConfig::MIN_PLAYER_COUNT_BY_POSITION[$position];
             $selectedPlayer = $this->transferSearchRepository->findFreePlayerForPosition($club, $position);
             $transferType = TransferTypes::FREE_TRANSFER;
 
@@ -211,7 +213,7 @@ class TransferService extends BaseService
                 DB::beginTransaction();
 
                 $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
-                    $selectedPlayer, $club, $transferType
+                    $selectedPlayer, $club, $transferType, $urgentTransfer
                 );
                 $clubBudget -= $transfer->amount;
 

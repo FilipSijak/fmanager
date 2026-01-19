@@ -7,14 +7,16 @@ use App\Models\Player;
 
 class PlayerValuation
 {
-    public function buyingClubValuation(Player $player, Club $club): int
+    public static function buyingClubValuation(Player $player, Club $club, bool $urgentTransfer): int
     {
         $account = $club->account()->first();
+        $multiplier = $urgentTransfer ? 0.3 : 0.1;
+        $valuation = $player->value * (1 + $multiplier);
 
-        if ($account->transfer_budget < $player->value + ($player->value * 0.2)) {
+        if ($account->transfer_budget <$valuation) {
             return 0;
         }
 
-        return roundAmount($player->value + ($player->value * 0.1));
+        return roundAmount($valuation);
     }
 }

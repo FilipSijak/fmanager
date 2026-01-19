@@ -145,12 +145,13 @@ class TransferRepository extends CoreRepository
 
     public function makeAutomaticTransferWithFinancialDetails(
         Player $player,
-        Club $club, // buying club
-        int $transferType = TransferTypes::PERMANENT_TRANSFER
+        Club $buyingClub,
+        int $transferType = TransferTypes::PERMANENT_TRANSFER,
+        bool $urgentTransfer = false,
     ): Transfer|null {
         $transfer = new Transfer([
             'season_id' => $this->seasonId,
-            'source_club_id' => $club->id,
+            'source_club_id' => $buyingClub->id,
             'player_id' => $player->id,
             'offer_date' => Instance::find($this->instanceId)->instance_date,
             'transfer_type' => $transferType,
@@ -164,9 +165,9 @@ class TransferRepository extends CoreRepository
 
         if ($transferType != TransferTypes::FREE_TRANSFER) {
             TransferFinancialDetails::create([
-                'amount' => $player->value,
+                'amount' => PlayerValuation::buyingClubValuation($player, $buyingClub, $urgentTransfer),
                 'transfer_id' => $transfer->id,
-                'installments' => 0,
+                'installments' => $this->setTransferInstallments($transfer, $buyingClub),
             ]);
         }
 
@@ -228,5 +229,16 @@ class TransferRepository extends CoreRepository
     public function removeTransferAndPlayerOffers(Transfer $transfer)
     {
 
+    }
+
+    private function setTransferInstallments(Transfer $transfer, Club $club): int
+    {
+        $account = $club->account()->first();
+
+        if ($account->transfer_budget / 2 < $transfer->amount) {
+            return 24;
+        }
+
+        return 0;
     }
 }
