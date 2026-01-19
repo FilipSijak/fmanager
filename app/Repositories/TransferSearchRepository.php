@@ -5,7 +5,6 @@ namespace App\Repositories;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
-use App\Models\TransferList;
 use App\Services\TransferService\TransferTypes;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -59,7 +58,7 @@ class TransferSearchRepository extends CoreRepository
         return Player::hydrate($collection->toArray());
     }
 
-    public function findLuxuryPlayersForPosition(Club $buyingClub, string $position, int $clubBudget): Player
+    public function findLuxuryPlayersForPosition(Club $buyingClub, string $position, int $clubBudget): Player|null
     {
         $highestPotentialPlayer = Player::where('position', $position)
             ->where('club_id', $buyingClub->id)
@@ -73,7 +72,7 @@ class TransferSearchRepository extends CoreRepository
             ->where('value', '<=', $clubBudget)
             ->get();
 
-        return Player::hydrate($players->toArray())->first();
+        return $players->first();
     }
 
     public function findListedPlayer(

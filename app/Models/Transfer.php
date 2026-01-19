@@ -10,6 +10,14 @@ class Transfer extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'season_id',
+        'source_club_id',
+        'player_id',
+        'offer_date',
+        'transfer_type',
+    ];
+
     public $timestamps = false;
 
     public function transferFinancialDetails()

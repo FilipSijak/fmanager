@@ -14,6 +14,7 @@ use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TransferService\TransferEntityAnalysis\ClubTransferAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class TransferService extends BaseService
@@ -176,7 +177,7 @@ class TransferService extends BaseService
         }
     }
 
-    private function playerDeficitTransferAttempt(Club $club, array $deficitPositions, int $clubBudget): void
+    private function playerDeficitTransferAttempt(Club $club, Collection $deficitPositions, int $clubBudget): void
     {
         foreach ($deficitPositions as $position => $deficitNumber) {
             $selectedPlayer = $this->transferSearchRepository->findFreePlayerForPosition($club, $position);

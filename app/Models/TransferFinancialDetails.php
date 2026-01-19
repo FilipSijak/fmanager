@@ -9,6 +9,12 @@ class TransferFinancialDetails extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'amount',
+        'transfer_id',
+        'installments',
+    ];
+
     public $table = 'transfer_financial_details';
     public $timestamps = false;
 }

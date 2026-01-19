@@ -148,28 +148,27 @@ class TransferRepository extends CoreRepository
         Club $club, // buying club
         int $transferType = TransferTypes::PERMANENT_TRANSFER
     ): Transfer|null {
-        $transfer = new Transfer();
-        $transfer->season_id = $this->seasonId;
-        $transfer->source_club_id = $club->id;
-        $transfer->target_club_id = $player->club_id;
-        $transfer->player_id = $player->id;
-        $transfer->offer_date = Instance::find($this->instanceId)->instance_date;
-        $transfer->transfer_type = $transferType;
+        $transfer = new Transfer([
+            'season_id' => $this->seasonId,
+            'source_club_id' => $club->id,
+            'player_id' => $player->id,
+            'offer_date' => Instance::find($this->instanceId)->instance_date,
+            'transfer_type' => $transferType,
+        ]);
 
-        $transferFinancialDetails = new TransferFinancialDetails();
-        $playerValuation = new PlayerValuation();
-        $amount = $playerValuation->buyingClubValuation($player, $club);
-
-        if (!$amount) {
-            return null;
+        if ($transferType != TransferTypes::FREE_TRANSFER) {
+            $transfer->target_club_id = $player->club_id;
         }
 
         $transfer->save();
 
-        $transferFinancialDetails->amount = $playerValuation->$amount;
-        $transferFinancialDetails->transfer_id = $transfer->id;
-        $transferFinancialDetails->installments = 0;
-        $transferFinancialDetails->save();
+        if ($transferType != TransferTypes::FREE_TRANSFER) {
+            TransferFinancialDetails::create([
+                'amount' => $player->value,
+                'transfer_id' => $transfer->id,
+                'installments' => 0,
+            ]);
+        }
 
         $this->makePlayerContractOffer($transfer);
 

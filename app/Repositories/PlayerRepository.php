@@ -140,12 +140,33 @@ class PlayerRepository implements IPlayerRepository
 
     public function calculatePlayerValueWithinClub(Player $player): int
     {
+        $currentPotentialValue = $this->valuationByAttribute($player->potential);
+
+        $maxPotentialValue = $this->valuationByAttribute($player->max_potential);
+        $marketingRankValue = $this->valuationByAttribute($player->marketing_rank);
+
+        $amount = $currentPotentialValue > $maxPotentialValue ? $currentPotentialValue:
+            $maxPotentialValue - (($maxPotentialValue - $currentPotentialValue) / 2);
+
+        $amount = $marketingRankValue > $amount ? $amount + (($maxPotentialValue - $amount) / 2) :
+            $amount - (($amount - $maxPotentialValue) /2);
+
+        $amountSize = strlen((string) $amount);
+
+        if ($amountSize <= 6) {
+            return round($amount, -3);
+        }
+
+        return round($amount, -6);
+    }
+
+    private function valuationByAttribute(int $attributeValue) {
         for ($k = 0.1, $i = 10; $i <= 200; $i +=10, $k += 0.06) {
-            if ($player->potential > $i) {
+            if ($attributeValue > $i) {
                 continue;
             }
 
-            $value = 180 * round(pow($player->potential, $k), 2) * 1000;
+            $value = 180 * round(pow($attributeValue, $k), 2) * 1000;
             break;
         }
 
