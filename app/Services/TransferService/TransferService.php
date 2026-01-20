@@ -92,7 +92,7 @@ class TransferService extends BaseService
             ) {
                 $position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1,14)];
 
-                $this->luxuryTransferAttempt($club, $clubBudget, $position);
+                $this->transferServiceHandler->luxuryTransferAttempt($club, $clubBudget, $position);
 
                 continue;
             }
@@ -176,39 +176,6 @@ class TransferService extends BaseService
                 break;
             default:
                 $this->transferStatusUpdates->permanentTransferUpdates($transfer);
-        }
-    }
-
-    private function luxuryTransferAttempt(Club $club, int $clubBudget, string $position): void
-    {
-        $selectedPlayer = $this->transferSearchRepository->findPlayersWithUnprotectedContracts($club, $position, $clubBudget)
-        ?? $this->transferSearchRepository->findListedPlayer
-        (
-            $club,
-            TransferTypes::PERMANENT_TRANSFER,
-            $position,
-            $clubBudget
-        )
-        ?? $this->transferSearchRepository->findLuxuryPlayersForPosition
-        (
-            $club,
-            $position,
-            $clubBudget
-        );
-
-        if ($selectedPlayer) {
-            try {
-                DB::beginTransaction();
-
-                $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
-                    $selectedPlayer,
-                    $club
-                );
-
-                DB::commit();
-            } catch (\Exception $exception) {
-                DB::rollBack();
-            }
         }
     }
 }

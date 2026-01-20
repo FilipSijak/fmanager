@@ -16,7 +16,7 @@ class TransferServiceHandler
         private readonly TransferRepository $transferRepository
     ) {}
 
-    public function playerDeficitTransferAttempt(Club $club, Collection $deficitPositions, int $clubBudget)
+    public function playerDeficitTransferAttempt(Club $club, Collection $deficitPositions, int $clubBudget): void
     {
         foreach ($deficitPositions as $position => $deficitNumber) {
             $urgentTransfer = $this->isUrgentTransfer($position, $deficitNumber);
@@ -26,8 +26,19 @@ class TransferServiceHandler
                 continue;
             }
 
-            $this->executeTransfer($club, $playerSelection, $urgentTransfer, $clubBudget);
+            $this->executeTransfer($club, $playerSelection, $urgentTransfer);
         }
+    }
+
+    public function luxuryTransferAttempt(Club $club, int $clubBudget, string $position): void
+    {
+        $selectedPlayer = $this->findLuxuryTargetPlayer($club, $position, $clubBudget);
+
+        if (!$selectedPlayer) {
+            return;
+        }
+
+        $this->executeTransfer($club, $selectedPlayer, false);
     }
 
     private function isUrgentTransfer(string $position, int $deficitNumber): bool
@@ -68,7 +79,36 @@ class TransferServiceHandler
         return $player ? ['player' => $player, 'type' => TransferTypes::PERMANENT_TRANSFER] : null;
     }
 
-    private function executeTransfer(Club $club, array $playerSelection, bool $urgentTransfer, int &$clubBudget): void
+    private function findLuxuryTargetPlayer(Club $club, string $position, int $clubBudget): ?array
+    {
+        $selectedPlayer = $this->transferSearchRepository->findPlayersWithUnprotectedContracts($club, $position, $clubBudget);
+
+        if ($selectedPlayer) {
+            return ['player' => $selectedPlayer, 'type' => TransferTypes::PERMANENT_TRANSFER];
+        }
+
+        $selectedPlayer = $this->transferSearchRepository->findListedPlayer
+        (
+            $club,
+            TransferTypes::PERMANENT_TRANSFER,
+            $position,
+            $clubBudget
+        );
+
+        if ($selectedPlayer) {
+            return ['player' => $selectedPlayer, 'type' => TransferTypes::PERMANENT_TRANSFER];
+        }
+
+        $selectedPlayer = $this->transferSearchRepository->findLuxuryPlayersForPosition(
+            $club,
+            $position,
+            $clubBudget
+        );
+
+        return $selectedPlayer ? ['player' => $selectedPlayer, 'type' => TransferTypes::PERMANENT_TRANSFER] : null;
+    }
+
+    private function executeTransfer(Club $club, array $playerSelection, bool $urgentTransfer): void
     {
         try {
             DB::beginTransaction();
@@ -79,7 +119,6 @@ class TransferServiceHandler
                 $playerSelection['type'],
                 $urgentTransfer
             );
-            $clubBudget -= $transfer->amount;
 
             DB::commit();
         } catch (\Exception $exception) {

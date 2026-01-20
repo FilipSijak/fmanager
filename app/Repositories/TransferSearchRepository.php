@@ -66,6 +66,10 @@ class TransferSearchRepository extends CoreRepository
             ->orderBy('potential', 'DESC')
             ->first();
 
+        if (!$highestPotentialPlayer) {
+            return null;
+        }
+
         $players = Player::where('position', $position)
             ->where('potential', '>', $highestPotentialPlayer->potential)
             ->where('club_id', '<>', $buyingClub->id)
