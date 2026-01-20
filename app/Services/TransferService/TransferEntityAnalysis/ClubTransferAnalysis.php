@@ -21,23 +21,6 @@ class ClubTransferAnalysis
         $this->financialTransferAnalysis = $financialTransferAnalysis;
     }
 
-    public function clubSellingDecision(Transfer $transfer): bool
-    {
-        $player = Player::find($transfer->player_id);
-        $club = Club::find($transfer->target_club_id);
-
-        if (!$this->squadTransferAnalysis->isAcceptableTransfer($club, $player)) {
-            return false;
-        }
-
-        if (!$this->financialTransferAnalysis->isFinanciallyAcceptableTransfer($transfer)) {
-            // counteroffer?
-            return false;
-        }
-
-        return true;
-    }
-
     public function playerDeficitByPosition(Club $club): bool|Collection
     {
         if (empty($this->squadTransferAnalysis->optimalNumbersCheckByPosition($club))) {

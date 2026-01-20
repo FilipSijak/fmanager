@@ -2,14 +2,12 @@
 
 namespace App\Services\TransferService\TransferConsiderations;
 
-use App\DataModels\ClubFinancialDecision;
 use App\DataModels\ClubTransferDecision;
 use App\Models\Club;
 use App\Models\Player;
 use App\Models\Transfer;
 use App\Services\TransferService\TransferEntityAnalysis\ClubFinancialTransferAnalysis;
 use App\Services\TransferService\TransferEntityAnalysis\SquadTransferAnalysis;
-
 
 class ClubConsideration
 {

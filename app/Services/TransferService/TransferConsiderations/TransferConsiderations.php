@@ -73,6 +73,11 @@ class TransferConsiderations
         $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER);
     }
 
+    public function targetClubCounterOffer(Transfer $transfer)
+    {
+
+    }
+
     public function transferPlayer(Transfer $transfer)
     {
         $this->transferRepository->transferPlayerToNewClub($transfer);

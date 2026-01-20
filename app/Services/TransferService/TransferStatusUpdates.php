@@ -2,7 +2,6 @@
 
 namespace App\Services\TransferService;
 
-use App\Models\Club;
 use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
@@ -83,20 +82,24 @@ class TransferStatusUpdates
                 break;
             case TransferStatusTypes::COUNTEROFFER_ACCEPTED:
                 $this->transferRepository->makePlayerContractOffer($transfer);
+                break;
             case TransferStatusTypes::PLAYER_COUNTEROFFER:
+                // implement
+                break;
             case TransferStatusTypes::PLAYER_COUNTEROFFER_ACCEPTED:
                 $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER);
                 break;
             case TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER:
+                // player reconsider
                 $this->transferConsiderations->playerDecision($transfer);
                 break;
             case TransferStatusTypes::PLAYER_DECLINED:
-                $this->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED);
+                // update news feed with player declined
+                // $this->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED);
             case TransferStatusTypes::TARGET_CLUB_DECLINED:
-                $this->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED);
+                // update news feed with target club declined
             case TransferStatusTypes::TRANSFER_COMPLETED:
-                $this->transferRepository->transferPlayerToNewClub($transfer);
-                break;
+                // update news feed with target club declined
             case TransferStatusTypes::TRANSFER_FAILED:
                 $this->transferRepository->removeTransferAndPlayerOffers($transfer);
                 break;

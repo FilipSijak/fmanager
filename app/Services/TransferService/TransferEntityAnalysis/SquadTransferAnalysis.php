@@ -23,7 +23,7 @@ class SquadTransferAnalysis
         $clubTopPlayers = $club->players()->keyPlayers()->get();
 
         foreach ($clubTopPlayers as $ratedPlayer) {
-            if ($player->potential > $ratedPlayer->potential) {
+            if ($player->potential >= $ratedPlayer->potential) {
                 $playerImportance->setKeyPlayer(true);
             }
         }
@@ -51,7 +51,6 @@ class SquadTransferAnalysis
 
         $positionCount = SquadPlayersConfig::POSITION_COUNT;
         $positionShortage = [];
-
         $clubPlayersPositionMapping = [];
 
         foreach ($players as $player) {
