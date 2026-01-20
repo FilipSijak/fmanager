@@ -8,47 +8,32 @@ use App\Models\Account;
 use App\Models\Club;
 use App\Models\Transfer;
 use App\Repositories\TransferRepository;
-use App\Repositories\TransferSearchRepository;
 use App\Services\BaseService;
-use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TransferService\TransferEntityAnalysis\ClubTransferAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class TransferService extends BaseService
 {
-    private TransferRequestValidator $transferRequestValidator;
-    private ClubTransferAnalysis     $clubTransferAnalysis;
     protected int|null               $instanceId;
     protected int|null               $seasonId;
-    private TransferRepository       $transferRepository;
-    private TransferStatusUpdates    $transferStatusUpdates;
-    private TransferSearchRepository $transferSearchRepository;
 
     const int LUXURY_TRANSFER_BALANCE = 50000000;
 
     private bool $forceLuxuryBids;
 
     public function __construct(
-        TransferRequestValidator $transferRequestValidator,
-        ClubTransferAnalysis $clubTransferAnalysis,
+        private readonly TransferRequestValidator $transferRequestValidator,
+        private readonly ClubTransferAnalysis $clubTransferAnalysis,
         Request $request,
-        TransferRepository $transferRepository,
-        TransferStatusUpdates $transferStatusUpdates,
-        TransferSearchRepository $transferSearchRepository,
+        private readonly  TransferRepository $transferRepository,
         private readonly TransferServiceHandler $transferServiceHandler,
     )
     {
-        $this->transferRequestValidator = $transferRequestValidator;
-        $this->clubTransferAnalysis = $clubTransferAnalysis;
+
         $this->instanceId = $request->header('instanceId');
         $this->seasonId = $request->header('seasonId');
-        $this->transferRepository = $transferRepository;
-        $this->transferStatusUpdates = $transferStatusUpdates;
-        $this->transferSearchRepository = $transferSearchRepository;
         $this->forceLuxuryBids = false;
     }
 

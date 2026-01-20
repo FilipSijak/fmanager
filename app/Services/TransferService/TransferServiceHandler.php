@@ -10,11 +10,12 @@ use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
-class TransferServiceHandler
+readonly class TransferServiceHandler
 {
     public function __construct(
-        private readonly TransferSearchRepository $transferSearchRepository,
-        private readonly TransferRepository $transferRepository
+        private TransferSearchRepository $transferSearchRepository,
+        private TransferRepository       $transferRepository,
+        private TransferStatusUpdates    $transferStatusUpdates,
     ) {}
 
     public function playerDeficitTransferAttempt(Club $club, Collection $deficitPositions, int $clubBudget): void
@@ -128,7 +129,7 @@ class TransferServiceHandler
         try {
             DB::beginTransaction();
 
-            $transfer = $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
+            $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
                 $playerSelection['player'],
                 $club,
                 $playerSelection['type'],
@@ -138,7 +139,7 @@ class TransferServiceHandler
             DB::commit();
         } catch (\Exception $exception) {
             DB::rollBack();
-            // Consider logging the exception
+            // @todo log exception
             report($exception);
         }
     }
