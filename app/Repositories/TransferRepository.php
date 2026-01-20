@@ -37,7 +37,7 @@ class TransferRepository extends CoreRepository
         $transfer->player_id = $request->input('player_id');
         $transfer->transfer_type = $request->input('transfer_type');
         // setting status for target club to respond after the initial offer
-        $transfer->source_club_status = TransferStatusTypes::WAITING_TARGET_CLUB;
+        $transfer->transfer_status = TransferStatusTypes::WAITING_TARGET_CLUB;
 
         $transfer->save();
 
@@ -59,7 +59,7 @@ class TransferRepository extends CoreRepository
         $transfer->player_id = $request->input('player_id');
         $transfer->transfer_type = TransferTypes::FREE_TRANSFER;
         $transfer->offer_date = Instance::where('id', $this->instanceId)->first()->instance_date;
-        $transfer->source_club_status = TransferStatusTypes::WAITING_PLAYER;
+        $transfer->transfer_status = TransferStatusTypes::WAITING_PLAYER;
 
         $transfer->save();
 
@@ -83,7 +83,7 @@ class TransferRepository extends CoreRepository
 
     public function updateTransferStatus(Transfer $transfer, int $sourceClubStatus): Transfer
     {
-        $transfer->source_club_status = $sourceClubStatus;
+        $transfer->transfer_status = $sourceClubStatus;
 
         $transfer->save();
 

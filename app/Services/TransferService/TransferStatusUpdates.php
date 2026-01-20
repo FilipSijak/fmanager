@@ -30,16 +30,17 @@ class TransferStatusUpdates
         TransferStatusTypes::WAITING_PAPERWORK => 'waitingPaperwork',
         TransferStatusTypes::PLAYER_DECLINED => 'cancelOrRenegotiateTransfer',
         TransferStatusTypes::MOVE_PLAYER => 'transferPlayer',
+        TransferStatusTypes::TARGET_CLUB_COUNTEROFFER => 'targetClubCounterOffer',
     ];
 
     public function freeTransferUpdates(Transfer $transfer): void
     {
-        call_user_func([$this->transferConsiderations, $this->freeTransferActions[$transfer->source_club_status]], $transfer);
+        call_user_func([$this->transferConsiderations, $this->freeTransferActions[$transfer->transfer_status]], $transfer);
     }
 
     public function loanTransferUpdates(Transfer $transfer): void
     {
-        switch ($transfer->source_club_status) {
+        switch ($transfer->transfer_status) {
             case TransferStatusTypes::WAITING_TARGET_CLUB:
                 break;
             case TransferStatusTypes::WAITING_PLAYER:
@@ -57,7 +58,7 @@ class TransferStatusUpdates
         //TARGET - selling club
         //SOURCE - offering club
 
-        switch ($transfer->source_club_status) {
+        switch ($transfer->transfer_status) {
             case TransferStatusTypes::WAITING_TARGET_CLUB:
                 $this->transferConsiderations->sellingClubDecision($transfer);
                 break;

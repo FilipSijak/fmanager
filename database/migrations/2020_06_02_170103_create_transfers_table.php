@@ -22,7 +22,7 @@ class CreateTransfersTable extends Migration
             $table->date('offer_date')->nullable();
             $table->date('transfer_date')->nullable();
             $table->tinyInteger('player_status')->nullable();
-            $table->tinyInteger('source_club_status')->nullable();
+            $table->tinyInteger('transfer_status')->nullable();
             $table->integer('transfer_type');
             $table->date('loan_start')->nullable();
             $table->date('loan_end')->nullable();

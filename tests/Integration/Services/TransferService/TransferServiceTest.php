@@ -48,7 +48,7 @@ class TransferServiceTest extends TestCase
                 'source_club_id' => $buyingClubId,
                 'player_id' => $player->id,
                 'transfer_type' => TransferTypes::FREE_TRANSFER,
-                'source_club_status' => TransferStatusTypes::MOVE_PLAYER,
+                'transfer_status' => TransferStatusTypes::MOVE_PLAYER,
             ]
         );
 
@@ -239,7 +239,7 @@ class TransferServiceTest extends TestCase
                 'target_club_id' => $sellingClubId,
                 'player_id' => $playerId,
                 'transfer_type' => $transferType,
-                'source_club_status' => TransferStatusTypes::MOVE_PLAYER,
+                'transfer_status' => TransferStatusTypes::MOVE_PLAYER,
             ]
         );
 
