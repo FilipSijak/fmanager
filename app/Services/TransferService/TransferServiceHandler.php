@@ -3,6 +3,7 @@
 namespace App\Services\TransferService;
 
 use App\Models\Club;
+use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Repositories\TransferSearchRepository;
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
@@ -39,6 +40,20 @@ class TransferServiceHandler
         }
 
         $this->executeTransfer($club, $selectedPlayer, false);
+    }
+
+    public function processTransfer(Transfer $transfer): void
+    {
+        switch ($transfer->transfer_type) {
+            case TransferTypes::FREE_TRANSFER:
+                $this->transferStatusUpdates->freeTransferUpdates($transfer);
+                break;
+            case TransferTypes::LOAN_TRANSFER:
+                $this->transferStatusUpdates->loanTransferUpdates($transfer);
+                break;
+            default:
+                $this->transferStatusUpdates->permanentTransferUpdates($transfer);
+        }
     }
 
     private function isUrgentTransfer(string $position, int $deficitNumber): bool

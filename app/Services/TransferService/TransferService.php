@@ -61,7 +61,7 @@ class TransferService extends BaseService
                              ->get();
 
         foreach ($transfers as $transfer) {
-            $this->processTransfer($transfer);
+            $this->transferServiceHandler->processTransfer($transfer);
         }
     }
 
@@ -163,19 +163,5 @@ class TransferService extends BaseService
     public function freeTransferRequest(FreeTransferRequest $request)
     {
         $this->transferRepository->storeFreeTransfer($request);
-    }
-
-    private function processTransfer(Transfer $transfer): void
-    {
-        switch ($transfer->transfer_type) {
-            case TransferTypes::FREE_TRANSFER:
-                $this->transferStatusUpdates->freeTransferUpdates($transfer);
-                break;
-            case TransferTypes::LOAN_TRANSFER:
-                $this->transferStatusUpdates->loanTransferUpdates($transfer);
-                break;
-            default:
-                $this->transferStatusUpdates->permanentTransferUpdates($transfer);
-        }
     }
 }
