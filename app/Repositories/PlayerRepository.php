@@ -32,15 +32,16 @@ class PlayerRepository implements IPlayerRepository
             if ($club)
             {
                 $clubRank = $club->rank * 10;
-                $playerValue = $this->calculatePlayerValueWithinClub($player);
 
                 if ($clubRank > $player->potential) {
-                    $playerMarketingRank = $player->potential + (($clubRank - $player->potential) / 2);
+                    $player->marketing_rank = $player->potential + (($clubRank - $player->potential) / 2);
                 } else {
-                    $playerMarketingRank = $player->potential - (($player->potential - $clubRank) / 2);
+                    $player->marketing_rank = $player->potential - (($player->potential - $clubRank) / 2);
                 }
+
+                $playerValue = $this->calculatePlayerValueWithinClub($player);
             } else {
-                $playerMarketingRank = $player->potential;
+                $player->marketing_rank = $player->potential;
             }
 
             $playerData = [
@@ -48,7 +49,7 @@ class PlayerRepository implements IPlayerRepository
                 'value' => $playerValue,
                 'first_name' => $player->first_name,
                 'last_name' => $player->last_name,
-                'marketing_rank' => $playerMarketingRank,
+                'marketing_rank' => $player->marketing_rank,
                 'potential' => $player->potential,
                 'max_potential' => $player->max_potential,
                 'ambition' => rand(floor(($player->potentail / 10)), 20),
