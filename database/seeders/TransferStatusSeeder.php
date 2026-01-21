@@ -3,17 +3,11 @@
 namespace Database\Seeders;
 
 use App\Services\TransferService\TransferStatusTypes;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class TransferStatusSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
         $transferStatusOptions = [];
@@ -33,5 +27,12 @@ class TransferStatusSeeder extends Seeder
         DB::table('transfer_types')->insert($transferTypes);
     }
 
-
+    public function down()
+    {
+        $ids = array_map(function ($type) {
+            return $type->value;
+        }, TransferStatusTypes::TRANSFER_STATUS_TYPES_LIST);
+        DB::table('transfer_status')->whereIn('id', $ids)->delete();
+        DB::table('transfer_status')->truncate();
+    }
 }
