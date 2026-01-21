@@ -41,8 +41,8 @@ class TransferService extends BaseService
     {
         //get all transfers from the table
         $transfers = Transfer::where('season_id', $this->seasonId)
-                             ->where('transfer_type', '!=', TransferStatusTypes::TRANSFER_FAILED)
-                             ->where('transfer_type', '!=', TransferStatusTypes::TRANSFER_COMPLETED)
+                             ->where('transfer_type', '!=', TransferStatusTypes::TRANSFER_FAILED->value)
+                             ->where('transfer_type', '!=', TransferStatusTypes::TRANSFER_COMPLETED->value)
                              ->get();
 
         foreach ($transfers as $transfer) {

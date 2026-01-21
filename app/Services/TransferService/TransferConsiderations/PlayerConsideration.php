@@ -28,10 +28,10 @@ class PlayerConsideration
         }
 
         if (!$this->ifOfferAcceptable($offerContract, $playerContract, $player, $sourceClub)) {
-            return TransferStatusTypes::PLAYER_DECLINED;
+            return TransferStatusTypes::PLAYER_DECLINED->value;
         }
 
-        return TransferStatusTypes::WAITING_PAPERWORK;
+        return TransferStatusTypes::WAITING_PAPERWORK->value;
     }
 
     public function ifOfferAcceptable(

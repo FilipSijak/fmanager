@@ -45,17 +45,17 @@ class TransferConsiderations
                 $transferFinancialDetails->amount = $decision->getCounterOffer();
                 $transferFinancialDetails->save();
 
-                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER);
+                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value);
 
                 return false;
             }
 
-            $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_DECLINED);
+            $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_DECLINED->value);
 
             return false;
         }
 
-        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_PLAYER);
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_PLAYER->value);
 
         return true;
     }
@@ -65,12 +65,12 @@ class TransferConsiderations
         $medical = $this->transferRepository->processMedical($transfer);
 
         if (!$medical) {
-            $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED);
+            $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
             // update news feed for medical @todo
             return 0;
         }
 
-        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER);
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER->value);
     }
 
     public function targetClubCounterOffer(Transfer $transfer)
@@ -82,7 +82,7 @@ class TransferConsiderations
     {
         $this->transferRepository->transferPlayerToNewClub($transfer);
 
-        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_COMPLETED);
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_COMPLETED->value);
 
         /*
          * @todo

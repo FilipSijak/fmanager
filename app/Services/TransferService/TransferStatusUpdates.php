@@ -24,12 +24,12 @@ class TransferStatusUpdates
     }
 
     private array $freeTransferActions = [
-        TransferStatusTypes::WAITING_PLAYER => 'playerConsideration',
-        TransferStatusTypes::PLAYER_COUNTEROFFER => 'playerCounterOffer',
-        TransferStatusTypes::WAITING_PAPERWORK => 'waitingPaperwork',
-        TransferStatusTypes::PLAYER_DECLINED => 'cancelOrRenegotiateTransfer',
-        TransferStatusTypes::MOVE_PLAYER => 'transferPlayer',
-        TransferStatusTypes::TARGET_CLUB_COUNTEROFFER => 'targetClubCounterOffer',
+        TransferStatusTypes::WAITING_PLAYER->value => 'playerConsideration',
+        TransferStatusTypes::PLAYER_COUNTEROFFER->value => 'playerCounterOffer',
+        TransferStatusTypes::WAITING_PAPERWORK->value => 'waitingPaperwork',
+        TransferStatusTypes::PLAYER_DECLINED->value => 'cancelOrRenegotiateTransfer',
+        TransferStatusTypes::MOVE_PLAYER->value => 'transferPlayer',
+        TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value => 'targetClubCounterOffer',
     ];
 
     public function freeTransferUpdates(Transfer $transfer): void
@@ -40,13 +40,13 @@ class TransferStatusUpdates
     public function loanTransferUpdates(Transfer $transfer): void
     {
         switch ($transfer->transfer_status) {
-            case TransferStatusTypes::WAITING_TARGET_CLUB:
+            case TransferStatusTypes::WAITING_TARGET_CLUB->value:
                 break;
-            case TransferStatusTypes::WAITING_PLAYER:
+            case TransferStatusTypes::WAITING_PLAYER->value:
                 $this->transferConsiderations->playerDecision($transfer);
-            case TransferStatusTypes::WAITING_PAPERWORK:
+            case TransferStatusTypes::WAITING_PAPERWORK->value:
                 break;
-            case TransferStatusTypes::MOVE_PLAYER:
+            case TransferStatusTypes::MOVE_PLAYER->value:
                 $this->transferRepository->transferPlayerToNewClub($transfer);
                 break;
         }
@@ -58,49 +58,49 @@ class TransferStatusUpdates
         //SOURCE - offering club
 
         switch ($transfer->transfer_status) {
-            case TransferStatusTypes::WAITING_TARGET_CLUB:
+            case TransferStatusTypes::WAITING_TARGET_CLUB->value:
                 $this->transferConsiderations->sellingClubDecision($transfer);
                 break;
-            case TransferStatusTypes::WAITING_PLAYER:
+            case TransferStatusTypes::WAITING_PLAYER->value:
                 $this->transferConsiderations->playerDecision($transfer);
                 break;
-            case TransferStatusTypes::WAITING_PAPERWORK:
+            case TransferStatusTypes::WAITING_PAPERWORK->value:
                 $this->transferConsiderations->waitingPaperwork($transfer);
                 break;
-            case TransferStatusTypes::WAITING_TRANSFER_WINDOW:
+            case TransferStatusTypes::WAITING_TRANSFER_WINDOW->value:
                 // check if transfer window started and move player if so
                 $this->transferRepository->transferPlayerToNewClub($transfer);
                 break;
-            case TransferStatusTypes::MOVE_PLAYER:
+            case TransferStatusTypes::MOVE_PLAYER->value:
                 $this->transferRepository->transferPlayerToNewClub($transfer);
                 break;
-            case TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER:
-                $this->transferRepository->transferFeeCounterOffer($transfer, TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER);
+            case TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER->value:
+                $this->transferRepository->transferFeeCounterOffer($transfer, TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER->value);
                 break;
-            case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER:
-                $this->transferRepository->transferFeeCounterOffer($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER);
+            case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value:
+                $this->transferRepository->transferFeeCounterOffer($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value);
                 break;
-            case TransferStatusTypes::COUNTEROFFER_ACCEPTED:
+            case TransferStatusTypes::COUNTEROFFER_ACCEPTED->value:
                 $this->transferRepository->makePlayerContractOffer($transfer);
                 break;
-            case TransferStatusTypes::PLAYER_COUNTEROFFER:
+            case TransferStatusTypes::PLAYER_COUNTEROFFER->value:
                 // implement
                 break;
-            case TransferStatusTypes::PLAYER_COUNTEROFFER_ACCEPTED:
-                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER);
+            case TransferStatusTypes::PLAYER_COUNTEROFFER_ACCEPTED->value:
+                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER->value);
                 break;
-            case TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER:
+            case TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER->value:
                 // player reconsider
                 $this->transferConsiderations->playerDecision($transfer);
                 break;
-            case TransferStatusTypes::PLAYER_DECLINED:
+            case TransferStatusTypes::PLAYER_DECLINED->value:
                 // update news feed with player declined
                 // $this->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED);
-            case TransferStatusTypes::TARGET_CLUB_DECLINED:
+            case TransferStatusTypes::TARGET_CLUB_DECLINED->value:
                 // update news feed with target club declined
-            case TransferStatusTypes::TRANSFER_COMPLETED:
+            case TransferStatusTypes::TRANSFER_COMPLETED->value:
                 // update news feed with target club declined
-            case TransferStatusTypes::TRANSFER_FAILED:
+            case TransferStatusTypes::TRANSFER_FAILED->value:
                 $this->transferRepository->removeTransferAndPlayerOffers($transfer);
                 break;
         }

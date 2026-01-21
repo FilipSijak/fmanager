@@ -37,7 +37,7 @@ class TransferRepository extends CoreRepository
         $transfer->player_id = $request->input('player_id');
         $transfer->transfer_type = $request->input('transfer_type');
         // setting status for target club to respond after the initial offer
-        $transfer->transfer_status = TransferStatusTypes::WAITING_TARGET_CLUB;
+        $transfer->transfer_status = TransferStatusTypes::WAITING_TARGET_CLUB->value;
 
         $transfer->save();
 
@@ -59,7 +59,7 @@ class TransferRepository extends CoreRepository
         $transfer->player_id = $request->input('player_id');
         $transfer->transfer_type = TransferTypes::FREE_TRANSFER;
         $transfer->offer_date = Instance::where('id', $this->instanceId)->first()->instance_date;
-        $transfer->transfer_status = TransferStatusTypes::WAITING_PLAYER;
+        $transfer->transfer_status = TransferStatusTypes::WAITING_PLAYER->value;
 
         $transfer->save();
 
@@ -185,7 +185,7 @@ class TransferRepository extends CoreRepository
             $decision = true;
 
             if ($decision) {
-                $this->updateTransferStatus($transfer,TransferStatusTypes::COUNTEROFFER_ACCEPTED);
+                $this->updateTransferStatus($transfer,TransferStatusTypes::COUNTEROFFER_ACCEPTED->value);
             }
         } else {
             if ($transfer->canClubAffordTransfer(Club::find($transfer->source_club_id))) {
@@ -223,7 +223,7 @@ class TransferRepository extends CoreRepository
             ]
         );
 
-        $this->updateTransferStatus($transfer,TransferStatusTypes::WAITING_PLAYER);
+        $this->updateTransferStatus($transfer,TransferStatusTypes::WAITING_PLAYER->value);
     }
 
     public function removeTransferAndPlayerOffers(Transfer $transfer)
