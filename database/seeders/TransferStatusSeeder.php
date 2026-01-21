@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Services\TransferService\TransferStatusTypes;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -15,18 +16,11 @@ class TransferStatusSeeder extends Seeder
      */
     public function run()
     {
-        $transferStatusOptions = [
-            ['id' => 1, 'status' => 'WAITING_TARGET_CLUB'],
-            ['id' => 2, 'status' => 'WAITING_SOURCE_CLUB'],
-            ['id' => 3, 'status' => 'WAITING_PLAYER'],
-            ['id' => 4, 'status' => 'WAITING_PAPERWORK'],
-            ['id' => 5, 'status' => 'WAITING_TRANSFER_WINDOW'],
-            ['id' => 6, 'status' => 'TRANSFER_COMPLETED'],
-            ['id' => 7, 'status' => 'TRANSFER_FAILED'],
-            ['id' => 8, 'status' => 'TARGET_CLUB_APPROVED'],
-            ['id' => 9, 'status' => 'SOURCE_CLUB_APPROVED'],
-            ['id' => 10, 'status' => 'PLAYER_APPROVED'],
-        ];
+        $transferStatusOptions = [];
+
+        foreach (TransferStatusTypes::TRANSFER_STATUS_TYPES_LIST as $type) {
+            $transferStatusOptions[] = ['id' => $type->value, 'status' => $type->name];
+        }
 
         DB::table('transfer_status')->insert($transferStatusOptions);
 
