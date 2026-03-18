@@ -14,34 +14,41 @@ services:
             - ./:/var/www
         networks:
             - fmanager
-    fmanagerdb:
-        image: mysql:8.0
-        container_name: fmanager-db
-        restart: unless-stopped
+    composer:
+        image: composer:2
+        command: [ "install" ]
+        entrypoint: [ "composer" ]
+        volumes:
+            - ./:/var/www/html
+        working_dir: /var/www/html
+        profiles:
+            - install
+    pnpm:
+        build:
+            dockerfile: docker/pnpm/Dockerfile
+            context: .
+            target: dev
+        volumes:
+            - ./:/workspace
+            - /var/run/docker.sock:/var/run/docker.sock
+        working_dir: /workspace
+        entrypoint: [ "/entrypoint.sh" ]
         environment:
-            MYSQL_DATABASE: fmanager
-            MYSQL_ROOT_PASSWORD: password
-            SERVICE_TAGS: dev
-            SERVICE_NAME: mysql
+            VITE_WAYFINDER_ENABLED: 1
         ports:
-            - 33069:3306
-        volumes:
-            - ./docker/mysql:/docker-entrypoint-initdb.d
-        networks:
-            - fmanager
-    node:
-        image: node:18-buster
-        container_name: fmanager-node
-        tty: true
-        user: "1000:1000"
-        volumes:
-            - .:/var/www
-        working_dir: /var/www
-        command: bash -c "npm install"
+            - 5173:3000
+        profiles:
+            - install
     nginx:
-        image: nginx:alpine
+        build:
+            dockerfile: docker/nginx/Dockerfile
+            context: .
+            target: base
         container_name: fmanager-nginx
         restart: unless-stopped
+        environment:
+            VIRTUAL_HOST: fmanager.local
+            VIRTUAL_PORT: 80
         ports:
             - 8000:80
         volumes:

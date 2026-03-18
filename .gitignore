@@ -18,3 +18,9 @@ integration-tests.sh
 /app/Http/Controllers/TestController.php
 /public/css
 /public/js
+/resources/js/actions
+/resources/js/routes
+/resources/js/wayfinder
+.pnpm-store
+.phplint-cache
+.phplint.cache

@@ -1,9 +1,8 @@
 <?php
 
-use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
-Route::any('/{path?}', [DashboardController::class, 'index'])
-     ->where('path', '[\/\w\.-]*')
-     ->where('path', '^(?!api).*$');
-
+Route::get('/', function () {
+    return Inertia::render('Welcome');
+})->name('start');

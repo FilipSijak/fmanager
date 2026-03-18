@@ -19,7 +19,7 @@ class InstanceService implements IInstanceService
     private GameService            $gameService;
     private CompetitionService     $competitionService;
     private CreateInstance         $createInstance;
-    private \Closure|null|Instance $instance;
+    private ?Instance $instance = null;
 
     public function __construct(
         CompetitionService $competitionService,
@@ -33,7 +33,15 @@ class InstanceService implements IInstanceService
         $this->gameService = $gameService;
         $this->competitionService = $competitionService;
         $this->createInstance = $createInstance;
-        $this->instance = Instance::all()->where('id', 1)->first();
+    }
+
+    private function getInstance(): Instance
+    {
+        if ($this->instance === null) {
+            $this->instance = Instance::find(1);
+        }
+
+        return $this->instance;
     }
 
     public function createNewInstance(): bool | Instance
@@ -59,7 +67,8 @@ class InstanceService implements IInstanceService
 
     public function nextDay()
     {
-        $currentGameDate = Carbon::parse($this->instance->instance_date);
+        $instance = $this->getInstance();
+        $currentGameDate = Carbon::parse($instance->instance_date);
 
         event(new NextDay());
         // update player training progress, morale
@@ -73,15 +82,16 @@ class InstanceService implements IInstanceService
         // simulates only the games that are not user played and that are not already simulated while user was playing
         $this->simulateGames();
 
-        $this->instance->instance_date = $currentGameDate->addDay()->format('Y-m-d');
+        $instance->instance_date = $currentGameDate->addDay()->format('Y-m-d');
 
-        $this->instance->save();
+        $instance->save();
     }
 
     private function simulateGames()
     {
         $gamesByCompetition = [];
-        $games = $this->competitionRepository->getScheduledGames($this->instance);
+        $instance = $this->getInstance();
+        $games = $this->competitionRepository->getScheduledGames($instance);
 
         $this->gameService->simulateRound($games);
 
@@ -94,7 +104,7 @@ class InstanceService implements IInstanceService
         }
 
         // create Competition Match Updater class which will take all the matches and deal with the updates
-        $this->competitionService->setInstanceId($this->instance->id);
+        $this->competitionService->setInstanceId($instance->id);
         $this->competitionService->setSeason($this->season);
         $this->competitionService->competitionsRoundUpdate($gamesByCompetition);
 
