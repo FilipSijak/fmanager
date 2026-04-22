@@ -1,0 +1,23 @@
+resources/js/pages/Welcome.tsx
+  36b783b1c130efdc 2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "a0a37226b1776fac83f82629596ade9a7a80affd",
+  "prompts": {
+    "36b783b1c130efdc": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019d824f-8080-7db3-b25b-52f86027f0b3",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Filip",
+      "messages": [],
+      "total_additions": 10,
+      "total_deletions": 18,
+      "accepted_lines": 2,
+      "overriden_lines": 0
+    }
+  }
+}
