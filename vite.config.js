@@ -25,6 +25,7 @@ export default defineConfig(({mode}) => {
             tailwindcss(),
             wayfinderEnabled ? wayfinder({
                 formVariants: true,
+                patterns: ['routes/web.php'],
                 command: 'docker exec fmanager-container php artisan wayfinder:generate'
             }) : '',
             biome({

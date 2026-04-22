@@ -21,14 +21,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-/*Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
+
+Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
     Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
     return $request->user();
-});*/
+});
 
-/*Route::get('/test', [\App\Http\Controllers\TestController::class, 'transferStatus']);
+Route::get('/test', [\App\Http\Controllers\TestController::class, 'transferStatus']);
 Route::get('/startNewGame', [\App\Http\Controllers\InstanceController::class, 'startNewGame']);
-
 
 Route::group(
     [
@@ -87,12 +87,11 @@ Route::group(
         Route::post('/free-transfer', [TransferController::class, 'makeFreeTransferRequest']);
         Route::post('/', [TransferController::class, 'makeTransferRequest']);
     }
-);*/
+);
 
-/*Route::middleware([EnsureGameIsValid::class])->group(function () {
+Route::middleware([EnsureGameIsValid::class])->group(function () {
     Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
-});*/
+});
 
-/*Route::get('/login', [AuthController::class, 'login']);
-Route::post('/register', [AuthController::class, 'register']);*/
-
+Route::get('/login', [AuthController::class, 'login']);
+Route::post('/register', [AuthController::class, 'register']);

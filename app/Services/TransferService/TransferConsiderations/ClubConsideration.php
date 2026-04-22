@@ -30,6 +30,9 @@ class ClubConsideration
         $clubTransferDecision = new ClubTransferDecision();
         $financialDecision = $this->clubFinancialTransferAnalysis->isFinanciallyAcceptableTransfer($transfer, $playerImportance);
 
+
+        // if financial decision is positive and player importance is positive, ClubTransferDecision set acceptable transfer to true
+
         if (!$financialDecision->isAcceptableTransfer() && $financialDecision->getCounterOffer()) {
             $clubTransferDecision->setCounterOffer($financialDecision->getCounterOffer());
         }
