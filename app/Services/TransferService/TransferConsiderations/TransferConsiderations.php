@@ -32,7 +32,7 @@ class TransferConsiderations
         return $playerDecision;
     }
 
-    public function sellingClubDecision(Transfer $transfer): bool
+    public function sellingClubDecision(Transfer $transfer): void
     {
         $decision = $this->clubConsideration->considerOffer($transfer);
 
@@ -47,17 +47,15 @@ class TransferConsiderations
 
                 $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value);
 
-                return false;
+                return;
             }
 
             $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_DECLINED->value);
 
-            return false;
+            return;
         }
 
-        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_PLAYER->value);
-
-        return true;
+        $this->transferRepository->makePlayerContractOffer($transfer);
     }
 
     public function waitingPaperwork(Transfer $transfer)

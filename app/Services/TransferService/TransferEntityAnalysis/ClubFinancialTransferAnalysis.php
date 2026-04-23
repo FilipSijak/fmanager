@@ -37,6 +37,10 @@ class ClubFinancialTransferAnalysis
             return $this->importantPlayersFinanceDecision($transferFinancialDetail, $bestInPositionMinOfferValue, $maxBestInPositionOfferValue);
         }
 
+        if ($playerImportance->isAcceptableTransfer() && !$playerImportance->isBestInPosition() && !$playerImportance->isPositionDeficit()) {
+            return $this->nonKeyPlayerFinancialDecision($transferFinancialDetail, $player);
+        }
+
         return $clubFinancialDecision;
     }
 
@@ -82,6 +86,22 @@ class ClubFinancialTransferAnalysis
         }
 
         $clubFinancialDecision->setLowOffer(true);
+
+        return $clubFinancialDecision;
+    }
+
+    private function nonKeyPlayerFinancialDecision(
+        TransferFinancialDetails $transferFinancialDetails,
+        Player $player
+    ): ClubFinancialDecision
+    {
+        $clubFinancialDecision = $this->setDefaultDecision();
+
+        if ($transferFinancialDetails->amount >= $player->value) {
+            $clubFinancialDecision->setAcceptableTransfer(true);
+
+            return $clubFinancialDecision;
+        }
 
         return $clubFinancialDecision;
     }

@@ -37,6 +37,10 @@ class ClubConsideration
             $clubTransferDecision->setCounterOffer($financialDecision->getCounterOffer());
         }
 
+        if ($financialDecision->isAcceptableTransfer()) {
+            $clubTransferDecision->setAcceptableTransfer(true);
+        }
+
         return $clubTransferDecision;
     }
 }
