@@ -171,8 +171,6 @@ class TransferRepository extends CoreRepository
             ]);
         }
 
-        $this->makePlayerContractOffer($transfer);
-
         return $transfer;
     }
 

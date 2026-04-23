@@ -28,7 +28,9 @@ class SquadTransferAnalysis
             }
         }
 
-        // compare player to other players
+        if ($this->isAcceptablePositionDeficit($club, $player) && !$clubTopPlayers->contains('id', $player->id)) {
+            $playerImportance->setAcceptableTransfer(true);
+        }
 
         return $playerImportance;
     }
