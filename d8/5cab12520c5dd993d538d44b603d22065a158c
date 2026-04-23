@@ -1,0 +1,60 @@
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "d85cab12520c5dd993d538d44b603d22065a158c",
+  "prompts": {
+    "3cc70815fa405ffd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a98b3a7b-e0ba-44bc-af4c-b3253935bfff",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Filip",
+      "messages": [],
+      "total_additions": 184,
+      "total_deletions": 379,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    },
+    "6aceefdc548f9d13": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "39e88892-c06c-41a5-92d0-c3de55a99299",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Filip",
+      "messages": [],
+      "total_additions": 300,
+      "total_deletions": 78,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    },
+    "a480e0b74f424cff": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "8d68c6d3-8297-470f-9e89-c0b0d910e802",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Filip",
+      "messages": [],
+      "total_additions": 491,
+      "total_deletions": 237,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    },
+    "ae6c8c770e38276f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "2f8007ed-afd6-424b-9e09-0d685599fa58",
+        "model": "claude-sonnet-4-6"
+      },
+      "human_author": "Filip",
+      "messages": [],
+      "total_additions": 155,
+      "total_deletions": 3,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    }
+  }
+}
