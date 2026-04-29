@@ -1,0 +1,36 @@
+app/DataModels/PlayerContractDecision.php
+  af675480f6bc2c75 1-6,8-14,16-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.4",
+  "base_commit_sha": "2e89e14c715cb55a29601240e3631453ac96e21d",
+  "prompts": {
+    "a327a079820c93f8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019dd42a-ece3-7022-a6a6-7b57f0cecad3",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Filip",
+      "messages": [],
+      "total_additions": 4,
+      "total_deletions": 4,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    },
+    "af675480f6bc2c75": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019dd43b-3031-74b2-94e6-0f9e78f766e2",
+        "model": "gpt-5.4"
+      },
+      "human_author": "Filip",
+      "messages": [],
+      "total_additions": 23,
+      "total_deletions": 0,
+      "accepted_lines": 21,
+      "overriden_lines": 2
+    }
+  }
+}
