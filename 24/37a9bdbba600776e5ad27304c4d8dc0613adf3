@@ -1,0 +1,19 @@
+tests/Integration/Services/TransferService/TransferStatusUpdates/PermanentTransferWaitingPlayerStatusUpdatesTest.php
+  s_5fafd92ea19d8e::t_a16b97f9d033e6 6,11-14,78-110
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "2437a9bdbba600776e5ad27304c4d8dc0613adf3",
+  "prompts": {},
+  "sessions": {
+    "s_5fafd92ea19d8e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e1162-bec8-7952-8c03-e233f842bfb8",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
