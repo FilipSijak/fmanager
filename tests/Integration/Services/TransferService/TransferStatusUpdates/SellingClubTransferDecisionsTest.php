@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Integration\Services\TransferService;
+namespace Tests\Integration\Services\TransferService\TransferStatusUpdates;
 
 use App\Models\Account;
 use App\Models\Club;

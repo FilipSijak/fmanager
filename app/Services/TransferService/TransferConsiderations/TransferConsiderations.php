@@ -23,13 +23,19 @@ class TransferConsiderations
         $this->transferRepository = $transferRepository;
     }
 
-    public function playerDecision(Transfer $transfer): int
+    public function playerDecision(Transfer $transfer): void
     {
         $playerDecision = $this->playerConsideration->considerOffer($transfer);
 
-        $this->transferRepository->updateTransferStatus($transfer, $playerDecision);
+        if ($playerDecision->counterOffer) {
+            $playerUpdateDecision = TransferStatusTypes::PLAYER_COUNTEROFFER->value;
+        } elseif (!$playerDecision->acceptableTransfer) {
+            $playerUpdateDecision = TransferStatusTypes::PLAYER_DECLINED->value;
+        } else {
+            $playerUpdateDecision = TransferStatusTypes::WAITING_PAPERWORK->value;
+        }
 
-        return $playerDecision;
+        $this->transferRepository->updateTransferStatus($transfer, $playerUpdateDecision);
     }
 
     public function sellingClubDecision(Transfer $transfer): void
@@ -58,14 +64,14 @@ class TransferConsiderations
         $this->transferRepository->makePlayerContractOffer($transfer);
     }
 
-    public function waitingPaperwork(Transfer $transfer)
+    public function waitingPaperwork(Transfer $transfer): void
     {
         $medical = $this->transferRepository->processMedical($transfer);
 
         if (!$medical) {
             $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
-            // update news feed for medical @todo
-            return 0;
+
+            return;
         }
 
         $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER->value);

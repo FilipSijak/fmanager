@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('transfer_contract_offers', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('transfer_id')->unsigned();
+            $table->tinyInteger('counter_offered')->unsigned()->default(0);
             $table->integer('salary')->unsigned()->default(0);
             $table->integer('appearance')->unsigned()->default(0);
             $table->integer('assist')->unsigned()->default(0);

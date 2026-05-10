@@ -12,39 +12,32 @@ use App\Services\TransferService\TransferStatusTypes;
 
 class PlayerConsideration
 {
-    public function considerOffer(Transfer $transfer): int
+    const MAX_COUNTER_OFFER = 2;
+    const MAX_AMBITION_DIFF = 4;
+
+    const COUNTABLE_CONTRACT_FIELDS = [
+        'salary',
+        'appearance',
+        'assist',
+        'goal',
+        'clean_sheet',
+        'league',
+        'promotion',
+        'pc_promotion_salary_raise',
+        'cup',
+        'el',
+        'cl',
+        'loan_contribution_pc'
+    ];
+
+    public function considerOffer(Transfer $transfer): PlayerContractDecision
     {
         $player = Player::where('id', $transfer->player_id)->get()->first();
         $playerContract = $player->contract()->first();
         $sourceClub = Club::where('id', $transfer->source_club_id)->get()->first();
-        $targetClub = Club::where('id', $transfer->target_club_id)->get()->first();
         $offerContract = TransferContractOffer::where('transfer_id', $transfer->id)->get()->first();
 
-        $playerAmbitionDecision = false;
-        $requiredOffer = $playerContract->salary;
-
-        // if player potential is < source club rank - player accepts
-        // if player p > source club rank - adjust salary expectations
-        // if salary doesn't cover it
-
-        if ($player->potential / 10 <= $sourceClub->rank | $player->ambition <= $sourceClub->rank / 10) {
-            $playerAmbitionDecision = true;
-        }
-
-        $playerDecision = $this->ifOfferAcceptable($offerContract, $playerContract, $player, $sourceClub, $transfer);
-
-        if ($playerDecision->counterOffer) {
-
-            if ($transfer->transfer_status == TransferStatusTypes::PLAYER_COUNTEROFFER) {
-                // player previously rejected the offer and made a counteroffer, now rejecting the transfer outright
-
-                return TransferStatusTypes::PLAYER_DECLINED->value;
-            }
-
-                return TransferStatusTypes::PLAYER_COUNTEROFFER->value;
-        }
-
-        return TransferStatusTypes::WAITING_PAPERWORK->value;
+        return $this->ifOfferAcceptable($offerContract, $playerContract, $player, $sourceClub, $transfer);
     }
 
     public function ifOfferAcceptable(
@@ -62,14 +55,32 @@ class PlayerConsideration
         $requiredOffer = $this->requiredOffer($currentContract, $player, $sourceClub);
         $offerTotal = $offerContract->salary + $performanceGameBonusesOffer;
 
+        if (($player->ambition - $sourceClub->rank) > self::MAX_AMBITION_DIFF) {
+            $playerContractDecision->acceptableTransfer = false;
+            $playerContractDecision->counterOffer = 0;
+
+            return $playerContractDecision;
+        }
+
         if ($requiredOffer > $offerTotal) {
-            if ($transfer->transfer_status == TransferStatusTypes::PLAYER_COUNTEROFFER) {
+
+            if ($offerContract->counter_offered >= self::MAX_COUNTER_OFFER) {
                 // player previously rejected the offer and made a counteroffer, now rejecting the transfer outright
                 $playerContractDecision->acceptableTransfer = false;
                 return $playerContractDecision;
             }
 
             $playerContractDecision->counterOffer = $requiredOffer;
+
+            $contractAmbitionDiffPercentage = $player->ambition / $sourceClub->rank;
+
+            $offerContract->counter_offered = $offerContract->counter_offered + 1;
+
+            foreach (self::COUNTABLE_CONTRACT_FIELDS as $field) {
+                $offerContract->{$field} = (int) round($offerContract->{$field} * $contractAmbitionDiffPercentage);
+            }
+
+            $offerContract->save();
 
             return $playerContractDecision;
         }
@@ -91,8 +102,8 @@ class PlayerConsideration
 
         $currentTotal = $requiredOffer = $currentContract->salary + $performanceGameBonusesCurrentContract;
 
-        if ($player->potential / 10 >= $sourceClub->rank) {
-            $rankDiff = ($player->potential / 10 - $sourceClub->rank) / 10;
+        if ($player->ambition >= $sourceClub->rank) {
+            $rankDiff = ($player->ambition - $sourceClub->rank) / 10;
             $requiredOffer = (($currentTotal) * $rankDiff) + $currentTotal;
         }
 

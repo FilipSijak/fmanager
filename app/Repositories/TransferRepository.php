@@ -92,13 +92,14 @@ class TransferRepository extends CoreRepository
 
     public function processMedical(Transfer $transfer): bool
     {
-        $instance = Instance::where('id', $this->instanceId)->first();
-        $playerInjury = DB::table('player_injuries as pi')->select(
-            'it.severity'
-        )
-        ->join('injury_types as it', 'it.id', '=', 'pi.injury_id')
+        $instance = Instance::findOrFail($this->instanceId);
+        $playerInjury = DB::table('player_injuries as pi')
+        ->select('i.severity')
+        ->join('injuries as i', 'i.id', '=', 'pi.injury_id')
         ->join('players as p', 'p.id', '=', 'pi.player_id')
         ->where('pi.injury_end_date', '>=', $instance->instance_date)
+        ->where('pi.season_id', '=', $this->seasonId)
+        ->where('pi.instance_id', '=', $this->instanceId)
         ->where('p.id', '=', $transfer->player_id)
         ->first();
 
@@ -217,7 +218,8 @@ class TransferRepository extends CoreRepository
                 'el' => $contractOffer['el'],
                 'cl' => $contractOffer['cl'],
                 'pc_promotion_salary_raise' => $contractOffer['salary_raise'],
-                'pc_demotion_salary_cut' => $contractOffer['demotion']
+                'pc_demotion_salary_cut' => $contractOffer['demotion'],
+                'counter_offered' => 0
             ]
         );
 

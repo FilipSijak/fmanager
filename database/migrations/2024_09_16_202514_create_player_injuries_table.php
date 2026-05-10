@@ -10,12 +10,17 @@ return new class extends Migration
     {
         Schema::create('player_injuries', function (Blueprint $table) {
             $table->increments('id');
+            $table->unsignedInteger('instance_id');
+            $table->unsignedInteger('season_id');
             $table->integer('player_id')->unsigned();
             $table->integer('injury_id')->unsigned();
             $table->date('injury_start_date');
             $table->date('injury_end_date');
 
-            $table->foreign('player_id')->references('id')->on('transfers')->onDelete('cascade');
+            $table->foreign('player_id')->references('id')->on('players')->onDelete('cascade');
+            $table->foreign('injury_id')->references('id')->on('injuries')->onDelete('cascade');
+            $table->foreign('instance_id')->references('id')->on('instances')->onDelete('cascade');
+            $table->foreign('season_id')->references('id')->on('seasons')->onDelete('cascade');
         });
     }
 
