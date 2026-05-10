@@ -1,0 +1,28 @@
+database/migrations/2024_07_16_174329_create_transfer_contract_offers_table.php
+  817f960aab9af09c 19
+app/Services/TransferService/TransferConsiderations/PlayerConsideration.php
+  817f960aab9af09c 15-33,40,58-64,66-67,75-84,105-106
+app/Services/TransferService/TransferConsiderations/TransferConsiderations.php
+  817f960aab9af09c 26,30-36,38,67,73-74
+tests/Integration/Services/TransferService/TransferStatusUpdates/SellingClubTransferDecisionsTest.php
+  817f960aab9af09c 1-174
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "2f8f8b20f2e0f6f739a0a973f30e28202bf03c95",
+  "prompts": {
+    "817f960aab9af09c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019de246-43c2-7a22-92c9-789bc7746771",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>",
+      "total_additions": 249,
+      "total_deletions": 57,
+      "accepted_lines": 229,
+      "overriden_lines": 0
+    }
+  }
+}
