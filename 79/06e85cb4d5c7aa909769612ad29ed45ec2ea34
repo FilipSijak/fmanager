@@ -1,0 +1,54 @@
+tests/Integration/Services/ClubService/FinancialAnalysisTest.php
+  s_5fafd92ea19d8e::t_975ddcb1c510dc 5,8,10-11,26-39,41-42,44-46
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 13,19
+tests/Integration/Services/TransferService/TransferStatusUpdates/SellingClubTransferDecisionsTest.php
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 17,23
+tests/Integration/Services/ClubService/ClubServiceTest.php
+  s_5fafd92ea19d8e::t_eff6eac896d993 9-10,27-29,33-38,44-49,60-78,80
+  s_5fafd92ea19d8e::t_eb58fd14551a8a 53-59
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 14,20
+tests/Integration/Services/ClubService/SquadAnalysisTest.php
+  s_5fafd92ea19d8e::t_a37d8421c79161 30
+  s_5fafd92ea19d8e::t_19badb650b966b 7,24,34-38,44-48
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 12,19
+tests/Integration/Services/TransferService/TransferServiceTest.php
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 25,32
+  s_5fafd92ea19d8e::t_cf2eeeaa9272b9 17,20,201,210-215,218,221
+tests/Integration/Competition/KnockoutSummaryTest.php
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 13,20
+database/migrations/2024_09_16_202514_create_player_injuries_table.php
+  s_5fafd92ea19d8e::t_bf09bf96637f30 16
+  s_5fafd92ea19d8e::t_35dd30c75efd32 13
+tests/Integration/Services/TransferService/TransferStatusUpdates/PermanentTransferWaitingPlayerStatusUpdatesTest.php
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 19,25
+tests/Integration/Instance/CreateInstanceTest.php
+  s_5fafd92ea19d8e::t_9ee74fac0c1b16 63-66
+tests/Integration/Competition/CreateCompetitionTest.php
+  s_5fafd92ea19d8e::t_072eda474c2ad0 9-12
+tests/Integration/Competition/CompetitionSourceTest.php
+  s_5fafd92ea19d8e::t_7d81a9b1772de7 26-27
+tests/Integration/Services/TransferService/TransferSearchRepositoryTest.php
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 13,19
+tests/Integration/Services/CompetitionService/TournamentTest.php
+  s_5fafd92ea19d8e::t_1b362e89f58f1f 31-32
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 11,17
+tests/Integration/Services/CompetitionService/CompetitionUpdaterTest.php
+  s_5fafd92ea19d8e::t_ad2af3671a2b0c 40-42,44,49,61,66,80-81,83,86,89
+  s_5fafd92ea19d8e::t_ba1ca8245fdb3b 17,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "7906e85cb4d5c7aa909769612ad29ed45ec2ea34",
+  "prompts": {},
+  "sessions": {
+    "s_5fafd92ea19d8e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e1162-bec8-7952-8c03-e233f842bfb8",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
