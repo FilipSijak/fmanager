@@ -16,13 +16,13 @@ use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     #[Test]
     public function it_moves_an_accepted_player_contract_offer_to_waiting_paperwork(): void

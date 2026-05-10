@@ -13,22 +13,23 @@ use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
 use App\Repositories\TransferRepository;
 use App\Repositories\TransferSearchRepository;
-use App\Services\ClubService\ClubService;
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
+use App\Services\TransferService\TransferEntityAnalysis\ClubTransferAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 use App\Services\TransferService\TransferService;
+use App\Services\TransferService\TransferServiceHandler;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
 use Illuminate\Database\Eloquent\Factories\Sequence;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class TransferServiceTest extends TestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     #[Test]
     public function itIsAbleToCompleteFreeTransfers()
@@ -197,7 +198,7 @@ class TransferServiceTest extends TestCase
         $transferRepository = app()->make(TransferRepository::class);
         $transferRequestValidator = app()->make(TransferRequestValidator::class);
         $transferSearchRepository = app()->make(TransferSearchRepository::class);
-        $clubService = app()->make(ClubService::class);
+        $clubTransferAnalysis = app()->make(ClubTransferAnalysis::class);
         $request = new Request();
         $transferStatusUpdates =  app()->make(TransferStatusUpdates::class);
 
@@ -206,13 +207,18 @@ class TransferServiceTest extends TestCase
         $transferSearchRepository->setInstanceId(1);
         $transferSearchRepository->setSeasonId(1);
 
-        $transferService = new TransferService(
-            $transferRequestValidator,
-            $clubService,
-            $request,
+        $transferServiceHandler = new TransferServiceHandler(
+            $transferSearchRepository,
             $transferRepository,
             $transferStatusUpdates,
-            $transferSearchRepository
+        );
+
+        $transferService = new TransferService(
+            $transferRequestValidator,
+            $clubTransferAnalysis,
+            $request,
+            $transferRepository,
+            $transferServiceHandler
         );
         $transferService->setForceLuxuryBids(false);
         $transferService->setSeasonId(1);

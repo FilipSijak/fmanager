@@ -1,6 +1,8 @@
 #!/bin/bash
 
-php artisan migrate:fresh --database=fmanager-test
-php artisan db:seed --database=tfmanager-test
+set -euo pipefail
 
-php ./vendor/bin/phpunit $1 $2
+php artisan migrate:fresh --database=test-mysql
+php artisan db:seed --database=test-mysql
+
+php ./vendor/bin/phpunit --testsuite Integration "$@"

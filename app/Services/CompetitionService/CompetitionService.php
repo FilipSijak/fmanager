@@ -42,7 +42,6 @@ class CompetitionService implements ICompetitionService
                 $dataSource->storeLeagueGames($leagueGames, $competitionId, $seasonId, $instanceId, $competitionConfig->getStartDate(), $roundLength);
             }
         } catch (\Exception $exception) {
-            dd('exit');
             // log exception
         }
     }

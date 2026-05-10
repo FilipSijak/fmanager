@@ -14,13 +14,13 @@ use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class SellingClubTransferDecisionsTest extends TestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     #[Test]
     public function it_accepts_a_non_key_player_offer_at_player_value(): void

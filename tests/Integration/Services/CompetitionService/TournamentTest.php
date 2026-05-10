@@ -8,13 +8,13 @@ use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class TournamentTest extends TestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     #[Test]
     public function it_can_create_group_stage()
@@ -28,5 +28,7 @@ class TournamentTest extends TestCase
         $competitionService = new CompetitionService($leagueUpdater, $tournamentUpdater);
 
         $competitionService->makeTournamentGroupStage($clubs, 1, 1, 1);
+
+        $this->assertDatabaseCount('tournament_groups', 8);
     }
 }

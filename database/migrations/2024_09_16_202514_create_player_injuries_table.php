@@ -10,10 +10,10 @@ return new class extends Migration
     {
         Schema::create('player_injuries', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('instance_id');
+            $table->unsignedBigInteger('instance_id');
             $table->unsignedInteger('season_id');
             $table->integer('player_id')->unsigned();
-            $table->integer('injury_id')->unsigned();
+            $table->unsignedBigInteger('injury_id');
             $table->date('injury_start_date');
             $table->date('injury_end_date');
 

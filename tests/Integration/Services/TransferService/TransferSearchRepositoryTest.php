@@ -10,13 +10,13 @@ use App\Models\PlayerContract;
 use App\Models\TransferList;
 use App\Repositories\TransferSearchRepository;
 use App\Services\TransferService\TransferTypes;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class TransferSearchRepositoryTest extends TestCase
 {
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     #[Test]
     public function itCanGetListedPlayer()

@@ -14,14 +14,14 @@ use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use Database\Seeders\DatabaseSeeder;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CompetitionUpdaterTest extends TestCase
 {
 
-    use DatabaseMigrations;
+    use RefreshDatabase;
 
     #[Test]
     public function it_can_update_league_and_tournament_group_points()
@@ -37,13 +37,16 @@ class CompetitionUpdaterTest extends TestCase
         $init = new InitialSeed();
         $init->seedFromBaseTables(1);
 
+        $leagueCompetition = Competition::where('type', 'league')->first();
+        $tournamentCompetition = Competition::where('type', 'tournament')->where('groups', 1)->first();
+
         $gamesByCompetition = [
-            1 => [
+            $leagueCompetition->id => [
                 [
                     "id"              => 2,
                     "instance_id"     => 1,
                     "season_id"       => 1,
-                    "competition_id"  => 1,
+                    "competition_id"  => $leagueCompetition->id,
                     "hometeam_id"     => 2,
                     "awayteam_id"     => 19,
                     "stadium_id"      => 2,
@@ -55,12 +58,12 @@ class CompetitionUpdaterTest extends TestCase
                     "match_summary"   => null,
                 ],
             ],
-            6 => [
+            $tournamentCompetition->id => [
                 [
                     "id"              => 444,
                     "instance_id"     => 1,
                     "season_id"       => 1,
-                    "competition_id"  => 6,
+                    "competition_id"  => $tournamentCompetition->id,
                     "hometeam_id"     => 17,
                     "awayteam_id"     => 19,
                     "stadium_id"      => 2,
@@ -74,17 +77,16 @@ class CompetitionUpdaterTest extends TestCase
             ],
         ];
 
-        $competition = Competition::factory()->make(['id' => 1]);
-        $competition->seasons()->attach(1, ['club_id' => 2, 'instance_id' => 1]);
-        $competition->seasons()->attach(1, ['club_id' => 19, 'instance_id' => 1]);
+        $leagueCompetition->seasons()->attach(1, ['club_id' => 2, 'instance_id' => 1]);
+        $leagueCompetition->seasons()->attach(1, ['club_id' => 19, 'instance_id' => 1]);
         Game::factory()->create(
-            ['instance_id' => 1, 'season_id' => 1, 'competition_id' => 6, 'hometeam_id' => 17, 'awayteam_id' => 19, 'winner' => 1, 'stadium_id' => 1, 'match_summary' => '{}']
+            ['instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id, 'hometeam_id' => 17, 'awayteam_id' => 19, 'winner' => 1, 'stadium_id' => 1, 'match_summary' => '{}']
         );
         TournamentGroup::factory()->create(
-            ['club_id' => 17, 'group_id' => 1, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => 6]
+            ['club_id' => 17, 'group_id' => 1, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id]
         );
         TournamentGroup::factory()->create(
-            ['club_id' => 19, 'group_id' => 1, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => 6]
+            ['club_id' => 19, 'group_id' => 1, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id]
         );
 
         $competitionUpdater->setGamesByCompetition($gamesByCompetition);

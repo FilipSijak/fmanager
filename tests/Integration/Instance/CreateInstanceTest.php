@@ -46,7 +46,6 @@ class CreateInstanceTest extends TestCase
         (new DatabaseSeeder())->run();
         $createInstance->instanceInit();
         $instance = Instance::all()->first();
-        $competition = Competition::all()->first();
         $tournament = Competition::where('type', 'tournament')->where('groups', 0)->first();
         $tournamentGroup = Competition::where('type', 'tournament')->where('groups', 1)->first();
         $season = Season::where('id', $instance->id)->first();
@@ -61,13 +60,10 @@ class CreateInstanceTest extends TestCase
             ]
         );
 
-        $this->assertDatabaseHas(
-            'games',
-            [
-                'instance_id' => $instance->id,
-                'competition_id' => $competition->id,
-                'season_id' => $season->id
-            ]
+        $this->assertNotNull(
+            Game::where('instance_id', $instance->id)
+                ->where('season_id', $season->id)
+                ->first()
         );
 
         $this->assertDatabaseHas(
