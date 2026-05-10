@@ -3,10 +3,15 @@
 namespace Tests\Integration\Services\TransferService\TransferStatusUpdates;
 
 use App\Models\Club;
+use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
+use App\Repositories\TransferRepository;
+use App\Services\TransferService\TransferConsiderations\ClubConsideration;
+use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
+use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
@@ -68,6 +73,41 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             $transfer->refresh()->transfer_status
         );
         $this->assertSame(2, TransferContractOffer::where('transfer_id', $transfer->id)->first()->counter_offered);
+    }
+
+    #[Test]
+    public function it_moves_waiting_paperwork_to_move_player_when_the_medical_passes(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-08-01',
+        ]);
+
+        $transfer = $this->createWaitingPlayerTransfer();
+        $transfer->transfer_status = TransferStatusTypes::WAITING_PAPERWORK->value;
+        $transfer->save();
+
+        $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
+
+        $this->assertSame(
+            TransferStatusTypes::MOVE_PLAYER->value,
+            $transfer->refresh()->transfer_status
+        );
+    }
+
+    private function transferStatusUpdates(): TransferStatusUpdates
+    {
+        $transferRepository = app()->make(TransferRepository::class);
+        $transferRepository->setSeasonId(1);
+        $transferRepository->setInstanceId(1);
+
+        $transferConsiderations = new TransferConsiderations(
+            app()->make(PlayerConsideration::class),
+            app()->make(ClubConsideration::class),
+            $transferRepository
+        );
+
+        return new TransferStatusUpdates($transferConsiderations, $transferRepository);
     }
 
     private function createWaitingPlayerTransfer(array $attributes = []): Transfer
