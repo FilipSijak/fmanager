@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Integration\LeagueSchedule;
+namespace Tests\Unit\LeagueSchedule;
 
 use App\Services\LeagueScheduleService\LeagueScheduleService;
 use DateTimeImmutable;
