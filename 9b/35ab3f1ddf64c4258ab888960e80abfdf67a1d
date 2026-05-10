@@ -1,0 +1,19 @@
+tests/Unit/LeagueSchedule/LeagueScheduleServiceTest.php
+  s_5fafd92ea19d8e::t_c369b986200cec 1-751
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.4",
+  "base_commit_sha": "9b35ab3f1ddf64c4258ab888960e80abfdf67a1d",
+  "prompts": {},
+  "sessions": {
+    "s_5fafd92ea19d8e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e1162-bec8-7952-8c03-e233f842bfb8",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
