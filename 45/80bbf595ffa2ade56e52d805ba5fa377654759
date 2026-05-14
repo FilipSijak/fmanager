@@ -1,0 +1,19 @@
+database/factories/TransferContractOfferFactory.php
+  s_c99ad34ebf3999::t_eb2197aad2eb58 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "4580bbf595ffa2ade56e52d805ba5fa377654759",
+  "prompts": {},
+  "sessions": {
+    "s_c99ad34ebf3999": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e263a-5a5c-7ef1-8792-60ad0236a2fc",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
