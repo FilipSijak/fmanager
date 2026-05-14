@@ -1,0 +1,52 @@
+app/Http/Middleware/SetGameContext.php
+  s_c99ad34ebf3999::t_46c3ad414120c7 5,18-25
+  s_c99ad34ebf3999::t_45a6d24d795f1b 3,6-7,10,12-14,16,26-28
+app/Http/Kernel.php
+  s_c99ad34ebf3999::t_6d23a59e302f44 24
+app/Repositories/GameRepository.php
+  s_c99ad34ebf3999::t_e42b2375e83ec6 25-26
+app/Http/Controllers/CompetitionController.php
+  s_c99ad34ebf3999::t_e6e917cd98d4ed 11,21,27,36
+app/Http/Controllers/PlayerController.php
+  s_c99ad34ebf3999::t_e6e917cd98d4ed 12
+app/Listeners/NexDayTransfersSubscriber.php
+  s_c99ad34ebf3999::t_edd64e99892608 7,16-17,27
+app/Support/GameContext.php
+  s_c99ad34ebf3999::t_2b60ccfac0e6c6 1-55
+app/Repositories/CoreRepository.php
+  s_c99ad34ebf3999::t_52d6f54a99344c 6,12,17-27
+app/Repositories/CompetitionRepository.php
+  s_c99ad34ebf3999::t_61c7f8827a20da 27-28,40-41,51-52
+app/Http/Controllers/CoreController.php
+  s_c99ad34ebf3999::t_e6e917cd98d4ed 5,9-11,13-16,18,20
+app/Providers/RepositoryServiceProvider.php
+  s_c99ad34ebf3999::t_89d06a67fd825e 18-19
+app/Services/BaseService.php
+  s_c99ad34ebf3999::t_1755c6edad9330 5-6,11,16-36
+app/Services/TransferService/TransferService.php
+  s_c99ad34ebf3999::t_9f76c013d41996 35,59
+app/Repositories/TransferRepository.php
+  s_c99ad34ebf3999::t_36e41024efc9d4 45,68,72,107,113-114,132,208,211
+app/Providers/AppServiceProvider.php
+  s_c99ad34ebf3999::t_6ab77d77a4c135 5,17
+app/Repositories/TransferSearchRepository.php
+  s_c99ad34ebf3999::t_30ab6ec8072152 16,26,65,162
+app/Http/Middleware/EnsureGameIsValid.php
+  s_c99ad34ebf3999::t_bc45efc0d5d300 5,11-14,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "387e9cc5c4d3e44ddf251ad019428d78e78e683f",
+  "prompts": {},
+  "sessions": {
+    "s_c99ad34ebf3999": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e263a-5a5c-7ef1-8792-60ad0236a2fc",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
