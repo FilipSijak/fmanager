@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 class TransferWindowAvailability
 {
-    public function isTransferWindowOpen(string $instanceDate): bool
+    public static function isTransferWindowOpen(string $instanceDate): bool
     {
         $currentYear = Carbon::createFromFormat('Y-m-d', $instanceDate)->year;
 
@@ -19,8 +19,12 @@ class TransferWindowAvailability
         );
     }
 
-    public function nextAvailableTransferWindow(string $instanceDate): string
+    public static function nextAvailableTransferWindow(string $instanceDate): string
     {
+        if (self::isTransferWindowOpen($instanceDate)) {
+            return $instanceDate;
+        }
+
         $instanceYear = Carbon::createFromFormat('Y-m-d', $instanceDate)->year;
 
         if ($instanceDate > $instanceYear . '-' . TransferWindowConfig::SUMMER_WINDOW_END) {

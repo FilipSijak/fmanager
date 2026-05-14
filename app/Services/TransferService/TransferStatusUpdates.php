@@ -37,6 +37,18 @@ class TransferStatusUpdates
         call_user_func([$this->transferConsiderations, $this->freeTransferActions[$transfer->transfer_status]], $transfer);
     }
 
+    public function setSeasonId(int $seasonId): void
+    {
+        $this->transferConsiderations->setSeasonId($seasonId);
+        $this->transferRepository->setSeasonId($seasonId);
+    }
+
+    public function setInstanceId(int $instanceId): void
+    {
+        $this->transferConsiderations->setInstanceId($instanceId);
+        $this->transferRepository->setInstanceId($instanceId);
+    }
+
     public function loanTransferUpdates(Transfer $transfer): void
     {
         switch ($transfer->transfer_status) {

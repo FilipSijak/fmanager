@@ -68,9 +68,10 @@ class InstanceService implements IInstanceService
     public function nextDay()
     {
         $instance = $this->getInstance();
+        $this->season = Season::findOrFail($instance->season_id);
         $currentGameDate = Carbon::parse($instance->instance_date);
 
-        event(new NextDay());
+        event(new NextDay($instance));
         // update player training progress, morale
 
         // update finances

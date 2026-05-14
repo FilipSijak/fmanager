@@ -2,6 +2,7 @@
 
 namespace App\Services\TransferService\TransferEntityAnalysis;
 
+use App\Helpers\DisplayHelpers;
 use App\Models\Club;
 use App\Models\Player;
 
@@ -17,6 +18,6 @@ class PlayerValuation
             return 0;
         }
 
-        return roundAmount($valuation);
+        return DisplayHelpers::roundAmounts($valuation);
     }
 }

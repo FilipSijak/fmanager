@@ -35,6 +35,8 @@ class TransferService extends BaseService
         $this->instanceId = $request->header('instanceId');
         $this->seasonId = $request->header('seasonId');
         $this->forceLuxuryBids = false;
+
+        $this->syncTransferContext();
     }
 
     public function processTransferBids()
@@ -56,6 +58,18 @@ class TransferService extends BaseService
     public function setForceLuxuryBids(bool $forceLuxuryTransferBids = true): void
     {
         $this->forceLuxuryBids = $forceLuxuryTransferBids;
+    }
+
+    public function setSeasonId(int $seasonId)
+    {
+        parent::setSeasonId($seasonId);
+        $this->syncTransferContext();
+    }
+
+    public function setInstanceId(int $instanceId)
+    {
+        parent::setInstanceId($instanceId);
+        $this->syncTransferContext();
     }
 
     /**
@@ -148,5 +162,18 @@ class TransferService extends BaseService
     public function freeTransferRequest(FreeTransferRequest $request)
     {
         $this->transferRepository->storeFreeTransfer($request);
+    }
+
+    private function syncTransferContext(): void
+    {
+        if ($this->seasonId !== null) {
+            $this->transferRepository->setSeasonId($this->seasonId);
+            $this->transferServiceHandler->setSeasonId($this->seasonId);
+        }
+
+        if ($this->instanceId !== null) {
+            $this->transferRepository->setInstanceId($this->instanceId);
+            $this->transferServiceHandler->setInstanceId($this->instanceId);
+        }
     }
 }

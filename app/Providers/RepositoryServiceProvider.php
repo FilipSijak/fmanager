@@ -31,11 +31,9 @@ class RepositoryServiceProvider extends ServiceProvider
             return $transferSearchRepository;
         });
 
-        $this->app->bind(TransferRepository::class, function () {
-            $transferRepository = new TransferRepository($this->app->make(PlayerRepository::class));
+        $this->app->resolving(TransferRepository::class, function (TransferRepository $transferRepository) {
             $transferRepository->setSeasonId($this->app->request->header('seasonId'));
             $transferRepository->setInstanceId($this->app->request->header('instanceId'));
-            return $transferRepository;
         });
     }
 
@@ -49,4 +47,3 @@ class RepositoryServiceProvider extends ServiceProvider
 
     }
 }
-

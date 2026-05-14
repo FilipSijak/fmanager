@@ -20,8 +20,10 @@ class NexDayTransfersSubscriber
     }
 
     /** Daily process of every transfer bid */
-    public function handleTranferBids()
+    public function handleTranferBids($event)
     {
+        $this->transferService->setInstanceId($event->instance->id);
+        $this->transferService->setSeasonId($event->instance->season_id);
         $this->transferService->processTransferBids();
     }
 

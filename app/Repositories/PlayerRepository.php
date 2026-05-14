@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Helpers\DisplayHelpers;
 use App\Models\Club;
 use App\Models\Player;
 use App\Repositories\Interfaces\IPlayerRepository;
@@ -152,13 +153,7 @@ class PlayerRepository implements IPlayerRepository
         $amount = $marketingRankValue > $amount ? $amount + (($maxPotentialValue - $amount) / 2) :
             $amount - (($amount - $maxPotentialValue) /2);
 
-        $amountSize = strlen((string) $amount);
-
-        if ($amountSize <= 6) {
-            return round($amount, -3);
-        }
-
-        return round($amount, -6);
+        return DisplayHelpers::roundAmounts($amount);
     }
 
     private function valuationByAttribute(int $attributeValue) {
