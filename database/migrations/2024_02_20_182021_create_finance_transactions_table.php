@@ -10,9 +10,8 @@ return new class extends Migration
     {
         Schema::create('finance_transactions', function (Blueprint $table) {
             $table->id();
-            $table->integer('transaction');
-            $table->integer('receiving_account');
-            $table->integer('sending_account');
+            $table->integer('receiving_account_id');
+            $table->integer('sending_account_id');
             $table->dateTime('transaction_date');
             $table->integer('amount');
             $table->integer('currency')->default(1);

@@ -17,6 +17,7 @@ return new class extends Migration
             $table->increments('id');
             $table->integer('transfer_id')->unsigned();
             $table->tinyInteger('counter_offered')->unsigned()->default(0);
+            $table->integer('transfer_fee')->unsigned();
             $table->integer('salary')->unsigned()->default(0);
             $table->integer('appearance')->unsigned()->default(0);
             $table->integer('assist')->unsigned()->default(0);

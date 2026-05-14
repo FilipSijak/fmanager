@@ -10,10 +10,11 @@ return new class extends Migration
     {
         Schema::create('accounts_debt_lines', function (Blueprint $table) {
             $table->id();
-            $table->integer('account_id');
+            $table->integer('sending_account_id');
             $table->integer('receiving_account_id');
-            $table->integer('installment');
-            $table->date('expiration');
+            $table->integer('amount');
+            $table->date('created_at');
+            $table->date('due_date');
         });
     }
 

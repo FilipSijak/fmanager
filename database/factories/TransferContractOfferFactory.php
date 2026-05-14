@@ -19,6 +19,7 @@ class TransferContractOfferFactory extends Factory
     {
         return [
             'transfer_id' => Transfer::factory()->make(['id' => 1])->id,
+            'transfer_fee' => 0,
             'salary' => $this->faker->numberBetween(1000, 10000),
             'appearance' => $this->faker->numberBetween(1000, 10000),
             'assist' => $this->faker->numberBetween(1000, 10000),
