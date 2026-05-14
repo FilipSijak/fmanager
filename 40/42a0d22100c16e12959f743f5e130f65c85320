@@ -1,0 +1,19 @@
+app/Helpers/DisplayHelpers.php
+  s_1802742a8d133e::t_a207a9075f7c71 7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "4042a0d22100c16e12959f743f5e130f65c85320",
+  "prompts": {},
+  "sessions": {
+    "s_1802742a8d133e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e16df-edaa-7f82-a86e-3282cb281b56",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
