@@ -31,4 +31,9 @@ class Transfer extends Model
 
         return $club->account()->first()->transfer_budget >= $transferFinancialDetails->amount;
     }
+
+    public function player()
+    {
+        return $this->belongsTo(Player::class);
+    }
 }
