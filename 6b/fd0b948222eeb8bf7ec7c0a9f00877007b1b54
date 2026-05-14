@@ -1,0 +1,51 @@
+app/Services/InstanceService/InstanceService.php
+  s_c99ad34ebf3999::t_8be8a8ad391dae 71
+  s_c99ad34ebf3999::t_f79d606f7f9da9 74
+app/Repositories/TransferRepository.php
+  s_c99ad34ebf3999::t_f10f63e3f273ec 80
+  s_c99ad34ebf3999::t_2b7822edd20bde 264
+  s_c99ad34ebf3999::t_344cadd2d6ea02 195-196
+  s_c99ad34ebf3999::t_d69178cadd0460 150,302,317
+  s_c99ad34ebf3999::t_d5ffd599003171 306-307
+app/Services/TransferService/TransferService.php
+  s_c99ad34ebf3999::t_aeccde269ee9e5 38-39,63-74,166-177
+app/Services/TransferService/TransferStatusUpdates.php
+  s_c99ad34ebf3999::t_a6f919825b46f9 42,48
+  s_c99ad34ebf3999::t_84ce549c09f9e7 40-41,43-47,49-51
+app/Services/TransferService/TransferConsiderations/TransferConsiderations.php
+  s_c99ad34ebf3999::t_a626f9720e7f53 26-35
+app/Services/TransferService/TransferFinancialSettlement.php
+  s_c99ad34ebf3999::t_a3c690f71e417a 39-46,48-62
+app/Providers/RepositoryServiceProvider.php
+  s_c99ad34ebf3999::t_9d78d2a0683960 34
+app/Services/TransferService/TransferEntityAnalysis/PlayerValuation.php
+  s_1802742a8d133e::t_094dd43c622904 5,21
+app/Services/TransferService/TransferServiceHandler.php
+  s_c99ad34ebf3999::t_4257f4ad01951a 21-34
+app/Listeners/NexDayTransfersSubscriber.php
+  s_c99ad34ebf3999::t_c3f82f5c31ee52 23,25-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "6bfd0b948222eeb8bf7ec7c0a9f00877007b1b54",
+  "prompts": {},
+  "sessions": {
+    "s_1802742a8d133e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e16df-edaa-7f82-a86e-3282cb281b56",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    },
+    "s_c99ad34ebf3999": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e263a-5a5c-7ef1-8792-60ad0236a2fc",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
