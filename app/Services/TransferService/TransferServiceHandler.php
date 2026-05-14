@@ -18,20 +18,6 @@ readonly class TransferServiceHandler
         private TransferStatusUpdates    $transferStatusUpdates,
     ) {}
 
-    public function setSeasonId(int $seasonId): void
-    {
-        $this->transferSearchRepository->setSeasonId($seasonId);
-        $this->transferRepository->setSeasonId($seasonId);
-        $this->transferStatusUpdates->setSeasonId($seasonId);
-    }
-
-    public function setInstanceId(int $instanceId): void
-    {
-        $this->transferSearchRepository->setInstanceId($instanceId);
-        $this->transferRepository->setInstanceId($instanceId);
-        $this->transferStatusUpdates->setInstanceId($instanceId);
-    }
-
     public function playerDeficitTransferAttempt(Club $club, Collection $deficitPositions, int $clubBudget): void
     {
         foreach ($deficitPositions as $position => $deficitNumber) {

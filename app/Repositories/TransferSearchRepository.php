@@ -13,7 +13,7 @@ class TransferSearchRepository extends CoreRepository
 {
     public function playersByAttributes(Club $club, array $searchableAttribute)
     {
-        $instance = Instance::find($this->instanceId);
+        $instance = Instance::find($this->instanceId());
 
         return DB::table('players AS p')
             ->select('p.*')
@@ -23,7 +23,7 @@ class TransferSearchRepository extends CoreRepository
                     $query->where($attribute, '>=', $value);
                 }
             })
-            ->where('p.instance_id', $this->instanceId)
+            ->where('p.instance_id', $this->instanceId())
             ->where('p.club_id', '<>', $club->id)
             ->where('p.position', '=','CB')
             ->where(function ($query) use($instance){
@@ -62,7 +62,7 @@ class TransferSearchRepository extends CoreRepository
     {
         $highestPotentialPlayer = Player::where('position', $position)
             ->where('club_id', $buyingClub->id)
-            ->where('instance_id', $this->instanceId)
+            ->where('instance_id', $this->instanceId())
             ->orderBy('potential', 'DESC')
             ->first();
 
@@ -159,7 +159,7 @@ class TransferSearchRepository extends CoreRepository
         int $clubBudget
     ): ?Player
     {
-        $instance = Instance::find($this->instanceId);
+        $instance = Instance::find($this->instanceId());
 
         $player = DB::table('players AS p')
             ->select('p.*')

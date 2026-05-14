@@ -3,19 +3,27 @@
 namespace App\Repositories;
 
 use App\Repositories\Interfaces\ICoreRepository;
+use App\Support\GameContext;
 
 class CoreRepository implements ICoreRepository
 {
-    protected int|null $seasonId;
-    protected int|null $instanceId;
-
     public function setSeasonId(int|null $seasonId)
     {
-        $this->seasonId = $seasonId;
+        app(GameContext::class)->setSeasonId($seasonId);
     }
 
     public function setInstanceId(int|null $instanceId)
     {
-        $this->instanceId = $instanceId;
+        app(GameContext::class)->setInstanceId($instanceId);
+    }
+
+    protected function seasonId(): int
+    {
+        return app(GameContext::class)->seasonId();
+    }
+
+    protected function instanceId(): int
+    {
+        return app(GameContext::class)->instanceId();
     }
 }

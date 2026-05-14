@@ -42,7 +42,7 @@ class TransferRepository extends CoreRepository
         $transfer = new Transfer;
         $transferFinancialDetails = new TransferFinancialDetails;
 
-        $transfer->season_id = $this->seasonId;
+        $transfer->season_id = $this->seasonId();
         $transfer->source_club_id = $request->input('source_club_id');
         $transfer->target_club_id = $request->input('target_club_id');
         $transfer->player_id = $request->input('player_id');
@@ -65,11 +65,11 @@ class TransferRepository extends CoreRepository
     {
         $transfer = new Transfer;
 
-        $transfer->season_id = $this->seasonId;
+        $transfer->season_id = $this->seasonId();
         $transfer->source_club_id = $request->input('source_club_id');
         $transfer->player_id = $request->input('player_id');
         $transfer->transfer_type = TransferTypes::FREE_TRANSFER;
-        $transfer->offer_date = Instance::where('id', $this->instanceId)->first()->instance_date;
+        $transfer->offer_date = Instance::where('id', $this->instanceId())->first()->instance_date;
         $transfer->transfer_status = TransferStatusTypes::WAITING_PLAYER->value;
 
         $transfer->save();
@@ -104,14 +104,14 @@ class TransferRepository extends CoreRepository
 
     public function processMedical(Transfer $transfer): bool
     {
-        $instance = Instance::findOrFail($this->instanceId);
+        $instance = Instance::findOrFail($this->instanceId());
         $playerInjury = DB::table('player_injuries as pi')
         ->select('i.severity')
         ->join('injuries as i', 'i.id', '=', 'pi.injury_id')
         ->join('players as p', 'p.id', '=', 'pi.player_id')
         ->where('pi.injury_end_date', '>=', $instance->instance_date)
-        ->where('pi.season_id', '=', $this->seasonId)
-        ->where('pi.instance_id', '=', $this->instanceId)
+        ->where('pi.season_id', '=', $this->seasonId())
+        ->where('pi.instance_id', '=', $this->instanceId())
         ->where('p.id', '=', $transfer->player_id)
         ->first();
 
@@ -129,7 +129,7 @@ class TransferRepository extends CoreRepository
 
         // if outside of transfer window, update status for
         // if it's outside of the transfer window, transfer date should move to the next transfer window (update transfer_date on transfers table)
-        $instance = Instance::findOrFail($this->instanceId);
+        $instance = Instance::findOrFail($this->instanceId());
 
         if (!TransferWindowAvailability::isTransferWindowOpen($instance->instance_date)) {
             // update transfer
@@ -205,10 +205,10 @@ class TransferRepository extends CoreRepository
         bool $urgentTransfer = false,
     ): Transfer|null {
         $transfer = new Transfer([
-            'season_id' => $this->seasonId,
+            'season_id' => $this->seasonId(),
             'source_club_id' => $buyingClub->id,
             'player_id' => $player->id,
-            'offer_date' => Instance::find($this->instanceId)->instance_date,
+            'offer_date' => Instance::find($this->instanceId())->instance_date,
             'transfer_type' => $transferType,
         ]);
 

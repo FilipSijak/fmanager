@@ -2,18 +2,37 @@
 
 namespace App\Services;
 
+use App\Support\GameContext;
+
 class BaseService
 {
-    protected int|null $seasonId;
-    protected int|null   $instanceId;
-
     public function setSeasonId(int $seasonId)
     {
-        $this->seasonId = $seasonId;
+        app(GameContext::class)->setSeasonId($seasonId);
     }
 
     public function setInstanceId(int $instanceId)
     {
-        $this->instanceId = $instanceId;
+        app(GameContext::class)->setInstanceId($instanceId);
+    }
+
+    protected function seasonId(): int
+    {
+        return app(GameContext::class)->seasonId();
+    }
+
+    protected function instanceId(): int
+    {
+        return app(GameContext::class)->instanceId();
+    }
+
+    protected function hasSeasonId(): bool
+    {
+        return app(GameContext::class)->hasSeasonId();
+    }
+
+    protected function hasInstanceId(): bool
+    {
+        return app(GameContext::class)->hasInstanceId();
     }
 }

@@ -24,8 +24,8 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
         return DB::table('competition_season AS cs')
             ->select('clubs.name', 'cs.points')
             ->join('clubs', 'cs.club_id', '=', 'clubs.id')
-            ->where('season_id', $this->seasonId)
-            ->where('cs.instance_id', $this->instanceId)
+            ->where('season_id', $this->seasonId())
+            ->where('cs.instance_id', $this->instanceId())
             ->where('competition_id', $competitionId)
             ->orderBy('points', 'DESC')
             ->get();
@@ -37,8 +37,8 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->select('tg.group_id', 'tg.points', 'clubs.name')
             ->join('clubs', 'clubs.id', '=', 'tg.club_id')
             ->where('tg.competition_id', $competitionId)
-            ->where('tg.instance_id', $this->instanceId)
-            ->where('tg.season_id', $this->seasonId)
+            ->where('tg.instance_id', $this->instanceId())
+            ->where('tg.season_id', $this->seasonId())
             ->orderBy('tg.group_id', 'ASC')
             ->orderBy('tg.points', 'DESC')
             ->get();
@@ -48,8 +48,8 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
     {
         $result = DB::table('tournament_knockout AS tk')
             ->select('tk.summary')
-            ->where('instance_id', $this->instanceId)
-            ->where('season_id', $this->seasonId)
+            ->where('instance_id', $this->instanceId())
+            ->where('season_id', $this->seasonId())
             ->first();
 
         return $result->summary ?? '';

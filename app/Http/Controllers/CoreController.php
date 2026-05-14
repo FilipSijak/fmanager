@@ -2,19 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\HeaderInfoTrait;
-use Illuminate\Http\Request;
+use App\Support\GameContext;
 
 class CoreController extends Controller
 {
-    use HeaderInfoTrait;
+    public function __construct(
+        private readonly GameContext $gameContext
+    ) {}
 
-    protected int $seasonId;
-    protected int $instanceId;
-
-    public function __construct(Request $request)
+    protected function seasonId(): int
     {
-        $this->seasonId = $this->getSeasonId($request);
-        $this->instanceId = $this->getInstanceId($request);
+        return $this->gameContext->seasonId();
+    }
+
+    protected function instanceId(): int
+    {
+        return $this->gameContext->instanceId();
     }
 }

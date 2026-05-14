@@ -8,8 +8,8 @@ use App\Models\Competition;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\GameRepository;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
+use App\Support\GameContext;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class CompetitionController extends CoreController
 {
@@ -18,26 +18,22 @@ class CompetitionController extends CoreController
     private KnockoutSummaryRoundsData $knockoutSummaryRoundsData;
 
     public function __construct(
-        Request $request,
+        GameContext $gameContext,
         CompetitionRepository $competitionRepository,
         GameRepository $gameRepository,
         KnockoutSummaryRoundsData $knockoutSummaryRoundsData
     )
     {
-        parent::__construct($request);
+        parent::__construct($gameContext);
 
         $this->competitionRepository = $competitionRepository;
-        $this->competitionRepository->setInstanceId($this->instanceId);
-        $this->competitionRepository->setSeasonId($this->seasonId);
         $this->gameRepository = $gameRepository;
-        $this->gameRepository->setInstanceId($this->instanceId);
-        $this->gameRepository->setSeasonId($this->seasonId);
         $this->knockoutSummaryRoundsData = $knockoutSummaryRoundsData;
     }
 
     public function show(int $competitionId): CompetitionResource
     {
-        $competition = Competition::where('instance_id', $this->instanceId)
+        $competition = Competition::where('instance_id', $this->instanceId())
                                   ->where('id', $competitionId)
                                   ->first();
 

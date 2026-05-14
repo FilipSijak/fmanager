@@ -23,16 +23,6 @@ class TransferConsiderations
         $this->transferRepository = $transferRepository;
     }
 
-    public function setSeasonId(int $seasonId): void
-    {
-        $this->transferRepository->setSeasonId($seasonId);
-    }
-
-    public function setInstanceId(int $instanceId): void
-    {
-        $this->transferRepository->setInstanceId($instanceId);
-    }
-
     public function playerDecision(Transfer $transfer): void
     {
         $playerDecision = $this->playerConsideration->considerOffer($transfer);

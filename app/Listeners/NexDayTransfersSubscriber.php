@@ -4,6 +4,7 @@ namespace App\Listeners;
 
 use App\Services\TransferService\TransferService;
 use App\Services\TransferService\TransferWindowConfig\TransferWindowAvailability;
+use App\Support\GameContext;
 use Carbon\Carbon;
 
 class NexDayTransfersSubscriber
@@ -12,7 +13,8 @@ class NexDayTransfersSubscriber
 
     public function __construct(
         TransferService $transferService,
-        TransferWindowAvailability $transferWindowAvailability
+        TransferWindowAvailability $transferWindowAvailability,
+        private readonly GameContext $gameContext
     )
     {
         $this->transferService = $transferService;
@@ -22,8 +24,7 @@ class NexDayTransfersSubscriber
     /** Daily process of every transfer bid */
     public function handleTranferBids($event)
     {
-        $this->transferService->setInstanceId($event->instance->id);
-        $this->transferService->setSeasonId($event->instance->season_id);
+        $this->gameContext->set($event->instance->id, $event->instance->season_id);
         $this->transferService->processTransferBids();
     }
 

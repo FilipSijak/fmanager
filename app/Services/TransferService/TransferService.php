@@ -12,13 +12,9 @@ use App\Services\BaseService;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TransferService\TransferEntityAnalysis\ClubTransferAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
-use Illuminate\Http\Request;
 
 class TransferService extends BaseService
 {
-    protected int|null               $instanceId;
-    protected int|null               $seasonId;
-
     const int LUXURY_TRANSFER_BALANCE = 50000000;
 
     private bool $forceLuxuryBids;
@@ -26,23 +22,17 @@ class TransferService extends BaseService
     public function __construct(
         private readonly TransferRequestValidator $transferRequestValidator,
         private readonly ClubTransferAnalysis $clubTransferAnalysis,
-        Request $request,
         private readonly  TransferRepository $transferRepository,
         private readonly TransferServiceHandler $transferServiceHandler,
     )
     {
-
-        $this->instanceId = $request->header('instanceId');
-        $this->seasonId = $request->header('seasonId');
         $this->forceLuxuryBids = false;
-
-        $this->syncTransferContext();
     }
 
     public function processTransferBids()
     {
         //get all transfers from the table
-        $transfers = Transfer::where('season_id', $this->seasonId)
+        $transfers = Transfer::where('season_id', $this->seasonId())
                              ->where('transfer_type', '!=', TransferStatusTypes::TRANSFER_FAILED->value)
                              ->where('transfer_type', '!=', TransferStatusTypes::TRANSFER_COMPLETED->value)
                              ->get();
@@ -60,25 +50,13 @@ class TransferService extends BaseService
         $this->forceLuxuryBids = $forceLuxuryTransferBids;
     }
 
-    public function setSeasonId(int $seasonId)
-    {
-        parent::setSeasonId($seasonId);
-        $this->syncTransferContext();
-    }
-
-    public function setInstanceId(int $instanceId)
-    {
-        parent::setInstanceId($instanceId);
-        $this->syncTransferContext();
-    }
-
     /**
      * Check all non-player clubs if they need players
      * Run every day during the transfer window, run weekly outside
      */
     public function automaticTransferBids()
     {
-        $clubs = Club::where('instance_id', $this->instanceId)->get();
+        $clubs = Club::where('instance_id', $this->instanceId())->get();
 
         foreach ($clubs as $club) {
             $deficitPositions = $this->clubTransferAnalysis->playerDeficitByPosition($club);
@@ -164,16 +142,4 @@ class TransferService extends BaseService
         $this->transferRepository->storeFreeTransfer($request);
     }
 
-    private function syncTransferContext(): void
-    {
-        if ($this->seasonId !== null) {
-            $this->transferRepository->setSeasonId($this->seasonId);
-            $this->transferServiceHandler->setSeasonId($this->seasonId);
-        }
-
-        if ($this->instanceId !== null) {
-            $this->transferRepository->setInstanceId($this->instanceId);
-            $this->transferServiceHandler->setInstanceId($this->instanceId);
-        }
-    }
 }

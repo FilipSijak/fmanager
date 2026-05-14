@@ -23,7 +23,6 @@ use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -220,7 +219,6 @@ class TransferServiceTest extends TestCase
         $transferRequestValidator = app()->make(TransferRequestValidator::class);
         $transferSearchRepository = app()->make(TransferSearchRepository::class);
         $clubTransferAnalysis = app()->make(ClubTransferAnalysis::class);
-        $request = new Request();
         $transferStatusUpdates =  app()->make(TransferStatusUpdates::class);
 
         $transferRepository->setSeasonId(1);
@@ -237,7 +235,6 @@ class TransferServiceTest extends TestCase
         $transferService = new TransferService(
             $transferRequestValidator,
             $clubTransferAnalysis,
-            $request,
             $transferRepository,
             $transferServiceHandler
         );

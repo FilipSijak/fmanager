@@ -2,12 +2,16 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\GameContext;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class EnsureGameIsValid
 {
+    public function __construct(
+        private readonly GameContext $gameContext
+    ) {}
+
     /**
      * Handle an incoming request.
      *
@@ -17,16 +21,7 @@ class EnsureGameIsValid
      */
     public function handle(Request $request, Closure $next)
     {
-        $instanceHash = $request->header('instanceHash');
-        $instanceId = $request->header('instanceId');
-
-
-        $result = DB::select(
-            'SELECT * FROM instances WHERE instance_hash = :instanceHash AND id = :instanceId',
-            ['instanceHash' => $instanceHash, 'instanceId' => $instanceId]
-        );
-
-        if (!$result) {
+        if (!$this->gameContext->hasInstanceId()) {
             return response()->json('Your account is inactive');
         }
 
