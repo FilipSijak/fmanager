@@ -34,7 +34,16 @@ class TransferServiceTest extends TestCase
     #[Test]
     public function itIsAbleToCompleteFreeTransfers()
     {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-07-01',
+        ]);
         $buyingClubId = 1;
+        Club::factory()->create(['id' => $buyingClubId]);
+        Account::factory()->create([
+            'club_id' => $buyingClubId,
+            'transfer_budget' => 10000,
+        ]);
         $player = Player::factory()->create(
             [
                 'id' => 1,
@@ -58,6 +67,7 @@ class TransferServiceTest extends TestCase
         $transferService = app()->make(TransferService::class);
 
         $transferService->setSeasonId(1);
+        $transferService->setInstanceId(1);
         $transferService->processTransferBids($transfer);
 
         //player has a new contract and a new club
@@ -75,6 +85,10 @@ class TransferServiceTest extends TestCase
     #[Test]
     public function isAbleToCompletePermanentTransferWithoutInstallments()
     {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-07-01',
+        ]);
         $buyingClubId = 1;
         $sellingClubId = 2;
         $player = Player::factory()->create(
@@ -90,6 +104,7 @@ class TransferServiceTest extends TestCase
         $transferService = app()->make(TransferService::class);
 
         $transferService->setSeasonId(1);
+        $transferService->setInstanceId(1);
         $transferService->processTransferBids();
 
         //player has a new contract and a new club
@@ -112,6 +127,10 @@ class TransferServiceTest extends TestCase
     #[Test]
     public function itIsAbleToCompleteTransfersWithInstallments()
     {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-07-01',
+        ]);
         $newClub = 1;
         $currentClub = 2;
         $player = Player::factory()->create(
@@ -121,10 +140,12 @@ class TransferServiceTest extends TestCase
             ]
         );
 
-        $this->setupTransferBetweenTwoClubs($newClub, $currentClub, $player->id, TransferTypes::LOAN_TRANSFER);
+        $transfer = $this->setupTransferBetweenTwoClubs($newClub, $currentClub, $player->id, TransferTypes::LOAN_TRANSFER);
+        TransferContractOffer::factory()->create(['transfer_id' => $transfer->id]);
         $transferService = app()->make(TransferService::class);
 
         $transferService->setSeasonId(1);
+        $transferService->setInstanceId(1);
         $transferService->processTransferBids();
         $player = Player::where('id', $player->id)->first();
 
