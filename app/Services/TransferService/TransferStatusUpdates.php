@@ -2,9 +2,11 @@
 
 namespace App\Services\TransferService;
 
+use App\Models\Instance;
 use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
+use App\Services\TransferService\TransferWindowConfig\TransferWindowAvailability;
 
 /**
  * SOURCE_CLUB - club that made an offer
@@ -69,7 +71,11 @@ class TransferStatusUpdates
                 break;
             case TransferStatusTypes::WAITING_TRANSFER_WINDOW->value:
                 // check if transfer window started and move player if so
-                $this->transferRepository->transferPlayerToNewClub($transfer);
+                $instance = Instance::findOrFail($transfer->instance_id);
+
+                if (TransferWindowAvailability::isTransferWindowOpen($instance->instance_date)) {
+                    $this->transferRepository->transferPlayerToNewClub($transfer);
+                }
                 break;
             case TransferStatusTypes::MOVE_PLAYER->value:
                 $this->transferRepository->transferPlayerToNewClub($transfer);
@@ -96,10 +102,14 @@ class TransferStatusUpdates
             case TransferStatusTypes::PLAYER_DECLINED->value:
                 // update news feed with player declined
                 // $this->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED);
+                break;
             case TransferStatusTypes::TARGET_CLUB_DECLINED->value:
                 // update news feed with target club declined
+                break;
             case TransferStatusTypes::TRANSFER_COMPLETED->value:
                 // update news feed with target club declined
+                $this->transferRepository->removeTransferContractOfferA($transfer);
+                break;
             case TransferStatusTypes::TRANSFER_FAILED->value:
                 $this->transferRepository->removeTransferAndPlayerOffers($transfer);
                 break;

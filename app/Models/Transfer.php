@@ -37,4 +37,25 @@ class Transfer extends Model
     {
         return $this->belongsTo(Player::class);
     }
+
+    public function season()
+    {
+        return $this->belongsTo(Season::class);
+    }
+
+    public function instance()
+    {
+        return $this->belongsTo(Instance::class);
+    }
+
+    public function transferContractOffer()
+    {
+        return $this->hasOne(TransferContractOffer::class);
+
+    }
+
+    public function transferFinancialDetail()
+    {
+        return $this->hasOne(TransferFinancialDetails::class);
+    }
 }

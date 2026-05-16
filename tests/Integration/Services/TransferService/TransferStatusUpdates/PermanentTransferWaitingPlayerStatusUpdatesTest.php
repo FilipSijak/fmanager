@@ -8,6 +8,7 @@ use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
+use App\Models\TransferFinancialDetails;
 use App\Repositories\TransferRepository;
 use App\Services\TransferService\TransferConsiderations\ClubConsideration;
 use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
@@ -95,6 +96,99 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
         );
     }
 
+    #[Test]
+    public function it_keeps_a_transfer_waiting_when_the_transfer_window_is_closed(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-03-01',
+        ]);
+
+        $transfer = Transfer::factory()->create([
+            'instance_id' => 1,
+            'transfer_status' => TransferStatusTypes::WAITING_TRANSFER_WINDOW->value,
+            'transfer_date' => '2024-07-01',
+        ]);
+
+        $transferRepository = $this->createMock(TransferRepository::class);
+        $transferRepository->expects($this->never())->method('transferPlayerToNewClub');
+
+        $this->transferStatusUpdatesWithRepository($transferRepository)->permanentTransferUpdates($transfer);
+    }
+
+    #[Test]
+    public function it_moves_a_waiting_transfer_when_the_transfer_window_is_open(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-01-10',
+        ]);
+
+        $transfer = Transfer::factory()->create([
+            'instance_id' => 1,
+            'transfer_status' => TransferStatusTypes::WAITING_TRANSFER_WINDOW->value,
+            'transfer_date' => '2024-07-01',
+        ]);
+
+        $transferRepository = $this->createMock(TransferRepository::class);
+        $transferRepository->expects($this->once())
+            ->method('transferPlayerToNewClub')
+            ->with($transfer);
+
+        $this->transferStatusUpdatesWithRepository($transferRepository)->permanentTransferUpdates($transfer);
+    }
+
+    #[Test]
+    public function it_moves_a_waiting_transfer_when_its_transfer_window_date_has_arrived(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-07-01',
+        ]);
+
+        $transfer = Transfer::factory()->create([
+            'instance_id' => 1,
+            'transfer_status' => TransferStatusTypes::WAITING_TRANSFER_WINDOW->value,
+            'transfer_date' => '2024-07-01',
+        ]);
+
+        $transferRepository = $this->createMock(TransferRepository::class);
+        $transferRepository->expects($this->once())
+            ->method('transferPlayerToNewClub')
+            ->with($transfer);
+
+        $this->transferStatusUpdatesWithRepository($transferRepository)->permanentTransferUpdates($transfer);
+    }
+
+    #[Test]
+    public function it_removes_failed_transfers_and_their_offers(): void
+    {
+        $transfer = Transfer::factory()->create([
+            'transfer_status' => TransferStatusTypes::TRANSFER_FAILED->value,
+        ]);
+
+        TransferContractOffer::factory()->create(['transfer_id' => $transfer->id]);
+        TransferFinancialDetails::factory()->create(['transfer_id' => $transfer->id]);
+
+        $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
+
+        $this->assertDatabaseMissing('transfers', ['id' => $transfer->id]);
+        $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+        $this->assertDatabaseMissing('transfer_financial_details', ['transfer_id' => $transfer->id]);
+    }
+
+    #[Test]
+    public function it_does_not_remove_completed_transfers_with_the_failed_transfer_cleanup(): void
+    {
+        $transfer = Transfer::factory()->create([
+            'transfer_status' => TransferStatusTypes::TRANSFER_COMPLETED->value,
+        ]);
+
+        $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
+
+        $this->assertDatabaseHas('transfers', ['id' => $transfer->id]);
+    }
+
     private function transferStatusUpdates(): TransferStatusUpdates
     {
         $transferRepository = app()->make(TransferRepository::class);
@@ -108,6 +202,14 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
         );
 
         return new TransferStatusUpdates($transferConsiderations, $transferRepository);
+    }
+
+    private function transferStatusUpdatesWithRepository(TransferRepository $transferRepository): TransferStatusUpdates
+    {
+        return new TransferStatusUpdates(
+            $this->createMock(TransferConsiderations::class),
+            $transferRepository
+        );
     }
 
     private function createWaitingPlayerTransfer(array $attributes = []): Transfer

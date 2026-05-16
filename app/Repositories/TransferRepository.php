@@ -286,7 +286,23 @@ class TransferRepository extends CoreRepository
 
     public function removeTransferAndPlayerOffers(Transfer $transfer)
     {
+        $this->removeTransferContractOfferA($transfer);
+        $this->removeTransferFinancialDetails($transfer);
+        $transfer->delete();
+    }
 
+    public function removeTransferContractOfferA(Transfer $transfer)
+    {
+        $contractOffer = $transfer->transferContractOffer()->first();
+
+        $contractOffer?->delete();
+    }
+
+    public function removeTransferFinancialDetails(Transfer $transfer)
+    {
+        $transferFinancialDetails = $transfer->transferFinancialDetails()->first();
+
+        $transferFinancialDetails?->delete();
     }
 
     private function setTransferInstallments(Transfer $transfer, Club $club): int
