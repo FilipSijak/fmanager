@@ -1,0 +1,25 @@
+database/factories/TransferFactory.php
+  s_f97b414fa59a4e::t_4d0f18af5d87e2 6,17
+app/Repositories/TransferSearchRepository.php
+  s_f97b414fa59a4e::t_b5a030dfb5b632 20-23,48
+app/Repositories/TransferRepository.php
+  s_f97b414fa59a4e::t_8bad6592b8d7c6 69
+app/Services/TransferService/TransferService.php
+  s_f97b414fa59a4e::t_18152584dc4fb0 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "c9705f7694069a0462231fcad07213328260479a",
+  "prompts": {},
+  "sessions": {
+    "s_f97b414fa59a4e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e318d-2850-7503-8054-6a50b1daa23b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
