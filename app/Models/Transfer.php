@@ -11,6 +11,7 @@ class Transfer extends Model
     use HasFactory;
 
     protected $fillable = [
+        'instance_id',
         'season_id',
         'source_club_id',
         'player_id',

@@ -17,7 +17,10 @@ class TransferSearchRepository extends CoreRepository
 
         return DB::table('players AS p')
             ->select('p.*')
-            ->leftJoin('transfers AS t', 't.player_id', '=', 'p.id' )
+            ->leftJoin('transfers AS t', function ($query) {
+                $query->on('t.player_id', '=', 'p.id')
+                    ->where('t.instance_id', '=', $this->instanceId());
+            })
             ->where(function ($query) use ($searchableAttribute){
                 foreach ($searchableAttribute as $attribute => $value) {
                     $query->where($attribute, '>=', $value);
@@ -42,6 +45,7 @@ class TransferSearchRepository extends CoreRepository
             ->select('p.*')
             ->leftJoin('transfers AS t', function ($query) use ($instance, $club) {
                 $query->on('t.player_id', '=', 'p.id')
+                    ->where('t.instance_id', '=', $instance->id)
                     ->whereRaw("
                         `t`.`offer_date` > DATE_SUB('" . $instance->instance_date . "', INTERVAL 2 year)
                         AND p.club_id <> " . $club->id . "

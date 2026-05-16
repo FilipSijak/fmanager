@@ -15,6 +15,7 @@ class CreateTransfersTable extends Migration
     {
         Schema::create('transfers', function (Blueprint $table) {
             $table->increments('id');
+            $table->integer('instance_id')->unsigned();
             $table->integer('season_id');
             $table->integer('source_club_id');
             $table->integer('target_club_id')->nullable();

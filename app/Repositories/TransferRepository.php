@@ -42,6 +42,7 @@ class TransferRepository extends CoreRepository
         $transfer = new Transfer;
         $transferFinancialDetails = new TransferFinancialDetails;
 
+        $transfer->instance_id = $this->instanceId();
         $transfer->season_id = $this->seasonId();
         $transfer->source_club_id = $request->input('source_club_id');
         $transfer->target_club_id = $request->input('target_club_id');
@@ -65,6 +66,7 @@ class TransferRepository extends CoreRepository
     {
         $transfer = new Transfer;
 
+        $transfer->instance_id = $this->instanceId();
         $transfer->season_id = $this->seasonId();
         $transfer->source_club_id = $request->input('source_club_id');
         $transfer->player_id = $request->input('player_id');
@@ -205,6 +207,7 @@ class TransferRepository extends CoreRepository
         bool $urgentTransfer = false,
     ): Transfer|null {
         $transfer = new Transfer([
+            'instance_id' => $this->instanceId(),
             'season_id' => $this->seasonId(),
             'source_club_id' => $buyingClub->id,
             'player_id' => $player->id,

@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Club;
+use App\Models\Instance;
 use App\Models\Player;
 use App\Models\Season;
 use Carbon\Carbon;
@@ -13,6 +14,7 @@ class TransferFactory extends Factory
     public function definition()
     {
         return [
+            'instance_id' => Instance::factory()->make(['id' => 1])->id,
             'season_id' => Season::factory()->make(['id' => 1])->id,
             'source_club_id' => Club::factory()->make(['id' => 2])->id,
             'target_club_id' => Club::factory()->make(['id' => 1])->id,
