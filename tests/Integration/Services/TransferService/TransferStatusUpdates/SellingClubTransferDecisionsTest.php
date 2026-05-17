@@ -105,6 +105,48 @@ class SellingClubTransferDecisionsTest extends TestCase
         $this->assertSame(0, TransferContractOffer::where('transfer_id', $transfer->id)->count());
     }
 
+    #[Test]
+    public function it_accepts_a_target_club_counteroffer_when_the_buying_club_values_and_can_afford_it(): void
+    {
+        $buyingClub = $this->createClub(2);
+        $sellingClub = $this->createClub(1);
+        $player = $this->createPlayer($sellingClub->id, [
+            'value' => 10000,
+            'potential' => 200,
+        ]);
+        $transfer = $this->createTransfer($buyingClub->id, $sellingClub->id, $player->id, 13000);
+        $transfer->transfer_status = TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value;
+        $transfer->save();
+
+        app()->make(TransferRepository::class)->transferFeeCounterOffer($transfer);
+
+        $this->assertSame(
+            TransferStatusTypes::COUNTEROFFER_ACCEPTED->value,
+            $transfer->refresh()->transfer_status
+        );
+    }
+
+    #[Test]
+    public function it_fails_a_target_club_counteroffer_when_the_buying_club_cannot_afford_it(): void
+    {
+        $buyingClub = $this->createClub(2, ['transfer_budget' => 10000]);
+        $sellingClub = $this->createClub(1);
+        $player = $this->createPlayer($sellingClub->id, [
+            'value' => 10000,
+            'potential' => 200,
+        ]);
+        $transfer = $this->createTransfer($buyingClub->id, $sellingClub->id, $player->id, 13000);
+        $transfer->transfer_status = TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value;
+        $transfer->save();
+
+        app()->make(TransferRepository::class)->transferFeeCounterOffer($transfer);
+
+        $this->assertSame(
+            TransferStatusTypes::TRANSFER_FAILED->value,
+            $transfer->refresh()->transfer_status
+        );
+    }
+
     private function transferConsiderations(): TransferConsiderations
     {
         return new TransferConsiderations(
@@ -114,7 +156,7 @@ class SellingClubTransferDecisionsTest extends TestCase
         );
     }
 
-    private function createClub(int $id): Club
+    private function createClub(int $id, array $accountAttributes = []): Club
     {
         $club = Club::factory()->create([
             'id' => $id,
@@ -124,11 +166,11 @@ class SellingClubTransferDecisionsTest extends TestCase
             'rank_training' => 10,
         ]);
 
-        Account::factory()->create([
+        Account::factory()->create(array_merge([
             'club_id' => $club->id,
             'balance' => 68000000,
             'future_balance' => 68000000,
-        ]);
+        ], $accountAttributes));
 
         return $club;
     }

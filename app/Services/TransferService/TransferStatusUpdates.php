@@ -46,6 +46,7 @@ class TransferStatusUpdates
                 break;
             case TransferStatusTypes::WAITING_PLAYER->value:
                 $this->transferConsiderations->playerDecision($transfer);
+                break;
             case TransferStatusTypes::WAITING_PAPERWORK->value:
                 break;
             case TransferStatusTypes::MOVE_PLAYER->value:
@@ -80,31 +81,25 @@ class TransferStatusUpdates
             case TransferStatusTypes::MOVE_PLAYER->value:
                 $this->transferRepository->transferPlayerToNewClub($transfer);
                 break;
-            case TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER->value:
-                $this->transferRepository->transferFeeCounterOffer($transfer, TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER->value);
-                break;
             case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value:
-                $this->transferRepository->transferFeeCounterOffer($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value);
+                $this->transferRepository->transferFeeCounterOffer($transfer);
                 break;
             case TransferStatusTypes::COUNTEROFFER_ACCEPTED->value:
                 $this->transferRepository->makePlayerContractOffer($transfer);
                 break;
             case TransferStatusTypes::PLAYER_COUNTEROFFER->value:
-                // implement
+                $this->transferConsiderations->playerCounterOffer($transfer);
                 break;
             case TransferStatusTypes::PLAYER_COUNTEROFFER_ACCEPTED->value:
                 $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER->value);
                 break;
-            case TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER->value:
-                // player reconsider
-                $this->transferConsiderations->playerDecision($transfer);
-                break;
             case TransferStatusTypes::PLAYER_DECLINED->value:
                 // update news feed with player declined
-                // $this->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED);
+                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
                 break;
             case TransferStatusTypes::TARGET_CLUB_DECLINED->value:
                 // update news feed with target club declined
+                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
                 break;
             case TransferStatusTypes::TRANSFER_COMPLETED->value:
                 // update news feed with target club declined

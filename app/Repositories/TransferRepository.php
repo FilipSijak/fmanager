@@ -232,27 +232,31 @@ class TransferRepository extends CoreRepository
         return $transfer;
     }
 
-    public function transferFeeCounterOffer(Transfer $transfer, int $type)
+    public function transferFeeCounterOffer(Transfer $transfer)
     {
-        if ($type === TransferStatusTypes::SOURCE_CLUB_COUNTEROFFER) {
-            // target club approves or declines transfer or updates with a counteroffer
-            // we only check for financial side and no other squad deficits at that point
+        $player = Player::find($transfer->player_id);
+        $buyingClub = Club::find($transfer->source_club_id);
+        $urgentTransfer = true;
+        $buyingClubValuation = PlayerValuation::buyingClubValuation($player, $buyingClub, $urgentTransfer);
+        $transferAmount = $transfer->transferFinancialDetails()->first()?->amount ?? 0;
+        $valuationComparison = $buyingClubValuation >= $transferAmount;
 
-            $decision = true;
+        if ($valuationComparison && $this->canClubAffordTransfer($transfer, $buyingClub)) {
+            $this->updateTransferStatus($transfer,TransferStatusTypes::COUNTEROFFER_ACCEPTED->value);
 
-            if ($decision) {
-                $this->updateTransferStatus($transfer,TransferStatusTypes::COUNTEROFFER_ACCEPTED->value);
-            }
-        } else {
-            if ($transfer->canClubAffordTransfer(Club::find($transfer->source_club_id))) {
-                // check if source club can afford the counter offer
-                // check source club max player valuation
-            }
+            return;
         }
-        // routes for source or target club
-        // if it's a source club counteroffer, target club has to review, and vice versa
-        // we only check for financial side and no other squad deficits at that point
-        // update transfer to decline or TARGET_CLUB_COUNTEROFFER_ACCEPTED
+
+        $this->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED->value);
+        // @todo send news
+    }
+
+    private function canClubAffordTransfer(Transfer $transfer, Club $club): bool
+    {
+        $transferAmount = $transfer->transferFinancialDetails()->first()?->amount;
+        $transferBudget = $club->account()->first()?->transfer_budget;
+
+        return $transferAmount !== null && $transferBudget !== null && $transferBudget >= $transferAmount;
     }
 
     public function makePlayerContractOffer(Transfer $transfer)
@@ -264,7 +268,7 @@ class TransferRepository extends CoreRepository
         DB::table('transfer_contract_offers')->insert(
             [
                 'transfer_id' => $transfer->id,
-                'transfer_fee' => 0,
+                'transfer_fee' => $contractOffer['transfer_fee'],
                 'salary' => $contractOffer['salary'],
                 'appearance' => $contractOffer['appearance'],
                 'clean_sheet' => $contractOffer['clean_sheet'],

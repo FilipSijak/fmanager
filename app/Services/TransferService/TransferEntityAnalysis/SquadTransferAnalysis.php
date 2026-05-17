@@ -49,19 +49,9 @@ class SquadTransferAnalysis
 
     public function optimalNumbersCheckByPosition(Club $club):array
     {
-        $players = $club->players()->get();
-
         $positionCount = SquadPlayersConfig::POSITION_COUNT;
         $positionShortage = [];
-        $clubPlayersPositionMapping = [];
-
-        foreach ($players as $player) {
-            if (!isset($clubPlayersPositionMapping[$player->position])) {
-                $clubPlayersPositionMapping[$player->position] = 0;
-            }
-
-            $clubPlayersPositionMapping[$player->position]++;
-        }
+        $clubPlayersPositionMapping = $this->mapPlayersByPosition($club);
 
         foreach ($positionCount as $position => $clubDefinedPLayerNumbers) {
             if (!isset($clubPlayersPositionMapping[$position])) {
@@ -78,6 +68,31 @@ class SquadTransferAnalysis
         }
 
         return $positionShortage;
+    }
+
+    public function positionShortage(Club $club, string $position): bool
+    {
+        $positionPlayerCount = SquadPlayersConfig::POSITION_COUNT[$position];
+        $clubPlayersPositionMapping = $this->mapPlayersByPosition($club);
+        $currentPositionCount = $clubPlayersPositionMapping[$position] ?? 0;
+
+        return $currentPositionCount < $positionPlayerCount;
+    }
+
+    private function mapPlayersByPosition(Club $club): array
+    {
+        $players = $club->players()->get();
+        $clubPlayersPositionMapping = [];
+
+        foreach ($players as $player) {
+            if (!isset($clubPlayersPositionMapping[$player->position])) {
+                $clubPlayersPositionMapping[$player->position] = 0;
+            }
+
+            $clubPlayersPositionMapping[$player->position]++;
+        }
+
+        return $clubPlayersPositionMapping;
     }
 
     private function setDefaultPlayerImportance(): PlayerImportance

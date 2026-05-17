@@ -64,6 +64,21 @@ class TransferConsiderations
         $this->transferRepository->makePlayerContractOffer($transfer);
     }
 
+    public function playerCounterOffer(Transfer $transfer): void
+    {
+        $decision = $this->clubConsideration->considerPlayerContractCounterOffer($transfer);
+
+        if ($decision) {
+            $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_PAPERWORK->value);
+
+            // @todo update news source club accepted
+
+            return;
+        }
+
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
+    }
+
     public function waitingPaperwork(Transfer $transfer): void
     {
         $medical = $this->transferRepository->processMedical($transfer);

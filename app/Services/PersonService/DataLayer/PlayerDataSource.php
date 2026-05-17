@@ -4,6 +4,7 @@ namespace App\Services\PersonService\DataLayer;
 
 use App\Models\Instance;
 use App\Models\Player;
+use App\Models\PlayerContract;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -61,13 +62,17 @@ class PlayerDataSource
         $cl = 0;
         $salaryRise = 0;
         $demotion = 0;
+        $transferFee = 0;
+        $playerHasContract = (bool)$player->contract_id;
+        $freePlayerFeeFactor = $playerHasContract ? 1 : 5;
 
-        for ($k = 0.1, $i = 10; $i < 210; $i +=10, $k += 0.1) {
+        // $f - fee multiplier, $k - tiered factor
+        for ($f = 2.2, $k = 0.1, $i = 10; $i < 210; $i +=10, $k += 0.1, $f -= 0.1) {
             if ($player->potential > $i) {
                 continue;
             }
-
             $salary = (($player->potential * $k * 1000) * ($player->marketing_rank / 100)) / 3;
+            $transferFee = ($salary * $f) * $freePlayerFeeFactor;
             $appearance = $player->potential * $k * 50;
             $cleanSheet = $player->position == 'GK' ? $player->potential * $k * 50 : 0;
             $goal = $assist = $appearance;
@@ -80,6 +85,7 @@ class PlayerDataSource
         }
 
         return [
+            'transfer_fee' => $transferFee,
             'salary' => $salary,
             'appearance' => $appearance,
             'clean_sheet' => $cleanSheet,
