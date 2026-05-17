@@ -9,6 +9,7 @@ use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
+use App\Repositories\PlayerRepository;
 use App\Repositories\TransferRepository;
 use App\Services\TransferService\TransferConsiderations\ClubConsideration;
 use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
@@ -189,6 +190,48 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
         $this->assertDatabaseHas('transfers', ['id' => $transfer->id]);
     }
 
+    #[Test]
+    public function it_accepts_a_player_counteroffer_within_ten_percent_when_the_buying_club_has_a_position_shortage(): void
+    {
+        $transfer = $this->createPlayerCounterOfferTransfer();
+
+        $baselineOffer = app()->make(PlayerRepository::class)
+            ->contractBasedOnPotential($transfer->player()->first());
+
+        TransferContractOffer::factory()->create(array_merge(
+            ['transfer_id' => $transfer->id],
+            $this->counterOfferFromBaseline($baselineOffer, 1.05)
+        ));
+
+        $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
+
+        $this->assertSame(
+            TransferStatusTypes::WAITING_PAPERWORK->value,
+            $transfer->refresh()->transfer_status
+        );
+    }
+
+    #[Test]
+    public function it_fails_a_player_counteroffer_above_ten_percent(): void
+    {
+        $transfer = $this->createPlayerCounterOfferTransfer();
+
+        $baselineOffer = app()->make(PlayerRepository::class)
+            ->contractBasedOnPotential($transfer->player()->first());
+
+        TransferContractOffer::factory()->create(array_merge(
+            ['transfer_id' => $transfer->id],
+            $this->counterOfferFromBaseline($baselineOffer, 1.11)
+        ));
+
+        $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
+
+        $this->assertSame(
+            TransferStatusTypes::TRANSFER_FAILED->value,
+            $transfer->refresh()->transfer_status
+        );
+    }
+
     private function transferStatusUpdates(): TransferStatusUpdates
     {
         $transferRepository = app()->make(TransferRepository::class);
@@ -250,6 +293,41 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
         ]);
 
         return $transfer;
+    }
+
+    private function createPlayerCounterOfferTransfer(): Transfer
+    {
+        $buyingClub = $this->createClub(1);
+        $sellingClub = $this->createClub(2);
+        $player = $this->createPlayerWithContract($sellingClub->id, 1000);
+
+        return Transfer::factory()->create([
+            'season_id' => 1,
+            'source_club_id' => $buyingClub->id,
+            'target_club_id' => $sellingClub->id,
+            'player_id' => $player->id,
+            'transfer_status' => TransferStatusTypes::PLAYER_COUNTEROFFER->value,
+            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+        ]);
+    }
+
+    private function counterOfferFromBaseline(array $baselineOffer, float $multiplier): array
+    {
+        return [
+            'transfer_fee' => (int) round($baselineOffer['transfer_fee'] * $multiplier),
+            'salary' => (int) round($baselineOffer['salary'] * $multiplier),
+            'appearance' => (int) round($baselineOffer['appearance'] * $multiplier),
+            'assist' => (int) round($baselineOffer['assist'] * $multiplier),
+            'goal' => (int) round($baselineOffer['goal'] * $multiplier),
+            'clean_sheet' => (int) round($baselineOffer['clean_sheet'] * $multiplier),
+            'league' => (int) round($baselineOffer['league'] * $multiplier),
+            'promotion' => (int) round($baselineOffer['promotion'] * $multiplier),
+            'cup' => (int) round($baselineOffer['cup'] * $multiplier),
+            'el' => (int) round($baselineOffer['el'] * $multiplier),
+            'cl' => (int) round($baselineOffer['cl'] * $multiplier),
+            'pc_promotion_salary_raise' => $baselineOffer['salary_raise'],
+            'pc_demotion_salary_cut' => $baselineOffer['demotion'],
+        ];
     }
 
     private function createClub(int $id): Club
