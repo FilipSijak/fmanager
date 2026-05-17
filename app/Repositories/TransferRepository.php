@@ -106,14 +106,14 @@ class TransferRepository extends CoreRepository
 
     public function processMedical(Transfer $transfer): bool
     {
-        $instance = Instance::findOrFail($this->instanceId());
+        $instance = Instance::findOrFail($transfer->instance_id);
         $playerInjury = DB::table('player_injuries as pi')
         ->select('i.severity')
         ->join('injuries as i', 'i.id', '=', 'pi.injury_id')
         ->join('players as p', 'p.id', '=', 'pi.player_id')
         ->where('pi.injury_end_date', '>=', $instance->instance_date)
         ->where('pi.season_id', '=', $this->seasonId())
-        ->where('pi.instance_id', '=', $this->instanceId())
+        ->where('pi.instance_id', '=', $transfer->instance_id)
         ->where('p.id', '=', $transfer->player_id)
         ->first();
 
@@ -131,7 +131,7 @@ class TransferRepository extends CoreRepository
 
         // if outside of transfer window, update status for
         // if it's outside of the transfer window, transfer date should move to the next transfer window (update transfer_date on transfers table)
-        $instance = Instance::findOrFail($this->instanceId());
+        $instance = Instance::findOrFail($transfer->instance_id);
 
         if (!TransferWindowAvailability::isTransferWindowOpen($instance->instance_date)) {
             // update transfer
