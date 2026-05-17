@@ -1,0 +1,30 @@
+app/Exceptions/InvalidTransferTransition.php
+  s_f97b414fa59a4e::t_99fe1cd71c0a7f 5-12
+app/Services/TransferService/TransferState.php
+  s_f97b414fa59a4e::t_2f29b74f1dcd62 11-72
+  s_f97b414fa59a4e::t_341d8932d646f0 5
+tests/Unit/Services/TransferService/TransferStateTest.php
+  s_f97b414fa59a4e::t_6203edbb814b44 1-43
+tests/EndToEnd/TransferService/PermanentTransfersEndToEndTest.php
+  s_f97b414fa59a4e::t_12377bc08a0082 1-410
+phpunit.xml
+  s_f97b414fa59a4e::t_0f282358428d17 16-18
+app/Repositories/TransferRepository.php
+  s_f97b414fa59a4e::t_7c732a30960fae 18,29,34-35,41,104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "c3b6789e1474e9507acde12b79f66046a1d5d134",
+  "prompts": {},
+  "sessions": {
+    "s_f97b414fa59a4e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e318d-2850-7503-8054-6a50b1daa23b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
