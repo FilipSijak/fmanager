@@ -1,0 +1,22 @@
+app/Repositories/TransferRepository.php
+  s_f97b414fa59a4e::t_b2e47fa2d366d9 244-245,247,249-259
+  s_f97b414fa59a4e::t_3836bae4a54129 241-242
+tests/Integration/Services/TransferService/TransferStatusUpdates/SellingClubTransferDecisionsTest.php
+  s_f97b414fa59a4e::t_6cd5347c4d0aa7 108-149,159,169,173
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.8",
+  "base_commit_sha": "04bb66ba9d196cc5281e79d56c8b9866963285f3",
+  "prompts": {},
+  "sessions": {
+    "s_f97b414fa59a4e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e318d-2850-7503-8054-6a50b1daa23b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
