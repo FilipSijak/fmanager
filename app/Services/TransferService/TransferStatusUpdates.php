@@ -90,9 +90,6 @@ class TransferStatusUpdates
             case TransferStatusTypes::PLAYER_COUNTEROFFER->value:
                 $this->transferConsiderations->playerCounterOffer($transfer);
                 break;
-            case TransferStatusTypes::PLAYER_COUNTEROFFER_ACCEPTED->value:
-                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER->value);
-                break;
             case TransferStatusTypes::PLAYER_DECLINED->value:
                 // update news feed with player declined
                 $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
