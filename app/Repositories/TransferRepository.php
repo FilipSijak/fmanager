@@ -15,6 +15,7 @@ use App\Models\TransferFinancialDetails;
 use App\Services\FinanceService\FinanceService;
 use App\Services\TransferService\TransferEntityAnalysis\PlayerValuation;
 use App\Services\TransferService\TransferFinancialSettlement;
+use App\Services\TransferService\TransferState;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
 use App\Services\TransferService\TransferWindowConfig\TransferWindowAvailability;
@@ -25,16 +26,19 @@ class TransferRepository extends CoreRepository
     private PlayerRepository $playerRepository;
     private FinanceService $financeService;
     private TransferFinancialSettlement $transferFinancialSettlement;
+    private TransferState $transferState;
 
     public function __construct(
         PlayerRepository $playerRepository,
         FinanceService $financeService,
-        TransferFinancialSettlement $transferFinancialSettlement
+        TransferFinancialSettlement $transferFinancialSettlement,
+        TransferState $transferState
     )
     {
         $this->playerRepository = $playerRepository;
         $this->financeService = $financeService;
         $this->transferFinancialSettlement = $transferFinancialSettlement;
+        $this->transferState = $transferState;
     }
 
     public function storeTransfer(CreateTransferRequest $request): Transfer
@@ -97,9 +101,7 @@ class TransferRepository extends CoreRepository
 
     public function updateTransferStatus(Transfer $transfer, int $sourceClubStatus): Transfer
     {
-        $transfer->transfer_status = $sourceClubStatus;
-
-        $transfer->save();
+        $this->transferState->transitionTo($transfer, TransferStatusTypes::from($sourceClubStatus));
 
         return $transfer;
     }

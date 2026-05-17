@@ -101,8 +101,6 @@ class TransferConsiderations
     {
         $this->transferRepository->transferPlayerToNewClub($transfer);
 
-        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_COMPLETED->value);
-
         /*
          * @todo
          * move player to a new club
