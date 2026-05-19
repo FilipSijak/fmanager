@@ -130,13 +130,9 @@ class TransferRepository extends CoreRepository
 
     public function transferPlayerToNewClub(Transfer $transfer): void
     {
-
-        // if outside of transfer window, update status for
-        // if it's outside of the transfer window, transfer date should move to the next transfer window (update transfer_date on transfers table)
         $instance = Instance::findOrFail($transfer->instance_id);
 
         if (!TransferWindowAvailability::isTransferWindowOpen($instance->instance_date)) {
-            // update transfer
             $transfer->transfer_date = TransferWindowAvailability::nextAvailableTransferWindow($instance->instance_date);
 
             $transfer->save();
@@ -145,61 +141,30 @@ class TransferRepository extends CoreRepository
             return;
         }
 
-        // validation
-        // check if the source club has enough money
+        $transferContractOffer = $transfer->transferContractOffer()->firstOrFail();
 
-        $sourceClub = Club::find($transfer->source_club_id);
-        $sourceClubAccount = $sourceClub->account()->first();
-        $transferFinancialDetails = TransferFinancialDetails::where('transfer_id', $transfer->id)->first();
-        $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)->firstOrFail();
-        $transferAmount = $transferFinancialDetails ? $transferFinancialDetails->amount : 0;
-
-        if (
-            $transfer->transfer_type != TransferTypes::LOAN_TRANSFER &&
-            $sourceClubAccount->transfer_budget < ($transferAmount + $transferContractOffer->transfer_fee)
-        ) {
-            $this->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
-
-            // send news @todo
-
+        if ($transfer->transfer_type != TransferTypes::LOAN_TRANSFER &&
+            !$this->checkTransferAffordabilityBeforeCompletion($transfer, $transferContractOffer)) {
             return;
         }
 
         try {
-            DB::beginTransaction();
 
-            if ($transfer->transfer_type == TransferTypes::LOAN_TRANSFER) {
-                $this->handleLoanTransferPlayerMove($transfer);
-            } elseif ($transfer->transfer_type == TransferTypes::FREE_TRANSFER) {
-                $this->handleFreeTransferPlayerMove($transfer);
-            } else {
-                $player = $transfer->player()->first();
-                $currentContract = $player->contract()->first();
-
-                $player->club_id = $transfer->source_club_id;
-                $this->transferFinancialSettlement->transferMoneyBetweenClubs($transfer);
-                $currentContract->update($transferContractOffer->toArray());
-
-                $player->save();
-            }
-
-            // cleanup
+        DB::transaction(function () use ($transfer, $transferContractOffer) {
+            match ($transfer->transfer_type) {
+                TransferTypes::LOAN_TRANSFER => $this->handleLoanTransferPlayerMove($transfer),
+                TransferTypes::FREE_TRANSFER => $this->handleFreeTransferPlayerMove($transfer, $transferContractOffer),
+                TransferTypes::PERMANENT_TRANSFER => $this->handlePermanentTransferPlayerMove($transfer, $transferContractOffer)
+            };
 
             $transferContractOffer->delete();
-
-            // complete transfer
             $this->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_COMPLETED->value);
+        });
 
-            // send news @todo
-
-            DB::commit();
         } catch (\Exception $e) {
             // log error @todo
-            DB::rollBack();
-
             throw $e;
         }
-
     }
 
     public function makeAutomaticTransferWithFinancialDetails(
@@ -290,21 +255,21 @@ class TransferRepository extends CoreRepository
         $this->updateTransferStatus($transfer,TransferStatusTypes::WAITING_PLAYER->value);
     }
 
-    public function removeTransferAndPlayerOffers(Transfer $transfer)
+    public function removeTransferAndPlayerOffers(Transfer $transfer): void
     {
-        $this->removeTransferContractOfferA($transfer);
+        $this->removeTransferContractOffer($transfer);
         $this->removeTransferFinancialDetails($transfer);
         $transfer->delete();
     }
 
-    public function removeTransferContractOfferA(Transfer $transfer)
+    public function removeTransferContractOffer(Transfer $transfer): void
     {
         $contractOffer = $transfer->transferContractOffer()->first();
 
         $contractOffer?->delete();
     }
 
-    public function removeTransferFinancialDetails(Transfer $transfer)
+    public function removeTransferFinancialDetails(Transfer $transfer): void
     {
         $transferFinancialDetails = $transfer->transferFinancialDetails()->first();
 
@@ -322,9 +287,31 @@ class TransferRepository extends CoreRepository
         return 0;
     }
 
-    private function handleFreeTransferPlayerMove(Transfer $transfer)
+    private function handlePermanentTransferPlayerMove(Transfer $transfer, TransferContractOffer $transferContractOffer): void
     {
-        $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)->firstOrFail();
+        $player = $transfer->player()->first();
+        $currentContract = $player->contract()->first();
+
+        $player->club_id = $transfer->source_club_id;
+        $this->transferFinancialSettlement->transferMoneyBetweenClubs($transfer);
+        $currentContract->update($transferContractOffer->toArray());
+
+        $player->save();
+        // send news @todo
+    }
+
+    private function handleLoanTransferPlayerMove(Transfer $transfer): void
+    {
+        $player = $transfer->player()->first();
+
+        $player->loan_club_id = $transfer->source_club_id;
+        $player->update();
+
+        // @todo send news
+    }
+
+    private function handleFreeTransferPlayerMove(Transfer $transfer, TransferContractOffer $transferContractOffer): void
+    {
         $player = $transfer->player()->first();
         $offeredContract = new PlayerContract($transferContractOffer->toArray());
 
@@ -333,13 +320,26 @@ class TransferRepository extends CoreRepository
         $player->club_id = $transfer->source_club_id;
 
         $player->update();
+        // news @todo
     }
 
-    private function handleLoanTransferPlayerMove(Transfer $transfer)
+    private function checkTransferAffordabilityBeforeCompletion(Transfer $transfer, TransferContractOffer $transferContractOffer): bool
     {
-        $player = $transfer->player()->first();
+        $transferFinancialDetails = TransferFinancialDetails::where('transfer_id', $transfer->id)->first();
+        $transferAmount = $transferFinancialDetails ? $transferFinancialDetails->amount : 0;
+        $sourceClub = Club::find($transfer->source_club_id);
+        $sourceClubAccount = $sourceClub->account()->first();
 
-        $player->loan_club_id = $transfer->source_club_id;
-        $player->update();
+        if (
+            $sourceClubAccount->transfer_budget < ($transferAmount + $transferContractOffer->transfer_fee)
+        ) {
+            $this->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
+
+            // send news @todo
+
+            return false;
+        }
+
+        return true;
     }
 }

@@ -5,7 +5,11 @@ namespace Tests\Integration\Services\TransferService;
 use App\Models\Instance;
 use App\Models\Account;
 use App\Models\Club;
+use App\Models\Player;
+use App\Models\PlayerContract;
 use App\Models\Transfer;
+use App\Models\TransferContractOffer;
+use App\Models\TransferFinancialDetails;
 use App\Repositories\TransferRepository;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
@@ -94,6 +98,142 @@ class TransferRepositoryTransferPlayerTest extends TestCase
         $this->transferRepository()->transferPlayerToNewClub($transfer);
     }
 
+    #[Test]
+    public function it_completes_a_permanent_transfer(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-07-01',
+        ]);
+
+        $buyingClub = $this->createClubWithAccount(10, 50000);
+        $sellingClub = $this->createClubWithAccount(20, 50000);
+        $player = $this->createPlayerWithContract($sellingClub->id, 1000);
+
+        $transfer = $this->createMovePlayerTransfer(
+            $buyingClub->id,
+            $sellingClub->id,
+            $player->id,
+            TransferTypes::PERMANENT_TRANSFER
+        );
+        TransferFinancialDetails::factory()->create([
+            'transfer_id' => $transfer->id,
+            'amount' => 10000,
+            'installments' => 0,
+        ]);
+        TransferContractOffer::factory()->create([
+            'transfer_id' => $transfer->id,
+            'transfer_fee' => 0,
+            'salary' => 2500,
+        ]);
+
+        $this->transferRepository()->transferPlayerToNewClub($transfer);
+
+        $this->assertSame(TransferStatusTypes::TRANSFER_COMPLETED->value, $transfer->refresh()->transfer_status);
+        $this->assertSame($buyingClub->id, $player->refresh()->club_id);
+        $this->assertSame(2500, $player->contract()->first()->salary);
+        $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+    }
+
+    #[Test]
+    public function it_completes_a_loan_transfer(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-07-01',
+        ]);
+
+        $loanClub = $this->createClubWithAccount(10, 0);
+        $parentClub = $this->createClubWithAccount(20, 0);
+        $player = $this->createPlayerWithContract($parentClub->id, 1000);
+
+        $transfer = $this->createMovePlayerTransfer(
+            $loanClub->id,
+            $parentClub->id,
+            $player->id,
+            TransferTypes::LOAN_TRANSFER
+        );
+        TransferContractOffer::factory()->create(['transfer_id' => $transfer->id]);
+
+        $this->transferRepository()->transferPlayerToNewClub($transfer);
+
+        $this->assertSame(TransferStatusTypes::TRANSFER_COMPLETED->value, $transfer->refresh()->transfer_status);
+        $this->assertSame($parentClub->id, $player->refresh()->club_id);
+        $this->assertSame($loanClub->id, $player->loan_club_id);
+        $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+    }
+
+    #[Test]
+    public function it_completes_a_free_transfer_with_a_new_contract(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-07-01',
+        ]);
+
+        $newClub = $this->createClubWithAccount(10, 50000);
+        $oldClub = $this->createClubWithAccount(20, 50000);
+        $player = $this->createPlayerWithContract($oldClub->id, 1000);
+        $oldContractId = $player->contract_id;
+
+        $transfer = $this->createMovePlayerTransfer(
+            $newClub->id,
+            null,
+            $player->id,
+            TransferTypes::FREE_TRANSFER
+        );
+        TransferContractOffer::factory()->create([
+            'transfer_id' => $transfer->id,
+            'transfer_fee' => 0,
+            'salary' => 3000,
+        ]);
+
+        $this->transferRepository()->transferPlayerToNewClub($transfer);
+
+        $player->refresh();
+
+        $this->assertSame(TransferStatusTypes::TRANSFER_COMPLETED->value, $transfer->refresh()->transfer_status);
+        $this->assertSame($newClub->id, $player->club_id);
+        $this->assertNotSame($oldContractId, $player->contract_id);
+        $this->assertSame(3000, $player->contract()->first()->salary);
+        $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+    }
+
+    #[Test]
+    public function it_fails_a_non_loan_transfer_when_the_buying_club_cannot_afford_it(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-07-01',
+        ]);
+
+        $buyingClub = $this->createClubWithAccount(10, 1000);
+        $sellingClub = $this->createClubWithAccount(20, 50000);
+        $player = $this->createPlayerWithContract($sellingClub->id, 1000);
+
+        $transfer = $this->createMovePlayerTransfer(
+            $buyingClub->id,
+            $sellingClub->id,
+            $player->id,
+            TransferTypes::PERMANENT_TRANSFER
+        );
+        TransferFinancialDetails::factory()->create([
+            'transfer_id' => $transfer->id,
+            'amount' => 10000,
+            'installments' => 0,
+        ]);
+        TransferContractOffer::factory()->create([
+            'transfer_id' => $transfer->id,
+            'transfer_fee' => 5000,
+        ]);
+
+        $this->transferRepository()->transferPlayerToNewClub($transfer);
+
+        $this->assertSame(TransferStatusTypes::TRANSFER_FAILED->value, $transfer->refresh()->transfer_status);
+        $this->assertSame($sellingClub->id, $player->refresh()->club_id);
+        $this->assertDatabaseHas('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+    }
+
     private function transferRepository(): TransferRepository
     {
         $transferRepository = app()->make(TransferRepository::class);
@@ -101,5 +241,50 @@ class TransferRepositoryTransferPlayerTest extends TestCase
         $transferRepository->setInstanceId(1);
 
         return $transferRepository;
+    }
+
+    private function createClubWithAccount(int $id, int $transferBudget): Club
+    {
+        $club = Club::factory()->create([
+            'id' => $id,
+            'instance_id' => 1,
+        ]);
+
+        Account::factory()->create([
+            'club_id' => $club->id,
+            'balance' => $transferBudget,
+            'future_balance' => $transferBudget,
+            'transfer_budget' => $transferBudget,
+        ]);
+
+        return $club;
+    }
+
+    private function createPlayerWithContract(int $clubId, int $salary): Player
+    {
+        $contract = PlayerContract::factory()->create(['salary' => $salary]);
+
+        return Player::factory()->create([
+            'club_id' => $clubId,
+            'contract_id' => $contract->id,
+            'instance_id' => 1,
+        ]);
+    }
+
+    private function createMovePlayerTransfer(
+        int $sourceClubId,
+        ?int $targetClubId,
+        int $playerId,
+        int $transferType
+    ): Transfer {
+        return Transfer::factory()->create([
+            'instance_id' => 1,
+            'season_id' => 1,
+            'source_club_id' => $sourceClubId,
+            'target_club_id' => $targetClubId,
+            'player_id' => $playerId,
+            'transfer_status' => TransferStatusTypes::MOVE_PLAYER->value,
+            'transfer_type' => $transferType,
+        ]);
     }
 }

@@ -60,51 +60,65 @@ class TransferStatusUpdates
         //TARGET - selling club
         //SOURCE - offering club
 
-        switch ($transfer->transfer_status) {
-            case TransferStatusTypes::WAITING_TARGET_CLUB->value:
-                $this->transferConsiderations->sellingClubDecision($transfer);
-                break;
-            case TransferStatusTypes::WAITING_PLAYER->value:
-                $this->transferConsiderations->playerDecision($transfer);
-                break;
-            case TransferStatusTypes::WAITING_PAPERWORK->value:
-                $this->transferConsiderations->waitingPaperwork($transfer);
-                break;
-            case TransferStatusTypes::WAITING_TRANSFER_WINDOW->value:
-                // check if transfer window started and move player if so
-                $instance = Instance::findOrFail($transfer->instance_id);
+        match (TransferStatusTypes::from($transfer->transfer_status)) {
+            TransferStatusTypes::WAITING_TARGET_CLUB,
+            TransferStatusTypes::WAITING_PLAYER,
+            TransferStatusTypes::WAITING_PAPERWORK,
+            TransferStatusTypes::WAITING_TRANSFER_WINDOW,
+            TransferStatusTypes::MOVE_PLAYER => $this->handlePermanentProgressionStatus($transfer),
 
-                if (TransferWindowAvailability::isTransferWindowOpen($instance->instance_date)) {
-                    $this->transferRepository->transferPlayerToNewClub($transfer);
-                }
-                break;
-            case TransferStatusTypes::MOVE_PLAYER->value:
-                $this->transferRepository->transferPlayerToNewClub($transfer);
-                break;
-            case TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value:
-                $this->transferRepository->transferFeeCounterOffer($transfer);
-                break;
-            case TransferStatusTypes::COUNTEROFFER_ACCEPTED->value:
-                $this->transferRepository->makePlayerContractOffer($transfer);
-                break;
-            case TransferStatusTypes::PLAYER_COUNTEROFFER->value:
-                $this->transferConsiderations->playerCounterOffer($transfer);
-                break;
-            case TransferStatusTypes::PLAYER_DECLINED->value:
-                // update news feed with player declined
-                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
-                break;
-            case TransferStatusTypes::TARGET_CLUB_DECLINED->value:
-                // update news feed with target club declined
-                $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
-                break;
-            case TransferStatusTypes::TRANSFER_COMPLETED->value:
-                // update news feed with target club declined
-                $this->transferRepository->removeTransferContractOfferA($transfer);
-                break;
-            case TransferStatusTypes::TRANSFER_FAILED->value:
-                $this->transferRepository->removeTransferAndPlayerOffers($transfer);
-                break;
+            TransferStatusTypes::TARGET_CLUB_COUNTEROFFER,
+            TransferStatusTypes::COUNTEROFFER_ACCEPTED,
+            TransferStatusTypes::PLAYER_COUNTEROFFER => $this->handlePermanentNegotiationStatus($transfer),
+
+            TransferStatusTypes::PLAYER_DECLINED,
+            TransferStatusTypes::TARGET_CLUB_DECLINED,
+            TransferStatusTypes::TRANSFER_COMPLETED,
+            TransferStatusTypes::TRANSFER_FAILED => $this->handlePermanentTerminalStatus($transfer),
+
+            default => null,
+        };
+    }
+
+    private function handlePermanentProgressionStatus(Transfer $transfer): void
+    {
+        match (TransferStatusTypes::from($transfer->transfer_status)) {
+            TransferStatusTypes::WAITING_TARGET_CLUB => $this->transferConsiderations->sellingClubDecision($transfer),
+            TransferStatusTypes::WAITING_PLAYER => $this->transferConsiderations->playerDecision($transfer),
+            TransferStatusTypes::WAITING_PAPERWORK => $this->transferConsiderations->waitingPaperwork($transfer),
+            TransferStatusTypes::WAITING_TRANSFER_WINDOW => $this->handleWaitingTransferWindow($transfer),
+            TransferStatusTypes::MOVE_PLAYER => $this->transferRepository->transferPlayerToNewClub($transfer),
+        };
+    }
+
+    private function handlePermanentNegotiationStatus(Transfer $transfer): void
+    {
+        match (TransferStatusTypes::from($transfer->transfer_status)) {
+            TransferStatusTypes::TARGET_CLUB_COUNTEROFFER => $this->transferRepository->transferFeeCounterOffer($transfer),
+            TransferStatusTypes::COUNTEROFFER_ACCEPTED => $this->transferRepository->makePlayerContractOffer($transfer),
+            TransferStatusTypes::PLAYER_COUNTEROFFER => $this->transferConsiderations->playerCounterOffer($transfer),
+        };
+    }
+
+    private function handlePermanentTerminalStatus(Transfer $transfer): void
+    {
+        match (TransferStatusTypes::from($transfer->transfer_status)) {
+            TransferStatusTypes::PLAYER_DECLINED,
+            TransferStatusTypes::TARGET_CLUB_DECLINED => $this->transferRepository->updateTransferStatus(
+                $transfer,
+                TransferStatusTypes::TRANSFER_FAILED->value
+            ),
+            TransferStatusTypes::TRANSFER_COMPLETED => $this->transferRepository->removeTransferContractOffer($transfer),
+            TransferStatusTypes::TRANSFER_FAILED => $this->transferRepository->removeTransferAndPlayerOffers($transfer),
+        };
+    }
+
+    private function handleWaitingTransferWindow(Transfer $transfer): void
+    {
+        $instance = Instance::findOrFail($transfer->instance_id);
+
+        if (TransferWindowAvailability::isTransferWindowOpen($instance->instance_date)) {
+            $this->transferRepository->transferPlayerToNewClub($transfer);
         }
     }
 }
