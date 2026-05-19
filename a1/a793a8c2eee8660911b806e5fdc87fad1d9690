@@ -1,0 +1,21 @@
+app/Services/TransferService/TransferStatusUpdates.php
+  s_826caf73d385c7::t_958e414f56e2df 63-68,70-121
+tests/Integration/Services/TransferService/TransferRepositoryTransferPlayerTest.php
+  s_826caf73d385c7::t_056a578e0471b0 8-9,11-12,101-236,245-288
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10",
+  "base_commit_sha": "a1a793a8c2eee8660911b806e5fdc87fad1d9690",
+  "prompts": {},
+  "sessions": {
+    "s_826caf73d385c7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3f73-2be4-7ab1-9306-5c0b22492e77",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
