@@ -21,34 +21,34 @@ class TransferStatusUpdates
         $this->transferWorkflow = $transferWorkflow;
     }
 
-    private array $freeTransferActions = [
-        TransferStatusTypes::WAITING_PLAYER->value => 'playerDecision',
-        TransferStatusTypes::PLAYER_COUNTEROFFER->value => 'playerCounterOffer',
-        TransferStatusTypes::WAITING_PAPERWORK->value => 'waitingPaperwork',
-        TransferStatusTypes::PLAYER_DECLINED->value => 'playerDeclined',
-        TransferStatusTypes::MOVE_PLAYER->value => 'transferPlayerToNewClub',
-    ];
-
     public function freeTransferUpdates(Transfer $transfer): void
     {
-        call_user_func([$this->transferWorkflow, $this->freeTransferActions[$transfer->transfer_status]], $transfer);
+        match (TransferStatusTypes::from($transfer->transfer_status)) {
+            TransferStatusTypes::WAITING_PLAYER => $this->transferWorkflow->playerDecision($transfer),
+            TransferStatusTypes::PLAYER_COUNTEROFFER => $this->transferWorkflow->playerCounterOffer($transfer),
+            TransferStatusTypes::WAITING_PAPERWORK => $this->transferWorkflow->waitingPaperwork($transfer),
+            TransferStatusTypes::WAITING_TRANSFER_WINDOW => $this->handleWaitingTransferWindow($transfer),
+            TransferStatusTypes::PLAYER_DECLINED => $this->transferWorkflow->playerDeclined($transfer),
+            TransferStatusTypes::MOVE_PLAYER => $this->transferWorkflow->transferPlayerToNewClub($transfer),
+            TransferStatusTypes::TRANSFER_COMPLETED => $this->transferWorkflow->removeTransferContractOffer($transfer),
+            TransferStatusTypes::TRANSFER_FAILED => $this->transferWorkflow->removeTransferAndPlayerOffers($transfer),
+            default => null,
+        };
     }
 
     public function loanTransferUpdates(Transfer $transfer): void
     {
-        switch ($transfer->transfer_status) {
-            case TransferStatusTypes::WAITING_TARGET_CLUB->value:
-                break;
-            case TransferStatusTypes::WAITING_PLAYER->value:
-                $this->transferWorkflow->playerDecision($transfer);
-                break;
-            case TransferStatusTypes::WAITING_PAPERWORK->value:
-                $this->transferWorkflow->waitingPaperwork($transfer);
-                break;
-            case TransferStatusTypes::MOVE_PLAYER->value:
-                $this->transferWorkflow->transferPlayerToNewClub($transfer);
-                break;
-        }
+        match (TransferStatusTypes::from($transfer->transfer_status)) {
+            TransferStatusTypes::WAITING_TARGET_CLUB => null,
+            TransferStatusTypes::WAITING_PLAYER => $this->transferWorkflow->playerDecision($transfer),
+            TransferStatusTypes::WAITING_PAPERWORK => $this->transferWorkflow->waitingPaperwork($transfer),
+            TransferStatusTypes::WAITING_TRANSFER_WINDOW => $this->handleWaitingTransferWindow($transfer),
+            TransferStatusTypes::PLAYER_DECLINED => $this->transferWorkflow->playerDeclined($transfer),
+            TransferStatusTypes::MOVE_PLAYER => $this->transferWorkflow->transferPlayerToNewClub($transfer),
+            TransferStatusTypes::TRANSFER_COMPLETED => $this->transferWorkflow->removeTransferContractOffer($transfer),
+            TransferStatusTypes::TRANSFER_FAILED => $this->transferWorkflow->removeTransferAndPlayerOffers($transfer),
+            default => null,
+        };
     }
 
     public function permanentTransferUpdates(Transfer $transfer): void
