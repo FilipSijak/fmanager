@@ -14,6 +14,7 @@ use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferWorkflow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -25,7 +26,6 @@ class SellingClubTransferDecisionsTest extends TestCase
     #[Test]
     public function it_accepts_a_non_key_player_offer_at_player_value(): void
     {
-        $transferConsiderations = $this->transferConsiderations();
         $buyingClub = $this->createClub(2);
         $sellingClub = $this->createClub(1);
 
@@ -42,7 +42,7 @@ class SellingClubTransferDecisionsTest extends TestCase
 
         $transfer = $this->createTransfer($buyingClub->id, $sellingClub->id, $player->id, 10000);
 
-        $transferConsiderations->sellingClubDecision($transfer);
+        app()->make(TransferWorkflow::class)->sellingClubDecision($transfer);
 
         $this->assertSame(
             TransferStatusTypes::WAITING_PLAYER->value,
@@ -118,7 +118,7 @@ class SellingClubTransferDecisionsTest extends TestCase
         $transfer->transfer_status = TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value;
         $transfer->save();
 
-        app()->make(TransferRepository::class)->transferFeeCounterOffer($transfer);
+        app()->make(TransferWorkflow::class)->transferFeeCounterOffer($transfer);
 
         $this->assertSame(
             TransferStatusTypes::COUNTEROFFER_ACCEPTED->value,
@@ -139,7 +139,7 @@ class SellingClubTransferDecisionsTest extends TestCase
         $transfer->transfer_status = TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value;
         $transfer->save();
 
-        app()->make(TransferRepository::class)->transferFeeCounterOffer($transfer);
+        app()->make(TransferWorkflow::class)->transferFeeCounterOffer($transfer);
 
         $this->assertSame(
             TransferStatusTypes::TRANSFER_FAILED->value,

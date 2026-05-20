@@ -14,7 +14,7 @@ readonly class TransferServiceHandler
 {
     public function __construct(
         private TransferSearchRepository $transferSearchRepository,
-        private TransferRepository       $transferRepository,
+        private TransferWorkflow         $transferWorkflow,
         private TransferStatusUpdates    $transferStatusUpdates,
     ) {}
 
@@ -129,7 +129,7 @@ readonly class TransferServiceHandler
         try {
             DB::beginTransaction();
 
-            $this->transferRepository->makeAutomaticTransferWithFinancialDetails(
+            $this->transferWorkflow->makeAutomaticTransferWithFinancialDetails(
                 $playerSelection['player'],
                 $club,
                 $playerSelection['type'],

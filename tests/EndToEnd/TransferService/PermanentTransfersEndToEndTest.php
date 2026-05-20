@@ -18,6 +18,7 @@ use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferWorkflow;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -165,18 +166,7 @@ class PermanentTransfersEndToEndTest extends TestCase
 
     private function transferStatusUpdates(): TransferStatusUpdates
     {
-        $transferRepository = app()->make(TransferRepository::class);
-        $transferRepository->setSeasonId(1);
-        $transferRepository->setInstanceId(1);
-
-        return new TransferStatusUpdates(
-            new TransferConsiderations(
-                app()->make(PlayerConsideration::class),
-                app()->make(ClubConsideration::class),
-                $transferRepository
-            ),
-            $transferRepository
-        );
+        return new TransferStatusUpdates(app()->make(TransferWorkflow::class));
     }
 
     private function createTransferWithSellingClubDecisionContext(array $playerAttributes, int $amount): Transfer

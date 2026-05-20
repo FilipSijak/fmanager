@@ -10,15 +10,15 @@ use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
-use App\Repositories\TransferRepository;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferWorkflow;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class TransferRepositoryTransferPlayerTest extends TestCase
+class TransferWorkflowTransferPlayerTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -36,7 +36,7 @@ class TransferRepositoryTransferPlayerTest extends TestCase
             'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
         ]);
 
-        $this->transferRepository()->transferPlayerToNewClub($transfer);
+        $this->transferWorkflow()->transferPlayerToNewClub($transfer);
 
         $transfer->refresh();
 
@@ -63,9 +63,7 @@ class TransferRepositoryTransferPlayerTest extends TestCase
             'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
         ]);
 
-        $transferRepository = $this->transferRepository();
-        $transferRepository->setInstanceId(1);
-        $transferRepository->transferPlayerToNewClub($transfer);
+        $this->transferWorkflow()->transferPlayerToNewClub($transfer);
 
         $transfer->refresh();
 
@@ -95,7 +93,7 @@ class TransferRepositoryTransferPlayerTest extends TestCase
 
         $this->expectException(ModelNotFoundException::class);
 
-        $this->transferRepository()->transferPlayerToNewClub($transfer);
+        $this->transferWorkflow()->transferPlayerToNewClub($transfer);
     }
 
     #[Test]
@@ -127,7 +125,7 @@ class TransferRepositoryTransferPlayerTest extends TestCase
             'salary' => 2500,
         ]);
 
-        $this->transferRepository()->transferPlayerToNewClub($transfer);
+        $this->transferWorkflow()->transferPlayerToNewClub($transfer);
 
         $this->assertSame(TransferStatusTypes::TRANSFER_COMPLETED->value, $transfer->refresh()->transfer_status);
         $this->assertSame($buyingClub->id, $player->refresh()->club_id);
@@ -155,7 +153,7 @@ class TransferRepositoryTransferPlayerTest extends TestCase
         );
         TransferContractOffer::factory()->create(['transfer_id' => $transfer->id]);
 
-        $this->transferRepository()->transferPlayerToNewClub($transfer);
+        $this->transferWorkflow()->transferPlayerToNewClub($transfer);
 
         $this->assertSame(TransferStatusTypes::TRANSFER_COMPLETED->value, $transfer->refresh()->transfer_status);
         $this->assertSame($parentClub->id, $player->refresh()->club_id);
@@ -188,7 +186,7 @@ class TransferRepositoryTransferPlayerTest extends TestCase
             'salary' => 3000,
         ]);
 
-        $this->transferRepository()->transferPlayerToNewClub($transfer);
+        $this->transferWorkflow()->transferPlayerToNewClub($transfer);
 
         $player->refresh();
 
@@ -227,20 +225,16 @@ class TransferRepositoryTransferPlayerTest extends TestCase
             'transfer_fee' => 5000,
         ]);
 
-        $this->transferRepository()->transferPlayerToNewClub($transfer);
+        $this->transferWorkflow()->transferPlayerToNewClub($transfer);
 
         $this->assertSame(TransferStatusTypes::TRANSFER_FAILED->value, $transfer->refresh()->transfer_status);
         $this->assertSame($sellingClub->id, $player->refresh()->club_id);
         $this->assertDatabaseHas('transfer_contract_offers', ['transfer_id' => $transfer->id]);
     }
 
-    private function transferRepository(): TransferRepository
+    private function transferWorkflow(): TransferWorkflow
     {
-        $transferRepository = app()->make(TransferRepository::class);
-        $transferRepository->setSeasonId(1);
-        $transferRepository->setInstanceId(1);
-
-        return $transferRepository;
+        return app()->make(TransferWorkflow::class);
     }
 
     private function createClubWithAccount(int $id, int $transferBudget): Club

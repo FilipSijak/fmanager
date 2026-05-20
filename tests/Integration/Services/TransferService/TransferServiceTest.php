@@ -21,6 +21,7 @@ use App\Services\TransferService\TransferServiceHandler;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferWorkflow;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -220,6 +221,7 @@ class TransferServiceTest extends TestCase
         $transferSearchRepository = app()->make(TransferSearchRepository::class);
         $clubTransferAnalysis = app()->make(ClubTransferAnalysis::class);
         $transferStatusUpdates =  app()->make(TransferStatusUpdates::class);
+        $transferWorkflow = app()->make(TransferWorkflow::class);
 
         $transferRepository->setSeasonId(1);
         $transferRepository->setInstanceId(1);
@@ -228,7 +230,7 @@ class TransferServiceTest extends TestCase
 
         $transferServiceHandler = new TransferServiceHandler(
             $transferSearchRepository,
-            $transferRepository,
+            $transferWorkflow,
             $transferStatusUpdates,
         );
 

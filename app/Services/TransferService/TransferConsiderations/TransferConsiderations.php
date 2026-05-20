@@ -38,7 +38,7 @@ class TransferConsiderations
         $this->transferRepository->updateTransferStatus($transfer, $playerUpdateDecision);
     }
 
-    public function sellingClubDecision(Transfer $transfer): void
+    public function sellingClubDecision(Transfer $transfer): bool
     {
         $decision = $this->clubConsideration->considerOffer($transfer);
 
@@ -53,15 +53,15 @@ class TransferConsiderations
 
                 $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value);
 
-                return;
+                return false;
             }
 
             $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_DECLINED->value);
 
-            return;
+            return false;
         }
 
-        $this->transferRepository->makePlayerContractOffer($transfer);
+        return true;
     }
 
     public function playerCounterOffer(Transfer $transfer): void
@@ -77,52 +77,5 @@ class TransferConsiderations
         }
 
         $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
-    }
-
-    public function waitingPaperwork(Transfer $transfer): void
-    {
-        $medical = $this->transferRepository->processMedical($transfer);
-
-        if (!$medical) {
-            $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
-
-            return;
-        }
-
-        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::MOVE_PLAYER->value);
-    }
-
-    public function targetClubCounterOffer(Transfer $transfer)
-    {
-
-    }
-
-    public function transferPlayer(Transfer $transfer)
-    {
-        $this->transferRepository->transferPlayerToNewClub($transfer);
-
-        /*
-         * @todo
-         * move player to a new club
-         * copy contract from the offer and update his current contract with it
-         * remove contract offer
-         * start financial transfer between club if it's not a free transfer
-         * - deduct player signing fee from source club balance
-         * - deduct agent fee from source club balance
-         * - setup installments
-         * - reset player happiness
-         * set transfer status to TRANSFER_COMPLETED
-         */
-
-    }
-
-    public function cancelOrRenegotiateTransfer(Transfer $transfer)
-    {
-        echo 'cancelOrRenegotiateTransfer';
-    }
-
-    public function targetClubConsideration($transfer)
-    {
-        echo 'targetClubConsideration';
     }
 }

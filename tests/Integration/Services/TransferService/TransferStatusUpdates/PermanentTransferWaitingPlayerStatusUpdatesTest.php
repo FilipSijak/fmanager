@@ -17,6 +17,7 @@ use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferWorkflow;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -111,10 +112,10 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             'transfer_date' => '2024-07-01',
         ]);
 
-        $transferRepository = $this->createMock(TransferRepository::class);
-        $transferRepository->expects($this->never())->method('transferPlayerToNewClub');
+        $transferWorkflow = $this->createMock(TransferWorkflow::class);
+        $transferWorkflow->expects($this->never())->method('transferPlayerToNewClub');
 
-        $this->transferStatusUpdatesWithRepository($transferRepository)->permanentTransferUpdates($transfer);
+        $this->transferStatusUpdatesWithWorkflow($transferWorkflow)->permanentTransferUpdates($transfer);
     }
 
     #[Test]
@@ -131,12 +132,12 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             'transfer_date' => '2024-07-01',
         ]);
 
-        $transferRepository = $this->createMock(TransferRepository::class);
-        $transferRepository->expects($this->once())
+        $transferWorkflow = $this->createMock(TransferWorkflow::class);
+        $transferWorkflow->expects($this->once())
             ->method('transferPlayerToNewClub')
             ->with($transfer);
 
-        $this->transferStatusUpdatesWithRepository($transferRepository)->permanentTransferUpdates($transfer);
+        $this->transferStatusUpdatesWithWorkflow($transferWorkflow)->permanentTransferUpdates($transfer);
     }
 
     #[Test]
@@ -153,12 +154,12 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             'transfer_date' => '2024-07-01',
         ]);
 
-        $transferRepository = $this->createMock(TransferRepository::class);
-        $transferRepository->expects($this->once())
+        $transferWorkflow = $this->createMock(TransferWorkflow::class);
+        $transferWorkflow->expects($this->once())
             ->method('transferPlayerToNewClub')
             ->with($transfer);
 
-        $this->transferStatusUpdatesWithRepository($transferRepository)->permanentTransferUpdates($transfer);
+        $this->transferStatusUpdatesWithWorkflow($transferWorkflow)->permanentTransferUpdates($transfer);
     }
 
     #[Test]
@@ -234,25 +235,12 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
 
     private function transferStatusUpdates(): TransferStatusUpdates
     {
-        $transferRepository = app()->make(TransferRepository::class);
-        $transferRepository->setSeasonId(1);
-        $transferRepository->setInstanceId(1);
-
-        $transferConsiderations = new TransferConsiderations(
-            app()->make(PlayerConsideration::class),
-            app()->make(ClubConsideration::class),
-            $transferRepository
-        );
-
-        return new TransferStatusUpdates($transferConsiderations, $transferRepository);
+        return new TransferStatusUpdates(app()->make(TransferWorkflow::class));
     }
 
-    private function transferStatusUpdatesWithRepository(TransferRepository $transferRepository): TransferStatusUpdates
+    private function transferStatusUpdatesWithWorkflow(TransferWorkflow $transferWorkflow): TransferStatusUpdates
     {
-        return new TransferStatusUpdates(
-            $this->createMock(TransferConsiderations::class),
-            $transferRepository
-        );
+        return new TransferStatusUpdates($transferWorkflow);
     }
 
     private function createWaitingPlayerTransfer(array $attributes = []): Transfer
