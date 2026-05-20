@@ -3,7 +3,9 @@
 namespace Tests\EndToEnd\TransferService;
 
 use App\Models\Account;
+use App\Models\AccountsDebtLines;
 use App\Models\Club;
+use App\Models\FinanceTransactions;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
@@ -85,6 +87,23 @@ class PermanentTransfersEndToEndTest extends TestCase
         $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
 
         $this->assertCompletedTransfer($transfer);
+        $this->assertImmediatePaymentSettled($transfer, amount: 10000);
+    }
+
+    #[Test]
+    public function move_player_completes_the_transfer_with_installments(): void
+    {
+        $this->createInstance('2024-07-01');
+        $transfer = $this->createMoveReadyTransfer(
+            status: TransferStatusTypes::MOVE_PLAYER->value,
+            amount: 10000,
+            installments: 3
+        );
+
+        $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
+
+        $this->assertCompletedTransfer($transfer);
+        $this->assertInstallmentPaymentSettled($transfer, amount: 10000, installmentAmounts: [3000, 3000, 4000]);
     }
 
     #[Test]
@@ -228,7 +247,7 @@ class PermanentTransfersEndToEndTest extends TestCase
         return $transfer;
     }
 
-    private function createMoveReadyTransfer(int $status): Transfer
+    private function createMoveReadyTransfer(int $status, int $amount = 10000, int $installments = 0): Transfer
     {
         $buyingClub = $this->createClub(1, 68000000);
         $sellingClub = $this->createClub(2, 68000000);
@@ -238,8 +257,8 @@ class PermanentTransfersEndToEndTest extends TestCase
 
         TransferFinancialDetails::factory()->create([
             'transfer_id' => $transfer->id,
-            'amount' => 10000,
-            'installments' => 0,
+            'amount' => $amount,
+            'installments' => $installments,
         ]);
         TransferContractOffer::factory()->create([
             'transfer_id' => $transfer->id,
@@ -395,6 +414,48 @@ class PermanentTransfersEndToEndTest extends TestCase
 
         $this->assertSame(TransferStatusTypes::TRANSFER_COMPLETED->value, $transfer->transfer_status);
         $this->assertSame($transfer->source_club_id, $player->club_id);
+        $this->assertSame(1200, $player->contract()->first()->salary);
         $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+    }
+
+    private function assertImmediatePaymentSettled(Transfer $transfer, int $amount): void
+    {
+        $buyingClubAccount = Account::where('club_id', $transfer->source_club_id)->firstOrFail();
+        $sellingClubAccount = Account::where('club_id', $transfer->target_club_id)->firstOrFail();
+
+        $this->assertSame(68000000 - $amount, $buyingClubAccount->balance);
+        $this->assertSame(68000000 - $amount, $buyingClubAccount->future_balance);
+        $this->assertSame(68000000 - $amount, $buyingClubAccount->transfer_budget);
+
+        $this->assertSame(68000000 + $amount, $sellingClubAccount->balance);
+        $this->assertSame(68000000 + $amount, $sellingClubAccount->future_balance);
+        $this->assertSame(68000000 + $amount, $sellingClubAccount->transfer_budget);
+
+        $this->assertDatabaseHas('finance_transactions', [
+            'sending_account_id' => $buyingClubAccount->id,
+            'receiving_account_id' => $sellingClubAccount->id,
+            'amount' => $amount,
+        ]);
+        $this->assertSame(0, AccountsDebtLines::count());
+    }
+
+    private function assertInstallmentPaymentSettled(Transfer $transfer, int $amount, array $installmentAmounts): void
+    {
+        $buyingClubAccount = Account::where('club_id', $transfer->source_club_id)->firstOrFail();
+        $sellingClubAccount = Account::where('club_id', $transfer->target_club_id)->firstOrFail();
+
+        $this->assertSame(68000000, $buyingClubAccount->balance);
+        $this->assertSame(68000000 - $amount, $buyingClubAccount->future_balance);
+        $this->assertSame(68000000 - $amount, $buyingClubAccount->transfer_budget);
+
+        $this->assertSame(68000000, $sellingClubAccount->balance);
+        $this->assertSame(68000000 + $amount, $sellingClubAccount->future_balance);
+        $this->assertSame(68000000 + $amount, $sellingClubAccount->transfer_budget);
+
+        $this->assertSame(0, FinanceTransactions::count());
+        $this->assertSame(
+            $installmentAmounts,
+            AccountsDebtLines::query()->orderBy('due_date')->pluck('amount')->all()
+        );
     }
 }
