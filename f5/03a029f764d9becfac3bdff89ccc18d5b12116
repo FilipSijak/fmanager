@@ -1,0 +1,19 @@
+tests/EndToEnd/TransferService/PermanentTransfersEndToEndTest.php
+  s_826caf73d385c7::t_1a3ab1b38fa155 6,8,90-106,250,260-261,417,420-459
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "f503a029f764d9becfac3bdff89ccc18d5b12116",
+  "prompts": {},
+  "sessions": {
+    "s_826caf73d385c7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3f73-2be4-7ab1-9306-5c0b22492e77",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
