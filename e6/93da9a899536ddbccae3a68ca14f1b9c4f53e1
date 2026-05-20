@@ -1,0 +1,31 @@
+tests/Integration/Services/TransferService/TransferServiceTest.php
+  s_826caf73d385c7::t_9e24cd1aec7fa0 24,224,233
+tests/EndToEnd/TransferService/PermanentTransfersEndToEndTest.php
+  s_826caf73d385c7::t_07fd87ca5ed97a 169
+  s_826caf73d385c7::t_436797986b4d16 21
+tests/Integration/Services/TransferService/TransferStatusUpdates/PermanentTransferWaitingPlayerStatusUpdatesTest.php
+  s_826caf73d385c7::t_861e8151ac18d7 20,115-116,118,135-136,140,157-158,162,241
+  s_826caf73d385c7::t_2a0eca0fe41e57 238,243
+app/Services/TransferService/TransferWorkflow.php
+  s_826caf73d385c7::t_92f645697b25df 113-119
+tests/Integration/Services/TransferService/TransferStatusUpdates/SellingClubTransferDecisionsTest.php
+  s_826caf73d385c7::t_049adce606d2a4 17,45,121,142
+tests/Integration/Services/TransferService/TransferWorkflowTransferPlayerTest.php
+  s_826caf73d385c7::t_b1446862f1313c 15,21,39,66,96,128,156,189,228,235,237
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "e693da9a899536ddbccae3a68ca14f1b9c4f53e1",
+  "prompts": {},
+  "sessions": {
+    "s_826caf73d385c7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3f73-2be4-7ab1-9306-5c0b22492e77",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
