@@ -1,0 +1,22 @@
+tests/EndToEnd/TransferService/LoanAndFreeTransfersEndToEndTest.php
+  s_826caf73d385c7::t_f508b3aee5e9b7 1-66,69-142,145-279
+  s_826caf73d385c7::t_e3c01290420360 67-68,143-144
+app/Services/TransferService/TransferStatusUpdates.php
+  s_826caf73d385c7::t_362ab76e7acb2c 26-36,41-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.11",
+  "base_commit_sha": "32457dd3e5e54764ad5e1ceb7b4d9085c4dde532",
+  "prompts": {},
+  "sessions": {
+    "s_826caf73d385c7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e3f73-2be4-7ab1-9306-5c0b22492e77",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
