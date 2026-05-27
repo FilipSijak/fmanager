@@ -131,6 +131,15 @@ class TransferWorkflowTransferPlayerTest extends TestCase
         $this->assertSame($buyingClub->id, $player->refresh()->club_id);
         $this->assertSame(2500, $player->contract()->first()->salary);
         $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+        $this->assertDatabaseHas('news', [
+            'instance_id' => 1,
+            'season_id' => 1,
+            'club_id' => $buyingClub->id,
+            'title' => 'Transfer completed',
+            'type' => 'transfer',
+            'priority' => 5,
+        ]);
+        $this->assertDatabaseCount('news', 1);
     }
 
     #[Test]
@@ -230,6 +239,14 @@ class TransferWorkflowTransferPlayerTest extends TestCase
         $this->assertSame(TransferStatusTypes::TRANSFER_FAILED->value, $transfer->refresh()->transfer_status);
         $this->assertSame($sellingClub->id, $player->refresh()->club_id);
         $this->assertDatabaseHas('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+        $this->assertDatabaseMissing('news', [
+            'instance_id' => 1,
+            'season_id' => 1,
+            'club_id' => $buyingClub->id,
+            'title' => 'Transfer completed',
+            'type' => 'transfer',
+        ]);
+        $this->assertDatabaseCount('news', 0);
     }
 
     private function transferWorkflow(): TransferWorkflow
