@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transfer extends Model
 {
@@ -19,6 +20,16 @@ class Transfer extends Model
     ];
 
     public $timestamps = false;
+
+    public function sourceClub(): BelongsTo
+    {
+        return $this->belongsTo(Club::class, 'source_club_id');
+    }
+
+    public function targetClub(): BelongsTo
+    {
+        return $this->belongsTo(Club::class, 'target_club_id');
+    }
 
     public function transferFinancialDetails()
     {

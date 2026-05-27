@@ -131,11 +131,15 @@ class TransferWorkflowTransferPlayerTest extends TestCase
         $this->assertSame($buyingClub->id, $player->refresh()->club_id);
         $this->assertSame(2500, $player->contract()->first()->salary);
         $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+
+        $playerName = "{$player->first_name} {$player->last_name}";
+
         $this->assertDatabaseHas('news', [
             'instance_id' => 1,
             'season_id' => 1,
             'club_id' => $buyingClub->id,
-            'title' => 'Transfer completed',
+            'title' => "{$playerName} joins {$buyingClub->name}",
+            'content' => "{$buyingClub->name} have completed the signing of {$playerName} from {$sellingClub->name}.",
             'type' => 'transfer',
             'priority' => 5,
         ]);
