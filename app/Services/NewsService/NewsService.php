@@ -7,7 +7,7 @@ use App\Models\Transfer;
 
 class NewsService
 {
-    public function publishTransferCompleted(Transfer  $transfer)
+    public function publishTransferCompleted(Transfer $transfer): News
     {
         return News::create([
             'instance_id' => $transfer->instance_id,
@@ -20,6 +20,5 @@ class NewsService
             'priority' => 5,
             'published_at' => now(),
         ]);
-
     }
 }

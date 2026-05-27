@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Events\NextDay;
+use App\Events\Transfers\TransferEvent;
+use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\ProcessTransfers;
 use Illuminate\Auth\Events\Registered;
@@ -22,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         NextDay::class => [
             ProcessTransfers::class
+        ],
+        TransferEvent::class => [
+            CreateTransferNews::class,
         ]
     ];
 
