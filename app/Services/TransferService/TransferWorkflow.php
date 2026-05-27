@@ -2,6 +2,8 @@
 
 namespace App\Services\TransferService;
 
+use App\Events\Transfers\TransferEvent;
+use App\Events\Transfers\TransferEventType;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
@@ -69,6 +71,7 @@ class TransferWorkflow
                 $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_COMPLETED->value);
             });
 
+            event(new TransferEvent(TransferEventType::Completed, $transfer->fresh()));
         } catch (\Exception $e) {
             // log error @todo
             throw $e;
