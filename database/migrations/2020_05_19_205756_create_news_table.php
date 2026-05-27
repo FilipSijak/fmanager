@@ -15,9 +15,16 @@ class CreateNewsTable extends Migration
     {
         Schema::create('news', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('instance_id');
+            $table->unsignedBigInteger('instance_id');
+            $table->unsignedInteger('season_id')->nullable();
+            $table->unsignedInteger('club_id')->nullable();
+            $table->unsignedInteger('competition_id')->nullable();
             $table->string('title');
-            $table->string('content');
+            $table->text('content');
+            $table->string('type');
+            $table->unsignedTinyInteger('priority')->default(5);
+            $table->dateTime('published_at')->nullable();
+            $table->timestamps();
         });
     }
 
