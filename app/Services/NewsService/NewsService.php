@@ -4,6 +4,7 @@ namespace App\Services\NewsService;
 
 use App\Models\News;
 use App\Models\Transfer;
+use App\Services\TransferService\TransferTypes;
 
 class NewsService
 {
@@ -13,13 +14,17 @@ class NewsService
         $buyingClub = $transfer->sourceClub()->first();
         $sellingClub = $transfer->targetClub()->first();
         $playerName = "{$player->first_name} {$player->last_name}";
-        $title = "{$playerName} joins {$buyingClub->name}";
-
-        if ($sellingClub) {
+        if ($transfer->transfer_type === TransferTypes::LOAN_TRANSFER) {
+            $title = "{$playerName} joins {$buyingClub->name} on loan";
+            $content = "{$buyingClub->name} have completed the loan signing of {$playerName} from {$sellingClub->name}.";
+        } elseif ($sellingClub) {
+            $title = "{$playerName} joins {$buyingClub->name}";
             $content = "{$buyingClub->name} have completed the signing of {$playerName} from {$sellingClub->name}.";
         } else {
+            $title = "{$playerName} joins {$buyingClub->name}";
             $content = "{$buyingClub->name} have completed the signing of {$playerName} on a free transfer.";
         }
+
 
         return News::create([
             'instance_id' => $transfer->instance_id,
