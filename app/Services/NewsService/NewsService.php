@@ -34,7 +34,28 @@ class NewsService
             'title' => $title,
             'content' => $content,
             'type' => 'transfer',
-            'priority' => 5,
+            'priority' => NewsPriority::Urgent->value,
+            'published_at' => now(),
+        ]);
+    }
+
+    public function publishTransferMedicalFailed(Transfer $transfer): News
+    {
+        $player = $transfer->player()->first();
+        $buyingClub = $transfer->sourceClub()->first();
+        $playerName = "{$player->first_name} {$player->last_name}";
+        $title = "{$playerName} transfer falls through";
+        $content = "{$buyingClub->name}'s move for {$playerName} has fallen through after the player failed his medical.";
+
+        return News::create([
+            'instance_id' => $transfer->instance_id,
+            'season_id' => $transfer->season_id,
+            'club_id' => $transfer->source_club_id,
+            'competition_id' => null,
+            'title' => $title,
+            'content' => $content,
+            'type' => 'transfer',
+            'priority' => NewsPriority::Urgent->value,
             'published_at' => now(),
         ]);
     }

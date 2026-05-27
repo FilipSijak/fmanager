@@ -19,6 +19,7 @@ class CreateTransferNews
     {
         match ($event->type) {
             TransferEventType::Completed => $this->newsService->publishTransferCompleted($event->transfer),
+            TransferEventType::MedicalFailed => $this->newsService->publishTransferMedicalFailed($event->transfer),
         };
     }
 }

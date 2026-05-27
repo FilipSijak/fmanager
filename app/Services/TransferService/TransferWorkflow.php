@@ -116,6 +116,8 @@ class TransferWorkflow
         if (!$this->processMedical($transfer)) {
             $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
 
+            event(new TransferEvent(TransferEventType::MedicalFailed, $transfer->fresh()));
+
             return;
         }
 
