@@ -31,7 +31,7 @@ class NewsService
         return $query->get();
     }
 
-    public function getInboxNews(int $clubId, bool $unreadOnly = true)
+    public function getInboxNews(int $clubId, int $limit = 30)
     {
         $query = News::query()
             ->forInstance($this->gameContext->instanceId())
@@ -41,11 +41,7 @@ class NewsService
             })
             ->inboxOrder();
 
-        if ($unreadOnly) {
-            $query->unread();
-        }
-
-        return $query->get();
+        return $query->limit($limit)->get();
     }
 
     public function markAsRead(int $newsId): News

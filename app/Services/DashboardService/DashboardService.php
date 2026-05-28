@@ -21,13 +21,13 @@ class DashboardService
         $instance = Instance::findOrFail($this->gameContext->instanceId());
         $club = Club::findOrFail($instance->club_id);
         $account  = Account::where('club_id', $instance->club_id)->first();
-        $unreadNews = $this->newsService->getInboxNews($club->id);
+        $news = $this->newsService->getInboxNews($club->id);
 
         return [
             'instance' => $instance,
             'club' => $club,
             'account' => $account,
-            'unread_news' => $unreadNews,
+            'news' => $news,
         ];
     }
 }

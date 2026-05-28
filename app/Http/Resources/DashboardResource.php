@@ -17,7 +17,7 @@ class DashboardResource extends JsonResource
         $instance = $this->resource['instance'];
         $club = $this->resource['club'];
         $account = $this->resource['account'];
-        $unreadNews = $this->resource['unread_news'];
+        $news = $this->resource['news'];
 
         return [
             'instance' => [
@@ -38,11 +38,7 @@ class DashboardResource extends JsonResource
                 'transfer_budget' => $account?->transfer_budget,
                 'salaries_yearly_budget' => $account?->salaries_yearly_budget,
             ],
-            'news' => [
-                'unread_count' => $unreadNews->count(),
-                'latest' => $unreadNews->take(5)->values()->toArray(),
-            ],
+            'news' => $news->values()->toArray(),
         ];
-
     }
 }
