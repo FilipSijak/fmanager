@@ -46,6 +46,14 @@ class DashboardApiTest extends TestCase
             'salaries_yearly_budget' => 4000,
         ]);
 
+        $readManagedClubNews = $this->createNews([
+            'instance_id' => $instance->id,
+            'club_id' => $managedClub->id,
+            'title' => 'Read managed club news',
+            'is_read' => true,
+            'read_at' => now(),
+            'published_at' => now()->subSeconds(30),
+        ]);
         $managedClubNews = $this->createNews([
             'instance_id' => $instance->id,
             'club_id' => $managedClub->id,
@@ -57,13 +65,6 @@ class DashboardApiTest extends TestCase
             'club_id' => null,
             'title' => 'Global news',
             'published_at' => now()->subMinutes(2),
-        ]);
-        $this->createNews([
-            'instance_id' => $instance->id,
-            'club_id' => $managedClub->id,
-            'title' => 'Read managed club news',
-            'is_read' => true,
-            'read_at' => now(),
         ]);
         $this->createNews([
             'instance_id' => $instance->id,
@@ -94,18 +95,54 @@ class DashboardApiTest extends TestCase
             ->assertJsonPath('data.account.future_balance', 2000)
             ->assertJsonPath('data.account.transfer_budget', 3000)
             ->assertJsonPath('data.account.salaries_yearly_budget', 4000)
-            ->assertJsonPath('data.news.unread_count', 2)
-            ->assertJsonCount(2, 'data.news.latest');
+            ->assertJsonCount(3, 'data.news');
 
-        $newsIds = collect($response->json('data.news.latest'))->pluck('id')->all();
-        $newsTitles = collect($response->json('data.news.latest'))->pluck('title')->all();
+        $news = collect($response->json('data.news'));
+        $newsIds = $news->pluck('id')->all();
+        $newsTitles = $news->pluck('title')->all();
 
-        $this->assertSame([$managedClubNews->id, $globalNews->id], $newsIds);
+        $this->assertSame([$readManagedClubNews->id, $managedClubNews->id, $globalNews->id], $newsIds);
+        $this->assertTrue($news->firstWhere('title', 'Read managed club news')['is_read']);
         $this->assertContains('Managed club news', $newsTitles);
         $this->assertContains('Global news', $newsTitles);
-        $this->assertNotContains('Read managed club news', $newsTitles);
         $this->assertNotContains('Other club news', $newsTitles);
         $this->assertNotContains('Other instance news', $newsTitles);
+    }
+
+    #[Test]
+    public function it_limits_dashboard_news_to_thirty_items(): void
+    {
+        $managedClub = Club::factory()->create(['id' => 10]);
+
+        $instance = Instance::factory()->create([
+            'id' => 1,
+            'instance_hash' => 'dashboard-instance',
+            'club_id' => $managedClub->id,
+        ]);
+
+        Account::factory()->create(['club_id' => $managedClub->id]);
+
+        for ($i = 1; $i <= 31; $i++) {
+            $this->createNews([
+                'instance_id' => $instance->id,
+                'club_id' => $managedClub->id,
+                'title' => "News {$i}",
+                'published_at' => now()->subMinutes($i),
+            ]);
+        }
+
+        $response = $this
+            ->withHeaders(['instanceHash' => 'dashboard-instance'])
+            ->getJson('/api/dashboard');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(30, 'data.news');
+
+        $newsTitles = collect($response->json('data.news'))->pluck('title')->all();
+
+        $this->assertContains('News 1', $newsTitles);
+        $this->assertNotContains('News 31', $newsTitles);
     }
 
     private function createNews(array $overrides = []): News
