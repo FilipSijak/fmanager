@@ -1,0 +1,19 @@
+tests/Integration/Services/TransferService/TransferWorkflowTransferPlayerTest.php
+  s_ceb98285fd60f9::t_df1ca88f5e0cd8 13,145,186,235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "cb3701ea5bb3e2e1636c90a239d046f638ed9d71",
+  "prompts": {},
+  "sessions": {
+    "s_ceb98285fd60f9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e6a85-a12a-7d62-97e3-ab28a3e7f358",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
