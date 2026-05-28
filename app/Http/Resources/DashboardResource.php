@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\DashboardService\DashboardData;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,31 +15,29 @@ class DashboardResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $instance = $this->resource['instance'];
-        $club = $this->resource['club'];
-        $account = $this->resource['account'];
-        $news = $this->resource['news'];
+        /** @var DashboardData $dashboard */
+        $dashboard = $this->resource;
 
         return [
             'instance' => [
-                'id' => $instance->id,
-                'date' => $instance->instance_date,
-                'season_id' => $instance->season_id,
+                'id' => $dashboard->instance->id,
+                'date' => $dashboard->instance->instance_date,
+                'season_id' => $dashboard->instance->season_id,
             ],
             'club' => [
-                'id' => $club->id,
-                'name' => $club->name,
-                'rank' => $club->rank,
-                'rank_academy' => $club->rank_academy,
-                'rank_training' => $club->rank_training,
+                'id' => $dashboard->club->id,
+                'name' => $dashboard->club->name,
+                'rank' => $dashboard->club->rank,
+                'rank_academy' => $dashboard->club->rank_academy,
+                'rank_training' => $dashboard->club->rank_training,
             ],
             'account' => [
-                'balance' => $account?->balance,
-                'future_balance' => $account?->future_balance,
-                'transfer_budget' => $account?->transfer_budget,
-                'salaries_yearly_budget' => $account?->salaries_yearly_budget,
+                'balance' => $dashboard->account?->balance,
+                'future_balance' => $dashboard->account?->future_balance,
+                'transfer_budget' => $dashboard->account?->transfer_budget,
+                'salaries_yearly_budget' => $dashboard->account?->salaries_yearly_budget,
             ],
-            'news' => $news->values()->toArray(),
+            'news' => NewsResource::collection($dashboard->news)->resolve($request),
         ];
     }
 }

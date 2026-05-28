@@ -16,18 +16,19 @@ class DashboardService
     )
     {
     }
-    public function getDashboard()
+
+    public function getDashboard(): DashboardData
     {
         $instance = Instance::findOrFail($this->gameContext->instanceId());
         $club = Club::findOrFail($instance->club_id);
         $account  = Account::where('club_id', $instance->club_id)->first();
         $news = $this->newsService->getInboxNews($club->id);
 
-        return [
-            'instance' => $instance,
-            'club' => $club,
-            'account' => $account,
-            'news' => $news,
-        ];
+        return new DashboardData(
+            instance: $instance,
+            club: $club,
+            account: $account,
+            news: $news,
+        );
     }
 }
