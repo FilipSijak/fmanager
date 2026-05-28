@@ -10,6 +10,7 @@ use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
+use App\Services\NewsService\NewsPriority;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
 use App\Services\TransferService\TransferWorkflow;
@@ -141,7 +142,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'title' => "{$playerName} joins {$buyingClub->name}",
             'content' => "{$buyingClub->name} have completed the signing of {$playerName} from {$sellingClub->name}.",
             'type' => 'transfer',
-            'priority' => 5,
+            'priority' => NewsPriority::Urgent->value,
         ]);
         $this->assertDatabaseCount('news', 1);
     }
@@ -182,7 +183,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'title' => "{$playerName} joins {$loanClub->name} on loan",
             'content' => "{$loanClub->name} have completed the loan signing of {$playerName} from {$parentClub->name}.",
             'type' => 'transfer',
-            'priority' => 5,
+            'priority' => NewsPriority::Urgent->value,
         ]);
         $this->assertDatabaseCount('news', 1);
     }
@@ -231,7 +232,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'title' => "{$playerName} joins {$newClub->name}",
             'content' => "{$newClub->name} have completed the signing of {$playerName} on a free transfer.",
             'type' => 'transfer',
-            'priority' => 5,
+            'priority' => NewsPriority::Urgent->value,
         ]);
         $this->assertDatabaseCount('news', 1);
     }

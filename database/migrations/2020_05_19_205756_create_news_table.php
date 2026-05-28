@@ -24,6 +24,8 @@ class CreateNewsTable extends Migration
             $table->string('type');
             $table->unsignedTinyInteger('priority')->default(5);
             $table->dateTime('published_at')->nullable();
+            $table->boolean('is_read')->default(false);
+            $table->dateTime('read_at')->nullable();
             $table->timestamps();
         });
     }

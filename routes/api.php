@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\InstanceController;
+use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\TransferController;
 use App\Http\Middleware\EnsureGameIsValid;
@@ -29,6 +30,11 @@ Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
 
 Route::get('/test', [\App\Http\Controllers\TestController::class, 'transferStatus']);
 Route::get('/startNewGame', [\App\Http\Controllers\InstanceController::class, 'startNewGame']);
+
+Route::middleware([EnsureGameIsValid::class])->group(function () {
+    Route::get('/news', [NewsController::class, 'index']);
+    Route::post('/news/{newsId}/read', [NewsController::class, 'markAsRead']);
+});
 
 Route::group(
     [
