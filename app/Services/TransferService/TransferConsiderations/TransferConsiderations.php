@@ -2,6 +2,8 @@
 
 namespace App\Services\TransferService\TransferConsiderations;
 
+use App\Events\Transfers\TransferEvent;
+use App\Events\Transfers\TransferEventType;
 use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Services\TransferService\TransferStatusTypes;
@@ -36,6 +38,12 @@ class TransferConsiderations
         }
 
         $this->transferRepository->updateTransferStatus($transfer, $playerUpdateDecision);
+
+        match ($playerUpdateDecision) {
+            TransferStatusTypes::PLAYER_COUNTEROFFER->value => event(new TransferEvent(TransferEventType::PlayerCountered, $transfer->fresh())),
+            TransferStatusTypes::WAITING_PAPERWORK->value => event(new TransferEvent(TransferEventType::PlayerAccepted, $transfer->fresh())),
+            default => null,
+        };
     }
 
     public function sellingClubDecision(Transfer $transfer): bool
@@ -52,6 +60,8 @@ class TransferConsiderations
                 $transferFinancialDetails->save();
 
                 $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value);
+
+                event(new TransferEvent(TransferEventType::SellingClubCountered, $transfer->fresh()));
 
                 return false;
             }
@@ -71,11 +81,13 @@ class TransferConsiderations
         if ($decision) {
             $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_PAPERWORK->value);
 
-            // @todo update news source club accepted
+            event(new TransferEvent(TransferEventType::PlayerCounterofferAccepted, $transfer->fresh()));
 
             return;
         }
 
         $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
+
+        event(new TransferEvent(TransferEventType::PlayerCounterofferRejected, $transfer->fresh()));
     }
 }

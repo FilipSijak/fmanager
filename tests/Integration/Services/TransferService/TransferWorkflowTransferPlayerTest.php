@@ -31,11 +31,15 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'instance_date' => '2024-03-01',
         ]);
 
-        $transfer = Transfer::factory()->create([
-            'season_id' => 1,
-            'transfer_status' => TransferStatusTypes::MOVE_PLAYER->value,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
-        ]);
+        $buyingClub = $this->createClubWithAccount(10, 50000);
+        $sellingClub = $this->createClubWithAccount(20, 50000);
+        $player = $this->createPlayerWithContract($sellingClub->id, 1000);
+        $transfer = $this->createMovePlayerTransfer(
+            $buyingClub->id,
+            $sellingClub->id,
+            $player->id,
+            TransferTypes::PERMANENT_TRANSFER
+        );
 
         $this->transferWorkflow()->transferPlayerToNewClub($transfer);
 
@@ -57,12 +61,17 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'instance_date' => '2024-03-01',
         ]);
 
-        $transfer = Transfer::factory()->create([
-            'instance_id' => 2,
-            'season_id' => 1,
-            'transfer_status' => TransferStatusTypes::MOVE_PLAYER->value,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
-        ]);
+        $buyingClub = $this->createClubWithAccount(10, 50000);
+        $sellingClub = $this->createClubWithAccount(20, 50000);
+        $player = $this->createPlayerWithContract($sellingClub->id, 1000);
+        $transfer = $this->createMovePlayerTransfer(
+            $buyingClub->id,
+            $sellingClub->id,
+            $player->id,
+            TransferTypes::PERMANENT_TRANSFER
+        );
+        $transfer->instance_id = 2;
+        $transfer->save();
 
         $this->transferWorkflow()->transferPlayerToNewClub($transfer);
 
@@ -270,14 +279,18 @@ class TransferWorkflowTransferPlayerTest extends TestCase
         $this->assertSame(TransferStatusTypes::TRANSFER_FAILED->value, $transfer->refresh()->transfer_status);
         $this->assertSame($sellingClub->id, $player->refresh()->club_id);
         $this->assertDatabaseHas('transfer_contract_offers', ['transfer_id' => $transfer->id]);
-        $this->assertDatabaseMissing('news', [
+        $playerName = "{$player->first_name} {$player->last_name}";
+
+        $this->assertDatabaseHas('news', [
             'instance_id' => 1,
             'season_id' => 1,
             'club_id' => $buyingClub->id,
-            'title' => 'Transfer completed',
+            'title' => "{$playerName} transfer cancelled",
+            'content' => "{$buyingClub->name} could not complete the move for {$playerName} because the deal no longer fits the transfer budget.",
             'type' => 'transfer',
+            'priority' => NewsPriority::Urgent->value,
         ]);
-        $this->assertDatabaseCount('news', 0);
+        $this->assertDatabaseCount('news', 1);
     }
 
     private function transferWorkflow(): TransferWorkflow

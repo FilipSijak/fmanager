@@ -48,6 +48,8 @@ class TransferWorkflow
             $transfer->save();
             $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_TRANSFER_WINDOW->value);
 
+            event(new TransferEvent(TransferEventType::DelayedUntilWindow, $transfer->fresh()));
+
             return;
         }
 
@@ -90,19 +92,22 @@ class TransferWorkflow
         if ($valuationComparison && $this->canClubAffordTransfer($transfer, $buyingClub)) {
             $this->transferRepository->updateTransferStatus($transfer,TransferStatusTypes::COUNTEROFFER_ACCEPTED->value);
 
+            event(new TransferEvent(TransferEventType::CounterofferAccepted, $transfer->fresh()));
+
             return;
         }
 
         $this->transferRepository->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED->value);
-        // @todo send news
+
+        event(new TransferEvent(TransferEventType::CounterofferRejected, $transfer->fresh()));
     }
 
     public function sellingClubDecision(Transfer $transfer):void
     {
         if ($this->transferConsiderations->sellingClubDecision($transfer)) {
-            // @todo update news source club accepted
-
             $this->makePlayerContractOffer($transfer);
+
+            event(new TransferEvent(TransferEventType::SellingClubAccepted, $transfer->fresh()));
         }
     }
 
@@ -136,7 +141,7 @@ class TransferWorkflow
             TransferStatusTypes::TRANSFER_FAILED->value
         );
 
-        //@todo update news
+        event(new TransferEvent(TransferEventType::TargetClubDeclined, $transfer->fresh()));
     }
 
     public function removeTransferContractOffer(Transfer $transfer): void
@@ -156,7 +161,7 @@ class TransferWorkflow
             TransferStatusTypes::TRANSFER_FAILED->value
         );
 
-        //@todo update news
+        event(new TransferEvent(TransferEventType::PlayerDeclined, $transfer->fresh()));
     }
 
 
@@ -248,8 +253,6 @@ class TransferWorkflow
 
         $player->loan_club_id = $transfer->source_club_id;
         $player->update();
-
-        // @todo send news
     }
 
     private function handleFreeTransferPlayerMove(Transfer $transfer, TransferContractOffer $transferContractOffer): void
@@ -262,7 +265,6 @@ class TransferWorkflow
         $player->club_id = $transfer->source_club_id;
 
         $player->update();
-        // news @todo
     }
 
     private function handlePermanentTransferPlayerMove(Transfer $transfer, TransferContractOffer $transferContractOffer): void
@@ -275,7 +277,6 @@ class TransferWorkflow
         $currentContract->update($transferContractOffer->toArray());
 
         $player->save();
-        // send news @todo
     }
 
     private function checkTransferAffordabilityBeforeCompletion(Transfer $transfer, TransferContractOffer $transferContractOffer): bool
@@ -290,7 +291,7 @@ class TransferWorkflow
         ) {
             $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
 
-            // send news @todo
+            event(new TransferEvent(TransferEventType::AffordabilityFailed, $transfer->fresh()));
 
             return false;
         }
