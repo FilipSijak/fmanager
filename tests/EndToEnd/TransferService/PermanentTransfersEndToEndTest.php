@@ -15,6 +15,7 @@ use App\Models\TransferFinancialDetails;
 use App\Repositories\PlayerRepository;
 use App\Repositories\TransferRepository;
 use App\Services\NewsService\NewsPriority;
+use App\Services\NewsService\NewsType;
 use App\Services\TransferService\TransferConsiderations\ClubConsideration;
 use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
@@ -501,7 +502,7 @@ class PermanentTransfersEndToEndTest extends TestCase
             'club_id' => $transfer->source_club_id,
             'title' => $title,
             'content' => $content,
-            'type' => 'transfer',
+            'type' => NewsType::Transfer->value,
             'priority' => $priority->value,
         ]);
     }

@@ -11,6 +11,7 @@ use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
 use App\Services\NewsService\NewsPriority;
+use App\Services\NewsService\NewsType;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
 use App\Services\TransferService\TransferWorkflow;
@@ -150,7 +151,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'club_id' => $buyingClub->id,
             'title' => "{$playerName} joins {$buyingClub->name}",
             'content' => "{$buyingClub->name} have completed the signing of {$playerName} from {$sellingClub->name}.",
-            'type' => 'transfer',
+            'type' => NewsType::Transfer->value,
             'priority' => NewsPriority::Urgent->value,
         ]);
         $this->assertDatabaseCount('news', 1);
@@ -191,7 +192,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'club_id' => $loanClub->id,
             'title' => "{$playerName} joins {$loanClub->name} on loan",
             'content' => "{$loanClub->name} have completed the loan signing of {$playerName} from {$parentClub->name}.",
-            'type' => 'transfer',
+            'type' => NewsType::Transfer->value,
             'priority' => NewsPriority::Urgent->value,
         ]);
         $this->assertDatabaseCount('news', 1);
@@ -240,7 +241,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'club_id' => $newClub->id,
             'title' => "{$playerName} joins {$newClub->name}",
             'content' => "{$newClub->name} have completed the signing of {$playerName} on a free transfer.",
-            'type' => 'transfer',
+            'type' => NewsType::Transfer->value,
             'priority' => NewsPriority::Urgent->value,
         ]);
         $this->assertDatabaseCount('news', 1);
@@ -287,7 +288,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'club_id' => $buyingClub->id,
             'title' => "{$playerName} transfer cancelled",
             'content' => "{$buyingClub->name} could not complete the move for {$playerName} because the deal no longer fits the transfer budget.",
-            'type' => 'transfer',
+            'type' => NewsType::Transfer->value,
             'priority' => NewsPriority::Urgent->value,
         ]);
         $this->assertDatabaseCount('news', 1);

@@ -13,6 +13,7 @@ use App\Models\TransferFinancialDetails;
 use App\Repositories\PlayerRepository;
 use App\Repositories\TransferRepository;
 use App\Services\NewsService\NewsPriority;
+use App\Services\NewsService\NewsType;
 use App\Services\TransferService\TransferConsiderations\ClubConsideration;
 use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
@@ -155,7 +156,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             'club_id' => $buyingClub->id,
             'title' => "{$playerName} transfer falls through",
             'content' => "{$buyingClub->name}'s move for {$playerName} has fallen through after the player failed his medical.",
-            'type' => 'transfer',
+            'type' => NewsType::Transfer->value,
             'priority' => NewsPriority::Urgent->value,
         ]);
     }

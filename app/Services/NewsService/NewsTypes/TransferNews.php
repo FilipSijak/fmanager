@@ -5,6 +5,7 @@ namespace App\Services\NewsService\NewsTypes;
 use App\Models\Transfer;
 use App\Services\NewsService\NewsItem;
 use App\Services\NewsService\NewsPriority;
+use App\Services\NewsService\NewsType;
 use App\Services\TransferService\TransferTypes;
 
 class TransferNews
@@ -229,7 +230,7 @@ class TransferNews
             competitionId: null,
             title: $title,
             content: $content,
-            type: 'transfer',
+            type: NewsType::Transfer,
             priority: $priority,
         );
     }

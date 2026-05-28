@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\ResponseHelper;
 use App\Services\NewsService\NewsService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class NewsController extends Controller
 {
@@ -13,10 +14,10 @@ class NewsController extends Controller
     ) {
     }
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         return ResponseHelper::success(
-            $this->newsService->getNews()->toArray(),
+            $this->newsService->getNews(! $request->boolean('all'))->toArray(),
             ResponseHelper::RESPONSE_SUCCESS_CODE
         );
     }

@@ -10,6 +10,7 @@ use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Services\NewsService\NewsPriority;
+use App\Services\NewsService\NewsType;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
@@ -244,7 +245,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             'club_id' => $transfer->source_club_id,
             'title' => $title,
             'content' => $content,
-            'type' => 'transfer',
+            'type' => NewsType::Transfer->value,
             'priority' => $priority->value,
         ]);
     }

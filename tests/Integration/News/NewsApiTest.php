@@ -4,6 +4,7 @@ namespace Tests\Integration\News;
 
 use App\Models\Instance;
 use App\Models\News;
+use App\Services\NewsService\NewsType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -53,6 +54,52 @@ class NewsApiTest extends TestCase
             ->assertJsonPath('data.0.id', $unreadNews->id)
             ->assertJsonPath('data.0.title', 'Unread news')
             ->assertJsonPath('data.0.is_read', false);
+    }
+
+    #[Test]
+    public function it_returns_all_current_instance_news_when_requested(): void
+    {
+        $instance = Instance::factory()->create([
+            'id' => 1,
+            'instance_hash' => 'current-instance',
+            'season_id' => 1,
+        ]);
+        Instance::factory()->create([
+            'id' => 2,
+            'instance_hash' => 'other-instance',
+            'season_id' => 1,
+        ]);
+
+        $this->createNews([
+            'instance_id' => $instance->id,
+            'title' => 'Unread news',
+            'is_read' => false,
+        ]);
+        $this->createNews([
+            'instance_id' => $instance->id,
+            'title' => 'Read news',
+            'is_read' => true,
+            'read_at' => now(),
+        ]);
+        $this->createNews([
+            'instance_id' => 2,
+            'title' => 'Other instance news',
+            'is_read' => false,
+        ]);
+
+        $response = $this
+            ->withHeaders(['instanceHash' => 'current-instance'])
+            ->getJson('/api/news?all=true');
+
+        $response
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
+
+        $titles = collect($response->json('data'))->pluck('title')->all();
+
+        $this->assertContains('Unread news', $titles);
+        $this->assertContains('Read news', $titles);
+        $this->assertNotContains('Other instance news', $titles);
     }
 
     #[Test]
@@ -124,7 +171,7 @@ class NewsApiTest extends TestCase
             'competition_id' => null,
             'title' => 'News title',
             'content' => 'News content',
-            'type' => 'transfer',
+            'type' => NewsType::Transfer->value,
             'priority' => 5,
             'published_at' => now(),
             'is_read' => false,

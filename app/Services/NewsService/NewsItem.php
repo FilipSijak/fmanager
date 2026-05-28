@@ -4,7 +4,7 @@ namespace App\Services\NewsService;
 
 use Carbon\CarbonInterface;
 
-class NewsItem
+readonly class NewsItem
 {
     public function __construct(
         public int $instanceId,
@@ -13,11 +13,10 @@ class NewsItem
         public ?int $competitionId,
         public string $title,
         public string $content,
-        public string $type,
+        public NewsType $type,
         public NewsPriority $priority = NewsPriority::Normal,
         public ?CarbonInterface $publishedAt = null,
-    )
-    {
+    ) {
     }
 
     public function toDatabasePayload(): array
@@ -29,7 +28,7 @@ class NewsItem
             'competition_id' => $this->competitionId,
             'title' => $this->title,
             'content' => $this->content,
-            'type' => $this->type,
+            'type' => $this->type->value,
             'priority' => $this->priority->value,
             'published_at' => $this->publishedAt ?? now(),
         ];
