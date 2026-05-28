@@ -1,0 +1,19 @@
+tests/Integration/News/NewsApiTest.php
+  s_ceb98285fd60f9::t_0f63bf6fd7bd95 1-134
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "9a89838fc8874cf9cc37620b430425b4d10a866a",
+  "prompts": {},
+  "sessions": {
+    "s_ceb98285fd60f9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e6a85-a12a-7d62-97e3-ab28a3e7f358",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
