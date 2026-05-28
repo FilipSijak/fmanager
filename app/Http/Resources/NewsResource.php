@@ -16,10 +16,6 @@ class NewsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'instance_id' => $this->instance_id,
-            'season_id' => $this->season_id,
-            'club_id' => $this->club_id,
-            'competition_id' => $this->competition_id,
             'title' => $this->title,
             'content' => $this->content,
             'type' => $this->type,
