@@ -1,0 +1,29 @@
+app/Events/Transfers/TransferEventType.php
+  s_ceb98285fd60f9::t_e24d9bceccf75a 9-21
+app/Services/TransferService/TransferWorkflow.php
+  s_ceb98285fd60f9::t_71ddfd6e248928 51-52,95-96,101-102,109-110,144,164,294
+tests/Integration/Services/TransferService/TransferWorkflowTransferPlayerTest.php
+  s_ceb98285fd60f9::t_16d64e0ea8a0a0 34-42,64-74,282-284,288-289,291,293
+app/Services/TransferService/TransferConsiderations/TransferConsiderations.php
+  s_ceb98285fd60f9::t_d7f2d8be296555 5-6,41-46,64-65,84,90-91
+app/Services/NewsService/NewsTypes/TransferNews.php
+  s_ceb98285fd60f9::t_59491e35dee08e 17-18,20-25,28-35,37-41,47-207,210-224,233,236-241
+app/Listeners/News/CreateTransferNews.php
+  s_ceb98285fd60f9::t_999083b1b8e677 23-35
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "dc6509b2aef03885d50d3d657c4748e3a04553aa",
+  "prompts": {},
+  "sessions": {
+    "s_ceb98285fd60f9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e6a85-a12a-7d62-97e3-ab28a3e7f358",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
