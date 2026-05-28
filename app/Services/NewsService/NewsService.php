@@ -31,6 +31,23 @@ class NewsService
         return $query->get();
     }
 
+    public function getInboxNews(int $clubId, bool $unreadOnly = true)
+    {
+        $query = News::query()
+            ->forInstance($this->gameContext->instanceId())
+            ->where(function ($query) use ($clubId) {
+                $query->where('club_id', $clubId)
+                    ->orWhereNull('club_id');
+            })
+            ->inboxOrder();
+
+        if ($unreadOnly) {
+            $query->unread();
+        }
+
+        return $query->get();
+    }
+
     public function markAsRead(int $newsId): News
     {
         $news = News::query()

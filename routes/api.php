@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\CompetitionController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
@@ -34,6 +35,8 @@ Route::get('/startNewGame', [\App\Http\Controllers\InstanceController::class, 's
 Route::middleware([EnsureGameIsValid::class])->group(function () {
     Route::get('/news', [NewsController::class, 'index']);
     Route::post('/news/{newsId}/read', [NewsController::class, 'markAsRead']);
+
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 });
 
 Route::group(
