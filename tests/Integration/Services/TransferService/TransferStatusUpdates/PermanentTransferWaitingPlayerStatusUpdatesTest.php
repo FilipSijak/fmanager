@@ -6,11 +6,13 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
+use App\Models\Season;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
 use App\Repositories\PlayerRepository;
 use App\Repositories\TransferRepository;
+use App\Services\NewsService\NewsPriority;
 use App\Services\TransferService\TransferConsiderations\ClubConsideration;
 use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
@@ -20,6 +22,7 @@ use App\Services\TransferService\TransferTypes;
 use App\Services\TransferService\TransferWorkflow;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -84,6 +87,11 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
         Instance::factory()->create([
             'id' => 1,
             'instance_date' => '2024-08-01',
+            'season_id' => 1,
+        ]);
+        Season::factory()->create([
+            'id' => 1,
+            'instance_id' => 1,
         ]);
 
         $transfer = $this->createWaitingPlayerTransfer();
@@ -96,6 +104,60 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             TransferStatusTypes::MOVE_PLAYER->value,
             $transfer->refresh()->transfer_status
         );
+    }
+
+    #[Test]
+    public function it_fails_waiting_paperwork_and_creates_news_when_the_medical_fails(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2024-08-01',
+            'season_id' => 1,
+        ]);
+        Season::factory()->create([
+            'id' => 1,
+            'instance_id' => 1,
+        ]);
+
+        $transfer = $this->createWaitingPlayerTransfer();
+        $transfer->transfer_status = TransferStatusTypes::WAITING_PAPERWORK->value;
+        $transfer->save();
+
+        DB::table('injuries')->insert([
+            'id' => 1,
+            'type' => 'Knee injury',
+            'severity' => 4,
+            'duration_from' => 30,
+            'duration_to' => 60,
+        ]);
+        DB::table('player_injuries')->insert([
+            'instance_id' => 1,
+            'season_id' => 1,
+            'player_id' => $transfer->player_id,
+            'injury_id' => 1,
+            'injury_start_date' => '2024-07-20',
+            'injury_end_date' => '2024-08-20',
+        ]);
+
+        $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
+
+        $player = $transfer->player()->first();
+        $buyingClub = $transfer->sourceClub()->first();
+        $playerName = "{$player->first_name} {$player->last_name}";
+
+        $this->assertSame(
+            TransferStatusTypes::TRANSFER_FAILED->value,
+            $transfer->refresh()->transfer_status
+        );
+        $this->assertDatabaseHas('news', [
+            'instance_id' => 1,
+            'season_id' => 1,
+            'club_id' => $buyingClub->id,
+            'title' => "{$playerName} transfer falls through",
+            'content' => "{$buyingClub->name}'s move for {$playerName} has fallen through after the player failed his medical.",
+            'type' => 'transfer',
+            'priority' => NewsPriority::Urgent->value,
+        ]);
     }
 
     #[Test]
