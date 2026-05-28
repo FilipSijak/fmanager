@@ -14,6 +14,7 @@ use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
 use App\Repositories\PlayerRepository;
 use App\Repositories\TransferRepository;
+use App\Services\NewsService\NewsPriority;
 use App\Services\TransferService\TransferConsiderations\ClubConsideration;
 use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
@@ -42,6 +43,17 @@ class PermanentTransfersEndToEndTest extends TestCase
 
         $this->assertSame(TransferStatusTypes::WAITING_PLAYER->value, $transfer->refresh()->transfer_status);
         $this->assertDatabaseHas('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+
+        $playerName = $this->playerName($transfer);
+        $buyingClub = $transfer->sourceClub()->first();
+        $sellingClub = $transfer->targetClub()->first();
+
+        $this->assertTransferNews(
+            $transfer,
+            "Offer accepted for {$playerName}",
+            "{$sellingClub->name} have accepted {$buyingClub->name}'s offer for {$playerName}.",
+            NewsPriority::High,
+        );
     }
 
     #[Test]
@@ -52,6 +64,16 @@ class PermanentTransfersEndToEndTest extends TestCase
         $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
 
         $this->assertSame(TransferStatusTypes::WAITING_PAPERWORK->value, $transfer->refresh()->transfer_status);
+
+        $playerName = $this->playerName($transfer);
+        $buyingClub = $transfer->sourceClub()->first();
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} agrees terms",
+            "{$playerName} has agreed personal terms with {$buyingClub->name}.",
+            NewsPriority::High,
+        );
     }
 
     #[Test]
@@ -114,6 +136,17 @@ class PermanentTransfersEndToEndTest extends TestCase
         $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
 
         $this->assertSame(TransferStatusTypes::COUNTEROFFER_ACCEPTED->value, $transfer->refresh()->transfer_status);
+
+        $playerName = $this->playerName($transfer);
+        $buyingClub = $transfer->sourceClub()->first();
+        $sellingClub = $transfer->targetClub()->first();
+
+        $this->assertTransferNews(
+            $transfer,
+            "Counteroffer accepted for {$playerName}",
+            "{$buyingClub->name} have accepted {$sellingClub->name}'s counteroffer for {$playerName}.",
+            NewsPriority::High,
+        );
     }
 
     #[Test]
@@ -135,6 +168,16 @@ class PermanentTransfersEndToEndTest extends TestCase
         $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
 
         $this->assertSame(TransferStatusTypes::WAITING_PAPERWORK->value, $transfer->refresh()->transfer_status);
+
+        $playerName = $this->playerName($transfer);
+        $buyingClub = $transfer->sourceClub()->first();
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} counteroffer accepted",
+            "{$buyingClub->name} have accepted {$playerName}'s contract demands.",
+            NewsPriority::High,
+        );
     }
 
     #[Test]
@@ -145,6 +188,16 @@ class PermanentTransfersEndToEndTest extends TestCase
         $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
 
         $this->assertSame(TransferStatusTypes::TRANSFER_FAILED->value, $transfer->refresh()->transfer_status);
+
+        $playerName = $this->playerName($transfer);
+        $buyingClub = $transfer->sourceClub()->first();
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} rejects move",
+            "{$playerName} has rejected a move to {$buyingClub->name}.",
+            NewsPriority::Urgent,
+        );
     }
 
     #[Test]
@@ -155,6 +208,17 @@ class PermanentTransfersEndToEndTest extends TestCase
         $this->transferStatusUpdates()->permanentTransferUpdates($transfer);
 
         $this->assertSame(TransferStatusTypes::TRANSFER_FAILED->value, $transfer->refresh()->transfer_status);
+
+        $playerName = $this->playerName($transfer);
+        $buyingClub = $transfer->sourceClub()->first();
+        $sellingClub = $transfer->targetClub()->first();
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} transfer rejected",
+            "{$sellingClub->name} have rejected {$buyingClub->name}'s approach for {$playerName}.",
+            NewsPriority::High,
+        );
     }
 
     #[Test]
@@ -416,6 +480,37 @@ class PermanentTransfersEndToEndTest extends TestCase
         $this->assertSame($transfer->source_club_id, $player->club_id);
         $this->assertSame(1200, $player->contract()->first()->salary);
         $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+
+        $playerName = $this->playerName($transfer);
+        $buyingClub = $transfer->sourceClub()->first();
+        $sellingClub = $transfer->targetClub()->first();
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} joins {$buyingClub->name}",
+            "{$buyingClub->name} have completed the signing of {$playerName} from {$sellingClub->name}.",
+            NewsPriority::Urgent,
+        );
+    }
+
+    private function assertTransferNews(Transfer $transfer, string $title, string $content, NewsPriority $priority): void
+    {
+        $this->assertDatabaseHas('news', [
+            'instance_id' => $transfer->instance_id,
+            'season_id' => $transfer->season_id,
+            'club_id' => $transfer->source_club_id,
+            'title' => $title,
+            'content' => $content,
+            'type' => 'transfer',
+            'priority' => $priority->value,
+        ]);
+    }
+
+    private function playerName(Transfer $transfer): string
+    {
+        $player = $transfer->player()->first();
+
+        return "{$player->first_name} {$player->last_name}";
     }
 
     private function assertImmediatePaymentSettled(Transfer $transfer, int $amount): void

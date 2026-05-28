@@ -96,7 +96,7 @@ class TransferStatusUpdates
     private function handlePermanentTerminalStatus(Transfer $transfer): void
     {
         match (TransferStatusTypes::from($transfer->transfer_status)) {
-            TransferStatusTypes::PLAYER_DECLINED,
+            TransferStatusTypes::PLAYER_DECLINED => $this->transferWorkflow->playerDeclined($transfer),
             TransferStatusTypes::TARGET_CLUB_DECLINED => $this->transferWorkflow->targetClubDeclined($transfer),
             TransferStatusTypes::TRANSFER_COMPLETED => $this->transferWorkflow->removeTransferContractOffer($transfer),
             TransferStatusTypes::TRANSFER_FAILED => $this->transferWorkflow->removeTransferAndPlayerOffers($transfer),

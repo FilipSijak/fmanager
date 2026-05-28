@@ -9,6 +9,7 @@ use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
+use App\Services\NewsService\NewsPriority;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
@@ -41,6 +42,15 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
         $this->transferStatusUpdates()->loanTransferUpdates($transfer);
 
         $this->assertSame(TransferStatusTypes::WAITING_PAPERWORK->value, $transfer->refresh()->transfer_status);
+
+        $playerName = $this->playerName($transfer);
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} agrees terms",
+            "{$playerName} has agreed personal terms with {$loanClub->name}.",
+            NewsPriority::High,
+        );
     }
 
     #[Test]
@@ -64,6 +74,15 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
         $this->assertSame(TransferStatusTypes::WAITING_TRANSFER_WINDOW->value, $transfer->refresh()->transfer_status);
         $this->assertSame('2024-07-01', $transfer->transfer_date);
 
+        $playerName = $this->playerName($transfer);
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} transfer delayed",
+            "{$playerName}'s move to {$loanClub->name} will be completed when the transfer window opens.",
+            NewsPriority::High,
+        );
+
         $instance->instance_date = '2024-07-01';
         $instance->save();
 
@@ -73,6 +92,15 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
         $this->assertSame($parentClub->id, $player->refresh()->club_id);
         $this->assertSame($loanClub->id, $player->loan_club_id);
         $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+
+        $playerName = $this->playerName($transfer);
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} joins {$loanClub->name} on loan",
+            "{$loanClub->name} have completed the loan signing of {$playerName} from {$parentClub->name}.",
+            NewsPriority::Urgent,
+        );
     }
 
     #[Test]
@@ -116,6 +144,15 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
         $this->transferStatusUpdates()->freeTransferUpdates($transfer);
 
         $this->assertSame(TransferStatusTypes::WAITING_PAPERWORK->value, $transfer->refresh()->transfer_status);
+
+        $playerName = $this->playerName($transfer);
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} agrees terms",
+            "{$playerName} has agreed personal terms with {$newClub->name}.",
+            NewsPriority::High,
+        );
     }
 
     #[Test]
@@ -140,6 +177,15 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
         $this->assertSame(TransferStatusTypes::WAITING_TRANSFER_WINDOW->value, $transfer->refresh()->transfer_status);
         $this->assertSame('2024-07-01', $transfer->transfer_date);
 
+        $playerName = $this->playerName($transfer);
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} transfer delayed",
+            "{$playerName}'s move to {$newClub->name} will be completed when the transfer window opens.",
+            NewsPriority::High,
+        );
+
         $instance->instance_date = '2024-07-01';
         $instance->save();
 
@@ -152,6 +198,15 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
         $this->assertNotSame($oldContractId, $player->contract_id);
         $this->assertSame(3000, $player->contract()->first()->salary);
         $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $transfer->id]);
+
+        $playerName = $this->playerName($transfer);
+
+        $this->assertTransferNews(
+            $transfer,
+            "{$playerName} joins {$newClub->name}",
+            "{$newClub->name} have completed the signing of {$playerName} on a free transfer.",
+            NewsPriority::Urgent,
+        );
     }
 
     #[Test]
@@ -179,6 +234,26 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
     private function transferStatusUpdates(): TransferStatusUpdates
     {
         return new TransferStatusUpdates(app()->make(TransferWorkflow::class));
+    }
+
+    private function assertTransferNews(Transfer $transfer, string $title, string $content, NewsPriority $priority): void
+    {
+        $this->assertDatabaseHas('news', [
+            'instance_id' => $transfer->instance_id,
+            'season_id' => $transfer->season_id,
+            'club_id' => $transfer->source_club_id,
+            'title' => $title,
+            'content' => $content,
+            'type' => 'transfer',
+            'priority' => $priority->value,
+        ]);
+    }
+
+    private function playerName(Transfer $transfer): string
+    {
+        $player = $transfer->player()->first();
+
+        return "{$player->first_name} {$player->last_name}";
     }
 
     private function createTransfer(
