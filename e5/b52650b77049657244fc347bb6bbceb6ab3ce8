@@ -1,0 +1,19 @@
+tests/Integration/Dashboard/DashboardApiTest.php
+  s_ceb98285fd60f9::t_b09c1d9978bd26 1-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "e5b52650b77049657244fc347bb6bbceb6ab3ce8",
+  "prompts": {},
+  "sessions": {
+    "s_ceb98285fd60f9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e6a85-a12a-7d62-97e3-ab28a3e7f358",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
