@@ -4,6 +4,7 @@ namespace Tests\Integration\Dashboard;
 
 use App\Models\Account;
 use App\Models\Club;
+use App\Models\Game;
 use App\Models\Instance;
 use App\Models\News;
 use App\Services\NewsService\NewsType;
@@ -95,6 +96,7 @@ class DashboardApiTest extends TestCase
             ->assertJsonPath('data.account.future_balance', 2000)
             ->assertJsonPath('data.account.transfer_budget', 3000)
             ->assertJsonPath('data.account.salaries_yearly_budget', 4000)
+            ->assertJsonPath('data.next_match', null)
             ->assertJsonCount(3, 'data.news');
 
         $news = collect($response->json('data.news'));
@@ -107,6 +109,89 @@ class DashboardApiTest extends TestCase
         $this->assertContains('Global news', $newsTitles);
         $this->assertNotContains('Other club news', $newsTitles);
         $this->assertNotContains('Other instance news', $newsTitles);
+    }
+
+    #[Test]
+    public function it_returns_the_next_future_match_for_the_managed_club(): void
+    {
+        $managedClub = Club::factory()->create(['id' => 10]);
+        $otherClub = Club::factory()->create(['id' => 20]);
+        $unrelatedHomeClub = Club::factory()->create(['id' => 30]);
+        $unrelatedAwayClub = Club::factory()->create(['id' => 40]);
+
+        $instance = Instance::factory()->create([
+            'id' => 1,
+            'instance_hash' => 'dashboard-instance',
+            'season_id' => 3,
+            'club_id' => $managedClub->id,
+            'instance_date' => '2024-08-15',
+        ]);
+        Instance::factory()->create([
+            'id' => 2,
+            'instance_hash' => 'other-instance',
+            'season_id' => 3,
+            'club_id' => $managedClub->id,
+            'instance_date' => '2024-08-15',
+        ]);
+
+        Account::factory()->create(['club_id' => $managedClub->id]);
+
+        Game::factory()->create([
+            'instance_id' => $instance->id,
+            'season_id' => $instance->season_id,
+            'competition_id' => 1,
+            'hometeam_id' => $managedClub->id,
+            'awayteam_id' => $otherClub->id,
+            'stadium_id' => 1,
+            'match_start' => '2024-08-10 15:00:00',
+        ]);
+        Game::factory()->create([
+            'instance_id' => $instance->id,
+            'season_id' => $instance->season_id,
+            'competition_id' => 1,
+            'hometeam_id' => $unrelatedHomeClub->id,
+            'awayteam_id' => $unrelatedAwayClub->id,
+            'stadium_id' => 1,
+            'match_start' => '2024-08-16 12:00:00',
+        ]);
+        Game::factory()->create([
+            'instance_id' => 2,
+            'season_id' => $instance->season_id,
+            'competition_id' => 1,
+            'hometeam_id' => $managedClub->id,
+            'awayteam_id' => $otherClub->id,
+            'stadium_id' => 1,
+            'match_start' => '2024-08-15 12:00:00',
+        ]);
+        $nextMatch = Game::factory()->create([
+            'instance_id' => $instance->id,
+            'season_id' => $instance->season_id,
+            'competition_id' => 1,
+            'hometeam_id' => $otherClub->id,
+            'awayteam_id' => $managedClub->id,
+            'stadium_id' => 1,
+            'match_start' => '2024-08-16 15:00:00',
+        ]);
+        Game::factory()->create([
+            'instance_id' => $instance->id,
+            'season_id' => $instance->season_id,
+            'competition_id' => 1,
+            'hometeam_id' => $managedClub->id,
+            'awayteam_id' => $otherClub->id,
+            'stadium_id' => 1,
+            'match_start' => '2024-08-20 15:00:00',
+        ]);
+
+        $response = $this
+            ->withHeaders(['instanceHash' => 'dashboard-instance'])
+            ->getJson('/api/dashboard');
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.next_match.id', $nextMatch->id)
+            ->assertJsonPath('data.next_match.hometeam_id', $otherClub->id)
+            ->assertJsonPath('data.next_match.awayteam_id', $managedClub->id)
+            ->assertJsonPath('data.next_match.match_start', '2024-08-16 15:00:00');
     }
 
     #[Test]
