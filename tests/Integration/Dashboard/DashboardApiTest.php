@@ -96,7 +96,7 @@ class DashboardApiTest extends TestCase
             ->assertJsonPath('data.account.future_balance', 2000)
             ->assertJsonPath('data.account.transfer_budget', 3000)
             ->assertJsonPath('data.account.salaries_yearly_budget', 4000)
-            ->assertJsonPath('data.next_match', null)
+            ->assertJsonPath('data.next_game', null)
             ->assertJsonCount(3, 'data.news');
 
         $news = collect($response->json('data.news'));
@@ -163,7 +163,7 @@ class DashboardApiTest extends TestCase
             'stadium_id' => 1,
             'match_start' => '2024-08-15 12:00:00',
         ]);
-        $nextMatch = Game::factory()->create([
+        $nextGame = Game::factory()->create([
             'instance_id' => $instance->id,
             'season_id' => $instance->season_id,
             'competition_id' => 1,
@@ -188,12 +188,12 @@ class DashboardApiTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.next_match.id', $nextMatch->id)
-            ->assertJsonPath('data.next_match.home_team.id', $otherClub->id)
-            ->assertJsonPath('data.next_match.home_team.name', $otherClub->name)
-            ->assertJsonPath('data.next_match.away_team.id', $managedClub->id)
-            ->assertJsonPath('data.next_match.away_team.name', $managedClub->name)
-            ->assertJsonPath('data.next_match.match_start', '2024-08-16 15:00:00');
+            ->assertJsonPath('data.next_game.id', $nextGame->id)
+            ->assertJsonPath('data.next_game.home_team.id', $otherClub->id)
+            ->assertJsonPath('data.next_game.home_team.name', $otherClub->name)
+            ->assertJsonPath('data.next_game.away_team.id', $managedClub->id)
+            ->assertJsonPath('data.next_game.away_team.name', $managedClub->name)
+            ->assertJsonPath('data.next_game.match_start', '2024-08-16 15:00:00');
     }
 
     #[Test]

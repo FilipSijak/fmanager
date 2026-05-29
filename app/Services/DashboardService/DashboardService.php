@@ -24,7 +24,7 @@ class DashboardService
         $club = Club::findOrFail($instance->club_id);
         $account  = Account::where('club_id', $instance->club_id)->first();
         $news = $this->newsService->getInboxNews($club->id);
-        $nextMatch = Game::query()
+        $nextGame = Game::query()
             ->select([
                 'games.*',
                 'home_team.name as home_team_name',
@@ -43,7 +43,7 @@ class DashboardService
             club: $club,
             account: $account,
             news: $news,
-            nextMatch: $nextMatch,
+            nextGame: $nextGame,
         );
     }
 }

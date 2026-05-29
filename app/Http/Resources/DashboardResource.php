@@ -38,18 +38,9 @@ class DashboardResource extends JsonResource
                 'salaries_yearly_budget' => $dashboard->account?->salaries_yearly_budget,
             ],
             'news' => NewsResource::collection($dashboard->news)->resolve($request),
-            'next_match' => $dashboard->nextMatch ? [
-                'id' => $dashboard->nextMatch->id,
-                'match_start' => $dashboard->nextMatch->match_start,
-                'home_team' => [
-                    'id' => $dashboard->nextMatch->hometeam_id,
-                    'name' => $dashboard->nextMatch->home_team_name
-                ],
-                'away_team' => [
-                    'id' => $dashboard->nextMatch->awayteam_id,
-                    'name' => $dashboard->nextMatch->away_team_name
-                ],
-            ] : null,
+            'next_game' => $dashboard->nextGame
+                ? new DashboardGameResource($dashboard->nextGame)->resolve($request)
+                : null,
         ];
     }
 }

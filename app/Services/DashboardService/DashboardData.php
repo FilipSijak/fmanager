@@ -15,7 +15,7 @@ readonly class DashboardData
         public Club $club,
         public ?Account $account,
         public Collection $news,
-        public ?Game $nextMatch
+        public ?Game $nextGame
     ) {
     }
 }
