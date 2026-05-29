@@ -38,6 +38,12 @@ class DashboardResource extends JsonResource
                 'salaries_yearly_budget' => $dashboard->account?->salaries_yearly_budget,
             ],
             'news' => NewsResource::collection($dashboard->news)->resolve($request),
+            'next_match' => $dashboard->nextMatch ? [
+                'id' => $dashboard->nextMatch->id,
+                'match_start' => $dashboard->nextMatch->match_start,
+                'hometeam_id' => $dashboard->nextMatch->hometeam_id,
+                'awayteam_id' => $dashboard->nextMatch->awayteam_id,
+            ] : null,
         ];
     }
 }
