@@ -41,8 +41,14 @@ class DashboardResource extends JsonResource
             'next_match' => $dashboard->nextMatch ? [
                 'id' => $dashboard->nextMatch->id,
                 'match_start' => $dashboard->nextMatch->match_start,
-                'hometeam_id' => $dashboard->nextMatch->hometeam_id,
-                'awayteam_id' => $dashboard->nextMatch->awayteam_id,
+                'home_team' => [
+                    'id' => $dashboard->nextMatch->hometeam_id,
+                    'name' => $dashboard->nextMatch->home_team_name
+                ],
+                'away_team' => [
+                    'id' => $dashboard->nextMatch->awayteam_id,
+                    'name' => $dashboard->nextMatch->away_team_name
+                ],
             ] : null,
         ];
     }

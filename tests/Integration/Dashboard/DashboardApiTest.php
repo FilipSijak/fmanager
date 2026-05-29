@@ -189,8 +189,10 @@ class DashboardApiTest extends TestCase
         $response
             ->assertOk()
             ->assertJsonPath('data.next_match.id', $nextMatch->id)
-            ->assertJsonPath('data.next_match.hometeam_id', $otherClub->id)
-            ->assertJsonPath('data.next_match.awayteam_id', $managedClub->id)
+            ->assertJsonPath('data.next_match.home_team.id', $otherClub->id)
+            ->assertJsonPath('data.next_match.home_team.name', $otherClub->name)
+            ->assertJsonPath('data.next_match.away_team.id', $managedClub->id)
+            ->assertJsonPath('data.next_match.away_team.name', $managedClub->name)
             ->assertJsonPath('data.next_match.match_start', '2024-08-16 15:00:00');
     }
 
