@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToGameInstance;
 use Illuminate\Database\Eloquent\Model;
 
 class News extends Model
 {
+    use BelongsToGameInstance;
+
     protected $table = 'news';
 
     protected $fillable = [
@@ -27,11 +30,6 @@ class News extends Model
         'is_read' => 'boolean',
         'read_at' => 'datetime',
     ];
-
-    public function scopeForInstance($query, int $instanceId)
-    {
-        return $query->where('instance_id', $instanceId);
-    }
 
     public function scopeForSeason($query, int $seasonId)
     {
