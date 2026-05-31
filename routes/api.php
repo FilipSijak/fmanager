@@ -43,7 +43,8 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
             'prefix' => 'club'
         ],
         function () {
-            Route::get('/{club}', [ClubController::class, 'show']);
+            Route::get('/{clubId}/squad', [ClubController::class, 'squad']);
+            Route::get('/{clubId}', [ClubController::class, 'show']);
         }
     );
 });
