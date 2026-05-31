@@ -34,6 +34,7 @@ class ClubController extends Controller
             ->findOrFail($clubId);
 
         $players = Player::query()
+            ->with('contract')
             ->where('instance_id', $this->gameContext->instanceId())
             ->where('club_id', $clubId)
             ->orderBy('position')
