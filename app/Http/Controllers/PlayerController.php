@@ -9,8 +9,9 @@ use App\Support\GameContext;
 
 class PlayerController extends CoreController
 {
-    public function __construct(private readonly GameContext $gameContext)
-    {
+    public function __construct(
+        private readonly GameContext $gameContext
+    ) {
     }
 
     public function show(int $playerId)
@@ -23,7 +24,7 @@ class PlayerController extends CoreController
             ->findOrFail($playerId);
 
         return ResponseHelper::success(
-            new PlayerResource($player)->toArray(request()),
+            (new PlayerResource($player)->toArray(request())),
             ResponseHelper::RESPONSE_SUCCESS_CODE
         );
     }
