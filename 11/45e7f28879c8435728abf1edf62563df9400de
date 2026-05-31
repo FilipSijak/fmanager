@@ -1,0 +1,19 @@
+app/Http/Controllers/PlayerController.php
+  s_0b448f211c5fb7::t_0adfa5b356fb4b 12-14,27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "1145e7f28879c8435728abf1edf62563df9400de",
+  "prompts": {},
+  "sessions": {
+    "s_0b448f211c5fb7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e7f93-98de-74b1-893c-89f61c7cc12b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
