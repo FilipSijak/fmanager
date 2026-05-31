@@ -11,31 +11,38 @@ use App\Support\GameContext;
 
 class ClubController extends Controller
 {
-    public function __construct(private readonly GameContext $gameContext)
+    public function __construct(
+        private readonly GameContext $gameContext,
+    )
     {
     }
+
     public function show(int $clubId)
     {
+        $instanceId = $this->gameContext->instanceId();
+
         $club = Club::query()
             ->with(['stadium', 'account'])
-            ->where('instance_id', $this->gameContext->instanceId())
+            ->forInstance($instanceId)
             ->findOrFail($clubId);
 
         return ResponseHelper::success(
-            new ClubResource($club)->toArray(request()),
+            (new ClubResource($club))->toArray(request()),
             ResponseHelper::RESPONSE_SUCCESS_CODE
         );
     }
 
     public function squad(int $clubId)
     {
+        $instanceId = $this->gameContext->instanceId();
+
         Club::query()
-            ->where('instance_id', $this->gameContext->instanceId())
+            ->forInstance($instanceId)
             ->findOrFail($clubId);
 
         $players = Player::query()
             ->with('contract')
-            ->where('instance_id', $this->gameContext->instanceId())
+            ->forInstance($instanceId)
             ->where('club_id', $clubId)
             ->orderBy('position')
             ->orderBy('last_name')
