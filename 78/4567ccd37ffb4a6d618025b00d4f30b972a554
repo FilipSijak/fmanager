@@ -1,0 +1,24 @@
+tests/Integration/Club/ClubApiTest.php
+  s_ceb98285fd60f9::t_98cfbd90935b95 9,87-88,93,104
+  s_ceb98285fd60f9::t_f62c18c891d531 8,67-86,89-92,94-103,105-166
+app/Http/Controllers/ClubController.php
+  s_ceb98285fd60f9::t_98cfbd90935b95 37
+app/Http/Resources/ClubSquadPlayerResource.php
+  s_ceb98285fd60f9::t_98cfbd90935b95 24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "784567ccd37ffb4a6d618025b00d4f30b972a554",
+  "prompts": {},
+  "sessions": {
+    "s_ceb98285fd60f9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e6a85-a12a-7d62-97e3-ab28a3e7f358",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
