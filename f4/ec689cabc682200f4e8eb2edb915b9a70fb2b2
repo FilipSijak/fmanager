@@ -1,0 +1,19 @@
+tests/Integration/Competition/CreateCompetitionTest.php
+  s_0b448f211c5fb7::t_eaf27121eabbb3 5-8,13-45,47-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "f4ec689cabc682200f4e8eb2edb915b9a70fb2b2",
+  "prompts": {},
+  "sessions": {
+    "s_0b448f211c5fb7": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e7f93-98de-74b1-893c-89f61c7cc12b",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
