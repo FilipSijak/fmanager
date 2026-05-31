@@ -1,0 +1,32 @@
+tests/Integration/Club/ClubApiTest.php
+  s_ceb98285fd60f9::t_eb8c88b3f76b1d 34,54,58
+  s_ceb98285fd60f9::t_922eae6f0637d7 1-33,35-53,55-57,59-87
+app/Http/Resources/StadiumResource.php
+  s_0cc2aee78fadd0::t_49c7e26f57e6e4 18
+app/Http/Resources/ClubResource.php
+  s_ceb98285fd60f9::t_eb8c88b3f76b1d 19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.2",
+  "base_commit_sha": "a093e354fbd607842986ff5ef466c80e70269873",
+  "prompts": {},
+  "sessions": {
+    "s_0cc2aee78fadd0": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e7ddc-d177-73c0-818e-86c621b555ec",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    },
+    "s_ceb98285fd60f9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019e6a85-a12a-7d62-97e3-ab28a3e7f358",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
