@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Club extends Model
 {
@@ -14,12 +15,12 @@ class Club extends Model
 
     public function competitions()
     {
-        $this->belongsToMany(Competition::class, 'competition_season');
+        return $this->belongsToMany(Competition::class, 'competition_season');
     }
 
     public function seasons()
     {
-        $this->belongsToMany(Season::class, 'competition_season');
+        return $this->belongsToMany(Season::class, 'competition_season');
     }
 
     public function players()
@@ -27,9 +28,9 @@ class Club extends Model
         return $this->hasMany(Player::class, 'club_id');
     }
 
-    public function stadium()
+    public function stadium(): BelongsTo
     {
-        return $this->hasOne(Club::class, 'stadium_id');
+        return $this->belongsTo(Stadium::class, 'stadium_id');
     }
 
     public function account()

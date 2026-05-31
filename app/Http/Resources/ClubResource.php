@@ -2,8 +2,6 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Player;
-use App\Models\Stadium;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ClubResource extends JsonResource
@@ -13,8 +11,12 @@ class ClubResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'stadium' => new StadiumResource($this->stadium()->get()),
-            'players' => PlayerResource::collection($this->players()->get())
+            'stadium' => new StadiumResource($this->stadium),
+            'account' => new AccountResource($this->account),
+            'rank' => $this->rank,
+            'rank_academy' => $this->rank_academy,
+            'rank_training' => $this->rank_training,
+            'country_code' => $this->country_code
         ];
     }
 }

@@ -37,16 +37,16 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
     Route::post('/news/{newsId}/read', [NewsController::class, 'markAsRead']);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
-});
 
-Route::group(
-    [
-        'prefix' => 'club'
-    ],
-    function () {
-        Route::get('/{club}', [ClubController::class, 'show']);
-    }
-);
+    Route::group(
+        [
+            'prefix' => 'club'
+        ],
+        function () {
+            Route::get('/{club}', [ClubController::class, 'show']);
+        }
+    );
+});
 
 Route::group(
     [
