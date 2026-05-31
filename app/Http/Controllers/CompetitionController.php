@@ -13,31 +13,26 @@ use Illuminate\Http\JsonResponse;
 
 class CompetitionController extends CoreController
 {
-    private CompetitionRepository     $competitionRepository;
-    private GameRepository            $gameRepository;
-    private KnockoutSummaryRoundsData $knockoutSummaryRoundsData;
-
     public function __construct(
-        GameContext $gameContext,
-        CompetitionRepository $competitionRepository,
-        GameRepository $gameRepository,
-        KnockoutSummaryRoundsData $knockoutSummaryRoundsData
-    )
-    {
-        parent::__construct($gameContext);
-
-        $this->competitionRepository = $competitionRepository;
-        $this->gameRepository = $gameRepository;
-        $this->knockoutSummaryRoundsData = $knockoutSummaryRoundsData;
+        private readonly GameContext $gameContext,
+        private readonly  CompetitionRepository $competitionRepository,
+        private readonly GameRepository $gameRepository,
+        private readonly KnockoutSummaryRoundsData $knockoutSummaryRoundsData
+    ) {
     }
 
-    public function show(int $competitionId): CompetitionResource
+    public function show(int $competitionId): JsonResponse
     {
-        $competition = Competition::where('instance_id', $this->instanceId())
-                                  ->where('id', $competitionId)
-                                  ->first();
+        $instanceId = $this->gameContext->instanceId();
 
-        return new CompetitionResource($competition);
+        $competition = Competition::query()
+            ->forInstance($instanceId)
+            ->findOrFail($competitionId);
+
+        return ResponseHelper::success(
+            (new CompetitionResource($competition))->toArray(request()),
+            ResponseHelper::RESPONSE_SUCCESS_CODE
+        );
     }
 
     public function competitionTable(int $competitionId): JsonResponse
