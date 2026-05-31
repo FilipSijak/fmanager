@@ -15,38 +15,31 @@ class PlayerResource extends JsonResource
      */
     public function toArray($request)
     {
-        $playerClub = $this->club()->first();
-        $playerContract = $this->contract()->first();
-        $attributeFields = array_merge(
-            PlayerFields::TECHNICAL_FIELDS,
-            PlayerFields::MENTAL_FIELDS,
-            PlayerFields::PHYSICAL_FIELDS
-        );
-
-        $fields  = [
+        return [
             'id' => $this->id,
-            'club' => [
-                'club_id' => $playerClub->id,
-                'name' => $playerClub->name
-            ],
             'first_name' => $this->first_name,
             'last_name' => $this->last_name,
-            'potential' => $this->potential,
             'position' => $this->position,
             'country_code' => $this->country_code,
             'dob' => $this->dob,
-            'technical' => $this->technical,
-            'mental' => $this->mental,
-            'physical' => $this->physical,
-            'contract_start' => $playerContract ? $playerContract->contract_start : null,
-            'contract_end' => $playerContract ? $playerContract->contract_end : null,
-            'salary' => $this->salary,
+            'club' => $this->club ? [
+                'id' => $this->club->id,
+                'name' => $this->club->name,
+            ] : null,
+            'contract' => new PlayerContractResource($this->contract),
+            'attributes' => [
+                'technical' => collect(PlayerFields::TECHNICAL_FIELDS)
+                    ->mapWithKeys(fn ($field) => [$field => $this->{$field}])
+                    ->all(),
+
+                'mental' => collect(PlayerFields::MENTAL_FIELDS)
+                    ->mapWithKeys(fn ($field) => [$field => $this->{$field}])
+                    ->all(),
+
+                'physical' => collect(PlayerFields::PHYSICAL_FIELDS)
+                    ->mapWithKeys(fn ($field) => [$field => $this->{$field}])
+                    ->all(),
+            ],
         ];
-
-        foreach ($attributeFields as $field) {
-            $fields[$field] = $this->{$field};
-        }
-
-        return $fields;
     }
 }

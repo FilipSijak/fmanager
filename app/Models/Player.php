@@ -6,6 +6,7 @@ use App\Models\Concerns\BelongsToGameInstance;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Player extends Model
 {
@@ -17,7 +18,7 @@ class Player extends Model
         return $this->belongsToMany(Position::class);
     }
 
-    public function club()
+    public function club(): BelongsTo
     {
         return $this->belongsTo(Club::class);
     }
@@ -56,7 +57,7 @@ class Player extends Model
         return $this->attributesCategories["potentialByCategory"];
     }
 
-    public function contract()
+    public function contract(): BelongsTo
     {
         return $this->belongsTo(PlayerContract::class);
     }

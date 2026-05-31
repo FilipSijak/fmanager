@@ -47,16 +47,48 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
             Route::get('/{clubId}', [ClubController::class, 'show']);
         }
     );
-});
 
-Route::group(
-    [
-        'prefix' => 'player'
-    ],
-    function () {
-        Route::get('/{playerId}', [PlayerController::class, 'show']);
-    }
-);
+    Route::group(
+        [
+            'prefix' => 'player'
+        ],
+        function () {
+            Route::get('/{playerId}', [PlayerController::class, 'show']);
+        }
+    );
+
+    Route::group(
+        [
+            'prefix' => 'competition'
+        ],
+        function () {
+            Route::get('/{competitionId}', [CompetitionController::class, 'show']);
+            Route::get('/{competitionId}/table', [CompetitionController::class, 'competitionTable']);
+            Route::get('/{competitionId}/tournament-groups-tables',
+                [CompetitionController::class, 'tournamentGroupsTables']
+            );
+            Route::get('/{competitionId}/knockout-phase-round-view-data',
+                [CompetitionController::class, 'competitionKnockoutPhaseRoundViewData']
+            );
+            Route::get('/{competitionId}/knockout-phase-all-rounds',
+                [CompetitionController::class, 'competitionKnockoutPhaseAllRounds']
+            );
+            Route::get('/{competitionId}/knockout-phase',
+                [CompetitionController::class, 'competitionKnockoutPhase']
+            );
+        }
+    );
+
+    Route::group(
+        [
+            'prefix' => 'transfer'
+        ],
+        function () {
+            Route::post('/free-transfer', [TransferController::class, 'makeFreeTransferRequest']);
+            Route::post('/', [TransferController::class, 'makeTransferRequest']);
+        }
+    );
+});
 
 Route::group(
     [
@@ -64,38 +96,6 @@ Route::group(
     ],
     function () {
         Route::get('next-day', [InstanceController::class, 'nextDay']);
-    }
-);
-
-Route::group(
-    [
-        'prefix' => 'competition'
-    ],
-    function () {
-        Route::get('/{competitionId}', [CompetitionController::class, 'show']);
-        Route::get('/{competitionId}/table', [CompetitionController::class, 'competitionTable']);
-        Route::get('/{competitionId}/tournament-groups-tables',
-           [CompetitionController::class, 'tournamentGroupsTables']
-        );
-        Route::get('/{competitionId}/knockout-phase-round-view-data',
-                   [CompetitionController::class, 'competitionKnockoutPhaseRoundViewData']
-        );
-        Route::get('/{competitionId}/knockout-phase-all-rounds',
-                   [CompetitionController::class, 'competitionKnockoutPhaseAllRounds']
-        );
-        Route::get('/{competitionId}/knockout-phase',
-            [CompetitionController::class, 'competitionKnockoutPhase']
-        );
-    }
-);
-
-Route::group(
-    [
-        'prefix' => 'transfer'
-    ],
-    function () {
-        Route::post('/free-transfer', [TransferController::class, 'makeFreeTransferRequest']);
-        Route::post('/', [TransferController::class, 'makeTransferRequest']);
     }
 );
 
