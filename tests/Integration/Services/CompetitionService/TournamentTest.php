@@ -25,7 +25,7 @@ class TournamentTest extends TestCase
         $competitionRepository = new CompetitionRepository((new CompetitionDataSource()));
         $tournamentUpdater     = new TournamentUpdater($competitionRepository);
         $leagueUpdater         = new LeagueUpdater($competitionRepository);
-        $competitionService = new CompetitionService($leagueUpdater, $tournamentUpdater);
+        $competitionService = new CompetitionService($leagueUpdater, $tournamentUpdater, $competitionRepository);
 
         $competitionService->makeTournamentGroupStage($clubs, 1, 1, 1);
 

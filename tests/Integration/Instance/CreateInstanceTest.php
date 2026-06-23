@@ -115,7 +115,8 @@ class CreateInstanceTest extends TestCase
         $this->competitionRepository = new CompetitionRepository($this->competitionDataSource);
         $this->competitionService = new CompetitionService(
             (new LeagueUpdater($this->competitionRepository)),
-            (new TournamentUpdater($this->competitionRepository))
+            (new TournamentUpdater($this->competitionRepository)),
+            $this->competitionRepository
         );
         $this->personService = new PersonService();
 
