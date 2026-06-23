@@ -1,0 +1,21 @@
+tests/Integration/Services/CompetitionService/TournamentTest.php
+  s_9e821d44b00b5e::t_d325caab9ac661 28
+tests/Integration/Instance/CreateInstanceTest.php
+  s_9e821d44b00b5e::t_d325caab9ac661 118-119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.11",
+  "base_commit_sha": "c50498118b946a4af1a68121df946a7f7b48cb50",
+  "prompts": {},
+  "sessions": {
+    "s_9e821d44b00b5e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ef475-a6e6-7013-9f89-604697182dc6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
