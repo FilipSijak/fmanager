@@ -4,13 +4,13 @@ namespace App\Services\CompetitionService;
 
 use App\Models\Competition;
 use App\Models\Season;
-use App\Services\CompetitionService\Competitions\CompetitionConfig;
+use App\Repositories\CompetitionRepository;
 use App\Services\CompetitionService\Competitions\CompetitionUpdater;
-use App\Services\CompetitionService\Competitions\League;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\Tournament;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
+use App\Services\LeagueScheduleService\LeagueScheduleService;
 use Illuminate\Support\Collection;
 
 
@@ -21,7 +21,8 @@ class CompetitionService implements ICompetitionService
 
     public function __construct(
         LeagueUpdater $leagueUpdater,
-        TournamentUpdater $tournamentUpdater
+        TournamentUpdater $tournamentUpdater,
+        private readonly CompetitionRepository $competitionRepository
     )
 
     {
@@ -29,21 +30,33 @@ class CompetitionService implements ICompetitionService
         $this->tournamentUpdater = $tournamentUpdater;
     }
 
-    public function makeLeague($clubs, $competitionId, $seasonId, $instanceId)
+    public function makeLeague(int $competitionId, int $seasonId, int $instanceId): void
     {
-        try {
-            $countClubs = count($clubs);
+        $clubIds = $this->competitionRepository->clubIdsForCompetitionSeason(
+            $competitionId,
+            $seasonId,
+            $instanceId
+        );
 
-            if ($countClubs) {
-                $leagueGames = (new League())->generateLeagueGames($clubs);
-                $dataSource = new CompetitionDataSource();
-                $competitionConfig = new CompetitionConfig();
-                $roundLength = $countClubs / 2;
-                $dataSource->storeLeagueGames($leagueGames, $competitionId, $seasonId, $instanceId, $competitionConfig->getStartDate(), $roundLength);
-            }
-        } catch (\Exception $exception) {
-            // log exception
+        if (count($clubIds) !== 20) {
+            throw new \UnexpectedValueException(
+                'League schedule requires exactly 20 clubs, '.count($clubIds).' provided.'
+            );
         }
+
+        $season = Season::query()->findOrFail($seasonId);
+        $seasonYear = (int) $season->start_date->format('Y');
+
+        $fixtures = (new LeagueScheduleService($seasonYear))->generateSchedule($clubIds);
+
+        $dataSource = new CompetitionDataSource();
+
+        $dataSource->storeLeagueScheduleFixtures(
+            $fixtures,
+            $competitionId,
+            $seasonId,
+            $instanceId
+        );
     }
 
     public function getAllCompetitions(): Collection

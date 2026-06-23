@@ -9,6 +9,32 @@ use Illuminate\Support\Facades\DB;
 
 class CompetitionDataSource
 {
+    public function storeLeagueScheduleFixtures(array $fixtures, int $competitionId, int $seasonId, int $instanceId): void
+    {
+        $clubStadiums = Club::query()
+            ->where('instance_id', $instanceId)
+            ->whereIn('id', collect($fixtures)->pluck('home_club_id')->unique()->all())
+            ->pluck('stadium_id', 'id');
+
+        $rows = [];
+
+        foreach ($fixtures as $fixture) {
+            $homeClubId = (int) $fixture['home_club_id'];
+
+            $rows[] = [
+                'instance_id' => $instanceId,
+                'season_id' => $seasonId,
+                'competition_id' => $competitionId,
+                'hometeam_id' => $homeClubId,
+                'awayteam_id' => (int) $fixture['away_club_id'],
+                'stadium_id' => (int) $clubStadiums[$homeClubId],
+                'match_start' => $fixture['date']->format('Y-m-d H:i:s'),
+            ];
+        }
+
+        DB::table('games')->insert($rows);
+    }
+
     public function storeLeagueGames($leagueFixtures, $competitionId, $seasonId, $instanceId, $startDate, $roundLength): void
     {
         $countRound   = $roundLength;

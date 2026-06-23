@@ -19,6 +19,20 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
         $this->competitionDataSource = $competitionDataSource;
     }
 
+    public function clubIdsForCompetitionSeason(int $competitionId, int $seasonId, int $instanceId): array
+    {
+        return DB::table('competition_season AS cs')
+            ->join('clubs', 'clubs.id', '=', 'cs.club_id')
+            ->where('cs.competition_id', $competitionId)
+            ->where('cs.season_id', $seasonId)
+            ->where('cs.instance_id', $instanceId)
+            ->where('clubs.instance_id', $instanceId)
+            ->orderBy('cs.id')
+            ->pluck('cs.club_id')
+            ->map(fn ($clubId) => (int) $clubId)
+            ->all();
+    }
+
     public function competitionTable(int $competitionId): Collection
     {
         return DB::table('competition_season AS cs')

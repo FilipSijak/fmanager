@@ -104,20 +104,11 @@ class CreateInstance
             if ($competition->type == 'league' || ($competition->type == 'tournament' && $competition->groups)) {
 
                 if ($competition->type == 'league') {
-                    $baseClubs = BaseClubs::all()->where('competition_id', $competition->id);
-
-                    if ($baseClubs->count()) {
-                        try {
-                            $this->competitionService->makeLeague(
-                                $baseClubs->pluck('id')->toArray(),
-                                $competition->id,
-                                $this->season->id,
-                                $this->instance->id
-                            );
-                        } catch (\Exception $e) {
-
-                        }
-                    }
+                    $this->competitionService->makeLeague(
+                        $competition->id,
+                        $this->season->id,
+                        $this->instance->id
+                    );
                 } else {
                     // @TODO
                     // need clubs for tournaments
