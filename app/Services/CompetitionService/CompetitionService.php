@@ -11,6 +11,7 @@ use App\Services\CompetitionService\Competitions\Tournament;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\LeagueScheduleService\LeagueScheduleService;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 
@@ -30,14 +31,8 @@ class CompetitionService implements ICompetitionService
         $this->tournamentUpdater = $tournamentUpdater;
     }
 
-    public function makeLeague(int $competitionId, int $seasonId, int $instanceId): void
+    public function makeLeague(array $clubIds, int $competitionId, int $seasonId, int $instanceId): void
     {
-        $clubIds = $this->competitionRepository->clubIdsForCompetitionSeason(
-            $competitionId,
-            $seasonId,
-            $instanceId
-        );
-
         if (count($clubIds) !== 20) {
             throw new \UnexpectedValueException(
                 'League schedule requires exactly 20 clubs, '.count($clubIds).' provided.'
@@ -45,7 +40,7 @@ class CompetitionService implements ICompetitionService
         }
 
         $season = Season::query()->findOrFail($seasonId);
-        $seasonYear = (int) $season->start_date->format('Y');
+        $seasonYear = (int) Carbon::parse($season->start_date)->format('Y');
 
         $fixtures = (new LeagueScheduleService($seasonYear))->generateSchedule($clubIds);
 

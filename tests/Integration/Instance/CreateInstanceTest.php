@@ -23,6 +23,7 @@ use App\Services\PersonService\PersonService;
 use Database\Seeders\ClubsSeeder;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -92,6 +93,43 @@ class CreateInstanceTest extends TestCase
                 'competition_id' => $tournamentGroup->id
             ]
         );
+
+        $leagueCompetitionIdsWithClubs = DB::table('competition_season AS cs')
+            ->join('competitions AS c', 'c.id', '=', 'cs.competition_id')
+            ->where('cs.instance_id', $instance->id)
+            ->where('cs.season_id', $season->id)
+            ->where('c.type', 'league')
+            ->groupBy('cs.competition_id')
+            ->havingRaw('COUNT(*) = 20')
+            ->pluck('cs.competition_id');
+
+        $this->assertNotEmpty($leagueCompetitionIdsWithClubs);
+
+        foreach ($leagueCompetitionIdsWithClubs as $competitionId) {
+            $this->assertEquals(
+                380,
+                Game::where('instance_id', $instance->id)
+                    ->where('season_id', $season->id)
+                    ->where('competition_id', $competitionId)
+                    ->count()
+            );
+        }
+
+        $leagueCompetitionIdsWithoutClubs = Competition::query()
+            ->where('instance_id', $instance->id)
+            ->where('type', 'league')
+            ->whereNotIn('id', $leagueCompetitionIdsWithClubs)
+            ->pluck('id');
+
+        foreach ($leagueCompetitionIdsWithoutClubs as $competitionId) {
+            $this->assertEquals(
+                0,
+                Game::where('instance_id', $instance->id)
+                    ->where('season_id', $season->id)
+                    ->where('competition_id', $competitionId)
+                    ->count()
+            );
+        }
 
         $this->assertDatabaseHas(
             'seasons',

@@ -54,19 +54,32 @@ class CompetitionDataSource
         DB::statement($insert);
     }
 
-    public function storeInitialCompetitionSeasonClubs(int $instanceId, int $seasonId)
+    public function storeInitialCompetitionSeasonClubs(int $instanceId, int $seasonId): void
     {
-        $baseClubs = BaseClubs::all();
-        $insertString = "INSERT INTO competition_season(instance_id, competition_id, season_id, club_id, points) VALUES";
+        $rows = DB::table('base_clubs AS bc')
+            ->join('clubs AS c', function ($join) use ($instanceId) {
+                $join->on('c.name', '=', 'bc.name')
+                    ->where('c.instance_id', '=', $instanceId);
+            })
+            ->join('base_competitions AS bcomp', 'bcomp.id', '=', 'bc.competition_id')
+            ->join('competitions AS comp', function ($join) use ($instanceId) {
+                $join->on('comp.name', '=', 'bcomp.name')
+                    ->where('comp.instance_id', '=', $instanceId);
+            })
+            ->select([
+                DB::raw((int) $instanceId.' AS instance_id'),
+                'comp.id AS competition_id',
+                DB::raw((int) $seasonId.' AS season_id'),
+                'c.id AS club_id',
+                DB::raw('0 AS points'),
+            ])
+            ->get()
+            ->map(fn ($row) => (array) $row)
+            ->all();
 
-        foreach ($baseClubs as $club) {
-            $insertString .= "(". $instanceId ."," . $club->competition_id . "," . $seasonId . "," . $club->id . ", 0), ";
-        }
-
-        $insert = substr($insertString, 0, -2);
-
-        DB::statement($insert);
+        DB::table('competition_season')->insert($rows);
     }
+
 
     public function storeTournamentKnockoutSchedule(int $instanceId, int $competitionId, int $seasonId, array $summary)
     {
