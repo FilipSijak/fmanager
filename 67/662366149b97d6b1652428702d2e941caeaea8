@@ -1,0 +1,23 @@
+app/Services/InstanceService/CreateInstance.php
+  s_9e821d44b00b5e::t_67f7d66991218a 118
+app/Services/CompetitionService/CompetitionService.php
+  s_9e821d44b00b5e::t_60b9b294f2c9dc 34
+tests/Integration/Instance/CreateInstanceTest.php
+  s_9e821d44b00b5e::t_a84d4181a220e4 26,97-132
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.11",
+  "base_commit_sha": "67662366149b97d6b1652428702d2e941caeaea8",
+  "prompts": {},
+  "sessions": {
+    "s_9e821d44b00b5e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ef475-a6e6-7013-9f89-604697182dc6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
