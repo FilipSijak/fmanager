@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\LeagueScheduleService;
+namespace App\Services\CompetitionService\Competitions;
 
 use DateTimeImmutable;
 use DateTimeZone;
@@ -22,7 +22,7 @@ use InvalidArgumentException;
  * - Given the same clubs (same order) and same year the output is byte-identical.
  * - Validation precedence: (1) element type, (2) cardinality, (3) distinctness.
  */
-class LeagueScheduleService
+class LeagueScheduleGenerator
 {
     private const CLUB_COUNT         = 20;
     private const ROUNDS_PER_HALF    = 19;

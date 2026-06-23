@@ -10,7 +10,7 @@ use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\Tournament;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use App\Services\LeagueScheduleService\LeagueScheduleService;
+use App\Services\CompetitionService\Competitions\LeagueScheduleGenerator;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -42,7 +42,7 @@ class CompetitionService implements ICompetitionService
         $season = Season::query()->findOrFail($seasonId);
         $seasonYear = (int) Carbon::parse($season->start_date)->format('Y');
 
-        $fixtures = (new LeagueScheduleService($seasonYear))->generateSchedule($clubIds);
+        $fixtures = (new LeagueScheduleGenerator($seasonYear))->generateSchedule($clubIds);
 
         $dataSource = new CompetitionDataSource();
 
