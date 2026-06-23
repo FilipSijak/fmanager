@@ -1,0 +1,23 @@
+app/Services/CompetitionService/CompetitionService.php
+  s_9e821d44b00b5e::t_68b918aa16e509 13,45
+app/Services/CompetitionService/Competitions/LeagueScheduleGenerator.php
+  s_9e821d44b00b5e::t_68b918aa16e509 1-498
+tests/Unit/Competition/LeagueScheduleGeneratorTest.php
+  s_9e821d44b00b5e::t_68b918aa16e509 1-751
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.11",
+  "base_commit_sha": "88f623821bb8347247022ebc7155690375e2b19c",
+  "prompts": {},
+  "sessions": {
+    "s_9e821d44b00b5e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ef475-a6e6-7013-9f89-604697182dc6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
