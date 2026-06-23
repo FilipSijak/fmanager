@@ -2,9 +2,7 @@
 
 namespace App\Services\CompetitionService\DataLayer;
 
-use App\Models\BaseData\BaseClubs;
 use App\Models\Club;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class CompetitionDataSource
@@ -33,25 +31,6 @@ class CompetitionDataSource
         }
 
         DB::table('games')->insert($rows);
-    }
-
-    public function storeLeagueGames($leagueFixtures, $competitionId, $seasonId, $instanceId, $startDate, $roundLength): void
-    {
-        $countRound   = $roundLength;
-        $insertString = "INSERT INTO games(instance_id, season_id, competition_id, hometeam_id, awayteam_id, stadium_id, match_start) VALUES";
-
-        foreach ($leagueFixtures as $fixture) {
-            $nextWeek   = $countRound % $roundLength == 0;
-            $matchStart = $nextWeek ? $startDate->addWeek() : $startDate;
-
-            $insertString .= "(" . $instanceId . "," . $seasonId . "," . $competitionId . ",". $fixture->homeTeamId . "," . $fixture->awayTeamId . "," . Club::where('id', $fixture->homeTeamId)->first()->stadium_id . ",'" . $matchStart->format("Y-m-d H:i:s") . "'), ";
-
-            $countRound++;
-        }
-
-        $insert = substr($insertString, 0, -2);
-
-        DB::statement($insert);
     }
 
     public function storeInitialCompetitionSeasonClubs(int $instanceId, int $seasonId): void

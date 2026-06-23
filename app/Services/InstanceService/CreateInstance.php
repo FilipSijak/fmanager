@@ -2,7 +2,6 @@
 
 namespace App\Services\InstanceService;
 
-use App\Models\BaseData\BaseClubs;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
