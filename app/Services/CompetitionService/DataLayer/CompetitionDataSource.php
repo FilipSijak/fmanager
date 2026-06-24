@@ -43,12 +43,11 @@ class CompetitionDataSource
     {
         $rows = DB::table('base_clubs AS bc')
             ->join('clubs AS c', function ($join) use ($instanceId) {
-                $join->on('c.name', '=', 'bc.name')
+                $join->on('c.base_club_id', '=', 'bc.id')
                     ->where('c.instance_id', '=', $instanceId);
             })
-            ->join('base_competitions AS bcomp', 'bcomp.id', '=', 'bc.competition_id')
             ->join('competitions AS comp', function ($join) use ($instanceId) {
-                $join->on('comp.name', '=', 'bcomp.name')
+                $join->on('comp.base_competition_id', '=', 'bc.competition_id')
                     ->where('comp.instance_id', '=', $instanceId);
             })
             ->select([

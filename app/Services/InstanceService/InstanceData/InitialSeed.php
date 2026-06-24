@@ -36,6 +36,7 @@ class InitialSeed
             $club->rank          = $baseClub->rank;
             $club->rank_academy  = $baseClub->rank_academy;
             $club->rank_training = $baseClub->rank_training;
+            $club->base_club_id  = $baseClub->id;
 
             $clubs[] = $club->toArray();
         }
@@ -93,13 +94,14 @@ class InitialSeed
         foreach ($baseCompetitions as $baseCompetition) {
             $competition = new Competition();
 
-            $competition->name         = $baseCompetition->name;
-            $competition->country_code = $baseCompetition->country_code;
-            $competition->instance_id  = $instanceId;
-            $competition->rank         = $baseCompetition->rank;
-            $competition->type         = $baseCompetition->type;
-            $competition->groups       = $baseCompetition->groups;
-            $competition->clubs_number = $baseCompetition->clubs_number;
+            $competition->name                = $baseCompetition->name;
+            $competition->country_code        = $baseCompetition->country_code;
+            $competition->instance_id         = $instanceId;
+            $competition->rank                = $baseCompetition->rank;
+            $competition->type                = $baseCompetition->type;
+            $competition->groups              = $baseCompetition->groups;
+            $competition->clubs_number        = $baseCompetition->clubs_number;
+            $competition->base_competition_id = $baseCompetition->id;
 
             $competitions[] = $competition->toArray();
         }

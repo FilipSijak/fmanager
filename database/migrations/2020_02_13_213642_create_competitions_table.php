@@ -22,6 +22,8 @@ class CreateCompetitionsTable extends Migration
             $table->string('type');
             $table->integer('groups')->default(0);
             $table->integer('clubs_number');
+            $table->integer('base_competition_id')->unsigned()->nullable();
+            $table->index(['instance_id', 'base_competition_id']);
         });
     }
 

@@ -20,6 +20,8 @@ class CreateCompetitionSeasonTable extends Migration
             $table->integer('season_id');
             $table->integer('club_id');
             $table->integer('points')->nullable();
+            $table->index(['instance_id', 'season_id', 'competition_id']);
+            $table->index(['instance_id', 'season_id', 'club_id']);
         });
     }
 
