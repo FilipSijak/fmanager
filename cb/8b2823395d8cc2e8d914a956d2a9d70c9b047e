@@ -1,0 +1,34 @@
+tests/Integration/Services/CompetitionService/TournamentTest.php
+  s_9e821d44b00b5e::t_5a9c73965b3bd3 6-7,24-29,43,46-56,58-59
+  s_9e821d44b00b5e::t_f3846cfa82b170 30-35,57
+app/Services/CompetitionService/CompetitionService.php
+  s_9e821d44b00b5e::t_9882b87d2bde5e 8,85-92,94-99
+app/Services/CompetitionService/Competitions/RoundRobinScheduleGenerator.php
+  s_9e821d44b00b5e::t_483de862e28ae5 1-217
+tests/Unit/Competition/RoundRobinScheduleGeneratorTest.php
+  s_9e821d44b00b5e::t_1d91984c9a4995 1-93
+app/Services/CompetitionService/DataLayer/CompetitionDataSource.php
+  s_9e821d44b00b5e::t_de0e801983d3b9 11-20,34
+tests/Unit/Competition/GroupStageScheduleGeneratorTest.php
+  s_9e821d44b00b5e::t_1689da8d2b0f5f 1-68
+app/Services/CompetitionService/Competitions/GroupStageScheduleGenerator.php
+  s_9e821d44b00b5e::t_af37199e42a21a 1-88
+app/Services/CompetitionService/Competitions/LeagueScheduleGenerator.php
+  s_9e821d44b00b5e::t_38711f827610f3 14,16-19,44,52-53,55,58,77,83,88,99,102-105,118-119,123,127-128,132,134-135,137,139,143-144,151-160,179
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "cb8b2823395d8cc2e8d914a956d2a9d70c9b047e",
+  "prompts": {},
+  "sessions": {
+    "s_9e821d44b00b5e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ef475-a6e6-7013-9f89-604697182dc6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
