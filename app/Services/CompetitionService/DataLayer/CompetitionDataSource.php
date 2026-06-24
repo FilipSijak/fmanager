@@ -19,6 +19,12 @@ class CompetitionDataSource
         foreach ($fixtures as $fixture) {
             $homeClubId = (int) $fixture['home_club_id'];
 
+            if (!isset($clubStadiums[$homeClubId])) {
+                throw new \UnexpectedValueException(
+                    "Unable to schedule league fixture: home club ".$homeClubId." has no stadium for instance ".$instanceId."."
+                );
+            }
+
             $rows[] = [
                 'instance_id' => $instanceId,
                 'season_id' => $seasonId,

@@ -47,7 +47,7 @@ class CreateInstanceTest extends TestCase
         $instance = Instance::all()->first();
         $tournament = Competition::where('type', 'tournament')->where('groups', 0)->first();
         $tournamentGroup = Competition::where('type', 'tournament')->where('groups', 1)->first();
-        $season = Season::where('id', $instance->id)->first();
+        $season = Season::where('instance_id', $instance->id)->firstOrFail();
 
         $this->assertDatabaseHas(
             'instances',
@@ -132,7 +132,7 @@ class CreateInstanceTest extends TestCase
         $this->assertDatabaseHas(
             'seasons',
             [
-                'id'         => $instance->id,
+                'id'         => $season->id,
                 'start_date' => $season->start_date,
                 'end_date'   => $season->end_date,
             ]
@@ -152,7 +152,7 @@ class CreateInstanceTest extends TestCase
         $this->competitionService = new CompetitionService(
             (new LeagueUpdater($this->competitionRepository)),
             (new TournamentUpdater($this->competitionRepository)),
-            $this->competitionRepository
+            $this->competitionDataSource
         );
         $this->personService = new PersonService();
 
