@@ -5,6 +5,7 @@ namespace App\Services\CompetitionService;
 use App\Models\Competition;
 use App\Models\Season;
 use App\Services\CompetitionService\Competitions\CompetitionUpdater;
+use App\Services\CompetitionService\Competitions\GroupStageScheduleGenerator;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\Tournament;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
@@ -81,9 +82,21 @@ class CompetitionService implements ICompetitionService
     {
         $tournament = new Tournament();
         $groups = $tournament->createTournamentGroups($clubs->toArray());
-        $dataSource = new CompetitionDataSource();
+        $season = Season::query()->findOrFail($seasonId);
 
-        $dataSource->insertTournamentGroups($instanceId, $groups, $competitionId, $seasonId);
+        $this->competitionDataSource->insertTournamentGroups($instanceId, $groups, $competitionId, $seasonId);
+
+        $fixtures = (new GroupStageScheduleGenerator())->generate(
+            $groups,
+            Carbon::parse($season->start_date)->toDateTimeImmutable()
+        );
+
+        $this->competitionDataSource->storeTournamentGroupScheduleFixtures(
+            $fixtures,
+            $competitionId,
+            $seasonId,
+            $instanceId
+        );
     }
 
     public function competitionsRoundUpdate(array $games)

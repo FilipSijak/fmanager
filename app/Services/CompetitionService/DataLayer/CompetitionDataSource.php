@@ -9,6 +9,16 @@ class CompetitionDataSource
 {
     public function storeLeagueScheduleFixtures(array $fixtures, int $competitionId, int $seasonId, int $instanceId): void
     {
+        $this->insertGameFixtures($fixtures, $competitionId, $seasonId, $instanceId);
+    }
+
+    public function storeTournamentGroupScheduleFixtures(array $fixtures, int $competitionId, int $seasonId, int $instanceId): void
+    {
+        $this->insertGameFixtures($fixtures, $competitionId, $seasonId, $instanceId);
+    }
+
+    private function insertGameFixtures(array $fixtures, int $competitionId, int $seasonId, int $instanceId): void
+    {
         $clubStadiums = Club::query()
             ->where('instance_id', $instanceId)
             ->whereIn('id', collect($fixtures)->pluck('home_club_id')->unique()->all())
@@ -21,7 +31,7 @@ class CompetitionDataSource
 
             if (!isset($clubStadiums[$homeClubId])) {
                 throw new \UnexpectedValueException(
-                    "Unable to schedule league fixture: home club ".$homeClubId." has no stadium for instance ".$instanceId."."
+                    "Unable to schedule fixture: home club ".$homeClubId." has no stadium for instance ".$instanceId."."
                 );
             }
 
