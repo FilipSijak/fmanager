@@ -1,0 +1,25 @@
+database/migrations/2020_02_13_213642_create_competitions_table.php
+  s_9e821d44b00b5e::t_63c256783ace52 26
+database/migrations/2020_05_07_200938_create_competition_season_table.php
+  s_9e821d44b00b5e::t_63c256783ace52 23-24
+tests/Integration/Services/CompetitionService/CompetitionSeasonMappingTest.php
+  s_9e821d44b00b5e::t_9ccfaa46d8097f 1-111
+database/migrations/2020_02_10_193454_create_clubs_table.php
+  s_9e821d44b00b5e::t_63c256783ace52 27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "e0c84980c48302275c3045ff3127853aa61b6844",
+  "prompts": {},
+  "sessions": {
+    "s_9e821d44b00b5e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ef475-a6e6-7013-9f89-604697182dc6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
