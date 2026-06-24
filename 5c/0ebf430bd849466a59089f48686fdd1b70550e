@@ -1,0 +1,29 @@
+app/Services/CompetitionService/DataLayer/CompetitionDataSource.php
+  s_9e821d44b00b5e::t_e0e3a8fd4f6004 22-27
+tests/Integration/Services/CompetitionService/TournamentTest.php
+  s_9e821d44b00b5e::t_e76f695b484ca3 28
+tests/Integration/Services/CompetitionService/CompetitionServiceMakeLeagueTest.php
+  s_9e821d44b00b5e::t_8c65b5d6341785 1-107
+tests/Integration/Instance/CreateInstanceTest.php
+  s_9e821d44b00b5e::t_e76f695b484ca3 155
+  s_9e821d44b00b5e::t_c7097cc6dc79bf 50
+  s_9e821d44b00b5e::t_5436cec66663ab 135
+tests/Unit/Competition/LeagueScheduleGeneratorTest.php
+  s_9e821d44b00b5e::t_72820759c4b1e3 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.13",
+  "base_commit_sha": "5c0ebf430bd849466a59089f48686fdd1b70550e",
+  "prompts": {},
+  "sessions": {
+    "s_9e821d44b00b5e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ef475-a6e6-7013-9f89-604697182dc6",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
