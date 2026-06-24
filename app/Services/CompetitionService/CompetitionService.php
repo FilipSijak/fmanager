@@ -4,7 +4,6 @@ namespace App\Services\CompetitionService;
 
 use App\Models\Competition;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
 use App\Services\CompetitionService\Competitions\CompetitionUpdater;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\Tournament;
@@ -23,9 +22,8 @@ class CompetitionService implements ICompetitionService
     public function __construct(
         LeagueUpdater $leagueUpdater,
         TournamentUpdater $tournamentUpdater,
-        private readonly CompetitionRepository $competitionRepository
+        private readonly CompetitionDataSource $competitionDataSource
     )
-
     {
         $this->leagueUpdater = $leagueUpdater;
         $this->tournamentUpdater = $tournamentUpdater;
@@ -41,12 +39,9 @@ class CompetitionService implements ICompetitionService
 
         $season = Season::query()->findOrFail($seasonId);
         $seasonYear = (int) Carbon::parse($season->start_date)->format('Y');
-
         $fixtures = (new LeagueScheduleGenerator($seasonYear))->generateSchedule($clubIds);
 
-        $dataSource = new CompetitionDataSource();
-
-        $dataSource->storeLeagueScheduleFixtures(
+        $this->competitionDataSource->storeLeagueScheduleFixtures(
             $fixtures,
             $competitionId,
             $seasonId,
