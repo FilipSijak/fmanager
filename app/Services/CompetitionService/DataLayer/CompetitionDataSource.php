@@ -91,17 +91,22 @@ class CompetitionDataSource
         );
     }
 
-    public function insertTournamentGroups($instanceId, $groups, $competitionId, $seasonId)
+    public function insertTournamentGroups(int $instanceId, array $groups, int $competitionId, int $seasonId): void
     {
-        $insertString = "INSERT INTO tournament_groups(instance_id, competition_id, season_id, group_id, club_id, points) VALUES";
+        $rows = [];
 
         foreach ($groups as $groupId => $group) {
-            foreach ($group as $clubId)
-            $insertString .= "(" . $instanceId . "," . $competitionId . "," . $seasonId . "," . $groupId . ",". $clubId . "," . 0 . "), ";
+            foreach ($group as $clubId) {
+                $rows[] = [
+                    'instance_id' => $instanceId,
+                    'competition_id' => $competitionId,
+                    'season_id' => $seasonId,
+                    'group_id' => (int) $groupId,
+                    'club_id' => (int) $clubId,
+                ];
+            }
         }
 
-        $insert = substr($insertString, 0, -2);
-
-        DB::statement($insert);
+        DB::table('competition_season')->insert($rows);
     }
 }

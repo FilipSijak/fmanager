@@ -42,11 +42,11 @@ class TournamentTest extends TestCase
 
         $competitionService->makeTournamentGroupStage($clubs, 1, $season->id, 1);
 
-        $this->assertDatabaseCount('tournament_groups', 8);
+        $this->assertDatabaseCount('competition_season', 8);
         $this->assertDatabaseCount('games', 24);
 
         $clubGroups = [];
-        foreach (\DB::table('tournament_groups')->get() as $groupRow) {
+        foreach (\DB::table('competition_season')->get() as $groupRow) {
             $clubGroups[$groupRow->club_id] = $groupRow->group_id;
         }
 

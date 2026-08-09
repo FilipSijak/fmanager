@@ -41,6 +41,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->where('season_id', $this->seasonId())
             ->where('cs.instance_id', $this->instanceId())
             ->where('competition_id', $competitionId)
+            ->whereNull('cs.group_id')
             ->orderBy('cs.points', 'DESC')
             ->orderByRaw('(cs.goals_for - cs.goals_against) DESC')
             ->orderBy('cs.goals_for', 'DESC')
@@ -50,12 +51,13 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
 
     public function tournamentGroupsTables(int $competitionId): Collection
     {
-        return DB::table('tournament_groups AS tg')
+        return DB::table('competition_season AS tg')
             ->select('tg.group_id', 'clubs.id as club_id', 'clubs.name as club_name', 'tg.points', 'tg.goals_for', 'tg.goals_against', 'tg.wins', 'tg.draws', 'tg.losses', 'tg.played')
             ->join('clubs', 'clubs.id', '=', 'tg.club_id')
             ->where('tg.competition_id', $competitionId)
             ->where('tg.instance_id', $this->instanceId())
             ->where('tg.season_id', $this->seasonId())
+            ->whereNotNull('tg.group_id')
             ->orderBy('tg.group_id', 'ASC')
             ->orderBy('tg.points', 'DESC')
             ->orderByRaw('(tg.goals_for - tg.goals_against) DESC')
@@ -89,9 +91,8 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                    ->get();
     }
 
-    public function updateCompetitionTable(array $game, bool $tournamentGroup = false): void
+    public function updateCompetitionTable(array $game): void
     {
-        $table = $tournamentGroup ? 'tournament_groups' : 'competition_season';
         $homeTeamPoints = 0;
         $awayTeamPoints = 0;
         $homeTeamWins = 0;
@@ -122,7 +123,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
 
         DB::update(
             "
-                UPDATE {$table}
+                UPDATE competition_season
                 SET points = coalesce(points, 0) + :points,
                     played = played + 1,
                     wins = wins + :wins,
@@ -151,7 +152,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
 
         DB::update(
             "
-                UPDATE {$table}
+                UPDATE competition_season
                 SET points = coalesce(points, 0) + :points,
                     played = played + 1,
                     wins = wins + :wins,
@@ -189,41 +190,12 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
      */
     public function tournamentGroupsFinished(array $match): bool
     {
-        $result = DB::select(
-            "
-                SELECT
-                    count(tg.id) AS numberOfGroups
-                FROM
-                    (
-                        SELECT group_id AS groupIds FROM tournament_groups
-                        WHERE (club_id = :homeTeamId OR club_id = :awayTeamId)
-                        LIMIT 1
-                    )AS sq
-                JOIN tournament_groups AS tg ON (tg.group_id = sq.groupIds)
-            ",
-            [
-                'homeTeamId' => $match['hometeam_id'],
-                'awayTeamId' => $match['awayteam_id'],
-            ]
-        );
-
-        $numberOfGames = $result[0]->numberOfGroups * 12;
-
-        $gamesPlayed = DB::select(
-            "
-            SELECT COUNT(id) AS gamesPlayed
-            FROM games
-            WHERE competition_id = :competitionId
-            AND winner > 0
-            ",
-            ["competitionId" => $match["competition_id"]]
-        );
-
-        if ($numberOfGames == $gamesPlayed[0]->gamesPlayed) {
-            return true;
-        }
-
-        return false;
+        return !DB::table('games')
+            ->where('competition_id', $match['competition_id'])
+            ->where('season_id', $match['season_id'])
+            ->where('instance_id', $match['instance_id'])
+            ->whereNull('winner')
+            ->exists();
     }
 
     public function resetTournamentGroupRule(int $competitionId)
@@ -242,26 +214,35 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
     {
         return DB::select(
             "
-                SELECT
-                    t1.*
-                FROM
-                (
+                SELECT ranked.*
+                FROM (
                     SELECT
                         id,
                         competition_id,
                         club_id,
-                          points,
+                        points,
                         group_id,
-                        @rn := IF(@prev = group_id, @rn + 1, 1) AS rn,
-                        @prev := group_id
-                    FROM tournament_groups
-                    JOIN (SELECT @prev := NULL, @rn := 0) AS vars
-                    ORDER BY group_id, points DESC
-                ) AS t1
-                WHERE rn <= 2
-                AND competition_id = :competitionId;
+                        ROW_NUMBER() OVER (
+                            PARTITION BY group_id
+                            ORDER BY points DESC,
+                                (goals_for - goals_against) DESC,
+                                goals_for DESC,
+                                club_id ASC
+                        ) AS position
+                    FROM competition_season
+                    WHERE competition_id = :competitionId
+                    AND season_id = :seasonId
+                    AND instance_id = :instanceId
+                    AND group_id IS NOT NULL
+                ) AS ranked
+                WHERE ranked.position <= 2
+                ORDER BY ranked.group_id, ranked.position
             ",
-            ["competitionId" => $competitionId]
+            [
+                'competitionId' => $competitionId,
+                'seasonId' => $this->seasonId(),
+                'instanceId' => $this->instanceId(),
+            ]
         );
     }
 

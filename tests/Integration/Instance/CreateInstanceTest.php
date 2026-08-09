@@ -84,7 +84,7 @@ class CreateInstanceTest extends TestCase
         );
 
         $this->assertDatabaseHas(
-            'tournament_groups',
+            'competition_season',
             [
                 'instance_id' => $instance->id,
                 'season_id' => $season->id,

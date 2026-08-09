@@ -248,7 +248,7 @@ class CreateCompetitionTest extends TestCase
             'name' => 'Delta FC',
         ]);
 
-        DB::table('tournament_groups')->insert([
+        DB::table('competition_season')->insert([
             [
                 'instance_id' => $instance->id,
                 'competition_id' => $competition->id,

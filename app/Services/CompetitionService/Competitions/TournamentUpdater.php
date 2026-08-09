@@ -2,7 +2,6 @@
 
 namespace App\Services\CompetitionService\Competitions;
 
-use App\Models\Club;
 use App\Models\Game;
 use App\Models\Season;
 use App\Models\Stadium;
@@ -33,35 +32,42 @@ class TournamentUpdater
 
     public function updatePointsTable(array $games)
     {
-        if ($this->competitionRepository->tournamentGroupsFinished($games[0])) {
-            // update competition do be tournament
-            // create tournament based on group points
-            // create tournament knockout matches
-            $competitionId = $games[0]["competition_id"];
-
-            // decide which clubs process to knockout stage
-            $topClubsByGroups =$this->competitionRepository->topClubsByTournamentGroup($competitionId);
-            $knockoutClubs    = [];
-
-            foreach ($topClubsByGroups as $club) {
-                $club            = Club::find($club->id);
-                $knockoutClubs[] = $club->id;
-            }
-
-            $tournament = new Tournament();
-            $tournamentConfig = new TournamentConfig();
-            $knockoutSchedule = $tournament->createTournament($knockoutClubs, $this->instanceId, $this->season->id);
-
-            $schedule = $tournament->setTournamentFixtures($this->instanceId, $this->season->id, $knockoutSchedule, $competitionId, $this->season->start_date);
-
-
-            $dataSource = new CompetitionDataSource();
-            $dataSource->storeTournamentKnockoutSchedule($competitionId, $this->season->id, $schedule);
-        } else {
-            foreach ($games as $game) {
-                $this->competitionRepository->updateCompetitionTable($game, tournamentGroup: true);
-            }
+        foreach ($games as $game) {
+            $this->competitionRepository->updateCompetitionTable($game);
         }
+
+        if (!$this->competitionRepository->tournamentGroupsFinished($games[0])) {
+            return;
+        }
+
+        $competitionId = $games[0]['competition_id'];
+        $topClubsByGroups = $this->competitionRepository->topClubsByTournamentGroup($competitionId);
+        $knockoutClubs = [];
+
+        foreach ($topClubsByGroups as $club) {
+            $knockoutClubs[] = (int) $club->club_id;
+        }
+
+        $tournament = new Tournament();
+        $knockoutSchedule = $tournament->createTournament(
+            $knockoutClubs,
+            $this->instanceId,
+            $this->season->id
+        );
+        $schedule = $tournament->setTournamentFixtures(
+            $this->instanceId,
+            $this->season->id,
+            $knockoutSchedule,
+            $competitionId,
+            $this->season->start_date
+        );
+
+        (new CompetitionDataSource())->storeTournamentKnockoutSchedule(
+            $this->instanceId,
+            $competitionId,
+            $this->season->id,
+            $schedule
+        );
     }
 
     public function updateTournamentSummary(array $games)

@@ -6,7 +6,6 @@ use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Models\TournamentGroup;
 use App\Repositories\CompetitionRepository;
 use App\Services\CompetitionService\Competitions\CompetitionUpdater;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
@@ -15,6 +14,7 @@ use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -82,12 +82,13 @@ class CompetitionUpdaterTest extends TestCase
         Game::factory()->create(
             ['instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id, 'hometeam_id' => 17, 'awayteam_id' => 19, 'winner' => 1, 'stadium_id' => 1, 'match_summary' => '{}']
         );
-        TournamentGroup::factory()->create(
-            ['club_id' => 17, 'group_id' => 1, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id]
+        Game::factory()->create(
+            ['instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id, 'hometeam_id' => 19, 'awayteam_id' => 17, 'winner' => null, 'stadium_id' => 1]
         );
-        TournamentGroup::factory()->create(
-            ['club_id' => 19, 'group_id' => 1, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id]
-        );
+        DB::table('competition_season')->insert([
+            ['club_id' => 17, 'group_id' => 1, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id],
+            ['club_id' => 19, 'group_id' => 1, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id],
+        ]);
 
         $competitionUpdater->setGamesByCompetition($gamesByCompetition);
         $competitionUpdater->distributeGamesForCompetitionUpdates($season, $instance->id);
@@ -101,7 +102,7 @@ class CompetitionUpdaterTest extends TestCase
         );
 
         $this->assertDatabaseHas(
-            'tournament_groups',
+            'competition_season',
             [
                 'club_id' => 17,
                 'points' => 3,
@@ -115,7 +116,7 @@ class CompetitionUpdaterTest extends TestCase
         );
 
         $this->assertDatabaseHas(
-            'tournament_groups',
+            'competition_season',
             [
                 'club_id' => 19,
                 'points' => 0,
