@@ -64,6 +64,7 @@ class GroupToKnockoutTransitionTest extends TestCase
                 'awayteam_id' => $clubs[1]->id,
                 'stadium_id' => $clubs[0]->stadium_id,
                 'winner' => 1,
+                'status' => 'completed',
                 'home_team_goals' => 2,
                 'away_team_goals' => 0,
             ]),
@@ -75,6 +76,7 @@ class GroupToKnockoutTransitionTest extends TestCase
                 'awayteam_id' => $clubs[3]->id,
                 'stadium_id' => $clubs[2]->stadium_id,
                 'winner' => 1,
+                'status' => 'completed',
                 'home_team_goals' => 1,
                 'away_team_goals' => 0,
             ]),
@@ -97,6 +99,7 @@ class GroupToKnockoutTransitionTest extends TestCase
         $firstRoundGames = Game::query()->whereNotNull('knockout_tie_id')->get();
         foreach ($firstRoundGames as $game) {
             $game->winner = $game->leg_number === 1 ? 1 : 2;
+            $game->status = Game::STATUS_COMPLETED;
             $game->home_team_goals = $game->leg_number === 1 ? 2 : 0;
             $game->away_team_goals = $game->leg_number === 1 ? 0 : 1;
             $game->save();

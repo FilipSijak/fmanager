@@ -87,11 +87,13 @@ class KnockoutPersistenceTest extends TestCase
             $games = DB::table('games')->where('knockout_tie_id', $tie->id)->orderBy('leg_number')->get();
             DB::table('games')->where('id', $games[0]->id)->update([
                 'winner' => 1,
+                'status' => 'completed',
                 'home_team_goals' => 2,
                 'away_team_goals' => 0,
             ]);
             DB::table('games')->where('id', $games[1]->id)->update([
                 'winner' => 2,
+                'status' => 'completed',
                 'home_team_goals' => 0,
                 'away_team_goals' => 1,
             ]);
@@ -146,6 +148,7 @@ class KnockoutPersistenceTest extends TestCase
         foreach ($games as $index => $game) {
             DB::table('games')->where('id', $game->id)->update([
                 'winner' => $index === 0 ? 1 : 2,
+                'status' => 'completed',
                 'home_team_goals' => $index === 0 ? 2 : 0,
                 'away_team_goals' => $index === 0 ? 0 : 1,
             ]);

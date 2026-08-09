@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GameController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
@@ -37,6 +38,10 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
     Route::post('/news/{newsId}/read', [NewsController::class, 'markAsRead']);
 
     Route::get('/dashboard', [DashboardController::class, 'index']);
+
+    Route::post('/game/{gameId}/complete', [GameController::class, 'complete']);
+    Route::post('/game/{gameId}/postpone', [GameController::class, 'postpone']);
+    Route::post('/game/{gameId}/cancel', [GameController::class, 'cancel']);
 
     Route::group(
         [

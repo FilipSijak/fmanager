@@ -158,8 +158,9 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
     public function getScheduledGames(Instance $instance)
     {
         return Game::where('instance_id', $instance->id)
-                   ->where('match_start', $instance->instance_date)
-                   ->where('winner', null)
+                   ->whereDate('match_start', $instance->instance_date)
+                   ->whereNull('processed_at')
+                   ->whereIn('status', [Game::STATUS_SCHEDULED, Game::STATUS_POSTPONED])
                    ->get();
     }
 
@@ -266,7 +267,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->where('competition_id', $match['competition_id'])
             ->where('season_id', $match['season_id'])
             ->where('instance_id', $match['instance_id'])
-            ->whereNull('winner')
+            ->whereIn('status', [Game::STATUS_SCHEDULED, Game::STATUS_IN_PROGRESS, Game::STATUS_POSTPONED])
             ->exists();
     }
 

@@ -34,7 +34,9 @@ class GameFactory extends Factory
             'stadium_id' => $stadium->id,
             'attendance' => $stadium->capacity,
             'match_start' => Carbon::now()->format('Y-m-d H:m:00'),
-            'winner' => $homeTeamId,
+            'winner' => null,
+            'status' => 'scheduled',
+            'processed_at' => null,
             'home_team_goals' => null,
             'away_team_goals' => null,
             'match_summary' => null

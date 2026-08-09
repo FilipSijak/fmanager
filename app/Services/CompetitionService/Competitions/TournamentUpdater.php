@@ -39,31 +39,36 @@ class TournamentUpdater
                 $this->competitionRepository->updateCompetitionTable($game);
             }
 
-            if (!$this->competitionRepository->tournamentGroupsFinished($games[0])) {
-                return;
-            }
-
-            $competitionId = $games[0]['competition_id'];
-            $knockoutClubs = collect($this->competitionRepository->topClubsByTournamentGroup($competitionId))
-                ->pluck('club_id')->map(fn ($clubId) => (int) $clubId)->all();
-            $tournament = new Tournament();
-            $schedule = $tournament->createTournament($knockoutClubs, $this->instanceId, $this->season->id);
-            $schedule = $tournament->setTournamentFixtures(
-                $this->instanceId,
-                $this->season->id,
-                $schedule,
-                $competitionId,
-                $this->season->start_date
-            );
-
-            (new CompetitionDataSource())->storeTournamentKnockoutSchedule(
-                $this->instanceId,
-                $competitionId,
-                $this->season->id,
-                $schedule
-            );
-            $this->competitionRepository->resetTournamentGroupRule($competitionId);
+            $this->transitionToKnockoutIfFinished($games[0]);
         });
+    }
+
+    public function transitionToKnockoutIfFinished(array $game): void
+    {
+        if (!$this->competitionRepository->tournamentGroupsFinished($game)) {
+            return;
+        }
+
+        $competitionId = $game['competition_id'];
+        $knockoutClubs = collect($this->competitionRepository->topClubsByTournamentGroup($competitionId))
+            ->pluck('club_id')->map(fn ($clubId) => (int) $clubId)->all();
+        $tournament = new Tournament();
+        $schedule = $tournament->createTournament($knockoutClubs, $this->instanceId, $this->season->id);
+        $schedule = $tournament->setTournamentFixtures(
+            $this->instanceId,
+            $this->season->id,
+            $schedule,
+            $competitionId,
+            $this->season->start_date
+        );
+
+        (new CompetitionDataSource())->storeTournamentKnockoutSchedule(
+            $this->instanceId,
+            $competitionId,
+            $this->season->id,
+            $schedule
+        );
+        $this->competitionRepository->resetTournamentGroupRule($competitionId);
     }
 
     public function updateTournamentSummary(array $games): void
@@ -92,7 +97,7 @@ class TournamentUpdater
         }
 
         $games = Game::query()->where('knockout_tie_id', $tieId)->orderBy('leg_number')->get();
-        if ($games->count() !== (int) $tie->number_of_legs || $games->contains(fn (Game $game) => !$game->winner)) {
+        if ($games->count() !== (int) $tie->number_of_legs || $games->contains(fn (Game $game) => $game->status !== Game::STATUS_COMPLETED || !$game->winner)) {
             return;
         }
 

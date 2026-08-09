@@ -11,7 +11,18 @@ class Game extends Model
 {
     use HasFactory, BelongsToGameInstance;
 
+    public const STATUS_SCHEDULED = 'scheduled';
+    public const STATUS_IN_PROGRESS = 'in_progress';
+    public const STATUS_COMPLETED = 'completed';
+    public const STATUS_POSTPONED = 'postponed';
+    public const STATUS_CANCELLED = 'cancelled';
+    public const STATUS_ABANDONED = 'abandoned';
+
     public $timestamps = false;
+
+    protected $casts = [
+        'processed_at' => 'datetime',
+    ];
 
     public function scopeForClub(Builder $query, int $clubId):Builder
     {

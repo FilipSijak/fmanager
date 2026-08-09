@@ -6,7 +6,7 @@ use App\Events\NextDay;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Repositories\CompetitionRepository;
-use App\Services\CompetitionService\CompetitionService;
+use App\Services\GameService\CompleteGameService;
 use App\Services\GameService\GameService;
 use App\Services\PersonService\PersonService;
 use Carbon\Carbon;
@@ -17,21 +17,21 @@ class InstanceService implements IInstanceService
     private CompetitionRepository  $competitionRepository;
     private Season                 $season;
     private GameService            $gameService;
-    private CompetitionService     $competitionService;
+    private CompleteGameService    $completeGameService;
     private CreateInstance         $createInstance;
     private ?Instance $instance = null;
 
     public function __construct(
-        CompetitionService $competitionService,
         CompetitionRepository $competitionRepository,
         CreateInstance $createInstance,
-        GameService $gameService
+        GameService $gameService,
+        CompleteGameService $completeGameService
 
     )
     {
         $this->competitionRepository = $competitionRepository;
         $this->gameService = $gameService;
-        $this->competitionService = $competitionService;
+        $this->completeGameService = $completeGameService;
         $this->createInstance = $createInstance;
     }
 
@@ -90,26 +90,17 @@ class InstanceService implements IInstanceService
 
     private function simulateGames()
     {
-        $gamesByCompetition = [];
         $instance = $this->getInstance();
         $games = $this->competitionRepository->getScheduledGames($instance);
 
-        $this->gameService->simulateRound($games);
-
         foreach ($games as $game) {
-            if (!isset($gamesByCompetition[$game->competition_id])) {
-                $gamesByCompetition[$game->competition_id] = [];
-            }
-
-            $gamesByCompetition[$game->competition_id][] = $game->toArray();
+            $result = $this->gameService->simulateGameResult();
+            $this->completeGameService->complete(
+                $game->id,
+                $result['home_team_goals'],
+                $result['away_team_goals']
+            );
         }
-
-        // create Competition Match Updater class which will take all the matches and deal with the updates
-        $this->competitionService->setInstanceId($instance->id);
-        $this->competitionService->setSeason($this->season);
-        $this->competitionService->competitionsRoundUpdate($gamesByCompetition);
-
-        //update other stuff like club ranking, player injuries, news service etc.
     }
 
     public function setSeason(Season $season)

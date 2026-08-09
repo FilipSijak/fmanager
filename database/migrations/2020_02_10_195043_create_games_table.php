@@ -24,6 +24,8 @@ class CreateGamesTable extends Migration
             $table->integer('attendance')->nullable();
             $table->dateTime('match_start')->nullable();
             $table->integer('winner')->nullable();
+            $table->string('status')->default('scheduled')->index();
+            $table->timestamp('processed_at')->nullable();
             $table->integer('home_team_goals')->nullable();
             $table->integer('away_team_goals')->nullable();
             $table->json('match_summary')->nullable();
