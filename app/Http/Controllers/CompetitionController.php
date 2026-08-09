@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
 use App\Http\Resources\CompetitionResource;
+use App\Http\Resources\CompetitionTableRowResource;
 use App\Models\Competition;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\GameRepository;
@@ -37,25 +38,33 @@ class CompetitionController extends CoreController
 
     public function competitionTable(int $competitionId): JsonResponse
     {
-        $competitionTable = $this->competitionRepository->competitionTable($competitionId);
+        $competitionTable = $this->competitionRepository->competitionTable($competitionId)
+            ->values()
+            ->each(function ($row, int $index): void {
+                $row->position = $index + 1;
+            });
 
-        return ResponseHelper::success($competitionTable->toArray(), ResponseHelper::RESPONSE_SUCCESS_CODE);
+        return ResponseHelper::success(
+            (CompetitionTableRowResource::collection($competitionTable))->toArray(request()),
+            ResponseHelper::RESPONSE_SUCCESS_CODE
+        );
     }
 
     public function tournamentGroupsTables(int $competitionId): JsonResponse
     {
-        $tournamentGroups = $this->competitionRepository->tournamentGroupsTables($competitionId);
-        $tournamentsGroupsMapping = [];
+        $tournamentGroupsTables = $this->competitionRepository->tournamentGroupsTables($competitionId)
+            ->groupBy('group_id')
+            ->map(function ($groupTable) {
+                $groupTable = $groupTable->values()
+                    ->each(function ($row, int $index): void {
+                        $row->position = $index + 1;
+                    });
 
-        foreach ($tournamentGroups as $groupItem) {
-            if (!isset($tournamentsGroupsMapping[$groupItem->group_id])) {
-                $tournamentsGroupsMapping[$groupItem->group_id] = [];
-            }
+                return CompetitionTableRowResource::collection($groupTable)->toArray(request());
+            })
+            ->toArray();
 
-            $tournamentsGroupsMapping[$groupItem->group_id][] = $groupItem;
-        }
-
-        return ResponseHelper::success($tournamentsGroupsMapping, ResponseHelper::RESPONSE_SUCCESS_CODE);
+        return ResponseHelper::success($tournamentGroupsTables, ResponseHelper::RESPONSE_SUCCESS_CODE);
     }
 
     public function competitionKnockoutPhaseRoundViewData(int $competitionId): JsonResponse
@@ -83,6 +92,24 @@ class CompetitionController extends CoreController
         if ($summary) {
             return ResponseHelper::success(
                 $this->knockoutSummaryRoundsData->displayAllRounds($summary),
+                ResponseHelper::RESPONSE_SUCCESS_CODE
+            );
+        }
+
+        return ResponseHelper::error(
+            'Unable to load knockout summary data',
+            '',
+            ResponseHelper::RESPONSE_ERROR_CODE
+        );
+    }
+
+    public function competitionKnockoutPhase(int $competitionId): JsonResponse
+    {
+        $summary = $this->competitionRepository->getCompetitionKnockoutStageSummary($competitionId);
+
+        if ($summary) {
+            return ResponseHelper::success(
+                json_decode($summary, true) ?? [],
                 ResponseHelper::RESPONSE_SUCCESS_CODE
             );
         }

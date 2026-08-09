@@ -36,25 +36,31 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
     public function competitionTable(int $competitionId): Collection
     {
         return DB::table('competition_season AS cs')
-            ->select('clubs.name', 'cs.points')
+            ->select('clubs.id as club_id', 'clubs.name as club_name', 'cs.points', 'cs.goals_for', 'cs.goals_against', 'cs.wins', 'cs.draws', 'cs.losses', 'cs.played')
             ->join('clubs', 'cs.club_id', '=', 'clubs.id')
             ->where('season_id', $this->seasonId())
             ->where('cs.instance_id', $this->instanceId())
             ->where('competition_id', $competitionId)
-            ->orderBy('points', 'DESC')
+            ->orderBy('cs.points', 'DESC')
+            ->orderByRaw('(cs.goals_for - cs.goals_against) DESC')
+            ->orderBy('cs.goals_for', 'DESC')
+            ->orderBy('clubs.name', 'ASC')
             ->get();
     }
 
     public function tournamentGroupsTables(int $competitionId): Collection
     {
         return DB::table('tournament_groups AS tg')
-            ->select('tg.group_id', 'tg.points', 'clubs.name')
+            ->select('tg.group_id', 'clubs.id as club_id', 'clubs.name as club_name', 'tg.points', 'tg.goals_for', 'tg.goals_against', 'tg.wins', 'tg.draws', 'tg.losses', 'tg.played')
             ->join('clubs', 'clubs.id', '=', 'tg.club_id')
             ->where('tg.competition_id', $competitionId)
             ->where('tg.instance_id', $this->instanceId())
             ->where('tg.season_id', $this->seasonId())
             ->orderBy('tg.group_id', 'ASC')
             ->orderBy('tg.points', 'DESC')
+            ->orderByRaw('(tg.goals_for - tg.goals_against) DESC')
+            ->orderBy('tg.goals_for', 'DESC')
+            ->orderBy('clubs.name', 'ASC')
             ->get();
     }
 
@@ -64,6 +70,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->select('tk.summary')
             ->where('instance_id', $this->instanceId())
             ->where('season_id', $this->seasonId())
+            ->where('competition_id', $competitionId)
             ->first();
 
         return $result->summary ?? '';

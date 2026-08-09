@@ -15,12 +15,18 @@ class CreateTournamentGroupsTable extends Migration
     {
         Schema::create('tournament_groups', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer(('instance_id'));
+            $table->integer('instance_id');
             $table->integer('competition_id');
             $table->integer('season_id');
             $table->integer('group_id');
             $table->integer('club_id');
             $table->integer('points')->default(0);
+            $table->integer('goals_for')->default(0);
+            $table->integer('goals_against')->default(0);
+            $table->integer('played')->default(0);
+            $table->integer('wins')->default(0);
+            $table->integer('draws')->default(0);
+            $table->integer('losses')->default(0);
         });
     }
 
