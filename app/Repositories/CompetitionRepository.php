@@ -68,14 +68,86 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
 
     public function getCompetitionKnockoutStageSummary(int $competitionId): string
     {
-        $result = DB::table('tournament_knockout AS tk')
-            ->select('tk.summary')
+        $knockout = DB::table('tournament_knockout')
             ->where('instance_id', $this->instanceId())
             ->where('season_id', $this->seasonId())
             ->where('competition_id', $competitionId)
             ->first();
 
-        return $result->summary ?? '';
+        if (!$knockout) {
+            return '';
+        }
+
+        $rounds = DB::table('tournament_knockout_rounds')
+            ->where('tournament_knockout_id', $knockout->id)
+            ->orderBy('round_number')
+            ->get();
+        $summary = [
+            'id' => $knockout->id,
+            'instance_id' => $knockout->instance_id,
+            'season_id' => $knockout->season_id,
+            'competition_id' => $knockout->competition_id,
+            'participant_count' => $knockout->participant_count,
+            'bracket_size' => $knockout->bracket_size,
+            'status' => $knockout->status,
+            'winner' => $knockout->winner_club_id,
+            'finals_match' => null,
+            'first_group' => ['num_rounds' => 0, 'rounds' => []],
+            'second_group' => ['num_rounds' => 0, 'rounds' => []],
+        ];
+
+        foreach (['first' => 'first_group', 'second' => 'second_group'] as $side => $key) {
+            $sideRounds = $rounds->where('bracket_side', $side);
+            $summary[$key]['num_rounds'] = $sideRounds->count();
+            foreach ($sideRounds as $round) {
+                $summary[$key]['rounds'][$round->round_number] = [
+                    'id' => $round->id,
+                    'name' => $round->name,
+                    'status' => $round->status,
+                    'pairs' => $this->knockoutRoundPairs((int) $round->id),
+                ];
+            }
+        }
+
+        $finalRound = $rounds->firstWhere('bracket_side', 'final');
+        if ($finalRound) {
+            $finalTie = DB::table('tournament_knockout_ties')->where('round_id', $finalRound->id)->first();
+            if ($finalTie) {
+                $summary['finals_match'] = DB::table('games')
+                    ->where('knockout_tie_id', $finalTie->id)
+                    ->orderBy('leg_number')->value('id');
+            }
+        }
+
+        return json_encode($summary, JSON_THROW_ON_ERROR);
+    }
+
+    private function knockoutRoundPairs(int $roundId): array
+    {
+        return DB::table('tournament_knockout_ties')
+            ->where('round_id', $roundId)
+            ->orderBy('position')
+            ->get()
+            ->map(function ($tie): array {
+                $games = DB::table('games')->where('knockout_tie_id', $tie->id)->orderBy('leg_number')->get();
+                $firstGame = $games->get(0);
+                $secondGame = $games->get(1);
+
+                return [
+                    'id' => $tie->id,
+                    'match1' => [
+                        'homeTeamId' => $firstGame->hometeam_id ?? $tie->home_club_id,
+                        'awayTeamId' => $firstGame->awayteam_id ?? $tie->away_club_id,
+                    ],
+                    'match2' => [
+                        'homeTeamId' => $secondGame->hometeam_id ?? $tie->away_club_id,
+                        'awayTeamId' => $secondGame->awayteam_id ?? $tie->home_club_id,
+                    ],
+                    'winner' => $tie->winner_club_id,
+                    'match1Id' => $firstGame->id ?? null,
+                    'match2Id' => $secondGame->id ?? null,
+                ];
+            })->all();
     }
 
     public function setCompetitionsSeasons(int $instanceId, int $seasonId): void
@@ -243,38 +315,6 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                 'seasonId' => $this->seasonId(),
                 'instanceId' => $this->instanceId(),
             ]
-        );
-    }
-
-    public function tournamentKnockoutStageByCompetitionId($instanceId, $seasonId, int $competitionId)
-    {
-        return DB::select(
-            "
-                SELECT * FROM tournament_knockout WHERE competition_id = :competitionId
-            ",
-            ['competitionId' => $competitionId]
-        )[0];
-    }
-
-    public function updateKnockoutSummary(array $summary, int $tournamentStructureId)
-    {
-        try {
-            DB::update(
-                "
-                UPDATE tournament_knockout SET summary = :summary WHERE id = :id
-            ",
-                ['summary' => json_encode($summary), 'id' => $tournamentStructureId]
-            );
-        } catch (\Exception $e) {
-
-        }
-    }
-
-    public function finishedKnockoutMatches(int $competitionId): array
-    {
-        return DB::select(
-            "SELECT * FROM games WHERE competition_id = :competitionId AND winner > 0",
-            ["competitionId" => $competitionId]
         );
     }
 

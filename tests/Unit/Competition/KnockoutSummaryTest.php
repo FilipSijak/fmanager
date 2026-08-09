@@ -3,7 +3,6 @@
 namespace Tests\Unit\Competition;
 
 use App\Repositories\GameRepository;
-use App\Services\CompetitionService\Competitions\KnockoutSummary;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;

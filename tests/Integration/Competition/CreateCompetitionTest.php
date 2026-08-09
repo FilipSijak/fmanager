@@ -364,13 +364,21 @@ class CreateCompetitionTest extends TestCase
                 'instance_id' => $instance->id,
                 'competition_id' => 11,
                 'season_id' => 1,
-                'summary' => json_encode(['competition' => 'other']),
+                'participant_count' => 8,
+                'bracket_size' => 8,
+                'status' => 'in_progress',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
             [
                 'instance_id' => $instance->id,
                 'competition_id' => $competition->id,
                 'season_id' => 1,
-                'summary' => json_encode(['competition' => 'requested']),
+                'participant_count' => 16,
+                'bracket_size' => 16,
+                'status' => 'in_progress',
+                'created_at' => now(),
+                'updated_at' => now(),
             ],
         ]);
 
@@ -380,6 +388,7 @@ class CreateCompetitionTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.competition', 'requested');
+            ->assertJsonPath('data.competition_id', $competition->id)
+            ->assertJsonPath('data.participant_count', 16);
     }
 }

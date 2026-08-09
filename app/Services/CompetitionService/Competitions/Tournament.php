@@ -33,7 +33,7 @@ class Tournament
 
         $calcNumRounds($halfSize);
 
-        $this->summary = [
+        $this->bracket = [
             "first_group"       => [
                 "num_rounds" => $rounds,
                 "rounds"     => [],
@@ -52,25 +52,27 @@ class Tournament
         ];
 
         for ($i = 1; $i <= $rounds; $i++) {
-            $this->summary["first_group"]["rounds"][$i]  = ["pairs" => []];
-            $this->summary["second_group"]["rounds"][$i] = ["pairs" => []];
+            $this->bracket["first_group"]["rounds"][$i]  = ["pairs" => []];
+            $this->bracket["second_group"]["rounds"][$i] = ["pairs" => []];
         }
 
         for ($i = 0, $k = $clubsCount - 1; $i < $halfSize; $i++, $k--) {
             if (!isset($clubs[$i])) {
                 dd($i);
             }
-            $pair = $this->makePairMatches($clubs[$i]->id, $clubs[$k]->id);
+            $firstClubId = is_object($clubs[$i]) ? (int) $clubs[$i]->id : (int) $clubs[$i];
+            $secondClubId = is_object($clubs[$k]) ? (int) $clubs[$k]->id : (int) $clubs[$k];
+            $pair = $this->makePairMatches($firstClubId, $secondClubId);
 
             // half of the pairs go into one group, the other half into a second group
             if ($i < $halfSize / 2) {
-                $this->summary["first_group"]["rounds"][1]["pairs"][] = $pair;
+                $this->bracket["first_group"]["rounds"][1]["pairs"][] = $pair;
             } else {
-                $this->summary["second_group"]["rounds"][1]["pairs"][] = $pair;
+                $this->bracket["second_group"]["rounds"][1]["pairs"][] = $pair;
             }
         }
 
-        return $this->summary;
+        return $this->bracket;
     }
 
     public function setTournamentFixtures($instanceId, $seasonId, array $schedule, int $competitionId, string $startDate)

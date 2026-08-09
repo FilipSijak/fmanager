@@ -28,7 +28,7 @@ class CreateCompetitionSeasonTable extends Migration
             $table->integer('draws')->default(0);
             $table->integer('losses')->default(0);
             $table->index(['instance_id', 'season_id', 'competition_id']);
-            $table->index(['instance_id', 'season_id', 'competition_id', 'group_id']);
+            $table->index(['instance_id', 'season_id', 'competition_id', 'group_id'], 'cs_group_lookup_idx');
             $table->index(['instance_id', 'season_id', 'club_id']);
         });
     }
