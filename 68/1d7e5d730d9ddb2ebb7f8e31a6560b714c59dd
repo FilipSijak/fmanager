@@ -1,0 +1,30 @@
+tests/Integration/Services/CompetitionService/CompetitionUpdaterTest.php
+  s_8e3e42f4a1ca30::t_3edc1964f83dc4 116-127
+  s_8e3e42f4a1ca30::t_dbee5c88f68990 74,107-113
+  s_8e3e42f4a1ca30::t_3f8e39d4c3f39d 114-115
+app/Repositories/CompetitionRepository.php
+  s_8e3e42f4a1ca30::t_2528eb29349c95 92,94,125,154
+  s_8e3e42f4a1ca30::t_48d4bf071d8b20 97-102,106-108,111-113,116-119,126-132,134-136,140-144,146-148,155-161,163-165,169-173,175-177
+app/Services/CompetitionService/Competitions/TournamentUpdater.php
+  s_8e3e42f4a1ca30::t_3edc1964f83dc4 62
+tests/Integration/Services/CompetitionService/LeagueUpdaterTest.php
+  s_8e3e42f4a1ca30::t_cb97efadbcc250 22-31,43-49,57-63
+app/Services/CompetitionService/Competitions/LeagueUpdater.php
+  s_8e3e42f4a1ca30::t_48d4bf071d8b20 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "681d7e5d730d9ddb2ebb7f8e31a6560b714c59dd",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
