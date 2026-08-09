@@ -1,0 +1,52 @@
+app/Models/Game.php
+  s_8e3e42f4a1ca30::t_569ae549f5d914 23-26
+  s_8e3e42f4a1ca30::t_bb90eaba961a93 14-20
+routes/api.php
+  s_8e3e42f4a1ca30::t_4f04a261f834bc 7,42-44
+  s_8e3e42f4a1ca30::t_17654c4c0aacef 45
+tests/Integration/Services/CompetitionService/KnockoutPersistenceTest.php
+  s_8e3e42f4a1ca30::t_08b0dbdecf10af 151
+  s_8e3e42f4a1ca30::t_aef76f3b63e7fe 90,96
+database/factories/GameFactory.php
+  s_8e3e42f4a1ca30::t_091f6a4e6fb555 37-39
+app/Services/InstanceService/InstanceService.php
+  s_8e3e42f4a1ca30::t_4f04a261f834bc 9,20,27-28,34,97-102
+database/migrations/2020_02_10_195043_create_games_table.php
+  s_8e3e42f4a1ca30::t_bb90eaba961a93 27-28
+tests/Integration/Services/GameService/GameCompletionTest.php
+  s_8e3e42f4a1ca30::t_0984e4dbfc9f64 41
+  s_8e3e42f4a1ca30::t_0e2eb5f88c2719 1-40,42-66,68-76
+  s_8e3e42f4a1ca30::t_17b2f81932a705 67
+app/Repositories/CompetitionRepository.php
+  s_8e3e42f4a1ca30::t_4d4e235e04a98a 161
+  s_8e3e42f4a1ca30::t_86fa6d7286d548 162-163,270
+tests/Integration/Services/CompetitionService/GroupToKnockoutTransitionTest.php
+  s_8e3e42f4a1ca30::t_08b0dbdecf10af 102
+  s_8e3e42f4a1ca30::t_aef76f3b63e7fe 67,79
+app/Services/GameService/GameService.php
+  s_8e3e42f4a1ca30::t_86fa6d7286d548 9,11-12,14-19,21-22,25,27-28
+app/Http/Controllers/GameController.php
+  s_8e3e42f4a1ca30::t_d7ebfcd20f2c51 1-41
+app/Services/CompetitionService/Competitions/TournamentUpdater.php
+  s_8e3e42f4a1ca30::t_86fa6d7286d548 42-44,46-50,52-71
+  s_8e3e42f4a1ca30::t_4f04a261f834bc 100
+app/Services/GameService/CompleteGameService.php
+  s_8e3e42f4a1ca30::t_d7ebfcd20f2c51 1-4,6-82,89-114
+  s_8e3e42f4a1ca30::t_aef76f3b63e7fe 5,83-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "ed9b4c017be0248c5e6fd8010c0017b83c18dd6f",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
