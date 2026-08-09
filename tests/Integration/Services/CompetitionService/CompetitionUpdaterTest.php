@@ -71,7 +71,7 @@ class CompetitionUpdaterTest extends TestCase
                     "match_start"     => "2023-08-22 00:00:00",
                     "winner"          => "1",
                     "home_team_goals" => 1,
-                    "away_team_goals" => 2,
+                    "away_team_goals" => 0,
                     "match_summary"   => null,
                 ],
             ],
@@ -104,7 +104,27 @@ class CompetitionUpdaterTest extends TestCase
             'tournament_groups',
             [
                 'club_id' => 17,
-                'points'  => 3,
+                'points' => 3,
+                'played' => 1,
+                'wins' => 1,
+                'draws' => 0,
+                'losses' => 0,
+                'goals_for' => 1,
+                'goals_against' => 0,
+            ]
+        );
+
+        $this->assertDatabaseHas(
+            'tournament_groups',
+            [
+                'club_id' => 19,
+                'points' => 0,
+                'played' => 1,
+                'wins' => 0,
+                'draws' => 0,
+                'losses' => 1,
+                'goals_for' => 0,
+                'goals_against' => 1,
             ]
         );
     }

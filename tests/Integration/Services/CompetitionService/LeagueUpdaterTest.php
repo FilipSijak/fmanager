@@ -19,9 +19,16 @@ class LeagueUpdaterTest extends TestCase
     public function it_can_update_table_points()
     {
         $games       = [];
-        $games[]     = Game::factory()->make(['winner' => 1, 'hometeam_id' => 1, 'awayteam_id' => 2])->toArray();
-        $games[]     = Game::factory()->make(['winner' => 2, 'hometeam_id' => 1, 'awayteam_id' => 2])->toArray();
-        $games[]     = Game::factory()->make(['winner' => 3, 'hometeam_id' => 1, 'awayteam_id' => 2])->toArray();
+        $gameContext = [
+            'instance_id' => 1,
+            'season_id' => 1,
+            'competition_id' => 1,
+            'hometeam_id' => 1,
+            'awayteam_id' => 2,
+        ];
+        $games[] = Game::factory()->make($gameContext + ['winner' => 1, 'home_team_goals' => 3, 'away_team_goals' => 1])->toArray();
+        $games[] = Game::factory()->make($gameContext + ['winner' => 2, 'home_team_goals' => 0, 'away_team_goals' => 2])->toArray();
+        $games[] = Game::factory()->make($gameContext + ['winner' => 3, 'home_team_goals' => 2, 'away_team_goals' => 2])->toArray();
         $competition = Competition::factory()->make(['id' => 1]);
 
         $competition->seasons()->attach(1, ['club_id' => 1, 'instance_id' => 1]);
@@ -33,7 +40,13 @@ class LeagueUpdaterTest extends TestCase
             'competition_season',
             [
                 'club_id' => 1,
-                'points'  => 4,
+                'points' => 4,
+                'played' => 3,
+                'wins' => 1,
+                'draws' => 1,
+                'losses' => 1,
+                'goals_for' => 5,
+                'goals_against' => 5,
             ]
         );
 
@@ -41,7 +54,13 @@ class LeagueUpdaterTest extends TestCase
             'competition_season',
             [
                 'club_id' => 2,
-                'points'  => 4,
+                'points' => 4,
+                'played' => 3,
+                'wins' => 1,
+                'draws' => 1,
+                'losses' => 1,
+                'goals_for' => 5,
+                'goals_against' => 5,
             ]
         );
     }

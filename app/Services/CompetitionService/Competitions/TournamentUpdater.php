@@ -58,34 +58,8 @@ class TournamentUpdater
             $dataSource = new CompetitionDataSource();
             $dataSource->storeTournamentKnockoutSchedule($competitionId, $this->season->id, $schedule);
         } else {
-            // foreach match, take winner/draw and find club/clubs in the tournament_groups table
-            // update each winner/draw with points
             foreach ($games as $game) {
-                // DRAW
-                if ($game["winner"] == 3) {
-                    // update both teams with a point
-                    $this->competitionRepository->updateTournamentGroupsPoints(
-                        $game["competition_id"],
-                        $game["hometeam_id"],
-                        1
-                    );
-
-                    $this->competitionRepository->updateTournamentGroupsPoints(
-                        $game["competition_id"],
-                        $game["awayteam_id"],
-                        1
-                    );
-                } else {
-                    // update points for the winning team
-
-                    $winningTeamId = $game["winner"] == 1 ? $game["hometeam_id"] : $game["awayteam_id"];
-
-                    $this->competitionRepository->updateTournamentGroupsPoints(
-                        $game["competition_id"],
-                        $winningTeamId,
-                        3
-                    );
-                }
+                $this->competitionRepository->updateCompetitionTable($game, tournamentGroup: true);
             }
         }
     }

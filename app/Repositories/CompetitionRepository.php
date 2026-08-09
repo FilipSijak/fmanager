@@ -89,65 +89,96 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                    ->get();
     }
 
-    public function updatePointsTable(array $game): void
+    public function updateCompetitionTable(array $game, bool $tournamentGroup = false): void
     {
+        $table = $tournamentGroup ? 'tournament_groups' : 'competition_season';
         $homeTeamPoints = 0;
         $awayTeamPoints = 0;
+        $homeTeamWins = 0;
+        $awayTeamWins = 0;
+        $homeTeamDraws = 0;
+        $awayTeamDraws = 0;
+        $homeTeamLosses = 0;
+        $awayTeamLosses = 0;
 
         switch ($game['winner']) {
             case 1:
-                $homeTeamPoints += 3;
+                $homeTeamPoints = 3;
+                $homeTeamWins = 1;
+                $awayTeamLosses = 1;
                 break;
             case 2:
-                $awayTeamPoints += 3;
+                $awayTeamPoints = 3;
+                $awayTeamWins = 1;
+                $homeTeamLosses = 1;
                 break;
             case 3:
-                $homeTeamPoints += 1;
-                $awayTeamPoints += 1;
+                $homeTeamPoints = 1;
+                $awayTeamPoints = 1;
+                $homeTeamDraws = 1;
+                $awayTeamDraws = 1;
                 break;
         }
 
         DB::update(
             "
-                UPDATE competition_season
-                SET points = coalesce(points, 0) + :points
+                UPDATE {$table}
+                SET points = coalesce(points, 0) + :points,
+                    played = played + 1,
+                    wins = wins + :wins,
+                    draws = draws + :draws,
+                    losses = losses + :losses,
+                    goals_for = goals_for + :goalsFor,
+                    goals_against = goals_against + :goalsAgainst
                 WHERE club_id = :clubId
+                AND competition_id = :competitionId
+                AND season_id = :seasonId
+                AND instance_id = :instanceId
             ",
             [
                 "points" => $homeTeamPoints,
+                "wins" => $homeTeamWins,
+                "draws" => $homeTeamDraws,
+                "losses" => $homeTeamLosses,
+                "goalsFor" => $game['home_team_goals'],
+                "goalsAgainst" => $game['away_team_goals'],
                 "clubId" => $game['hometeam_id'],
+                "competitionId" => $game['competition_id'],
+                "seasonId" => $game['season_id'],
+                "instanceId" => $game['instance_id'],
             ]
         );
 
         DB::update(
             "
-                UPDATE competition_season
-                SET points = coalesce(points, 0) + :points
+                UPDATE {$table}
+                SET points = coalesce(points, 0) + :points,
+                    played = played + 1,
+                    wins = wins + :wins,
+                    draws = draws + :draws,
+                    losses = losses + :losses,
+                    goals_for = goals_for + :goalsFor,
+                    goals_against = goals_against + :goalsAgainst
                 WHERE club_id = :clubId
+                AND competition_id = :competitionId
+                AND season_id = :seasonId
+                AND instance_id = :instanceId
             ",
             [
                 "points" => $awayTeamPoints,
+                "wins" => $awayTeamWins,
+                "draws" => $awayTeamDraws,
+                "losses" => $awayTeamLosses,
+                "goalsFor" => $game['away_team_goals'],
+                "goalsAgainst" => $game['home_team_goals'],
                 "clubId" => $game['awayteam_id'],
+                "competitionId" => $game['competition_id'],
+                "seasonId" => $game['season_id'],
+                "instanceId" => $game['instance_id'],
             ]
         );
     }
 
-    public function updateTournamentGroupsPoints(int $competitionId, int $homeTeamId, int $points)
-    {
-        DB::update(
-            "
-                UPDATE tournament_groups
-                SET `points` = `points` + :points
-                WHERE competition_id = :competitionId
-                AND club_id = :teamId
-            ",
-            [
-                "points"        => $points,
-                "competitionId" => $competitionId,
-                "teamId"        => $homeTeamId,
-            ]
-        );
-    }
 
     /**
      * Checks if all the games from the group stage have been played

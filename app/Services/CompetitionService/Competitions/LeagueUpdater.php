@@ -15,7 +15,7 @@ class LeagueUpdater
     public function updatePointsTable(array $games)
     {
         foreach ($games as $game) {
-            $this->competitionRepository->updatePointsTable($game);
+            $this->competitionRepository->updateCompetitionTable($game);
         }
     }
 
