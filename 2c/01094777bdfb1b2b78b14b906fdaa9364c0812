@@ -1,0 +1,45 @@
+app/Http/Controllers/CompetitionController.php
+  s_8e552416b71c34::t_36a69538fde95d 41-45
+  s_2d3e9b8f6f5bf6::t_80a260c5f9bcc9 55-67
+  s_8e552416b71c34::t_bb752c0f0296e6 50,106-122
+  s_8e552416b71c34::t_5e4d8964cffa6a 105
+  s_8e552416b71c34::t_1b5bfa7efd212a 47-49
+  s_2d3e9b8f6f5bf6::t_331480eff376f3 7
+app/Repositories/CompetitionRepository.php
+  s_8e552416b71c34::t_82947ac571ea57 44-47
+  s_8e552416b71c34::t_fd12d2c6f6b9dd 73
+  s_2d3e9b8f6f5bf6::t_548ef02ad6e1eb 54,61-63
+  s_2d3e9b8f6f5bf6::t_c93496947d09e5 39
+tests/Integration/Competition/CreateCompetitionTest.php
+  s_2d3e9b8f6f5bf6::t_3453348991f4e1 71-177,182-211
+  s_8e552416b71c34::t_6fbf77e75a0f23 5
+  s_2d3e9b8f6f5bf6::t_57e63b425a55a5 178-181
+  s_2d3e9b8f6f5bf6::t_3be2d97fbd6688 212-337
+  s_8e552416b71c34::t_fb559009ca7b80 70,338-384
+  s_8e552416b71c34::t_34064e363ea55c 69
+  s_8e552416b71c34::t_e911e1c6d2d208 8-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "2c01094777bdfb1b2b78b14b906fdaa9364c0812",
+  "prompts": {},
+  "sessions": {
+    "s_2d3e9b8f6f5bf6": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f378b-0137-7802-8e5a-a72699bdf0ab",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    },
+    "s_8e552416b71c34": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f3767-2aa7-75c0-b98d-fde91a89173c",
+        "model": "gpt-5.5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
