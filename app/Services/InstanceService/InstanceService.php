@@ -7,7 +7,7 @@ use App\Models\Instance;
 use App\Models\Season;
 use App\Repositories\CompetitionRepository;
 use App\Services\GameService\CompleteGameService;
-use App\Services\GameService\GameService;
+use App\Services\GameService\MatchSimulationEngine;
 use App\Services\PersonService\PersonService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +16,7 @@ class InstanceService implements IInstanceService
 {
     private CompetitionRepository  $competitionRepository;
     private Season                 $season;
-    private GameService            $gameService;
+    private MatchSimulationEngine  $matchSimulationEngine;
     private CompleteGameService    $completeGameService;
     private CreateInstance         $createInstance;
     private ?Instance $instance = null;
@@ -24,13 +24,13 @@ class InstanceService implements IInstanceService
     public function __construct(
         CompetitionRepository $competitionRepository,
         CreateInstance $createInstance,
-        GameService $gameService,
+        MatchSimulationEngine $matchSimulationEngine,
         CompleteGameService $completeGameService
 
     )
     {
         $this->competitionRepository = $competitionRepository;
-        $this->gameService = $gameService;
+        $this->matchSimulationEngine = $matchSimulationEngine;
         $this->completeGameService = $completeGameService;
         $this->createInstance = $createInstance;
     }
@@ -94,11 +94,12 @@ class InstanceService implements IInstanceService
         $games = $this->competitionRepository->getScheduledGames($instance);
 
         foreach ($games as $game) {
-            $result = $this->gameService->simulateGameResult();
+            $result = $this->matchSimulationEngine->simulate($game);
             $this->completeGameService->complete(
                 $game->id,
-                $result['home_team_goals'],
-                $result['away_team_goals']
+                $result->homeGoals,
+                $result->awayGoals,
+                $result->summary
             );
         }
     }

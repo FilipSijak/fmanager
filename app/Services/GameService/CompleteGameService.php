@@ -20,9 +20,9 @@ class CompleteGameService
         private readonly GameContext $gameContext
     ) {}
 
-    public function complete(int $gameId, int $homeGoals, int $awayGoals): Game
+    public function complete(int $gameId, int $homeGoals, int $awayGoals, ?array $matchSummary = null): Game
     {
-        return DB::transaction(function () use ($gameId, $homeGoals, $awayGoals): Game {
+        return DB::transaction(function () use ($gameId, $homeGoals, $awayGoals, $matchSummary): Game {
             $game = $this->findGame($gameId);
 
             if ($game->processed_at !== null) {
@@ -36,6 +36,7 @@ class CompleteGameService
             $game->home_team_goals = $homeGoals;
             $game->away_team_goals = $awayGoals;
             $game->winner = $homeGoals > $awayGoals ? 1 : ($awayGoals > $homeGoals ? 2 : 3);
+            $game->match_summary = $matchSummary === null ? null : json_encode($matchSummary, JSON_THROW_ON_ERROR);
             $game->status = Game::STATUS_COMPLETED;
             $game->save();
 
