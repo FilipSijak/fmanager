@@ -1,0 +1,35 @@
+app/Services/CompetitionService/DataLayer/CompetitionDataSource.php
+  s_8e3e42f4a1ca30::t_2cbdc8bc0b372a 94,96,99-107,110
+tests/Integration/Competition/CreateCompetitionTest.php
+  s_8e3e42f4a1ca30::t_15d36a8624058d 251
+tests/Integration/Instance/CreateInstanceTest.php
+  s_8e3e42f4a1ca30::t_15d36a8624058d 87
+database/migrations/2020_05_07_200938_create_competition_season_table.php
+  s_8e3e42f4a1ca30::t_15d36a8624058d 22
+  s_8e3e42f4a1ca30::t_d5ce42167f2de1 31
+tests/Integration/Services/CompetitionService/CompetitionUpdaterTest.php
+  s_8e3e42f4a1ca30::t_2595c7c2612a5b 17,85-86,88-91,105,119
+app/Repositories/CompetitionRepository.php
+  s_8e3e42f4a1ca30::t_1701a33352d9a0 44,60,193-198,217-218,223,225-231,233-239,241-245
+  s_8e3e42f4a1ca30::t_15d36a8624058d 54,94,126,155,232
+app/Services/CompetitionService/Competitions/TournamentUpdater.php
+  s_8e3e42f4a1ca30::t_4aec716b08d07f 35-37,39-41,43-45,47-49,51-63,65-70
+tests/Integration/Services/CompetitionService/TournamentTest.php
+  s_8e3e42f4a1ca30::t_15d36a8624058d 45,49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "90e562a72a3363455b7a7da5d2adcd8861cbf83c",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
