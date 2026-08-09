@@ -32,12 +32,9 @@ class CompetitionUpdater
             if ($competition->type == 'league') {
                 $this->leagueUpdater->updatePointsTable($games);
             } elseif ($competition->type == 'tournament') {
-                if ($competition->groups) {
+                if ((int) $competition->groups === 1) {
                     $this->tournamentUpdater->updatePointsTable($games);
-                } else {
-                    // need to see how do I get tournament summary
-                    //$knockoutGames = json_decode(json_encode($games), true);
-
+                } elseif ((int) $competition->groups === 0) {
                     $this->tournamentUpdater->updateTournamentSummary($games);
                 }
             }

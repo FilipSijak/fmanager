@@ -23,42 +23,47 @@ class TournamentUpdater
     public function setInstanceId(int $instanceId): void
     {
         $this->instanceId = $instanceId;
+        $this->competitionRepository->setInstanceId($instanceId);
     }
 
     public function setSeason(Season $season): void
     {
         $this->season = $season;
+        $this->competitionRepository->setSeasonId($season->id);
     }
 
     public function updatePointsTable(array $games): void
     {
-        foreach ($games as $game) {
-            $this->competitionRepository->updateCompetitionTable($game);
-        }
+        DB::transaction(function () use ($games): void {
+            foreach ($games as $game) {
+                $this->competitionRepository->updateCompetitionTable($game);
+            }
 
-        if (!$this->competitionRepository->tournamentGroupsFinished($games[0])) {
-            return;
-        }
+            if (!$this->competitionRepository->tournamentGroupsFinished($games[0])) {
+                return;
+            }
 
-        $competitionId = $games[0]['competition_id'];
-        $knockoutClubs = collect($this->competitionRepository->topClubsByTournamentGroup($competitionId))
-            ->pluck('club_id')->map(fn ($clubId) => (int) $clubId)->all();
-        $tournament = new Tournament();
-        $schedule = $tournament->createTournament($knockoutClubs, $this->instanceId, $this->season->id);
-        $schedule = $tournament->setTournamentFixtures(
-            $this->instanceId,
-            $this->season->id,
-            $schedule,
-            $competitionId,
-            $this->season->start_date
-        );
+            $competitionId = $games[0]['competition_id'];
+            $knockoutClubs = collect($this->competitionRepository->topClubsByTournamentGroup($competitionId))
+                ->pluck('club_id')->map(fn ($clubId) => (int) $clubId)->all();
+            $tournament = new Tournament();
+            $schedule = $tournament->createTournament($knockoutClubs, $this->instanceId, $this->season->id);
+            $schedule = $tournament->setTournamentFixtures(
+                $this->instanceId,
+                $this->season->id,
+                $schedule,
+                $competitionId,
+                $this->season->start_date
+            );
 
-        (new CompetitionDataSource())->storeTournamentKnockoutSchedule(
-            $this->instanceId,
-            $competitionId,
-            $this->season->id,
-            $schedule
-        );
+            (new CompetitionDataSource())->storeTournamentKnockoutSchedule(
+                $this->instanceId,
+                $competitionId,
+                $this->season->id,
+                $schedule
+            );
+            $this->competitionRepository->resetTournamentGroupRule($competitionId);
+        });
     }
 
     public function updateTournamentSummary(array $games): void

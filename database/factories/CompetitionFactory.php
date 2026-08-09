@@ -23,7 +23,7 @@ class CompetitionFactory extends Factory
             'country_code' => $this->faker->countryCode,
             'rank' => random_int(1, 20),
             'type' => 'league',
-            'groups' => 0,
+            'groups' => null,
             'clubs_number' => 20
         ];
     }

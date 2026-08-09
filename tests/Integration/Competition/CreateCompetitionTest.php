@@ -28,7 +28,7 @@ class CreateCompetitionTest extends TestCase
             'name' => 'Premier League',
             'country_code' => 'GB',
             'type' => 'league',
-            'groups' => 0,
+            'groups' => null,
         ]);
 
         $response = $this
@@ -41,7 +41,7 @@ class CreateCompetitionTest extends TestCase
             ->assertJsonPath('data.name', 'Premier League')
             ->assertJsonPath('data.country_code', 'GB')
             ->assertJsonPath('data.type', 'league')
-            ->assertJsonPath('data.groups', 0);
+            ->assertJsonPath('data.groups', null);
     }
 
     #[Test]

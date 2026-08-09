@@ -270,16 +270,11 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->exists();
     }
 
-    public function resetTournamentGroupRule(int $competitionId)
+    public function resetTournamentGroupRule(int $competitionId): void
     {
-        DB::update(
-            "
-                    UPDATE competitions
-                    SET groups = 0
-                    WHERE id = :competitionId
-                ",
-            ["competitionId" => $competitionId]
-        );
+        DB::table('competitions')
+            ->where('id', $competitionId)
+            ->update(['groups' => 0]);
     }
 
     public function topClubsByTournamentGroup(int $competitionId): array
