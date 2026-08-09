@@ -1,0 +1,27 @@
+app/Services/GameService/MatchSimulationResult.php
+  s_8e3e42f4a1ca30::t_001b36c48b7881 1-12
+tests/Unit/Services/GameService/MatchSimulationEngineTest.php
+  s_8e3e42f4a1ca30::t_08bd6cb3bf50bb 1-45
+app/Services/GameService/MatchSimulationEngine.php
+  s_8e3e42f4a1ca30::t_001b36c48b7881 1-35
+app/Services/GameService/CompleteGameService.php
+  s_8e3e42f4a1ca30::t_001b36c48b7881 23,25,39
+app/Services/InstanceService/InstanceService.php
+  s_8e3e42f4a1ca30::t_001b36c48b7881 10,19,27,33,97,100-102
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "32e1bd976a0dd48167aa51c7be2c60d75f60db2b",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
