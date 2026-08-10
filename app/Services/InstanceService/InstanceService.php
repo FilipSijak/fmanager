@@ -3,22 +3,27 @@
 namespace App\Services\InstanceService;
 
 use App\Events\NextDay;
+use App\Events\SeasonCompleted;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Repositories\CompetitionRepository;
 use App\Services\GameService\CompleteGameService;
 use App\Services\GameService\MatchSimulationEngine;
-use App\Services\PersonService\PersonService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class InstanceService implements IInstanceService
 {
-    private CompetitionRepository  $competitionRepository;
-    private Season                 $season;
-    private MatchSimulationEngine  $matchSimulationEngine;
-    private CompleteGameService    $completeGameService;
-    private CreateInstance         $createInstance;
+    private CompetitionRepository $competitionRepository;
+
+    private Season $season;
+
+    private MatchSimulationEngine $matchSimulationEngine;
+
+    private CompleteGameService $completeGameService;
+
+    private CreateInstance $createInstance;
+
     private ?Instance $instance = null;
 
     public function __construct(
@@ -27,8 +32,7 @@ class InstanceService implements IInstanceService
         MatchSimulationEngine $matchSimulationEngine,
         CompleteGameService $completeGameService
 
-    )
-    {
+    ) {
         $this->competitionRepository = $competitionRepository;
         $this->matchSimulationEngine = $matchSimulationEngine;
         $this->completeGameService = $completeGameService;
@@ -44,7 +48,7 @@ class InstanceService implements IInstanceService
         return $this->instance;
     }
 
-    public function createNewInstance(): bool | Instance
+    public function createNewInstance(): bool|Instance
     {
         DB::beginTransaction();
 
@@ -61,7 +65,7 @@ class InstanceService implements IInstanceService
 
             DB::rollBack();
 
-           return false;
+            return false;
         }
     }
 
@@ -72,6 +76,11 @@ class InstanceService implements IInstanceService
         $currentGameDate = Carbon::parse($instance->instance_date);
 
         event(new NextDay($instance));
+
+        if ($currentGameDate->month === 6 && $currentGameDate->day === 15) {
+            event(new SeasonCompleted($instance));
+        }
+
         // update player training progress, morale
 
         // update finances

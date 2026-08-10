@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Events\NextDay;
+use App\Events\SeasonCompleted;
 use App\Events\Transfers\TransferEvent;
+use App\Listeners\CompleteSeason;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\ProcessTransfers;
@@ -23,15 +25,18 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         NextDay::class => [
-            ProcessTransfers::class
+            ProcessTransfers::class,
+        ],
+        SeasonCompleted::class => [
+            CompleteSeason::class,
         ],
         TransferEvent::class => [
             CreateTransferNews::class,
-        ]
+        ],
     ];
 
     protected $subscribe = [
-        NexDayTransfersSubscriber::class
+        NexDayTransfersSubscriber::class,
     ];
 
     /**
