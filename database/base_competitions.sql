@@ -6,4 +6,5 @@ VALUES (1, 'Premier League', 'GBR', 9700, 'league', NULL, 20),
 (5, 'Serie A', 'ITA', 9100, 'league', NULL, 20),
 (6, 'Champions League', 'EU', 9900, 'tournament', 1, 32),
 (7, 'Uefa Cup', 'EU', 8400, 'tournament', 0, 32),
-(8, 'Championship', 'GBR', 7200, 'league', NULL, 20);
+(8, 'Championship', 'GBR', 7200, 'league', NULL, 20),
+(9, 'Intertoto Cup', 'EU', 7000, 'tournament', 0, 32);

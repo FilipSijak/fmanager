@@ -9,6 +9,7 @@ use App\Models\Competition;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\GameRepository;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
+use App\Services\CompetitionService\Progression\CompetitionProgressionCalculator;
 use App\Support\GameContext;
 use Illuminate\Http\JsonResponse;
 
@@ -16,11 +17,11 @@ class CompetitionController extends CoreController
 {
     public function __construct(
         private readonly GameContext $gameContext,
-        private readonly  CompetitionRepository $competitionRepository,
+        private readonly CompetitionRepository $competitionRepository,
         private readonly GameRepository $gameRepository,
-        private readonly KnockoutSummaryRoundsData $knockoutSummaryRoundsData
-    ) {
-    }
+        private readonly KnockoutSummaryRoundsData $knockoutSummaryRoundsData,
+        private readonly CompetitionProgressionCalculator $progressionCalculator
+    ) {}
 
     public function show(int $competitionId): JsonResponse
     {
@@ -34,6 +35,22 @@ class CompetitionController extends CoreController
             (new CompetitionResource($competition))->toArray(request()),
             ResponseHelper::RESPONSE_SUCCESS_CODE
         );
+    }
+
+    public function movementPreview(int $competitionId): JsonResponse
+    {
+        $competition = Competition::query()->forInstance($this->gameContext->instanceId())->findOrFail($competitionId);
+
+        return ResponseHelper::success($this->progressionCalculator
+            ->previewForCompetition($competition, $this->gameContext->seasonId(), ['promotion', 'relegation'])->all());
+    }
+
+    public function qualificationPreview(int $competitionId): JsonResponse
+    {
+        $competition = Competition::query()->forInstance($this->gameContext->instanceId())->findOrFail($competitionId);
+
+        return ResponseHelper::success($this->progressionCalculator
+            ->previewForCompetition($competition, $this->gameContext->seasonId(), ['continental'], true)->all());
     }
 
     public function competitionTable(int $competitionId): JsonResponse

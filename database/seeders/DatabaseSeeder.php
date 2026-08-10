@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-/*use App\GameEngine\GameCreation\CreateGame;*/
+/* use App\GameEngine\GameCreation\CreateGame; */
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -32,12 +32,14 @@ class DatabaseSeeder extends Seeder
         $path = 'database/competition_hierarchy.sql';
         DB::unprepared(file_get_contents($path));
 
-/*        if (env('APP_ENV') == 'local') {
-            $gameInstance = new CreateGame(
-                1
-            );
+        (new CompetitionProgressionRulesSeeder)->run();
 
-            $gameInstance->startNewGame();
-        }*/
+        /*        if (env('APP_ENV') == 'local') {
+                    $gameInstance = new CreateGame(
+                        1
+                    );
+
+                    $gameInstance->startNewGame();
+                }*/
     }
 }
