@@ -18,15 +18,22 @@ use Carbon\Carbon;
 
 class CreateInstance
 {
-    private Instance              $instance;
-    private PlayerRepository      $playerRepository;
-    private CompetitionService    $competitionService;
-    private Season                $season;
-    private PersonService         $personService;
+    private Instance $instance;
+
+    private PlayerRepository $playerRepository;
+
+    private CompetitionService $competitionService;
+
+    private Season $season;
+
+    private PersonService $personService;
+
     private CompetitionRepository $competitionRepository;
-    private PlayerPotential       $playerPotentialGenerator;
+
+    private PlayerPotential $playerPotentialGenerator;
 
     const FREE_AGENTS_COUNT = 200;
+
     const FREE_AGENTS_POTENTIAL_LIMIT = 150;
 
     public function __construct(
@@ -35,18 +42,17 @@ class CreateInstance
         CompetitionRepository $competitionRepository,
         PlayerPotential $playerPotential,
         PlayerRepository $playerRepository,
-    )
-    {
+    ) {
         $this->competitionService = $competitionService;
-        $this->personService      = $personService;
+        $this->personService = $personService;
         $this->competitionRepository = $competitionRepository;
         $this->playerPotentialGenerator = $playerPotential;
-        $this->playerRepository    = $playerRepository;
+        $this->playerRepository = $playerRepository;
     }
 
     public function instanceInit(): Instance
     {
-        $init = new InitialSeed();
+        $init = new InitialSeed;
         // @todo create user and select club
         $this->storeInstance(1, 1, 1, 1);
         $init->seedFromBaseTables($this->instance->id);
@@ -61,13 +67,13 @@ class CreateInstance
 
     protected function storeInstance(int $userId, int $managerId, int $seasonId, int $clubId): Instance
     {
-        $this->instance = new Instance();
+        $this->instance = new Instance;
 
-        $this->instance->user_id    = $userId;
+        $this->instance->user_id = $userId;
         $this->instance->manager_id = $managerId;
         $this->instance->season_id = $seasonId;
-        $this->instance->club_id    = $clubId;
-        $this->instance->instance_date = new Carbon('2023-08-20');
+        $this->instance->club_id = $clubId;
+        $this->instance->instance_date = $this->initialInstanceDate();
         $this->instance->instance_hash = uniqid();
 
         $this->instance->save();
@@ -77,17 +83,27 @@ class CreateInstance
 
     public function startFirstSeason(): Season
     {
-        $this->season         = new Season();
-        $firstSeasonStartDate = Carbon::create((int)date("Y"), 8, 15);
-        $firstSeasonEndDate   = $firstSeasonStartDate->copy()->add('1 year');
+        $this->season = new Season;
+        $firstSeasonStartDate = $this->firstSeasonStartDate();
+        $firstSeasonEndDate = $firstSeasonStartDate->copy()->add('1 year');
 
         $this->season->instance_id = $this->instance->id;
-        $this->season->start_date  = $firstSeasonStartDate;
-        $this->season->end_date    = $firstSeasonEndDate;
+        $this->season->start_date = $firstSeasonStartDate;
+        $this->season->end_date = $firstSeasonEndDate;
 
         $this->season->save();
 
         return $this->season;
+    }
+
+    private function initialInstanceDate(): Carbon
+    {
+        return Carbon::create((int) date('Y'), 7, 1)->startOfDay();
+    }
+
+    private function firstSeasonStartDate(): Carbon
+    {
+        return Carbon::create((int) date('Y'), 8, 15)->startOfDay();
     }
 
     public function mapInitialCompetitionsToSeasonsWithClubs()
@@ -95,47 +111,63 @@ class CreateInstance
         $this->competitionRepository->setCompetitionsSeasons($this->instance->id, $this->season->id);
     }
 
-    public function setCompetitionsForTheFirstSeason()
+    public function setCompetitionsForTheFirstSeason(): void
     {
-        $competitions = Competition::all()->where('instance_id', $this->instance->id);
+        $competitions = Competition::query()
+            ->where('instance_id', $this->instance->id)
+            ->orderBy('id')
+            ->get();
 
         foreach ($competitions as $competition) {
-            if ($competition->type == 'league' || ($competition->type == 'tournament' && $competition->groups)) {
+            $clubIds = $this->competitionRepository->clubIdsForCompetitionSeason(
+                $competition->id,
+                $this->season->id,
+                $this->instance->id
+            );
 
-                if ($competition->type == 'league') {
-                    $clubIds = $this->competitionRepository->clubIdsForCompetitionSeason(
-                        $competition->id,
-                        $this->season->id,
-                        $this->instance->id
-                    );
-
-                    if (count($clubIds) === 0) {
-                        continue;
-                    }
-
-                    $this->competitionService->makeLeague(
-                        $clubIds,
-                        $competition->id,
-                        $this->season->id,
-                        $this->instance->id
-                    );
-
-                } else {
-                    // @TODO
-                    // need clubs for tournaments
-                    $clubs = Club::all()->where('id', '>', 16);
-
-                    $this->competitionService->makeTournamentGroupStage(
-                        $clubs, $competition->id, $this->season->id, $this->instance->id)
-                    ;
-                }
-            } elseif ($competition->type == 'tournament' && !$competition->groups) {
-                $clubs = Club::all()->take(16);
-
-                if (count($clubs)) {
-                    $this->competitionService->makeTournament($clubs, $competition->id, $this->season->id, $this->instance->id);
-                }
+            if ($clubIds === []) {
+                continue;
             }
+
+            if ($competition->type === 'league') {
+                $this->competitionService->makeLeague(
+                    $clubIds,
+                    $competition->id,
+                    $this->season->id,
+                    $this->instance->id
+                );
+
+                continue;
+            }
+
+            if ($competition->type !== 'tournament') {
+                continue;
+            }
+
+            $clubs = Club::query()
+                ->forInstance($this->instance->id)
+                ->whereIn('id', $clubIds)
+                ->get()
+                ->sortBy(fn (Club $club): int => array_search($club->id, $clubIds, true))
+                ->values();
+
+            if ((int) $competition->groups === 1) {
+                $this->competitionService->makeTournamentGroupStage(
+                    $clubs,
+                    $competition->id,
+                    $this->season->id,
+                    $this->instance->id
+                );
+
+                continue;
+            }
+
+            $this->competitionService->makeTournament(
+                $clubs,
+                $competition->id,
+                $this->season->id,
+                $this->instance->id
+            );
         }
     }
 
@@ -147,7 +179,7 @@ class CreateInstance
             $academyRank = $club->rank_academy;
 
             $playerListWithInitialPotential = $this->playerPotentialGenerator->getPlayerPotentialAndInitialPosition($academyRank);
-            $generatedPlayers               = [];
+            $generatedPlayers = [];
 
             foreach ($playerListWithInitialPotential as $playerPotential) {
                 $player = $this->personService->createPerson(

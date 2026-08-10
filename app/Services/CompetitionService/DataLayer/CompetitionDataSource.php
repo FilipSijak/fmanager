@@ -66,6 +66,77 @@ class CompetitionDataSource
             ->get()->map(fn ($row) => (array) $row)->all();
 
         DB::table('competition_season')->insert($rows);
+        $this->storeInitialContinentalCompetitionClubs($instanceId, $seasonId);
+    }
+
+    private function storeInitialContinentalCompetitionClubs(int $instanceId, int $seasonId): void
+    {
+        $majorLeagueIds = DB::table('competition_progression_rules')
+            ->where('progression_type', 'continental')
+            ->where('active', true)
+            ->distinct()
+            ->orderBy('source_base_competition_id')
+            ->pluck('source_base_competition_id');
+
+        $clubsByCountry = DB::table('clubs AS club')
+            ->join('base_clubs AS base_club', 'base_club.id', '=', 'club.base_club_id')
+            ->where('club.instance_id', $instanceId)
+            ->whereIn('base_club.competition_id', $majorLeagueIds)
+            ->select('club.id', 'club.country_code', 'club.rank', 'club.base_club_id')
+            ->orderBy('club.country_code')
+            ->orderByDesc('club.rank')
+            ->orderBy('club.base_club_id')
+            ->get()
+            ->groupBy('country_code');
+
+        $continentalCompetitions = DB::table('competitions')
+            ->where('instance_id', $instanceId)
+            ->where('competition_scope', 'continental')
+            ->orderBy('continental_tier')
+            ->orderBy('id')
+            ->get();
+
+        $countryOffsets = $clubsByCountry->mapWithKeys(fn ($clubs, $country): array => [$country => 0])->all();
+
+        foreach ($continentalCompetitions as $competition) {
+            $selected = [];
+
+            while (count($selected) < (int) $competition->clubs_number) {
+                $clubsAddedThisPass = 0;
+
+                foreach ($clubsByCountry as $country => $clubs) {
+                    if (count($selected) === (int) $competition->clubs_number) {
+                        break;
+                    }
+
+                    $offset = $countryOffsets[$country];
+                    if (! isset($clubs[$offset])) {
+                        continue;
+                    }
+
+                    $selected[] = (int) $clubs[$offset]->id;
+                    $countryOffsets[$country]++;
+                    $clubsAddedThisPass++;
+                }
+
+                if ($clubsAddedThisPass === 0) {
+                    throw new \UnexpectedValueException(
+                        "Not enough ranked major-league clubs to populate {$competition->name}."
+                    );
+                }
+            }
+
+            DB::table('competition_season')->insert(array_map(
+                fn (int $clubId): array => [
+                    'instance_id' => $instanceId,
+                    'competition_id' => (int) $competition->id,
+                    'season_id' => $seasonId,
+                    'club_id' => $clubId,
+                    'groups_active' => (int) $competition->groups === 1,
+                ],
+                $selected
+            ));
+        }
     }
 
     public function storeTournamentKnockoutSchedule(
