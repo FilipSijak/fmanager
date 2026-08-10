@@ -1,0 +1,36 @@
+tests/Integration/Services/CompetitionService/Progression/SeasonProgressionServiceTest.php
+  s_d6a527b03c4b5b::t_996cc21ef1d99e 10,78-85,87-123
+  s_d6a527b03c4b5b::t_e8bc18333f11a3 86
+  s_d6a527b03c4b5b::t_95d0839b0bd494 124-125
+app/Services/CompetitionService/Progression/SeasonProgressionService.php
+  s_d6a527b03c4b5b::t_e8bc18333f11a3 32-43
+app/Repositories/CompetitionRepository.php
+  s_d6a527b03c4b5b::t_03199c4e3c5575 5,8,161-168,171,184-206,208-227,234-264
+  s_d6a527b03c4b5b::t_7f67e7a74bd117 12,169-170
+  s_d6a527b03c4b5b::t_a4c9c3a6e75d35 207,228-233
+  s_d6a527b03c4b5b::t_ed28901d46f0b0 172-183
+  s_d6a527b03c4b5b::t_df00cc3126454b 80,269-272,306,319,321-330,335,348,350-359,369,387,411,429-430,432-437,470-471
+  s_d6a527b03c4b5b::t_2e0f59b0f4e2e8 265
+tests/Integration/Instance/SeasonCompletionTest.php
+  s_d6a527b03c4b5b::t_b03cd47806d354 8-9,61-83
+  s_d6a527b03c4b5b::t_09c81ac8fc1ec8 84-85
+app/Services/SeasonService/SeasonCompletionService.php
+  s_d6a527b03c4b5b::t_df00cc3126454b 15
+  s_d6a527b03c4b5b::t_7f67e7a74bd117 6-8,12-14,16,19-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "44c3486db0aebf70dba258e5d1b56129d68c82b0",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
