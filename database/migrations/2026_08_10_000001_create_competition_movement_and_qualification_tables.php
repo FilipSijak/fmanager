@@ -25,8 +25,11 @@ return new class extends Migration
 
         Schema::create('competition_qualification_rules', function (Blueprint $table): void {
             $table->id();
-            $table->unsignedBigInteger('source_base_competition_id');
-            $table->unsignedBigInteger('target_base_competition_id');
+            // Source is where qualification is earned; target is the competition the club qualifies for.
+            $table->unsignedBigInteger('source_base_competition_id')
+                ->comment('Competition where the club earns qualification');
+            $table->unsignedBigInteger('target_base_competition_id')
+                ->comment('Competition the club qualifies to enter');
             $table->string('selector_type');
             $table->unsignedInteger('position_from')->nullable();
             $table->unsignedInteger('position_to')->nullable();
