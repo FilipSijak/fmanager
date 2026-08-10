@@ -32,12 +32,6 @@ class CompetitionService implements ICompetitionService
 
     public function makeLeague(array $clubIds, int $competitionId, int $seasonId, int $instanceId): void
     {
-        if (count($clubIds) !== 20) {
-            throw new \UnexpectedValueException(
-                'League schedule requires exactly 20 clubs, '.count($clubIds).' provided.'
-            );
-        }
-
         $season = Season::query()->findOrFail($seasonId);
         $seasonYear = (int) Carbon::parse($season->start_date)->format('Y');
         $fixtures = (new LeagueScheduleGenerator($seasonYear))->generateSchedule($clubIds);
