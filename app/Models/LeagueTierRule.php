@@ -1,4 +1,12 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Model;
-class LeagueTierRule extends Model { protected $guarded = []; protected $casts = ['active' => 'boolean']; }
+
+class LeagueTierRule extends Model
+{
+    protected $guarded = [];
+
+    protected $casts = ['active' => 'boolean'];
+}

@@ -21,6 +21,7 @@ class FinalLeagueTableService
             ->values()
             ->map(function ($row, int $index) {
                 $row->position = $index + 1;
+
                 return $row;
             });
     }

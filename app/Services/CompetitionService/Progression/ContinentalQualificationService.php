@@ -24,7 +24,7 @@ class ContinentalQualificationService
         foreach ($rules as $rule) {
             $source = $byBaseId->get($rule->source_base_competition_id);
             $target = $byBaseId->get($rule->target_base_competition_id);
-            if (!$source || !$target || ($onlySourceCompetitionId !== null && $source->id !== $onlySourceCompetitionId)) {
+            if (! $source || ! $target || ($onlySourceCompetitionId !== null && $source->id !== $onlySourceCompetitionId)) {
                 continue;
             }
             if ($target->type !== 'tournament') {
@@ -79,6 +79,7 @@ class ContinentalQualificationService
             if (isset($awardedClubs[$winner]) && $rule->duplicate_policy === 'next_league_position') {
                 return $this->domesticFallback($source, $instanceId, $seasonId, $awardedClubs);
             }
+
             return [['club_id' => $winner, 'position' => null]];
         }
 
@@ -87,7 +88,7 @@ class ContinentalQualificationService
 
     private function leagueCandidates($rule, Competition $source, int $instanceId, int $seasonId, array $awardedClubs): array
     {
-        if ($source->type !== 'league' || !$rule->position_from || !$rule->position_to || $rule->position_from > $rule->position_to) {
+        if ($source->type !== 'league' || ! $rule->position_from || ! $rule->position_to || $rule->position_from > $rule->position_to) {
             throw new LogicException('League-position qualification requires a valid league position range.');
         }
 
@@ -106,6 +107,7 @@ class ContinentalQualificationService
                 break;
             }
         }
+
         return $candidates;
     }
 
@@ -125,14 +127,15 @@ class ContinentalQualificationService
     {
         $league = Competition::query()->forInstance($instanceId)->where('type', 'league')
             ->where('country_code', $source->country_code)->orderByDesc('rank')->first();
-        if (!$league) {
+        if (! $league) {
             return [];
         }
         foreach ($this->tables->get($instanceId, $seasonId, $league->id) as $row) {
-            if (!isset($awardedClubs[(int) $row->club_id])) {
+            if (! isset($awardedClubs[(int) $row->club_id])) {
                 return [['club_id' => (int) $row->club_id, 'position' => (int) $row->position]];
             }
         }
+
         return [];
     }
 }

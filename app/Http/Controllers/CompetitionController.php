@@ -18,13 +18,12 @@ class CompetitionController extends CoreController
 {
     public function __construct(
         private readonly GameContext $gameContext,
-        private readonly  CompetitionRepository $competitionRepository,
+        private readonly CompetitionRepository $competitionRepository,
         private readonly GameRepository $gameRepository,
         private readonly KnockoutSummaryRoundsData $knockoutSummaryRoundsData,
         private readonly DomesticMovementService $domesticMovementService,
         private readonly ContinentalQualificationService $continentalQualificationService
-    ) {
-    }
+    ) {}
 
     public function show(int $competitionId): JsonResponse
     {
@@ -43,6 +42,7 @@ class CompetitionController extends CoreController
     public function movementPreview(int $competitionId): JsonResponse
     {
         $competition = Competition::query()->forInstance($this->gameContext->instanceId())->findOrFail($competitionId);
+
         return ResponseHelper::success($this->domesticMovementService
             ->previewForCompetition($competition, $this->gameContext->seasonId())->all());
     }
@@ -50,6 +50,7 @@ class CompetitionController extends CoreController
     public function qualificationPreview(int $competitionId): JsonResponse
     {
         $competition = Competition::query()->forInstance($this->gameContext->instanceId())->findOrFail($competitionId);
+
         return ResponseHelper::success($this->continentalQualificationService
             ->previewForCompetition($competition, $this->gameContext->seasonId())->all());
     }

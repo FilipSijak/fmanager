@@ -16,7 +16,7 @@ class ProgressionRuleValidator
         foreach (LeagueTierRule::query()->where('active', true)->get() as $rule) {
             $upper = $base->get($rule->upper_base_competition_id);
             $lower = $base->get($rule->lower_base_competition_id);
-            if (!$upper || !$lower || $upper->type !== 'league' || $lower->type !== 'league') {
+            if (! $upper || ! $lower || $upper->type !== 'league' || $lower->type !== 'league') {
                 throw new LogicException('League tier rules must connect two existing leagues.');
             }
             if ($upper->country_code !== $lower->country_code) {
@@ -32,18 +32,18 @@ class ProgressionRuleValidator
         foreach (CompetitionQualificationRule::query()->where('active', true)->get() as $rule) {
             $source = $base->get($rule->source_base_competition_id);
             $target = $base->get($rule->target_base_competition_id);
-            if (!$source || !$target || $target->type !== 'tournament') {
+            if (! $source || ! $target || $target->type !== 'tournament') {
                 throw new LogicException('Qualification rules require an existing source and tournament target.');
             }
             if ($rule->selector_type === 'league_position'
-                && ($source->type !== 'league' || !$rule->position_from || !$rule->position_to
+                && ($source->type !== 'league' || ! $rule->position_from || ! $rule->position_to
                     || $rule->position_from > $rule->position_to || $rule->position_to > $source->clubs_number)) {
                 throw new LogicException('Qualification league positions are invalid.');
             }
-            if (!in_array($rule->selector_type, ['league_position', 'competition_winner'], true)) {
+            if (! in_array($rule->selector_type, ['league_position', 'competition_winner'], true)) {
                 throw new LogicException('Qualification selector type is invalid.');
             }
-            if (!in_array($rule->duplicate_policy, ['next_league_position', 'discard'], true)) {
+            if (! in_array($rule->duplicate_policy, ['next_league_position', 'discard'], true)) {
                 throw new LogicException('Qualification duplicate policy is invalid.');
             }
         }

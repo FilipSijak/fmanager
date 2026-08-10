@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-/*use App\GameEngine\GameCreation\CreateGame;*/
+/* use App\GameEngine\GameCreation\CreateGame; */
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -34,12 +34,12 @@ class DatabaseSeeder extends Seeder
 
         (new CompetitionProgressionRulesSeeder)->run();
 
-/*        if (env('APP_ENV') == 'local') {
-            $gameInstance = new CreateGame(
-                1
-            );
+        /*        if (env('APP_ENV') == 'local') {
+                    $gameInstance = new CreateGame(
+                        1
+                    );
 
-            $gameInstance->startNewGame();
-        }*/
+                    $gameInstance->startNewGame();
+                }*/
     }
 }

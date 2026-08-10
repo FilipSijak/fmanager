@@ -162,6 +162,7 @@ class SeasonProgressionServiceTest extends TestCase
                 'goals_for' => 30 - $offset, 'goals_against' => 10 + $offset,
             ]);
         }
+
         return $clubs;
     }
 }

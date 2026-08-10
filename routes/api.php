@@ -8,6 +8,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\TestController;
 use App\Http\Controllers\TransferController;
 use App\Http\Middleware\EnsureGameIsValid;
 use Illuminate\Http\Request;
@@ -24,14 +25,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
 Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
-    Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
+    Route::get('/test', [TestController::class, 'index']);
+
     return $request->user();
 });
 
-Route::get('/test', [\App\Http\Controllers\TestController::class, 'transferStatus']);
-Route::get('/startNewGame', [\App\Http\Controllers\InstanceController::class, 'startNewGame']);
+Route::get('/test', [TestController::class, 'transferStatus']);
+Route::get('/startNewGame', [InstanceController::class, 'startNewGame']);
 
 Route::middleware([EnsureGameIsValid::class])->group(function () {
     Route::get('/news', [NewsController::class, 'index']);
@@ -45,7 +46,7 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
 
     Route::group(
         [
-            'prefix' => 'club'
+            'prefix' => 'club',
         ],
         function () {
             Route::get('/{clubId}/squad', [ClubController::class, 'squad']);
@@ -55,7 +56,7 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
 
     Route::group(
         [
-            'prefix' => 'player'
+            'prefix' => 'player',
         ],
         function () {
             Route::get('/{playerId}', [PlayerController::class, 'show']);
@@ -64,7 +65,7 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
 
     Route::group(
         [
-            'prefix' => 'competition'
+            'prefix' => 'competition',
         ],
         function () {
             Route::get('/{competitionId}', [CompetitionController::class, 'show']);
@@ -88,7 +89,7 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
 
     Route::group(
         [
-            'prefix' => 'transfer'
+            'prefix' => 'transfer',
         ],
         function () {
             Route::post('/free-transfer', [TransferController::class, 'makeFreeTransferRequest']);
@@ -99,7 +100,7 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
 
 Route::group(
     [
-        'prefix' => 'instance'
+        'prefix' => 'instance',
     ],
     function () {
         Route::get('next-day', [InstanceController::class, 'nextDay']);
@@ -107,7 +108,7 @@ Route::group(
 );
 
 Route::middleware([EnsureGameIsValid::class])->group(function () {
-    Route::get('/test', [\App\Http\Controllers\TestController::class, 'index']);
+    Route::get('/test', [TestController::class, 'index']);
 });
 
 Route::get('/login', [AuthController::class, 'login']);
