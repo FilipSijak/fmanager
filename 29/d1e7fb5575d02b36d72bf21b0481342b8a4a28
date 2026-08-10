@@ -1,0 +1,19 @@
+database/migrations/2026_08_10_000001_create_competition_movement_and_qualification_tables.php
+  s_8e3e42f4a1ca30::t_111053c418ed7e 28-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "29d1e7fb5575d02b36d72bf21b0481342b8a4a28",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
