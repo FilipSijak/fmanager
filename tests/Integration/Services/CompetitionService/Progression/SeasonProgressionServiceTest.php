@@ -28,9 +28,9 @@ class SeasonProgressionServiceTest extends TestCase
         $first = $service->finalize($data['season']->id);
         $second = $service->finalize($data['season']->id);
 
-        $this->assertSame(['movements' => 4, 'qualifications' => 4], $first);
+        $this->assertSame(['movements' => 4, 'qualifications' => 5], $first);
         $this->assertSame($first, $second);
-        $this->assertDatabaseCount('club_competition_progressions', 8);
+        $this->assertDatabaseCount('club_competition_progressions', 9);
         $this->assertDatabaseHas('club_competition_progressions', [
             'club_id' => $data['upper_clubs'][4]->id,
             'source_competition_id' => $data['upper']->id,
@@ -64,6 +64,13 @@ class SeasonProgressionServiceTest extends TestCase
             'target_competition_id' => $data['uefa']->id,
             'progression_type' => 'continental',
             'source_position' => 4,
+        ]);
+        $this->assertDatabaseHas('club_competition_progressions', [
+            'club_id' => $data['upper_clubs'][4]->id,
+            'target_competition_id' => $data['intertoto']->id,
+            'progression_type' => 'continental',
+            'source_position' => 5,
+            'entry_stage' => 'qualifying',
         ]);
     }
 
@@ -101,18 +108,19 @@ class SeasonProgressionServiceTest extends TestCase
             ->assertOk()->assertJsonCount(4, 'data');
         $this->withHeaders(['instanceHash' => $data['instance']->instance_hash])
             ->getJson("/api/competition/{$data['upper']->id}/qualification-preview")
-            ->assertOk()->assertJsonCount(3, 'data')
+            ->assertOk()->assertJsonCount(4, 'data')
             ->assertJsonPath('data.0.target_competition_id', $data['champions']->id);
     }
 
     private function world(): array
     {
         DB::table('base_competitions')->insert([
-            ['id' => 101, 'name' => 'Top League', 'country_code' => 'GBR', 'rank' => 100, 'type' => 'league', 'groups' => null, 'clubs_number' => 6],
-            ['id' => 102, 'name' => 'Lower League', 'country_code' => 'GBR', 'rank' => 50, 'type' => 'league', 'groups' => null, 'clubs_number' => 6],
-            ['id' => 103, 'name' => 'Champions League', 'country_code' => 'EU', 'rank' => 200, 'type' => 'tournament', 'groups' => 1, 'clubs_number' => 32],
-            ['id' => 104, 'name' => 'UEFA Cup', 'country_code' => 'EU', 'rank' => 150, 'type' => 'tournament', 'groups' => 0, 'clubs_number' => 32],
-            ['id' => 105, 'name' => 'Domestic Cup', 'country_code' => 'GBR', 'rank' => 80, 'type' => 'tournament', 'groups' => 0, 'clubs_number' => 12],
+            ['id' => 101, 'name' => 'Top League', 'country_code' => 'GBR', 'rank' => 100, 'type' => 'league', 'groups' => null, 'clubs_number' => 6, 'competition_scope' => 'domestic', 'continent' => null, 'continental_tier' => null],
+            ['id' => 102, 'name' => 'Lower League', 'country_code' => 'GBR', 'rank' => 50, 'type' => 'league', 'groups' => null, 'clubs_number' => 6, 'competition_scope' => 'domestic', 'continent' => null, 'continental_tier' => null],
+            ['id' => 103, 'name' => 'Champions League', 'country_code' => 'EU', 'rank' => 200, 'type' => 'tournament', 'groups' => 1, 'clubs_number' => 32, 'competition_scope' => 'continental', 'continent' => 'Europe', 'continental_tier' => 1],
+            ['id' => 104, 'name' => 'UEFA Cup', 'country_code' => 'EU', 'rank' => 150, 'type' => 'tournament', 'groups' => 0, 'clubs_number' => 32, 'competition_scope' => 'continental', 'continent' => 'Europe', 'continental_tier' => 2],
+            ['id' => 105, 'name' => 'Domestic Cup', 'country_code' => 'GBR', 'rank' => 80, 'type' => 'tournament', 'groups' => 0, 'clubs_number' => 12, 'competition_scope' => 'domestic', 'continent' => null, 'continental_tier' => null],
+            ['id' => 106, 'name' => 'Intertoto Cup', 'country_code' => 'EU', 'rank' => 100, 'type' => 'tournament', 'groups' => 0, 'clubs_number' => 32, 'competition_scope' => 'continental', 'continent' => 'Europe', 'continental_tier' => 3],
         ]);
         DB::table('competition_progression_rules')->insert([
             $this->rule(101, 102, 'relegation', 'bottom_positions', null, null, 2, null, 10),
@@ -120,6 +128,7 @@ class SeasonProgressionServiceTest extends TestCase
             $this->rule(101, 103, 'continental', 'position_range', 1, 2, null, 'group_stage', 10),
             $this->rule(105, 104, 'continental', 'competition_winner', null, null, null, 'group_stage', 15),
             $this->rule(101, 104, 'continental', 'position_range', 3, 3, null, 'group_stage', 20),
+            $this->rule(101, 106, 'continental', 'position_range', 4, 4, null, 'qualifying', 30),
         ]);
 
         $instance = Instance::factory()->create(['id' => 1, 'season_id' => 1, 'instance_hash' => 'progression-instance']);
@@ -128,6 +137,7 @@ class SeasonProgressionServiceTest extends TestCase
         $lower = $this->competition(2, 102, 'Lower League', 'GBR', 'league', null, 50);
         $champions = $this->competition(3, 103, 'Champions League', 'EU', 'tournament', 1, 200);
         $uefa = $this->competition(4, 104, 'UEFA Cup', 'EU', 'tournament', 0, 150);
+        $intertoto = $this->competition(6, 106, 'Intertoto Cup', 'EU', 'tournament', 0, 100);
         $cup = $this->competition(5, 105, 'Domestic Cup', 'GBR', 'tournament', 0, 80);
         $upperClubs = $this->standings($upper, 1, 1000);
         $lowerClubs = $this->standings($lower, 7, 500);
@@ -137,7 +147,7 @@ class SeasonProgressionServiceTest extends TestCase
             'winner_club_id' => $upperClubs[0]->id, 'created_at' => now(), 'updated_at' => now(),
         ]);
 
-        return compact('instance', 'season', 'upper', 'lower', 'champions', 'uefa', 'cup') + [
+        return compact('instance', 'season', 'upper', 'lower', 'champions', 'uefa', 'intertoto', 'cup') + [
             'upper_clubs' => $upperClubs,
             'lower_clubs' => $lowerClubs,
         ];
@@ -160,6 +170,11 @@ class SeasonProgressionServiceTest extends TestCase
             'id' => $id, 'instance_id' => 1, 'base_competition_id' => $baseId,
             'name' => $name, 'country_code' => $country, 'type' => $type,
             'groups' => $groups, 'rank' => $rank, 'clubs_number' => $type === 'league' ? 6 : 32,
+            'competition_scope' => $country === 'EU' ? 'continental' : 'domestic',
+            'continent' => $country === 'EU' ? 'Europe' : null,
+            'continental_tier' => match ($baseId) {
+                103 => 1, 104 => 2, 106 => 3, default => null
+            },
         ]);
     }
 

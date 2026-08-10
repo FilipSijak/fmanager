@@ -9,6 +9,22 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::table('base_competitions', function (Blueprint $table): void {
+            $table->string('competition_scope')->default('domestic')->after('clubs_number');
+            $table->string('continent')->nullable()->after('competition_scope');
+            $table->unsignedTinyInteger('continental_tier')->nullable()->after('continent');
+            $table->unique(['continent', 'continental_tier'], 'base_continental_tier_unique');
+        });
+        Schema::table('competitions', function (Blueprint $table): void {
+            $table->string('competition_scope')->default('domestic')->after('clubs_number');
+            $table->string('continent')->nullable()->after('competition_scope');
+            $table->unsignedTinyInteger('continental_tier')->nullable()->after('continent');
+            $table->unique(
+                ['instance_id', 'continent', 'continental_tier'],
+                'competition_continental_tier_unique'
+            );
+        });
+
         Schema::create('competition_progression_rules', function (Blueprint $table): void {
             $table->id();
             // Source is where the place is earned; target is the competition the club enters.
@@ -56,8 +72,7 @@ return new class extends Migration
         });
 
         if (Schema::hasTable('competition_hierarchy')) {
-            $pairs = DB::table('competition_hierarchy')
-                ->whereNotNull('child_competition_id')
+            $pairs = DB::table('competition_hierarchy')->whereNotNull('child_competition_id')
                 ->select('competition_id', 'child_competition_id')->distinct()->get();
             foreach ($pairs as $pair) {
                 DB::table('competition_progression_rules')->insert([
@@ -89,5 +104,13 @@ return new class extends Migration
     {
         Schema::dropIfExists('club_competition_progressions');
         Schema::dropIfExists('competition_progression_rules');
+        Schema::table('competitions', function (Blueprint $table): void {
+            $table->dropUnique('competition_continental_tier_unique');
+            $table->dropColumn(['competition_scope', 'continent', 'continental_tier']);
+        });
+        Schema::table('base_competitions', function (Blueprint $table): void {
+            $table->dropUnique('base_continental_tier_unique');
+            $table->dropColumn(['competition_scope', 'continent', 'continental_tier']);
+        });
     }
 };

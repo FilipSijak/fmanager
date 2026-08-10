@@ -26,28 +26,31 @@ class ProgressionRuleValidator
             if (! in_array($rule->selector_type, ['position_range', 'bottom_positions', 'competition_winner'], true)) {
                 throw new LogicException('Progression selector type is invalid.');
             }
-            if ($rule->progression_type === 'continental' && $target->type !== 'tournament') {
-                throw new LogicException('Continental progression must target a tournament.');
+            if ($rule->progression_type === 'continental'
+                && ($target->type !== 'tournament' || $target->competition_scope !== 'continental'
+                    || ! $target->continent || ! in_array((int) $target->continental_tier, [1, 2, 3], true))) {
+                throw new LogicException(
+                    'Continental progression must target a tier-one, tier-two or tier-three continental tournament.'
+                );
             }
-            if (in_array($rule->progression_type, ['promotion', 'relegation'], true)) {
-                if ($source->type !== 'league' || $target->type !== 'league'
-                    || $source->country_code !== $target->country_code) {
-                    throw new LogicException('Promotion and relegation must connect leagues in the same country.');
-                }
+            if (in_array($rule->progression_type, ['promotion', 'relegation'], true)
+                && ($source->type !== 'league' || $target->type !== 'league'
+                    || $source->country_code !== $target->country_code)) {
+                throw new LogicException('Promotion and relegation must connect leagues in the same country.');
             }
             $this->validateSelector($rule, (int) $source->clubs_number);
         }
 
         $this->validateDomesticPairs($rules);
+        $this->validateContinentalTiers($baseCompetitions);
     }
 
     private function validateSelector(CompetitionProgressionRule $rule, int $clubCount): void
     {
-        if ($rule->selector_type === 'position_range') {
-            if (! $rule->position_from || ! $rule->position_to
-                || $rule->position_from > $rule->position_to || $rule->position_to > $clubCount) {
-                throw new LogicException('Progression position range is invalid.');
-            }
+        if ($rule->selector_type === 'position_range'
+            && (! $rule->position_from || ! $rule->position_to
+                || $rule->position_from > $rule->position_to || $rule->position_to > $clubCount)) {
+            throw new LogicException('Progression position range is invalid.');
         }
         if ($rule->selector_type === 'bottom_positions'
             && (! $rule->places || $rule->places > $clubCount)) {
@@ -55,6 +58,20 @@ class ProgressionRuleValidator
         }
         if (! in_array($rule->duplicate_policy, ['next_league_position', 'discard'], true)) {
             throw new LogicException('Progression duplicate policy is invalid.');
+        }
+    }
+
+    private function validateContinentalTiers(Collection $baseCompetitions): void
+    {
+        $continents = $baseCompetitions->where('competition_scope', 'continental')->groupBy('continent');
+        foreach ($continents as $continent => $competitions) {
+            $tiers = $competitions->pluck('continental_tier')
+                ->map(fn ($tier): int => (int) $tier)->sort()->values()->all();
+            if ($tiers !== [1, 2, 3]) {
+                throw new LogicException(
+                    "Continental competitions for {$continent} must define tiers one, two and three."
+                );
+            }
         }
     }
 

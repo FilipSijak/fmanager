@@ -23,20 +23,20 @@ class InitialSeed
     public function seedClubsFromBaseTable(int $instanceId): void
     {
         $baseClubs = BaseClubs::all();
-        $clubs     = [];
+        $clubs = [];
 
         foreach ($baseClubs as $baseClub) {
-            $club = new Club();
+            $club = new Club;
 
-            $club->name          = $baseClub->name;
-            $club->instance_id   = $instanceId;
-            $club->country_code  = $baseClub->country_code;
-            $club->city_id       = $baseClub->city_id;
-            $club->stadium_id    = $baseClub->stadium_id;
-            $club->rank          = $baseClub->rank;
-            $club->rank_academy  = $baseClub->rank_academy;
+            $club->name = $baseClub->name;
+            $club->instance_id = $instanceId;
+            $club->country_code = $baseClub->country_code;
+            $club->city_id = $baseClub->city_id;
+            $club->stadium_id = $baseClub->stadium_id;
+            $club->rank = $baseClub->rank;
+            $club->rank_academy = $baseClub->rank_academy;
             $club->rank_training = $baseClub->rank_training;
-            $club->base_club_id  = $baseClub->id;
+            $club->base_club_id = $baseClub->id;
 
             $clubs[] = $club->toArray();
         }
@@ -46,13 +46,13 @@ class InitialSeed
         $clubs = Club::where('instance_id', $instanceId)->get();
 
         foreach ($clubs as $club) {
-            $account = new Account();
+            $account = new Account;
             $account->club_id = $club->id;
 
             if ($club->rank > 15) {
                 $account->balance = $club->rank * 4 * 1000000;
             } elseif ($club->rank >= 10 && $club->rank <= 15) {
-                $account->balance = $club->rank  * 1000000;
+                $account->balance = $club->rank * 1000000;
             } else {
                 $account->balance = $club->rank * 100000;
             }
@@ -69,16 +69,16 @@ class InitialSeed
     public function seedStadiumsFromBaseTable(int $instanceId): void
     {
         $baseStadiums = BaseStadiums::all();
-        $stadiums     = [];
+        $stadiums = [];
 
         foreach ($baseStadiums as $baseStadium) {
-            $stadium = new Stadium();
+            $stadium = new Stadium;
 
-            $stadium->name         = $baseStadium->name;
-            $stadium->instance_id  = $instanceId;
+            $stadium->name = $baseStadium->name;
+            $stadium->instance_id = $instanceId;
             $stadium->country_code = $baseStadium->countryCode;
-            $stadium->city_id      = $baseStadium->cityId;
-            $stadium->capacity     = $baseStadium->capacity;
+            $stadium->city_id = $baseStadium->cityId;
+            $stadium->capacity = $baseStadium->capacity;
 
             $stadiums[] = $stadium->toArray();
         }
@@ -89,18 +89,21 @@ class InitialSeed
     public function seedCompetitionsFromBaseTable(int $instanceId): void
     {
         $baseCompetitions = BaseCompetitions::all();
-        $competitions     = [];
+        $competitions = [];
 
         foreach ($baseCompetitions as $baseCompetition) {
-            $competition = new Competition();
+            $competition = new Competition;
 
-            $competition->name                = $baseCompetition->name;
-            $competition->country_code        = $baseCompetition->country_code;
-            $competition->instance_id         = $instanceId;
-            $competition->rank                = $baseCompetition->rank;
-            $competition->type                = $baseCompetition->type;
-            $competition->groups              = $baseCompetition->groups;
-            $competition->clubs_number        = $baseCompetition->clubs_number;
+            $competition->name = $baseCompetition->name;
+            $competition->country_code = $baseCompetition->country_code;
+            $competition->instance_id = $instanceId;
+            $competition->rank = $baseCompetition->rank;
+            $competition->type = $baseCompetition->type;
+            $competition->groups = $baseCompetition->groups;
+            $competition->clubs_number = $baseCompetition->clubs_number;
+            $competition->competition_scope = $baseCompetition->competition_scope;
+            $competition->continent = $baseCompetition->continent;
+            $competition->continental_tier = $baseCompetition->continental_tier;
             $competition->base_competition_id = $baseCompetition->id;
 
             $competitions[] = $competition->toArray();
