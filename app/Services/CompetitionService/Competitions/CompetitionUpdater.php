@@ -4,6 +4,7 @@ namespace App\Services\CompetitionService\Competitions;
 
 use App\Models\Competition;
 use App\Models\Season;
+use Illuminate\Support\Facades\DB;
 
 class CompetitionUpdater
 {
@@ -36,7 +37,14 @@ class CompetitionUpdater
                     static fn (array $game): bool => ! empty($game['knockout_tie_id'])
                 );
 
-                if ($isKnockoutPhase || (int) $competition->groups === 0) {
+                $groupsActive = DB::table('competition_season')
+                    ->where('instance_id', $instanceId)
+                    ->where('season_id', $season->id)
+                    ->where('competition_id', $competitionId)
+                    ->where('groups_active', true)
+                    ->exists();
+
+                if ($isKnockoutPhase || ! $groupsActive) {
                     $this->tournamentUpdater->updateTournamentSummary($games);
                 } else {
                     $this->tournamentUpdater->updatePointsTable($games);

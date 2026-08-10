@@ -89,6 +89,11 @@ class GroupToKnockoutTransitionTest extends TestCase
         $updater->distributeGamesForCompetitionUpdates($season, $instance->id);
 
         $this->assertDatabaseHas('competitions', ['id' => $competition->id, 'groups' => 1]);
+        $this->assertDatabaseMissing('competition_season', [
+            'competition_id' => $competition->id,
+            'season_id' => $season->id,
+            'groups_active' => true,
+        ]);
         $this->assertDatabaseHas('tournament_knockout', [
             'competition_id' => $competition->id,
             'participant_count' => 4,
@@ -152,6 +157,7 @@ class GroupToKnockoutTransitionTest extends TestCase
             'competition_id' => $competitionId,
             'season_id' => 1,
             'group_id' => $groupId,
+            'groups_active' => true,
             'club_id' => $clubId,
             'points' => $points,
         ];

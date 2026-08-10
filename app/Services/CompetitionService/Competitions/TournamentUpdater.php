@@ -62,6 +62,8 @@ class TournamentUpdater
             ->where('competition_id', $competitionId)
             ->where('season_id', $this->season->id)
             ->exists()) {
+            $this->markGroupsFinished($competitionId);
+
             return;
         }
 
@@ -83,6 +85,17 @@ class TournamentUpdater
             $this->season->id,
             $schedule
         );
+
+        $this->markGroupsFinished($competitionId);
+    }
+
+    private function markGroupsFinished(int $competitionId): void
+    {
+        DB::table('competition_season')
+            ->where('instance_id', $this->instanceId)
+            ->where('season_id', $this->season->id)
+            ->where('competition_id', $competitionId)
+            ->update(['groups_active' => false]);
     }
 
     public function updateTournamentSummary(array $games): void

@@ -60,6 +60,7 @@ class CompetitionDataSource
                 'comp.id AS competition_id',
                 DB::raw((int) $seasonId.' AS season_id'),
                 'c.id AS club_id',
+                DB::raw("CASE WHEN comp.type = 'tournament' AND comp.groups = 1 THEN 1 ELSE 0 END AS groups_active"),
                 DB::raw('0 AS points'),
             ])
             ->get()->map(fn ($row) => (array) $row)->all();
@@ -211,7 +212,10 @@ class CompetitionDataSource
                     'season_id' => $row['season_id'],
                     'club_id' => $row['club_id'],
                 ],
-                ['group_id' => $row['group_id']]
+                [
+                    'group_id' => $row['group_id'],
+                    'groups_active' => true,
+                ]
             );
         }
     }

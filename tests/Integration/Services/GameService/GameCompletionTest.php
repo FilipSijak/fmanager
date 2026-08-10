@@ -57,6 +57,11 @@ class GameCompletionTest extends TestCase
         $this->assertNotNull($cancelled->processed_at);
         $this->assertDatabaseHas('competition_season', ['club_id' => 1, 'played' => 0]);
         $this->assertDatabaseHas('competitions', ['id' => 1, 'groups' => 1]);
+        $this->assertDatabaseMissing('competition_season', [
+            'competition_id' => 1,
+            'season_id' => 1,
+            'groups_active' => true,
+        ]);
         $this->assertDatabaseHas('tournament_knockout', ['competition_id' => 1, 'participant_count' => 4, 'status' => 'in_progress']);
         $this->assertSame(4, DB::table('games')->whereNotNull('knockout_tie_id')->count());
     }
@@ -69,7 +74,7 @@ class GameCompletionTest extends TestCase
         $clubs = collect();
         for ($id = 1; $id <= $clubCount; $id++) {
             $clubs->push(Club::factory()->create(['id' => $id, 'instance_id' => 1, 'stadium_id' => 1000 + $id]));
-            DB::table('competition_season')->insert(['instance_id' => 1, 'competition_id' => 1, 'season_id' => 1, 'club_id' => $id, 'group_id' => $groups === 1 ? ($id <= 2 ? 1 : 2) : null, 'points' => $groups === 1 ? $clubCount - $id : 0]);
+            DB::table('competition_season')->insert(['instance_id' => 1, 'competition_id' => 1, 'season_id' => 1, 'club_id' => $id, 'group_id' => $groups === 1 ? ($id <= 2 ? 1 : 2) : null, 'groups_active' => $groups === 1, 'points' => $groups === 1 ? $clubCount - $id : 0]);
         }
 
         return [$instance, $season, $competition, $clubs];

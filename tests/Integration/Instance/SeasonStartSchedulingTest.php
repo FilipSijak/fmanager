@@ -67,6 +67,7 @@ class SeasonStartSchedulingTest extends TestCase
             DB::table('competition_season')
                 ->where('competition_id', $groupTournament->id)
                 ->whereNotNull('group_id')
+                ->where('groups_active', true)
                 ->count()
         );
         $this->assertDatabaseHas('tournament_knockout', [
