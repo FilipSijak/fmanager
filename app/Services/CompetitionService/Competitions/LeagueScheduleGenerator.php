@@ -7,12 +7,13 @@ use DateTimeZone;
 use InvalidArgumentException;
 
 /**
- * Generates a full double round-robin fixture schedule for a 20-club league.
+ * Generates a full double round-robin fixture schedule for an even-sized league.
  */
 class LeagueScheduleGenerator
 {
-    private const CLUB_COUNT = 20;
-    private const FIXTURES_PER_ROUND = 10;
+    private const MIN_CLUB_COUNT = 4;
+    private const MAX_CLUB_COUNT = 22;
+
     private const SATURDAY_DOW = 6;
     private const SEASON_MONTH = 9;
     private const MIN_YEAR = 1900;
@@ -41,7 +42,7 @@ class LeagueScheduleGenerator
     }
 
     /**
-     * @param int[] $clubIds Exactly 20 distinct integer club identifiers.
+     * @param int[] $clubIds An even number of distinct integer club identifiers.
      *
      * @return array<int, array{round: int, date: DateTimeImmutable, home_club_id: int, away_club_id: int}>
      */
@@ -72,20 +73,21 @@ class LeagueScheduleGenerator
 
         $count = count($clubIds);
 
-        if ($count < self::CLUB_COUNT) {
-            throw new InvalidArgumentException(
-                sprintf('Expected exactly %d clubs, but only %d were provided.', self::CLUB_COUNT, $count)
-            );
+        if ($count < self::MIN_CLUB_COUNT || $count > self::MAX_CLUB_COUNT) {
+            throw new InvalidArgumentException(sprintf(
+                'League club count must be between %d and %d; %d provided.',
+                self::MIN_CLUB_COUNT,
+                self::MAX_CLUB_COUNT,
+                $count
+            ));
         }
 
-        if ($count > self::CLUB_COUNT) {
-            throw new InvalidArgumentException(
-                sprintf('Expected exactly %d clubs, but %d were provided.', self::CLUB_COUNT, $count)
-            );
+        if ($count % 2 !== 0) {
+            throw new InvalidArgumentException('League club count must be even.');
         }
 
-        if (count(array_unique($clubIds)) !== self::CLUB_COUNT) {
-            throw new InvalidArgumentException('Duplicate club identifiers are not allowed; all 20 clubs must be distinct.');
+        if (count(array_unique($clubIds)) !== $count) {
+            throw new InvalidArgumentException('Duplicate club identifiers are not allowed.');
         }
     }
 
@@ -132,7 +134,7 @@ class LeagueScheduleGenerator
     private function buildFixtures(array $rounds, array $roundDates): array
     {
         $fixtures = [];
-        $saturdayMax = (int) (self::FIXTURES_PER_ROUND / 2);
+        $saturdayMax = (int) ceil(count($rounds[0]) / 2);
 
         foreach ($rounds as $roundIndex => $pairs) {
             $roundNumber = $roundIndex + 1;

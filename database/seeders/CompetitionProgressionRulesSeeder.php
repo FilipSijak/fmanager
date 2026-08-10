@@ -19,6 +19,12 @@ class CompetitionProgressionRulesSeeder extends Seeder
 
         $this->rule(1, 8, 'relegation', 'bottom_positions', null, null, 3, null, 10);
         $this->rule(8, 1, 'promotion', 'position_range', 1, 3, null, null, 10);
+        $this->rule(2, 10, 'relegation', 'bottom_positions', null, null, 2, null, 10);
+        $this->rule(10, 2, 'promotion', 'position_range', 1, 2, null, null, 10);
+        $this->rule(3, 11, 'relegation', 'bottom_positions', null, null, 3, null, 10);
+        $this->rule(11, 3, 'promotion', 'position_range', 1, 3, null, null, 10);
+        $this->rule(4, 12, 'relegation', 'bottom_positions', null, null, 2, null, 10);
+        $this->rule(12, 4, 'promotion', 'position_range', 1, 2, null, null, 10);
 
         foreach ([1, 2, 3, 4, 5] as $leagueId) {
             $this->rule($leagueId, 6, 'continental', 'position_range', 1, 4, null, 'group_stage', 10);

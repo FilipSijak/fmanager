@@ -27,7 +27,8 @@ class ClubFactory extends Factory
             'stadium_id' => Stadium::factory()->make(['id']),
             'rank' => $this->faker->numberBetween(1, 200),
             'rank_academy' => $this->faker->numberBetween(1, 200),
-            'rank_training' => $this->faker->numberBetween(1, 200)
+            'rank_training' => $this->faker->numberBetween(1, 200),
+            'financial_rank' => $this->faker->numberBetween(1, 20),
         ];
     }
 }

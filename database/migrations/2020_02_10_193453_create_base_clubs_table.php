@@ -22,6 +22,11 @@ class CreateBaseClubsTable extends Migration
             $table->integer('rank');
             $table->integer('rank_academy');
             $table->integer('rank_training');
+            $table->integer('financial_rank')->default(1);
+            $table->bigInteger('starting_balance')->default(0);
+            $table->bigInteger('allowed_debt')->default(0);
+            $table->bigInteger('transfer_budget')->default(0);
+            $table->bigInteger('salaries_yearly_budget')->default(0);
             $table->integer('competition_id');
         });
     }

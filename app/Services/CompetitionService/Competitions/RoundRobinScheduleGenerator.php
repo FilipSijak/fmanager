@@ -7,7 +7,7 @@ use InvalidArgumentException;
 class RoundRobinScheduleGenerator
 {
     private const MIN_CLUB_COUNT = 4;
-    private const MAX_CLUB_COUNT = 20;
+    private const MAX_CLUB_COUNT = 22;
 
     /**
      * @param int[] $clubIds
