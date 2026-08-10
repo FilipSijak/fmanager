@@ -7,6 +7,7 @@ use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
+use App\Repositories\CompetitionRepository;
 use App\Services\CompetitionService\Progression\CompetitionProgressionCalculator;
 use App\Services\CompetitionService\Progression\SeasonProgressionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,6 +73,54 @@ class SeasonProgressionServiceTest extends TestCase
             'source_position' => 5,
             'entry_stage' => 'qualifying',
         ]);
+    }
+
+    #[Test]
+    public function it_applies_movements_and_qualifications_to_the_next_season_idempotently(): void
+    {
+        $data = $this->world();
+        app(SeasonProgressionService::class)->finalize($data['season']->id);
+        $repository = app(CompetitionRepository::class);
+
+        $nextSeason = $repository->applyCompetitionProgressions(1, $data['season']->id);
+        app(SeasonProgressionService::class)->finalize($data['season']->id);
+        $sameSeason = $repository->applyCompetitionProgressions(1, $data['season']->id);
+
+        $this->assertTrue($nextSeason->is($sameSeason));
+        $this->assertSame('2027-08-15', $nextSeason->start_date);
+        $this->assertSame('2028-06-15', $nextSeason->end_date);
+        $this->assertSame(12, DB::table('competition_season')->where('season_id', 1)->count());
+        $this->assertSame(17, DB::table('competition_season')->where('season_id', $nextSeason->id)->count());
+
+        $this->assertDatabaseMissing('competition_season', [
+            'season_id' => $nextSeason->id,
+            'competition_id' => $data['upper']->id,
+            'club_id' => $data['upper_clubs'][4]->id,
+        ]);
+        $this->assertDatabaseHas('competition_season', [
+            'season_id' => $nextSeason->id,
+            'competition_id' => $data['lower']->id,
+            'club_id' => $data['upper_clubs'][4]->id,
+        ]);
+        $this->assertDatabaseHas('competition_season', [
+            'season_id' => $nextSeason->id,
+            'competition_id' => $data['upper']->id,
+            'club_id' => $data['lower_clubs'][0]->id,
+        ]);
+        $this->assertDatabaseHas('competition_season', [
+            'season_id' => $nextSeason->id,
+            'competition_id' => $data['champions']->id,
+            'club_id' => $data['upper_clubs'][0]->id,
+        ]);
+        $this->assertDatabaseHas('competition_season', [
+            'season_id' => $nextSeason->id,
+            'competition_id' => $data['upper']->id,
+            'club_id' => $data['upper_clubs'][0]->id,
+        ]);
+        $this->assertSame(
+            9,
+            DB::table('club_competition_progressions')->where('status', 'applied')->count()
+        );
     }
 
     #[Test]

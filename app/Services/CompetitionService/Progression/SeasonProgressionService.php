@@ -29,7 +29,18 @@ class SeasonProgressionService
                 ->where('status', 'pending')->delete();
 
             foreach ($progressions as $progression) {
-                ClubCompetitionProgression::query()->create($progression);
+                $identity = [
+                    'source_season_id' => $progression['source_season_id'],
+                    'club_id' => $progression['club_id'],
+                    'target_competition_id' => $progression['target_competition_id'],
+                ];
+                $existing = ClubCompetitionProgression::query()->where($identity)->first();
+
+                if ($existing?->status === 'applied') {
+                    continue;
+                }
+
+                ClubCompetitionProgression::query()->updateOrCreate($identity, $progression);
             }
 
             return [

@@ -5,6 +5,8 @@ namespace Tests\Integration\Instance;
 use App\Events\SeasonCompleted;
 use App\Models\Instance;
 use App\Models\Season;
+use App\Repositories\CompetitionRepository;
+use App\Services\CompetitionService\Progression\SeasonProgressionService;
 use App\Services\InstanceService\InstanceService;
 use App\Services\SeasonService\SeasonCompletionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -54,6 +56,31 @@ class SeasonCompletionTest extends TestCase
             ->with($instance);
 
         event(new SeasonCompleted($instance));
+    }
+
+    #[Test]
+    public function the_season_completion_service_calculates_and_applies_progression(): void
+    {
+        $instance = $this->createInstance('2027-06-15');
+        $nextSeason = Season::factory()->create([
+            'id' => 2,
+            'instance_id' => 1,
+            'start_date' => '2027-08-15',
+            'end_date' => '2028-06-15',
+        ]);
+
+        $progression = $this->mock(SeasonProgressionService::class);
+        $progression->shouldReceive('finalize')->once()->with(1);
+
+        $repository = $this->mock(CompetitionRepository::class);
+        $repository->shouldReceive('applyCompetitionProgressions')
+            ->once()
+            ->with(1, 1)
+            ->andReturn($nextSeason);
+
+        app(SeasonCompletionService::class)->complete($instance);
+
+        $this->assertSame(2, $instance->fresh()->season_id);
     }
 
     private function createInstance(string $date): Instance
