@@ -1,0 +1,41 @@
+app/Models/CompetitionProgressionRule.php
+  s_8e3e42f4a1ca30::t_85b5e06abe4466 1-14
+app/Http/Controllers/CompetitionController.php
+  s_8e3e42f4a1ca30::t_a9b2a772e66121 12,23,44-45,52-53
+app/Services/CompetitionService/Progression/CompetitionProgressionCalculator.php
+  s_8e3e42f4a1ca30::t_ae444c2dbcb9d4 3-7,9,11,13-15,17-26,28-50,54-55,58-101,103-131,133-157,159-166,168-170,172-176,178
+  s_8e3e42f4a1ca30::t_962fae2b745a55 27,102,132,158,167,171
+app/Services/CompetitionService/Progression/ProgressionRuleValidator.php
+  s_8e3e42f4a1ca30::t_962fae2b745a55 20,23,26,47,53,56,65,69
+  s_8e3e42f4a1ca30::t_b14d2cd09da215 5-6,14-15,17-19,21,24,27,29-30,32-38,40-41,44,46,48-49,51-52,54-55,57-64,66-68,70,74-79
+  s_8e3e42f4a1ca30::t_802e5bd344e17a 80
+database/seeders/CompetitionProgressionRulesSeeder.php
+  s_8e3e42f4a1ca30::t_ae444c2dbcb9d4 12-13,16-17,21-32,36-37,40-43
+app/Services/CompetitionService/Progression/SeasonProgressionService.php
+  s_8e3e42f4a1ca30::t_b14d2cd09da215 5,7,14,27-29,31-32,35-38,44-45,47
+tests/Integration/Services/CompetitionService/Progression/SeasonProgressionServiceTest.php
+  s_8e3e42f4a1ca30::t_93f4ea950cd0b0 10,23,33-34,36-38,42,44-46,49,52,55,57,59,61,63,65,71,75-76,84-86,91,95,118-122,140-153,159-163,170-173
+  s_8e3e42f4a1ca30::t_6020ede850b0d6 117
+app/Models/ClubCompetitionProgression.php
+  s_8e3e42f4a1ca30::t_85b5e06abe4466 1-14
+app/Console/Commands/CalculateSeasonProgression.php
+  s_8e3e42f4a1ca30::t_9be6f877837f2b 10
+database/migrations/2026_08_10_000001_create_competition_progression_tables.php
+  s_8e3e42f4a1ca30::t_b3ccb726a9d7f8 12,14,16,18-20,23-24,29-33,36,38,44,46,48,50-55,61,63-82,90-91
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "253772b5915e4759a39bc4c5b4d2f4a56fbfe4ce",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
