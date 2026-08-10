@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class CalculateSeasonProgression extends Command
 {
-    protected $signature = 'season:calculate-qualifications {seasonId}';
+    protected $signature = 'season:finalize-progression {seasonId}';
 
     protected $description = 'Calculate pending promotions, relegations and continental qualifications';
 

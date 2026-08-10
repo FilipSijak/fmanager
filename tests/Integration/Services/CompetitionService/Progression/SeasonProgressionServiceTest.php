@@ -7,7 +7,7 @@ use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Services\CompetitionService\Progression\DomesticMovementService;
+use App\Services\CompetitionService\Progression\CompetitionProgressionCalculator;
 use App\Services\CompetitionService\Progression\SeasonProgressionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,7 @@ class SeasonProgressionServiceTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_calculates_balanced_movements_and_priority_based_continental_places_idempotently(): void
+    public function it_calculates_all_progression_types_into_one_table_idempotently(): void
     {
         $data = $this->world();
         $service = app(SeasonProgressionService::class);
@@ -30,50 +30,50 @@ class SeasonProgressionServiceTest extends TestCase
 
         $this->assertSame(['movements' => 4, 'qualifications' => 4], $first);
         $this->assertSame($first, $second);
-        $this->assertDatabaseCount('club_competition_movements', 4);
-        $this->assertDatabaseCount('club_competition_qualifications', 4);
-
-        $this->assertDatabaseHas('club_competition_movements', [
+        $this->assertDatabaseCount('club_competition_progressions', 8);
+        $this->assertDatabaseHas('club_competition_progressions', [
             'club_id' => $data['upper_clubs'][4]->id,
-            'from_competition_id' => $data['upper']->id,
-            'to_competition_id' => $data['lower']->id,
-            'type' => 'relegation',
+            'source_competition_id' => $data['upper']->id,
+            'target_competition_id' => $data['lower']->id,
+            'progression_type' => 'relegation',
             'source_position' => 5,
             'status' => 'pending',
         ]);
-        $this->assertDatabaseHas('club_competition_movements', [
+        $this->assertDatabaseHas('club_competition_progressions', [
             'club_id' => $data['lower_clubs'][0]->id,
-            'from_competition_id' => $data['lower']->id,
-            'to_competition_id' => $data['upper']->id,
-            'type' => 'promotion',
+            'source_competition_id' => $data['lower']->id,
+            'target_competition_id' => $data['upper']->id,
+            'progression_type' => 'promotion',
             'source_position' => 1,
         ]);
-
-        $this->assertDatabaseHas('club_competition_qualifications', [
+        $this->assertDatabaseHas('club_competition_progressions', [
             'club_id' => $data['upper_clubs'][0]->id,
             'target_competition_id' => $data['champions']->id,
+            'progression_type' => 'continental',
             'source_position' => 1,
         ]);
-        $this->assertDatabaseHas('club_competition_qualifications', [
+        $this->assertDatabaseHas('club_competition_progressions', [
             'club_id' => $data['upper_clubs'][2]->id,
+            'source_competition_id' => $data['cup']->id,
             'target_competition_id' => $data['uefa']->id,
-            'qualification_type' => 'competition_winner',
+            'progression_type' => 'continental',
         ]);
-        $this->assertDatabaseHas('club_competition_qualifications', [
+        $this->assertDatabaseHas('club_competition_progressions', [
             'club_id' => $data['upper_clubs'][3]->id,
+            'source_competition_id' => $data['upper']->id,
             'target_competition_id' => $data['uefa']->id,
-            'qualification_type' => 'league_position',
+            'progression_type' => 'continental',
             'source_position' => 4,
         ]);
     }
 
     #[Test]
-    public function a_postponed_game_blocks_finalization_but_not_a_live_movement_preview(): void
+    public function a_postponed_game_blocks_finalization_but_not_a_live_preview(): void
     {
         $data = $this->world();
         Game::factory()->create([
-            'instance_id' => $data['instance']->id,
-            'season_id' => $data['season']->id,
+            'instance_id' => 1,
+            'season_id' => 1,
             'competition_id' => $data['upper']->id,
             'hometeam_id' => $data['upper_clubs'][0]->id,
             'awayteam_id' => $data['upper_clubs'][1]->id,
@@ -81,24 +81,24 @@ class SeasonProgressionServiceTest extends TestCase
             'status' => Game::STATUS_POSTPONED,
         ]);
 
-        $preview = app(DomesticMovementService::class)
-            ->previewForCompetition($data['upper'], $data['season']->id);
+        $preview = app(CompetitionProgressionCalculator::class)->previewForCompetition(
+            $data['upper'], 1, ['promotion', 'relegation']
+        );
         $this->assertCount(4, $preview);
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('still has unresolved games');
-        app(SeasonProgressionService::class)->finalize($data['season']->id);
+        app(SeasonProgressionService::class)->finalize(1);
     }
 
     #[Test]
-    public function preview_endpoints_return_current_movement_and_qualification_projections(): void
+    public function preview_endpoints_use_the_unified_calculator(): void
     {
         $data = $this->world();
 
         $this->withHeaders(['instanceHash' => $data['instance']->instance_hash])
             ->getJson("/api/competition/{$data['upper']->id}/movement-preview")
             ->assertOk()->assertJsonCount(4, 'data');
-
         $this->withHeaders(['instanceHash' => $data['instance']->instance_hash])
             ->getJson("/api/competition/{$data['upper']->id}/qualification-preview")
             ->assertOk()->assertJsonCount(3, 'data')
@@ -114,14 +114,12 @@ class SeasonProgressionServiceTest extends TestCase
             ['id' => 104, 'name' => 'UEFA Cup', 'country_code' => 'EU', 'rank' => 150, 'type' => 'tournament', 'groups' => 0, 'clubs_number' => 32],
             ['id' => 105, 'name' => 'Domestic Cup', 'country_code' => 'GBR', 'rank' => 80, 'type' => 'tournament', 'groups' => 0, 'clubs_number' => 12],
         ]);
-        DB::table('league_tier_rules')->insert([
-            'upper_base_competition_id' => 101, 'lower_base_competition_id' => 102,
-            'automatic_movement_places' => 2, 'active' => 1, 'created_at' => now(), 'updated_at' => now(),
-        ]);
-        DB::table('competition_qualification_rules')->insert([
-            ['source_base_competition_id' => 101, 'target_base_competition_id' => 103, 'selector_type' => 'league_position', 'position_from' => 1, 'position_to' => 2, 'entry_stage' => 'group_stage', 'duplicate_policy' => 'next_league_position', 'priority' => 10, 'active' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['source_base_competition_id' => 105, 'target_base_competition_id' => 104, 'selector_type' => 'competition_winner', 'position_from' => null, 'position_to' => null, 'entry_stage' => 'group_stage', 'duplicate_policy' => 'next_league_position', 'priority' => 15, 'active' => 1, 'created_at' => now(), 'updated_at' => now()],
-            ['source_base_competition_id' => 101, 'target_base_competition_id' => 104, 'selector_type' => 'league_position', 'position_from' => 3, 'position_to' => 3, 'entry_stage' => 'group_stage', 'duplicate_policy' => 'next_league_position', 'priority' => 20, 'active' => 1, 'created_at' => now(), 'updated_at' => now()],
+        DB::table('competition_progression_rules')->insert([
+            $this->rule(101, 102, 'relegation', 'bottom_positions', null, null, 2, null, 10),
+            $this->rule(102, 101, 'promotion', 'position_range', 1, 2, null, null, 10),
+            $this->rule(101, 103, 'continental', 'position_range', 1, 2, null, 'group_stage', 10),
+            $this->rule(105, 104, 'continental', 'competition_winner', null, null, null, 'group_stage', 15),
+            $this->rule(101, 104, 'continental', 'position_range', 3, 3, null, 'group_stage', 20),
         ]);
 
         $instance = Instance::factory()->create(['id' => 1, 'season_id' => 1, 'instance_hash' => 'progression-instance']);
@@ -131,7 +129,6 @@ class SeasonProgressionServiceTest extends TestCase
         $champions = $this->competition(3, 103, 'Champions League', 'EU', 'tournament', 1, 200);
         $uefa = $this->competition(4, 104, 'UEFA Cup', 'EU', 'tournament', 0, 150);
         $cup = $this->competition(5, 105, 'Domestic Cup', 'GBR', 'tournament', 0, 80);
-
         $upperClubs = $this->standings($upper, 1, 1000);
         $lowerClubs = $this->standings($lower, 7, 500);
         DB::table('tournament_knockout')->insert([
@@ -140,21 +137,40 @@ class SeasonProgressionServiceTest extends TestCase
             'winner_club_id' => $upperClubs[0]->id, 'created_at' => now(), 'updated_at' => now(),
         ]);
 
-        return compact('instance', 'season', 'upper', 'lower', 'champions', 'uefa', 'cup', 'upperClubs', 'lowerClubs') + [
-            'upper_clubs' => $upperClubs, 'lower_clubs' => $lowerClubs,
+        return compact('instance', 'season', 'upper', 'lower', 'champions', 'uefa', 'cup') + [
+            'upper_clubs' => $upperClubs,
+            'lower_clubs' => $lowerClubs,
+        ];
+    }
+
+    private function rule(int $source, int $target, string $type, string $selector, ?int $from, ?int $to, ?int $places, ?string $stage, int $priority): array
+    {
+        return [
+            'source_base_competition_id' => $source, 'target_base_competition_id' => $target,
+            'progression_type' => $type, 'selector_type' => $selector,
+            'position_from' => $from, 'position_to' => $to, 'places' => $places,
+            'entry_stage' => $stage, 'duplicate_policy' => 'next_league_position',
+            'priority' => $priority, 'active' => 1, 'created_at' => now(), 'updated_at' => now(),
         ];
     }
 
     private function competition(int $id, int $baseId, string $name, string $country, string $type, ?int $groups, int $rank): Competition
     {
-        return Competition::factory()->create(['id' => $id, 'instance_id' => 1, 'base_competition_id' => $baseId, 'name' => $name, 'country_code' => $country, 'type' => $type, 'groups' => $groups, 'rank' => $rank, 'clubs_number' => $type === 'league' ? 6 : 32]);
+        return Competition::factory()->create([
+            'id' => $id, 'instance_id' => 1, 'base_competition_id' => $baseId,
+            'name' => $name, 'country_code' => $country, 'type' => $type,
+            'groups' => $groups, 'rank' => $rank, 'clubs_number' => $type === 'league' ? 6 : 32,
+        ]);
     }
 
     private function standings(Competition $competition, int $firstClubId, int $topPoints): array
     {
         $clubs = [];
         for ($offset = 0; $offset < 6; $offset++) {
-            $club = Club::factory()->create(['id' => $firstClubId + $offset, 'instance_id' => 1, 'stadium_id' => 2000 + $firstClubId + $offset]);
+            $club = Club::factory()->create([
+                'id' => $firstClubId + $offset, 'instance_id' => 1,
+                'stadium_id' => 2000 + $firstClubId + $offset,
+            ]);
             $clubs[] = $club;
             DB::table('competition_season')->insert([
                 'instance_id' => 1, 'season_id' => 1, 'competition_id' => $competition->id,

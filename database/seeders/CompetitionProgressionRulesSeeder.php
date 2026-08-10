@@ -9,29 +9,38 @@ class CompetitionProgressionRulesSeeder extends Seeder
 {
     public function run(): void
     {
-        DB::table('league_tier_rules')->updateOrInsert(
-            ['upper_base_competition_id' => 1, 'lower_base_competition_id' => 8],
-            ['automatic_movement_places' => 3, 'active' => true, 'created_at' => now(), 'updated_at' => now()]
-        );
+        $this->rule(1, 8, 'relegation', 'bottom_positions', null, null, 3, null, 10);
+        $this->rule(8, 1, 'promotion', 'position_range', 1, 3, null, null, 10);
 
         foreach ([1, 2, 3, 4, 5] as $leagueId) {
-            $this->qualificationRule($leagueId, 6, 1, 4, 10);
-            $this->qualificationRule($leagueId, 7, 5, 5, 20);
+            $this->rule($leagueId, 6, 'continental', 'position_range', 1, 4, null, 'group_stage', 10);
+            $this->rule($leagueId, 7, 'continental', 'position_range', 5, 5, null, 'group_stage', 20);
         }
     }
 
-    private function qualificationRule(int $source, int $target, int $from, int $to, int $priority): void
-    {
-        DB::table('competition_qualification_rules')->updateOrInsert(
+    private function rule(
+        int $source,
+        int $target,
+        string $progressionType,
+        string $selectorType,
+        ?int $positionFrom,
+        ?int $positionTo,
+        ?int $places,
+        ?string $entryStage,
+        int $priority
+    ): void {
+        DB::table('competition_progression_rules')->updateOrInsert(
             [
                 'source_base_competition_id' => $source,
                 'target_base_competition_id' => $target,
-                'selector_type' => 'league_position',
-                'position_from' => $from,
-                'position_to' => $to,
+                'progression_type' => $progressionType,
+                'selector_type' => $selectorType,
             ],
             [
-                'entry_stage' => 'group_stage',
+                'position_from' => $positionFrom,
+                'position_to' => $positionTo,
+                'places' => $places,
+                'entry_stage' => $entryStage,
                 'duplicate_policy' => 'next_league_position',
                 'priority' => $priority,
                 'active' => true,

@@ -2,19 +2,16 @@
 
 namespace App\Services\CompetitionService\Progression;
 
-use App\Models\ClubCompetitionMovement;
-use App\Models\ClubCompetitionQualification;
+use App\Models\ClubCompetitionProgression;
 use App\Models\Competition;
-use App\Models\CompetitionQualificationRule;
-use App\Models\LeagueTierRule;
+use App\Models\CompetitionProgressionRule;
 use App\Models\Season;
 use Illuminate\Support\Facades\DB;
 
 class SeasonProgressionService
 {
     public function __construct(
-        private readonly DomesticMovementService $domesticMovements,
-        private readonly ContinentalQualificationService $continentalQualifications,
+        private readonly CompetitionProgressionCalculator $calculator,
         private readonly CompetitionProgressionEligibility $eligibility,
         private readonly ProgressionRuleValidator $validator
     ) {}
@@ -27,39 +24,27 @@ class SeasonProgressionService
             $this->validator->validate();
             $this->assertSourcesFinished($instanceId, $seasonId);
 
-            $movements = $this->domesticMovements->calculateForSeason($instanceId, $seasonId);
-            $qualifications = $this->continentalQualifications->calculateForSeason($instanceId, $seasonId);
+            $progressions = $this->calculator->calculateForSeason($instanceId, $seasonId);
+            ClubCompetitionProgression::query()->where('source_season_id', $seasonId)
+                ->where('status', 'pending')->delete();
 
-            foreach ($movements as $movement) {
-                ClubCompetitionMovement::query()->updateOrCreate(
-                    [
-                        'source_season_id' => $seasonId,
-                        'club_id' => $movement['club_id'],
-                        'type' => $movement['type'],
-                    ],
-                    $movement
-                );
-            }
-            foreach ($qualifications as $qualification) {
-                ClubCompetitionQualification::query()->updateOrCreate(
-                    ['source_season_id' => $seasonId, 'club_id' => $qualification['club_id']],
-                    $qualification
-                );
+            foreach ($progressions as $progression) {
+                ClubCompetitionProgression::query()->create($progression);
             }
 
-            return ['movements' => $movements->count(), 'qualifications' => $qualifications->count()];
+            return [
+                'movements' => $progressions->whereIn('progression_type', ['promotion', 'relegation'])->count(),
+                'qualifications' => $progressions->where('progression_type', 'continental')->count(),
+            ];
         });
     }
 
     private function assertSourcesFinished(int $instanceId, int $seasonId): void
     {
-        $baseIds = LeagueTierRule::query()->where('active', true)->get()
-            ->flatMap(fn ($rule) => [$rule->upper_base_competition_id, $rule->lower_base_competition_id]);
-        $baseIds = $baseIds->concat(
-            CompetitionQualificationRule::query()->where('active', true)->pluck('source_base_competition_id')
-        )->unique();
+        $sourceBaseIds = CompetitionProgressionRule::query()->where('active', true)
+            ->pluck('source_base_competition_id')->unique();
 
-        Competition::query()->forInstance($instanceId)->whereIn('base_competition_id', $baseIds)->get()
+        Competition::query()->forInstance($instanceId)->whereIn('base_competition_id', $sourceBaseIds)->get()
             ->each(fn (Competition $competition) => $this->eligibility->assertCompetitionFinished(
                 $instanceId, $seasonId, $competition->id
             ));

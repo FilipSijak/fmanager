@@ -2,8 +2,8 @@
 
 namespace App\Services\CompetitionService\Progression;
 
-use App\Models\CompetitionQualificationRule;
-use App\Models\LeagueTierRule;
+use App\Models\CompetitionProgressionRule;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 
@@ -11,64 +11,71 @@ class ProgressionRuleValidator
 {
     public function validate(): void
     {
-        $base = DB::table('base_competitions')->get()->keyBy('id');
-        $graph = [];
-        foreach (LeagueTierRule::query()->where('active', true)->get() as $rule) {
-            $upper = $base->get($rule->upper_base_competition_id);
-            $lower = $base->get($rule->lower_base_competition_id);
-            if (! $upper || ! $lower || $upper->type !== 'league' || $lower->type !== 'league') {
-                throw new LogicException('League tier rules must connect two existing leagues.');
-            }
-            if ($upper->country_code !== $lower->country_code) {
-                throw new LogicException('League tier rules cannot connect different countries.');
-            }
-            if ($rule->automatic_movement_places > min($upper->clubs_number, $lower->clubs_number)) {
-                throw new LogicException('Automatic movement places exceed competition capacity.');
-            }
-            $graph[(int) $rule->upper_base_competition_id][] = (int) $rule->lower_base_competition_id;
-        }
-        $this->assertAcyclic($graph);
+        $baseCompetitions = DB::table('base_competitions')->get()->keyBy('id');
+        $rules = CompetitionProgressionRule::query()->where('active', true)->get();
 
-        foreach (CompetitionQualificationRule::query()->where('active', true)->get() as $rule) {
-            $source = $base->get($rule->source_base_competition_id);
-            $target = $base->get($rule->target_base_competition_id);
-            if (! $source || ! $target || $target->type !== 'tournament') {
-                throw new LogicException('Qualification rules require an existing source and tournament target.');
+        foreach ($rules as $rule) {
+            $source = $baseCompetitions->get($rule->source_base_competition_id);
+            $target = $baseCompetitions->get($rule->target_base_competition_id);
+            if (! $source || ! $target) {
+                throw new LogicException('Progression rules require existing source and target competitions.');
             }
-            if ($rule->selector_type === 'league_position'
-                && ($source->type !== 'league' || ! $rule->position_from || ! $rule->position_to
-                    || $rule->position_from > $rule->position_to || $rule->position_to > $source->clubs_number)) {
-                throw new LogicException('Qualification league positions are invalid.');
+            if (! in_array($rule->progression_type, ['promotion', 'relegation', 'continental'], true)) {
+                throw new LogicException('Progression type is invalid.');
             }
-            if (! in_array($rule->selector_type, ['league_position', 'competition_winner'], true)) {
-                throw new LogicException('Qualification selector type is invalid.');
+            if (! in_array($rule->selector_type, ['position_range', 'bottom_positions', 'competition_winner'], true)) {
+                throw new LogicException('Progression selector type is invalid.');
             }
-            if (! in_array($rule->duplicate_policy, ['next_league_position', 'discard'], true)) {
-                throw new LogicException('Qualification duplicate policy is invalid.');
+            if ($rule->progression_type === 'continental' && $target->type !== 'tournament') {
+                throw new LogicException('Continental progression must target a tournament.');
+            }
+            if (in_array($rule->progression_type, ['promotion', 'relegation'], true)) {
+                if ($source->type !== 'league' || $target->type !== 'league'
+                    || $source->country_code !== $target->country_code) {
+                    throw new LogicException('Promotion and relegation must connect leagues in the same country.');
+                }
+            }
+            $this->validateSelector($rule, (int) $source->clubs_number);
+        }
+
+        $this->validateDomesticPairs($rules);
+    }
+
+    private function validateSelector(CompetitionProgressionRule $rule, int $clubCount): void
+    {
+        if ($rule->selector_type === 'position_range') {
+            if (! $rule->position_from || ! $rule->position_to
+                || $rule->position_from > $rule->position_to || $rule->position_to > $clubCount) {
+                throw new LogicException('Progression position range is invalid.');
+            }
+        }
+        if ($rule->selector_type === 'bottom_positions'
+            && (! $rule->places || $rule->places > $clubCount)) {
+            throw new LogicException('Bottom-position progression places are invalid.');
+        }
+        if (! in_array($rule->duplicate_policy, ['next_league_position', 'discard'], true)) {
+            throw new LogicException('Progression duplicate policy is invalid.');
+        }
+    }
+
+    private function validateDomesticPairs(Collection $rules): void
+    {
+        foreach ($rules->whereIn('progression_type', ['promotion', 'relegation']) as $rule) {
+            $oppositeType = $rule->progression_type === 'promotion' ? 'relegation' : 'promotion';
+            $opposite = $rules->first(fn (CompetitionProgressionRule $candidate): bool => $candidate->progression_type === $oppositeType
+                && $candidate->source_base_competition_id === $rule->target_base_competition_id
+                && $candidate->target_base_competition_id === $rule->source_base_competition_id
+            );
+            if (! $opposite || $this->places($rule) !== $this->places($opposite)) {
+                throw new LogicException('Promotion and relegation rules must have a balanced reverse rule.');
             }
         }
     }
 
-    private function assertAcyclic(array $graph): void
+    private function places(CompetitionProgressionRule $rule): int
     {
-        $visiting = [];
-        $visited = [];
-        $visit = function (int $node) use (&$visit, &$visiting, &$visited, $graph): void {
-            if (isset($visiting[$node])) {
-                throw new LogicException('League hierarchy contains a cycle.');
-            }
-            if (isset($visited[$node])) {
-                return;
-            }
-            $visiting[$node] = true;
-            foreach ($graph[$node] ?? [] as $child) {
-                $visit($child);
-            }
-            unset($visiting[$node]);
-            $visited[$node] = true;
-        };
-        foreach (array_keys($graph) as $node) {
-            $visit((int) $node);
-        }
+        return $rule->selector_type === 'bottom_positions'
+            ? (int) $rule->places
+            : (int) $rule->position_to - (int) $rule->position_from + 1;
     }
 }
