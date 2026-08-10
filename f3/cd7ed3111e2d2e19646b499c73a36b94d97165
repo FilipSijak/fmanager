@@ -1,0 +1,33 @@
+app/Services/SeasonService/SeasonCompletionService.php
+  s_d6a527b03c4b5b::t_e81a2de8b7ad91 1-13
+app/Listeners/CompleteSeason.php
+  s_d6a527b03c4b5b::t_e81a2de8b7ad91 1-11,13-18
+  s_d6a527b03c4b5b::t_c9e3022fb97663 12
+tests/Integration/Instance/SeasonCompletionTest.php
+  s_d6a527b03c4b5b::t_6deb9ffd464ffa 1-72
+app/Services/InstanceService/InstanceService.php
+  s_d6a527b03c4b5b::t_c34b48d61f9af9 6,79-83
+  s_d6a527b03c4b5b::t_c9e3022fb97663 17-26,35,51,68
+app/Events/SeasonCompleted.php
+  s_d6a527b03c4b5b::t_e81a2de8b7ad91 1-12,14
+  s_d6a527b03c4b5b::t_c9e3022fb97663 13
+app/Providers/EventServiceProvider.php
+  s_d6a527b03c4b5b::t_c34b48d61f9af9 6,8,28-31
+  s_d6a527b03c4b5b::t_c9e3022fb97663 35,39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "f3cd7ed3111e2d2e19646b499c73a36b94d97165",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
