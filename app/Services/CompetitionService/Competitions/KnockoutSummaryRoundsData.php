@@ -6,86 +6,110 @@ use App\Repositories\GameRepository;
 
 class KnockoutSummaryRoundsData
 {
-    private GameRepository $gameRepository;
+    public function __construct(private readonly GameRepository $gameRepository) {}
 
-    public function __construct(GameRepository $gameRepository)
+    public function getCurrentRound(string $knockoutSummary): array|int
     {
-        $this->gameRepository = $gameRepository;
-    }
+        $summary = json_decode($knockoutSummary, true, flags: JSON_THROW_ON_ERROR);
 
-    /** Gets data needed for all the related games within a specific round */
-    public function getCurrentRound(string $knockoutSummary): array | int
-    {
-        $knockoutSummary = json_decode($knockoutSummary, true);
-
-        if ($knockoutSummary['finals_match']) {
-            return $knockoutSummary['finals_match'];
+        if ($summary['finals_match']) {
+            return (int) $summary['finals_match'];
         }
 
-        $firstGroupRounds = $knockoutSummary['first_group']['rounds'];
-        $secondGroupRounds = $knockoutSummary['second_group']['rounds'];
-        $bothGroups = [];
+        $current = [
+            'first_group' => [],
+            'second_group' => [],
+        ];
 
-        for ($i = 1; $i <= $knockoutSummary['first_group']['num_rounds']; $i++) {
-            if (!isset($firstGroupRounds[$i + 1]) || empty($firstGroupRounds[$i + 1]['pairs'])) {
-                $bothGroups['first_group'] = (array) $firstGroupRounds[$i]['pairs'];
-                break;
+        $firstRound = $summary['first_group']['rounds'][1] ?? null;
+        if ($firstRound !== null && ! array_key_exists('status', $firstRound)) {
+            return $this->getLegacyCurrentRound($summary);
+        }
+
+        foreach (['first_group', 'second_group'] as $side) {
+            foreach ($summary[$side]['rounds'] as $round) {
+                $scheduledPairs = array_values(array_filter(
+                    $round['pairs'],
+                    static fn (array $pair): bool => $pair['match1Id'] !== null
+                ));
+
+                $roundCompleted = ($round['status'] ?? null) === 'completed'
+                    || (! array_key_exists('status', $round)
+                        && $round['pairs'] !== []
+                        && collect($round['pairs'])->every(
+                            static fn (array $pair): bool => $pair['winner'] !== null
+                        ));
+
+                if (! $roundCompleted && $scheduledPairs !== []) {
+                    $current[$side] = $scheduledPairs;
+                    break;
+                }
             }
         }
 
-        for ($i = 1; $i <= $knockoutSummary['first_group']['num_rounds']; $i++) {
-            if (!isset($secondGroupRounds[$i + 1]) || empty($secondGroupRounds[$i + 1]['pairs'])) {
-                $bothGroups['second_group'] = (array) $secondGroupRounds[$i]['pairs'];
-                break;
+        return $current;
+    }
+
+    private function getLegacyCurrentRound(array $summary): array
+    {
+        $current = [
+            'first_group' => [],
+            'second_group' => [],
+        ];
+
+        foreach (['first_group', 'second_group'] as $side) {
+            $rounds = $summary[$side]['rounds'];
+            $roundCount = (int) $summary[$side]['num_rounds'];
+
+            for ($round = 1; $round <= $roundCount; $round++) {
+                if (! isset($rounds[$round + 1]) || $rounds[$round + 1]['pairs'] === []) {
+                    $current[$side] = $rounds[$round]['pairs'];
+                    break;
+                }
             }
         }
 
-        return $bothGroups;
+        return $current;
     }
 
-    /** Returns knockout data only for the view layer
-     * (List of knockout matches to be played on the day and their return fixture).
-     */
     public function displayCurrentRound(string $knockoutSummary): array
     {
-        $roundPairsRaw = $this->getCurrentRound($knockoutSummary);
+        $currentRound = $this->getCurrentRound($knockoutSummary);
+
+        if (is_int($currentRound)) {
+            return [$this->gameRepository->getFullGameData($currentRound)];
+        }
 
         $presentationData = [];
 
-        foreach ($roundPairsRaw['first_group'] as $pair) {
-            $presentationData[] = $this->getPairRoundFullInfo($pair);
-        }
-
-        foreach ($roundPairsRaw['second_group'] as $pair) {
-            $presentationData[] = $this->getPairRoundFullInfo($pair);;
+        foreach (['first_group', 'second_group'] as $side) {
+            foreach ($currentRound[$side] as $pair) {
+                $presentationData[] = $this->getPairRoundFullInfo($pair);
+            }
         }
 
         return $presentationData;
     }
 
-    /**
-     * Returns knockout data only for the view layer.
-     * Frontend table for the tournament can be created from this
-     */
     public function displayAllRounds(string $summary): array
     {
-        $summary = (array) json_decode($summary, true);
+        $summary = json_decode($summary, true, flags: JSON_THROW_ON_ERROR);
+        $parsedCompetitionView = [
+            'first_group' => [],
+            'second_group' => [],
+        ];
 
-        $numRounds = $summary['first_group']['num_rounds'];
-        $parsedCompetitionView = [];
-        $parsedCompetitionView['first_group'] = [];
-        $parsedCompetitionView['second_group'] = [];
-
-        for ($i = 1; $i <= $numRounds; $i++) {
-            $parsedCompetitionView['first_group'][$i]['pairs'] = [];
-            $parsedCompetitionView['second_group'][$i]['pairs'] = [];
-
-            foreach ($summary['first_group']['rounds'][$i]['pairs'] as $pair) {
-                $parsedCompetitionView['first_group'][$i]['pairs'][] = $this->getPairRoundFullInfo($pair);
-            }
-
-            foreach ($summary['second_group']['rounds'][$i]['pairs'] as $pair) {
-                $parsedCompetitionView['second_group'][$i]['pairs'][] = $this->getPairRoundFullInfo($pair);
+        foreach (['first_group', 'second_group'] as $side) {
+            foreach ($summary[$side]['rounds'] as $roundNumber => $round) {
+                $parsedCompetitionView[$side][$roundNumber] = [
+                    'id' => $round['id'] ?? null,
+                    'name' => $round['name'] ?? null,
+                    'status' => $round['status'] ?? null,
+                    'pairs' => array_map(
+                        fn (array $pair): array => $this->getPairRoundFullInfo($pair),
+                        $round['pairs']
+                    ),
+                ];
             }
         }
 
@@ -96,8 +120,12 @@ class KnockoutSummaryRoundsData
     {
         return [
             'winner' => $pair['winner'],
-            'game1' => $this->gameRepository->getFullGameData($pair['match1Id']),
-            'game2' => $this->gameRepository->getFullGameData($pair['match2Id']),
+            'game1' => $pair['match1Id'] === null
+                ? null
+                : $this->gameRepository->getFullGameData($pair['match1Id']),
+            'game2' => $pair['match2Id'] === null
+                ? null
+                : $this->gameRepository->getFullGameData($pair['match2Id']),
         ];
     }
 }

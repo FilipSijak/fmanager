@@ -7,8 +7,11 @@ use App\Models\Competition;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Repositories\CompetitionRepository;
+use App\Repositories\GameRepository;
+use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
 use App\Services\CompetitionService\Competitions\Tournament;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
+use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +47,7 @@ class KnockoutPersistenceTest extends TestCase
             ]));
         }
 
-        $tournament = new Tournament();
+        $tournament = new Tournament;
         $schedule = $tournament->createTournament($clubs, $instance->id, $season->id);
         $schedule = $tournament->setTournamentFixtures(
             $instance->id,
@@ -53,7 +56,7 @@ class KnockoutPersistenceTest extends TestCase
             $competition->id,
             $season->start_date
         );
-        (new CompetitionDataSource())->storeTournamentKnockoutSchedule(
+        (new CompetitionDataSource)->storeTournamentKnockoutSchedule(
             $instance->id,
             $competition->id,
             $season->id,
@@ -71,6 +74,29 @@ class KnockoutPersistenceTest extends TestCase
         $this->assertDatabaseCount('tournament_knockout_ties', 7);
         $this->assertSame(8, DB::table('games')->whereNotNull('knockout_tie_id')->count());
 
+        $repository = new CompetitionRepository(new CompetitionDataSource);
+        $repository->setInstanceId($instance->id);
+        $repository->setSeasonId($season->id);
+        $summary = $repository->getCompetitionKnockoutStageSummary($competition->id);
+        $currentRound = (new KnockoutSummaryRoundsData(new GameRepository))->getCurrentRound($summary);
+
+        $this->assertCount(2, $currentRound['first_group']);
+        $this->assertCount(2, $currentRound['second_group']);
+        $this->assertNotNull($currentRound['first_group'][0]['match1Id']);
+        $this->assertSame(
+            ['quarter_final', 'semi_final', 'final'],
+            DB::table('tournament_knockout_rounds')->orderBy('round_number')
+                ->orderBy('bracket_side')->pluck('name')->unique()->values()->all()
+        );
+
+        app(CompetitionService::class)->makeTournament(
+            $clubs,
+            $competition->id,
+            $season->id,
+            $instance->id
+        );
+        $this->assertSame(8, DB::table('games')->whereNotNull('knockout_tie_id')->count());
+
         $firstRound = DB::table('tournament_knockout_rounds')
             ->where('bracket_side', 'first')
             ->where('round_number', 1)
@@ -79,7 +105,7 @@ class KnockoutPersistenceTest extends TestCase
             ->where('round_id', $firstRound->id)
             ->orderBy('position')
             ->get();
-        $updater = new TournamentUpdater(new CompetitionRepository(new CompetitionDataSource()));
+        $updater = new TournamentUpdater(new CompetitionRepository(new CompetitionDataSource));
         $updater->setInstanceId($instance->id);
         $updater->setSeason($season);
 

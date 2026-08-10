@@ -82,7 +82,14 @@ class CompleteGameService
             $game->save();
 
             $competition = Competition::findOrFail($game->competition_id);
-            if ($competition->type === 'tournament' && (int) $competition->groups === 1) {
+            $groupsActive = DB::table('competition_season')
+                ->where('instance_id', $game->instance_id)
+                ->where('season_id', $game->season_id)
+                ->where('competition_id', $game->competition_id)
+                ->where('groups_active', true)
+                ->exists();
+
+            if ($competition->type === 'tournament' && $groupsActive) {
                 $this->tournamentUpdater->setInstanceId($game->instance_id);
                 $this->tournamentUpdater->setSeason(Season::findOrFail($game->season_id));
                 $this->tournamentUpdater->transitionToKnockoutIfFinished($game->toArray());

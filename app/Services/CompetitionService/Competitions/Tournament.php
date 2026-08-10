@@ -4,112 +4,103 @@ namespace App\Services\CompetitionService\Competitions;
 
 use App\Models\Club;
 use App\Models\Game;
-
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 
 class Tournament
 {
-    public function createTournament(Collection|array $clubs, $instanceId = 1, $seasonId = 1)
+    private const MIN_PARTICIPANTS = 4;
+
+    private const MAX_PARTICIPANTS = 32;
+
+    private array $bracket;
+
+    public function __construct(
+        private readonly TournamentConfig $config = new TournamentConfig
+    ) {}
+
+    public function createTournament(Collection|array $clubs, int $instanceId = 1, int $seasonId = 1): array
     {
-        $clubsCount = count($clubs);
-        $halfSize   = ($clubsCount / 2);
-        $rounds     = 0;
+        $clubIds = collect($clubs)
+            ->map(fn ($club): int => is_object($club) ? (int) $club->id : (int) $club)
+            ->values()
+            ->all();
 
-        if ($halfSize < 2) {
-            return false;
-        }
+        $this->validateParticipants($clubIds);
 
-        $calcNumRounds = function ($n) use (&$calcNumRounds, &$rounds) {
-            if ($n % 2 == 1) {
-                return 1;
-            }
-
-            $rounds++;
-
-            return $calcNumRounds($n / 2);
-        };
-
-
-        $calcNumRounds($halfSize);
+        $clubCount = count($clubIds);
+        $halfSize = intdiv($clubCount, 2);
+        $sideRoundCount = (int) log($clubCount, 2) - 1;
 
         $this->bracket = [
-            "first_group"       => [
-                "num_rounds" => $rounds,
-                "rounds"     => [],
+            'first_group' => [
+                'num_rounds' => $sideRoundCount,
+                'rounds' => [],
             ],
-            "second_group"      => [
-                "num_rounds" => $rounds,
-                "rounds"     => [],
+            'second_group' => [
+                'num_rounds' => $sideRoundCount,
+                'rounds' => [],
             ],
-            "winner"            => null,
-            "second_placed"     => null,
-            "third_placed"      => null,
-            "finals_match"      => null,
-            "third_place_match" => null,
-            "instance_id"       => $instanceId,
-            "season_id"         => $seasonId,
+            'winner' => null,
+            'second_placed' => null,
+            'third_placed' => null,
+            'finals_match' => null,
+            'third_place_match' => null,
+            'instance_id' => $instanceId,
+            'season_id' => $seasonId,
         ];
 
-        for ($i = 1; $i <= $rounds; $i++) {
-            $this->bracket["first_group"]["rounds"][$i]  = ["pairs" => []];
-            $this->bracket["second_group"]["rounds"][$i] = ["pairs" => []];
+        for ($round = 1; $round <= $sideRoundCount; $round++) {
+            $this->bracket['first_group']['rounds'][$round] = ['pairs' => []];
+            $this->bracket['second_group']['rounds'][$round] = ['pairs' => []];
         }
 
-        for ($i = 0, $k = $clubsCount - 1; $i < $halfSize; $i++, $k--) {
-            if (!isset($clubs[$i])) {
-                dd($i);
-            }
-            $firstClubId = is_object($clubs[$i]) ? (int) $clubs[$i]->id : (int) $clubs[$i];
-            $secondClubId = is_object($clubs[$k]) ? (int) $clubs[$k]->id : (int) $clubs[$k];
-            $pair = $this->makePairMatches($firstClubId, $secondClubId);
-
-            // half of the pairs go into one group, the other half into a second group
-            if ($i < $halfSize / 2) {
-                $this->bracket["first_group"]["rounds"][1]["pairs"][] = $pair;
-            } else {
-                $this->bracket["second_group"]["rounds"][1]["pairs"][] = $pair;
-            }
+        for ($index = 0, $opponent = $clubCount - 1; $index < $halfSize; $index++, $opponent--) {
+            $pair = $this->makePairMatches($clubIds[$index], $clubIds[$opponent]);
+            $side = $index < intdiv($halfSize, 2) ? 'first_group' : 'second_group';
+            $this->bracket[$side]['rounds'][1]['pairs'][] = $pair;
         }
 
         return $this->bracket;
     }
 
-    public function setTournamentFixtures($instanceId, $seasonId, array $schedule, int $competitionId, string $startDate)
-    {
-        $carbonDate = Carbon::parse($startDate);
-        $firstGame  = $carbonDate->copy()->modify("next Tuesday");
-
+    public function setTournamentFixtures(
+        int $instanceId,
+        int $seasonId,
+        array $schedule,
+        int $competitionId,
+        string|\DateTimeInterface $startDate
+    ): array {
+        $firstLegDate = $this->config->firstTuesdayOnOrAfter($startDate);
+        $secondLegDate = $this->config->getSecondLegDate($firstLegDate);
         $firstRoundPairs = array_merge(
-            $schedule["first_group"]["rounds"][1]["pairs"],
-            $schedule["second_group"]["rounds"][1]["pairs"]
+            $schedule['first_group']['rounds'][1]['pairs'],
+            $schedule['second_group']['rounds'][1]['pairs']
         );
 
         foreach ($firstRoundPairs as $pair) {
-            $game    = new Game();
-            $rematch = new Game();
+            $firstGame = new Game;
+            $firstGame->instance_id = $instanceId;
+            $firstGame->season_id = $seasonId;
+            $firstGame->competition_id = $competitionId;
+            $firstGame->hometeam_id = $pair->match1->homeTeamId;
+            $firstGame->awayteam_id = $pair->match1->awayTeamId;
+            $firstGame->match_start = $firstLegDate;
+            $firstGame->stadium_id = Club::query()->findOrFail($pair->match1->homeTeamId)->stadium_id;
+            $firstGame->save();
 
-            $game->instance_id    = $instanceId;
-            $game->season_id      = $seasonId;
-            $game->competition_id = $competitionId;
-            $game->hometeam_id    = $pair->match1->homeTeamId;
-            $game->awayteam_id    = $pair->match1->awayTeamId;
-            $game->match_start    = $firstGame;
-            $game->stadium_id     = Club::where('id', $pair->match1->homeTeamId)->first()->stadium_id;
+            $secondGame = new Game;
+            $secondGame->instance_id = $instanceId;
+            $secondGame->season_id = $seasonId;
+            $secondGame->competition_id = $competitionId;
+            $secondGame->hometeam_id = $pair->match2->homeTeamId;
+            $secondGame->awayteam_id = $pair->match2->awayTeamId;
+            $secondGame->match_start = $secondLegDate;
+            $secondGame->stadium_id = Club::query()->findOrFail($pair->match2->homeTeamId)->stadium_id;
+            $secondGame->save();
 
-            $rematch->instance_id    = $instanceId;
-            $rematch->season_id      = $seasonId;
-            $rematch->competition_id = $competitionId;
-            $rematch->hometeam_id    = $pair->match2->homeTeamId;
-            $rematch->awayteam_id    = $pair->match2->awayTeamId;
-            $rematch->match_start    = $firstGame->copy()->addWeek();
-            $rematch->stadium_id     = Club::where('id', $pair->match2->homeTeamId)->first()->stadium_id;
-
-            $game->save();
-            $rematch->save();
-
-            $pair->match1Id = $game->id;
-            $pair->match2Id = $rematch->id;
+            $pair->match1Id = $firstGame->id;
+            $pair->match2Id = $secondGame->id;
         }
 
         return $schedule;
@@ -117,31 +108,38 @@ class Tournament
 
     public function setNextRoundPairs(array $clubs): array
     {
-        $clubsCount = count($clubs);
-        $halfSize   = ($clubsCount / 2);
-        $pairs      = [];
+        $clubIds = array_map('intval', array_values($clubs));
+        $clubCount = count($clubIds);
 
-        for ($i = 0, $k = $clubsCount - 1; $i < $halfSize; $i++, $k--) {
-            $pairs[] = $this->makePairMatches($clubs[$i], $clubs[$k]);
+        if ($clubCount < 2 || $clubCount % 2 !== 0) {
+            throw new InvalidArgumentException('A knockout round requires an even number of at least two clubs.');
+        }
+
+        if (count(array_unique($clubIds)) !== $clubCount) {
+            throw new InvalidArgumentException('Duplicate knockout round clubs are not allowed.');
+        }
+
+        $pairs = [];
+        $halfSize = intdiv($clubCount, 2);
+
+        for ($index = 0, $opponent = count($clubIds) - 1; $index < $halfSize; $index++, $opponent--) {
+            $pairs[] = $this->makePairMatches($clubIds[$index], $clubIds[$opponent]);
         }
 
         return $pairs;
     }
 
-    public function createTournamentGroups(array $clubs)
+    public function createTournamentGroups(array $clubs): array
     {
-        $currentGroup = 1;
+        if (count($clubs) === 0 || count($clubs) % 4 !== 0) {
+            throw new InvalidArgumentException('Tournament group stages require a non-zero multiple of four clubs.');
+        }
+
         $clubsByGroup = [];
-        $groupCounter = 1;
 
-        foreach ($clubs as $key => $club) {
-            if ($key % 4 == 0) {
-                $currentGroup                = $groupCounter;
-                $clubsByGroup[$currentGroup] = [];
-                $groupCounter++;
-            }
-
-            $clubsByGroup[$currentGroup][] = $clubs[$key]["id"];
+        foreach (array_values($clubs) as $index => $club) {
+            $groupId = intdiv($index, 4) + 1;
+            $clubsByGroup[$groupId][] = (int) $club['id'];
         }
 
         foreach ($clubsByGroup as &$group) {
@@ -151,20 +149,42 @@ class Tournament
         return $clubsByGroup;
     }
 
+    private function validateParticipants(array $clubIds): void
+    {
+        $count = count($clubIds);
+
+        if ($count < self::MIN_PARTICIPANTS || $count > self::MAX_PARTICIPANTS) {
+            throw new InvalidArgumentException(sprintf(
+                'Knockout tournaments require between %d and %d clubs; %d provided.',
+                self::MIN_PARTICIPANTS,
+                self::MAX_PARTICIPANTS,
+                $count
+            ));
+        }
+
+        if (($count & ($count - 1)) !== 0) {
+            throw new InvalidArgumentException(
+                "Knockout tournament club count must be a power of two; {$count} provided."
+            );
+        }
+
+        if (count(array_unique($clubIds)) !== $count) {
+            throw new InvalidArgumentException('Duplicate knockout tournament clubs are not allowed.');
+        }
+    }
+
     private function makePairMatches(int $firstTeamId, int $secondTeamId): \stdClass
     {
-        $pair   = new \stdClass();
-        $match1 = new \stdClass();
-        $match2 = new \stdClass();
-
-        $match1->homeTeamId = $firstTeamId;
-        $match1->awayTeamId = $secondTeamId;
-        $match2->homeTeamId = $secondTeamId;
-        $match2->awayTeamId = $firstTeamId;
-
-        $pair->match1   = $match1;
-        $pair->match2   = $match2;
-        $pair->winner   = null;
+        $pair = new \stdClass;
+        $pair->match1 = (object) [
+            'homeTeamId' => $firstTeamId,
+            'awayTeamId' => $secondTeamId,
+        ];
+        $pair->match2 = (object) [
+            'homeTeamId' => $secondTeamId,
+            'awayTeamId' => $firstTeamId,
+        ];
+        $pair->winner = null;
         $pair->match1Id = null;
         $pair->match2Id = null;
 

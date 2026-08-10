@@ -93,13 +93,14 @@ class CompetitionSeasonMappingTest extends TestCase
             ],
         ]);
 
-        (new CompetitionDataSource())->storeInitialCompetitionSeasonClubs(10, 20);
+        (new CompetitionDataSource)->storeInitialCompetitionSeasonClubs(10, 20);
 
         $this->assertDatabaseHas('competition_season', [
             'instance_id' => 10,
             'season_id' => 20,
             'competition_id' => 300,
             'club_id' => 400,
+            'groups_active' => false,
             'points' => 0,
         ]);
 

@@ -6,26 +6,27 @@ use App\Models\Competition;
 use App\Models\Season;
 use App\Services\CompetitionService\Competitions\CompetitionUpdater;
 use App\Services\CompetitionService\Competitions\GroupStageScheduleGenerator;
+use App\Services\CompetitionService\Competitions\LeagueScheduleGenerator;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\Tournament;
+use App\Services\CompetitionService\Competitions\TournamentConfig;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use App\Services\CompetitionService\Competitions\LeagueScheduleGenerator;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-
+use Illuminate\Support\Facades\DB;
 
 class CompetitionService implements ICompetitionService
 {
     private Season $season;
-    private int    $instanceId;
+
+    private int $instanceId;
 
     public function __construct(
         LeagueUpdater $leagueUpdater,
         TournamentUpdater $tournamentUpdater,
         private readonly CompetitionDataSource $competitionDataSource
-    )
-    {
+    ) {
         $this->leagueUpdater = $leagueUpdater;
         $this->tournamentUpdater = $tournamentUpdater;
     }
@@ -49,38 +50,58 @@ class CompetitionService implements ICompetitionService
         return Competition::all();
     }
 
-    public function makeTournament(Collection $clubs, $competitionId, $seasonId, $instanceId)
+    public function makeTournament(Collection $clubs, $competitionId, $seasonId, $instanceId): void
     {
-        $tournament = new Tournament();
-        $dataSource = new CompetitionDataSource();
-        $season = Season::where('id', $seasonId)->first();
+        if (DB::table('tournament_knockout')
+            ->where('instance_id', $instanceId)
+            ->where('competition_id', $competitionId)
+            ->where('season_id', $seasonId)
+            ->exists()) {
+            return;
+        }
 
-        $groupSchedule = $tournament->createTournament($clubs, $instanceId, $seasonId);
-        $schedule = $tournament->setTournamentFixtures($instanceId, $seasonId, $groupSchedule, $competitionId, $season->start_date);
-        $dataSource->storeTournamentKnockoutSchedule($instanceId, $competitionId, $seasonId, $schedule);
+        DB::transaction(function () use ($clubs, $competitionId, $seasonId, $instanceId): void {
+            $season = Season::query()
+                ->where('instance_id', $instanceId)
+                ->findOrFail($seasonId);
+            $config = new TournamentConfig($season->start_date);
+            $tournament = new Tournament($config);
+            $schedule = $tournament->createTournament($clubs, $instanceId, $seasonId);
+            $schedule = $tournament->setTournamentFixtures(
+                $instanceId,
+                $seasonId,
+                $schedule,
+                $competitionId,
+                $config->getStartDate()
+            );
+
+            $this->competitionDataSource->storeTournamentKnockoutSchedule(
+                $instanceId,
+                $competitionId,
+                $seasonId,
+                $schedule
+            );
+        });
     }
 
-    public function updateTournamentSchedule()
-    {
-
-    }
+    public function updateTournamentSchedule() {}
 
     public function tournamentNewRound(array $clubs)
     {
-        $tournament = new Tournament();
+        $tournament = new Tournament;
 
         return $tournament->setNextRoundPairs($clubs);
     }
 
     public function makeTournamentGroupStage(Collection $clubs, $competitionId, $seasonId, $instanceId)
     {
-        $tournament = new Tournament();
+        $tournament = new Tournament;
         $groups = $tournament->createTournamentGroups($clubs->toArray());
         $season = Season::query()->findOrFail($seasonId);
 
         $this->competitionDataSource->insertTournamentGroups($instanceId, $groups, $competitionId, $seasonId);
 
-        $fixtures = (new GroupStageScheduleGenerator())->generate(
+        $fixtures = (new GroupStageScheduleGenerator)->generate(
             $groups,
             Carbon::parse($season->start_date)->toDateTimeImmutable()
         );

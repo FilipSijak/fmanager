@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\ClubCompetitionProgression;
+use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
@@ -147,6 +148,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                         'awayTeamId' => $secondGame->awayteam_id ?? $tie->home_club_id,
                     ],
                     'winner' => $tie->winner_club_id,
+                    'status' => $tie->status,
                     'match1Id' => $firstGame->id ?? null,
                     'match2Id' => $secondGame->id ?? null,
                 ];
@@ -243,6 +245,12 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
         int $competitionId,
         int $clubId
     ): void {
+        $groupsActive = Competition::query()
+            ->whereKey($competitionId)
+            ->where('type', 'tournament')
+            ->where('groups', 1)
+            ->exists();
+
         DB::table('competition_season')->updateOrInsert(
             [
                 'instance_id' => $instanceId,
@@ -252,6 +260,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ],
             [
                 'group_id' => null,
+                'groups_active' => $groupsActive,
                 'points' => 0,
                 'goals_for' => 0,
                 'goals_against' => 0,
