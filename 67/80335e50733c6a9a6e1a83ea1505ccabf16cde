@@ -1,0 +1,43 @@
+app/Http/Controllers/CompetitionController.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 21,26,45,53
+app/Models/ClubCompetitionMovement.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 2,4,6-12
+app/Services/CompetitionService/Progression/ProgressionRuleValidator.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 19,35,39,43,46
+app/Models/ClubCompetitionQualification.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 2,4,6-10
+app/Models/LeagueTierRule.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 2,4,6-12
+app/Console/Commands/CalculateSeasonProgression.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 11,18
+app/Services/CompetitionService/Progression/FinalLeagueTableService.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 24
+app/Models/CompetitionQualificationRule.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 2,4,6-12
+database/seeders/DatabaseSeeder.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 5,37-40,42-43
+app/Services/CompetitionService/Progression/ContinentalQualificationService.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 27,82,91,110,130,134,138
+database/migrations/2026_08_10_000001_create_competition_movement_and_qualification_tables.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 8-9
+tests/Integration/Services/CompetitionService/Progression/SeasonProgressionServiceTest.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 165
+routes/api.php
+  s_8e3e42f4a1ca30::t_c8c91fd0e30a5a 11,29-30,34-35,49,59,68,92,103,111
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "6780335e50733c6a9a6e1a83ea1505ccabf16cde",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
