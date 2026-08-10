@@ -1,0 +1,55 @@
+tests/Integration/Services/CompetitionService/Progression/SeasonProgressionServiceTest.php
+  s_8e3e42f4a1ca30::t_62f89cc75af91e 1-167
+app/Http/Controllers/CompetitionController.php
+  s_8e3e42f4a1ca30::t_8a42d10a7cb102 12-13,23-25,43-55
+  s_8e3e42f4a1ca30::t_544e765786588f 56
+routes/api.php
+  s_8e3e42f4a1ca30::t_8a42d10a7cb102 72-73
+app/Models/ClubCompetitionMovement.php
+  s_8e3e42f4a1ca30::t_ca24efd63958ba 1-4
+database/migrations/2026_08_10_000001_create_competition_movement_and_qualification_tables.php
+  s_8e3e42f4a1ca30::t_eeaf8e9429a902 76-80
+  s_8e3e42f4a1ca30::t_a9a273b33e6911 21-22,38-39,55-58
+  s_8e3e42f4a1ca30::t_ca24efd63958ba 1-20,23-37,40-54,59-75,81-107
+app/Models/ClubCompetitionQualification.php
+  s_8e3e42f4a1ca30::t_ca24efd63958ba 1-4
+app/Services/CompetitionService/Progression/ProgressionRuleValidator.php
+  s_8e3e42f4a1ca30::t_558275919ff44f 1-74
+app/Services/CompetitionService/Progression/FinalLeagueTableService.php
+  s_8e3e42f4a1ca30::t_af66e13d477fc8 1-27
+app/Services/CompetitionService/Progression/CompetitionProgressionEligibility.php
+  s_8e3e42f4a1ca30::t_af66e13d477fc8 1-24
+app/Models/CompetitionQualificationRule.php
+  s_8e3e42f4a1ca30::t_ca24efd63958ba 1-4
+app/Console/Commands/CalculateSeasonProgression.php
+  s_8e3e42f4a1ca30::t_558275919ff44f 1-19
+app/Services/CompetitionService/Progression/ContinentalQualificationService.php
+  s_8e3e42f4a1ca30::t_12116091da5f06 96-98,100
+  s_8e3e42f4a1ca30::t_afa138768e0ec6 1-95,99,101-138
+app/Models/LeagueTierRule.php
+  s_8e3e42f4a1ca30::t_ca24efd63958ba 1-4
+database/seeders/CompetitionProgressionRulesSeeder.php
+  s_8e3e42f4a1ca30::t_af66e13d477fc8 1-43
+database/seeders/DatabaseSeeder.php
+  s_8e3e42f4a1ca30::t_af66e13d477fc8 35-36
+app/Services/CompetitionService/Progression/SeasonProgressionService.php
+  s_8e3e42f4a1ca30::t_558275919ff44f 1-67
+app/Services/CompetitionService/Progression/DomesticMovementService.php
+  s_8e3e42f4a1ca30::t_afa138768e0ec6 1-83
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "e5faba5fe6d1062619ba9cc6c3235f8616502e57",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
