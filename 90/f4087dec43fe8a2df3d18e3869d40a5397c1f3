@@ -1,0 +1,42 @@
+database/seeders/CompetitionProgressionRulesSeeder.php
+  s_8e3e42f4a1ca30::t_93d5756a545eeb 22
+  s_8e3e42f4a1ca30::t_47cded934767d0 23-27
+database/seeders/EuropeanClubsSeeder.php
+  s_d6a527b03c4b5b::t_6d6e3f548825a1 62-65,68-71,74-77,80-83,86-90,93-96,99-102
+  s_d6a527b03c4b5b::t_b2cf86208ac6e1 1-15,20,22-30,32-60,67,72-73,78-79,84-85,91-92,97-98,103-106
+  s_d6a527b03c4b5b::t_bc88196fe941bf 16-19,21,31,61,66
+app/Services/CompetitionService/Competitions/LeagueScheduleGenerator.php
+  s_8e3e42f4a1ca30::t_e9b87b94065623 10,14-15,137
+  s_8e3e42f4a1ca30::t_7daa4487cf2595 76-82,85-86,89-90
+  s_8e3e42f4a1ca30::t_b1a72c9af5016a 16,45
+database/seeders/DatabaseSeeder.php
+  s_d6a527b03c4b5b::t_c93c336ace5cb7 27
+database/base_competitions.sql
+  s_8e3e42f4a1ca30::t_db669e6c8bd950 3,5,10-13
+app/Services/CompetitionService/Competitions/RoundRobinScheduleGenerator.php
+  s_8e3e42f4a1ca30::t_e9b87b94065623 10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "90f4087dec43fe8a2df3d18e3869d40a5397c1f3",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    },
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
