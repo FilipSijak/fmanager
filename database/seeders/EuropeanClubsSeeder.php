@@ -64,6 +64,12 @@ class EuropeanClubsSeeder extends Seeder
                 'Nottingham Forest|Nottingham', 'Everton|Liverpool', 'Fulham|London', 'AFC Bournemouth|Bournemouth', 'Brentford|London',
                 'Sunderland|Sunderland', 'Leeds United|Leeds', 'Coventry City|Coventry', 'Ipswich Town|Ipswich', 'Hull City|Kingston upon Hull',
             ]],
+            8 => ['GBR', 13, [
+                'Leicester City|Leicester', 'Southampton|Southampton', 'Wolverhampton Wanderers|Wolverhampton', 'Burnley|Burnley', 'Sheffield United|Sheffield',
+                'Middlesbrough|Middlesbrough', 'West Bromwich Albion|West Bromwich', 'Norwich City|Norwich', 'Watford|Watford', 'Blackburn Rovers|Blackburn',
+                'Bristol City|Bristol', 'Millwall|London', 'Queens Park Rangers|London', 'Swansea City|Swansea', 'Preston North End|Preston',
+                'Stoke City|Stoke-on-Trent', 'Derby County|Derby', 'Portsmouth|Portsmouth', 'Sheffield Wednesday|Sheffield', 'Oxford United|Oxford',
+            ]],
             2 => ['DEU', 19, [
                 'Bayern Munich|Munich', 'Borussia Dortmund|Dortmund', 'Bayer Leverkusen|Leverkusen', 'RB Leipzig|Leipzig', 'Eintracht Frankfurt|Frankfurt',
                 'VfB Stuttgart|Stuttgart', 'SC Freiburg|Freiburg im Breisgau', 'Borussia Mönchengladbach|Mönchengladbach', 'Werder Bremen|Bremen', 'Hamburger SV|Hamburg',
@@ -94,6 +100,12 @@ class EuropeanClubsSeeder extends Seeder
                 'Lens|Lens', 'Strasbourg|Strasbourg', 'Nice|Nice', 'Rennes|Rennes', 'Brest|Brest',
                 'Toulouse|Toulouse', 'Auxerre|Auxerre', 'Lorient|Lorient', 'Paris FC|Paris', 'Angers|Angers',
                 'Le Havre|Le Havre', 'Troyes|Troyes', 'Le Mans|Le Mans',
+            ]],
+            5 => ['ITA', 19, [
+                'Inter Milan|Milan', 'Juventus|Turin', 'AC Milan|Milan', 'Napoli|Naples', 'Atalanta|Bergamo',
+                'Roma|Rome', 'Lazio|Rome', 'Fiorentina|Florence', 'Bologna|Bologna', 'Torino|Turin',
+                'Como|Como', 'Udinese|Udine', 'Genoa|Genoa', 'Parma|Parma', 'Cagliari|Cagliari',
+                'Verona|Verona', 'Lecce|Lecce', 'Sassuolo|Sassuolo', 'Pisa|Pisa', 'Cremonese|Cremona',
             ]],
             12 => ['FRA', 13, [
                 'Nantes|Nantes', 'Metz|Metz', 'Saint-Étienne|Saint-Étienne', 'Reims|Reims', 'Montpellier|Montpellier',

@@ -19,6 +19,7 @@ use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\PersonService;
+use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -33,28 +34,33 @@ class CreateInstanceTest extends TestCase
     {
         parent::setUp();
 
-        $this->clubId         = Club::factory()->make(['id' => 1])->id;
-        $this->managerId      = Manager::factory()->make(['id' => 1])->id;
-        $this->userId         = User::factory()->make(['id' => 1])->id;
+        $this->clubId = Club::factory()->make(['id' => 1])->id;
+        $this->managerId = Manager::factory()->make(['id' => 1])->id;
+        $this->userId = User::factory()->make(['id' => 1])->id;
     }
 
     #[Test]
     public function it_can_setup_a_new_game()
     {
         $createInstance = $this->getNewInstance();
-        (new DatabaseSeeder())->run();
+        (new DatabaseSeeder)->run();
         $createInstance->instanceInit();
         $instance = Instance::all()->first();
         $tournament = Competition::where('type', 'tournament')->where('groups', 0)->first();
         $tournamentGroup = Competition::where('type', 'tournament')->where('groups', 1)->first();
         $season = Season::where('instance_id', $instance->id)->firstOrFail();
 
+        $this->assertSame(
+            Carbon::create((int) date('Y'), 7, 1)->toDateString(),
+            $instance->instance_date
+        );
+
         $this->assertDatabaseHas(
             'instances',
             [
-                'id'         => $instance->id,
-                'club_id'    => $this->clubId,
-                'user_id'    => $this->userId,
+                'id' => $instance->id,
+                'club_id' => $this->clubId,
+                'user_id' => $this->userId,
                 'manager_id' => $this->managerId,
             ]
         );
@@ -70,7 +76,7 @@ class CreateInstanceTest extends TestCase
             [
                 'instance_id' => $instance->id,
                 'competition_id' => $tournament->id,
-                'season_id' => $season->id
+                'season_id' => $season->id,
             ]
         );
 
@@ -79,7 +85,7 @@ class CreateInstanceTest extends TestCase
             [
                 'instance_id' => $instance->id,
                 'season_id' => $season->id,
-                'competition_id' => $tournament->id
+                'competition_id' => $tournament->id,
             ]
         );
 
@@ -88,7 +94,7 @@ class CreateInstanceTest extends TestCase
             [
                 'instance_id' => $instance->id,
                 'season_id' => $season->id,
-                'competition_id' => $tournamentGroup->id
+                'competition_id' => $tournamentGroup->id,
             ]
         );
 
@@ -98,14 +104,32 @@ class CreateInstanceTest extends TestCase
             ->where('cs.season_id', $season->id)
             ->where('c.type', 'league')
             ->groupBy('cs.competition_id')
-            ->havingRaw('COUNT(*) = 20')
             ->pluck('cs.competition_id');
 
         $this->assertNotEmpty($leagueCompetitionIdsWithClubs);
 
+        $championship = Competition::query()
+            ->where('instance_id', $instance->id)
+            ->where('base_competition_id', 8)
+            ->firstOrFail();
+        $this->assertSame(
+            20,
+            DB::table('competition_season')
+                ->where('instance_id', $instance->id)
+                ->where('season_id', $season->id)
+                ->where('competition_id', $championship->id)
+                ->count()
+        );
+
         foreach ($leagueCompetitionIdsWithClubs as $competitionId) {
+            $clubCount = DB::table('competition_season')
+                ->where('instance_id', $instance->id)
+                ->where('season_id', $season->id)
+                ->where('competition_id', $competitionId)
+                ->count();
+
             $this->assertEquals(
-                380,
+                $clubCount * ($clubCount - 1),
                 Game::where('instance_id', $instance->id)
                     ->where('season_id', $season->id)
                     ->where('competition_id', $competitionId)
@@ -129,41 +153,69 @@ class CreateInstanceTest extends TestCase
             );
         }
 
+        $continentalCompetitions = Competition::query()
+            ->where('instance_id', $instance->id)
+            ->where('competition_scope', 'continental')
+            ->get();
+
+        foreach ($continentalCompetitions as $continentalCompetition) {
+            $memberships = DB::table('competition_season')
+                ->where('competition_season.instance_id', $instance->id)
+                ->where('competition_season.season_id', $season->id)
+                ->where('competition_season.competition_id', $continentalCompetition->id);
+
+            $this->assertSame($continentalCompetition->clubs_number, $memberships->count());
+            $this->assertSame(
+                5,
+                (clone $memberships)
+                    ->join('clubs', 'clubs.id', '=', 'competition_season.club_id')
+                    ->distinct()
+                    ->count('clubs.country_code')
+            );
+        }
+
+        $continentalMemberships = DB::table('competition_season AS cs')
+            ->join('competitions AS competition', 'competition.id', '=', 'cs.competition_id')
+            ->where('cs.instance_id', $instance->id)
+            ->where('cs.season_id', $season->id)
+            ->where('competition.competition_scope', 'continental');
+
+        $this->assertSame(96, (clone $continentalMemberships)->count());
+        $this->assertSame(96, (clone $continentalMemberships)->distinct()->count('cs.club_id'));
         $this->assertDatabaseHas(
             'seasons',
             [
-                'id'         => $season->id,
+                'id' => $season->id,
                 'start_date' => $season->start_date,
-                'end_date'   => $season->end_date,
+                'end_date' => $season->end_date,
             ]
         );
 
         $club = Club::all()->first();
         $players = Player::where('instance_id', $instance->id)->where('club_id', $club->id)->get();
 
-        //atm each club should have 36 players assigned when creating a game
+        // atm each club should have 36 players assigned when creating a game
         $this->assertEquals(36, $players->count());
     }
 
     protected function getNewInstance(): CreateInstance
     {
-        $this->competitionDataSource = new CompetitionDataSource();
+        $this->competitionDataSource = new CompetitionDataSource;
         $this->competitionRepository = new CompetitionRepository($this->competitionDataSource);
         $this->competitionService = new CompetitionService(
             (new LeagueUpdater($this->competitionRepository)),
             (new TournamentUpdater($this->competitionRepository)),
             $this->competitionDataSource
         );
-        $this->personService = new PersonService();
+        $this->personService = new PersonService;
 
-        return (
+        return
             new CreateInstance(
                 app()->make(CompetitionService::class),
                 app()->make(PersonService::class),
                 app()->make(CompetitionRepository::class),
                 app()->make(PlayerPotential::class),
                 app()->make(PlayerRepository::class)
-            )
-        );
+            );
     }
 }
