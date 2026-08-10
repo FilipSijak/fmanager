@@ -1,0 +1,44 @@
+app/Http/Resources/ClubResource.php
+  s_8e3e42f4a1ca30::t_32e7c8aaa507d3 19
+app/Repositories/PlayerRepository.php
+  s_8e3e42f4a1ca30::t_6d4d3cfd0474ad 160
+app/Http/Resources/DashboardResource.php
+  s_8e3e42f4a1ca30::t_32e7c8aaa507d3 33
+database/migrations/2020_02_10_193454_create_clubs_table.php
+  s_8e3e42f4a1ca30::t_32e7c8aaa507d3 26
+database/factories/ClubFactory.php
+  s_8e3e42f4a1ca30::t_32e7c8aaa507d3 31
+  s_8e3e42f4a1ca30::t_46c7cf367d4a91 30
+database/migrations/2024_02_20_181504_create_accounts_table.php
+  s_8e3e42f4a1ca30::t_7fd0db60c57e05 14-18
+database/clubs.sql
+  s_8e3e42f4a1ca30::t_cfbe96850366e2 1-23
+database/base_clubs.sql
+  s_8e3e42f4a1ca30::t_6126288092cd1c 1-23
+app/Services/InstanceService/InstanceData/InitialSeed.php
+  s_8e3e42f4a1ca30::t_7fd0db60c57e05 39,53-54,56-58
+database/base_stadiums.sql
+  s_8e3e42f4a1ca30::t_6126288092cd1c 1-2,8,10-12,16,19,26,28,30,33,36-37,45,47-49
+  s_8e3e42f4a1ca30::t_7fd0db60c57e05 34
+database/migrations/2020_02_10_193453_create_base_clubs_table.php
+  s_8e3e42f4a1ca30::t_f6956f2ab3c031 26
+  s_8e3e42f4a1ca30::t_32e7c8aaa507d3 25
+  s_8e3e42f4a1ca30::t_5c4dd04651cbdb 27
+  s_8e3e42f4a1ca30::t_91a4452b51cc7a 28-29
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "621aac1fb84cb75e8a0fd5168da24eb55f4d1dc1",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
