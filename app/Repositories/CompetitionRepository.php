@@ -2,11 +2,14 @@
 
 namespace App\Repositories;
 
+use App\Models\ClubCompetitionProgression;
 use App\Models\Game;
 use App\Models\Instance;
+use App\Models\Season;
 use App\Repositories\Interfaces\ICompetitionRepository;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\GameService\GameService;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -74,7 +77,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->where('competition_id', $competitionId)
             ->first();
 
-        if (!$knockout) {
+        if (! $knockout) {
             return '';
         }
 
@@ -155,13 +158,118 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
         $this->competitionDataSource->storeInitialCompetitionSeasonClubs($instanceId, $seasonId);
     }
 
+    public function applyCompetitionProgressions(int $instanceId, int $sourceSeasonId): Season
+    {
+        return DB::transaction(function () use ($instanceId, $sourceSeasonId): Season {
+            $sourceSeason = Season::query()
+                ->where('instance_id', $instanceId)
+                ->lockForUpdate()
+                ->findOrFail($sourceSeasonId);
+
+            $nextStartDate = Carbon::parse($sourceSeason->start_date)->addYear();
+            $nextEndDate = Carbon::create($nextStartDate->year + 1, 6, 15);
+
+            $nextSeason = Season::query()
+                ->where('instance_id', $instanceId)
+                ->whereDate('start_date', $nextStartDate)
+                ->first();
+
+            if (! $nextSeason) {
+                $nextSeason = new Season;
+                $nextSeason->instance_id = $instanceId;
+                $nextSeason->start_date = $nextStartDate->toDateString();
+                $nextSeason->end_date = $nextEndDate->toDateString();
+                $nextSeason->save();
+            }
+
+            $domesticMemberships = DB::table('competition_season AS cs')
+                ->join('competitions AS competition', 'competition.id', '=', 'cs.competition_id')
+                ->where('cs.instance_id', $instanceId)
+                ->where('cs.season_id', $sourceSeasonId)
+                ->where('competition.instance_id', $instanceId)
+                ->where('competition.competition_scope', 'domestic')
+                ->select('cs.competition_id', 'cs.club_id')
+                ->distinct()
+                ->get();
+
+            foreach ($domesticMemberships as $membership) {
+                $this->storeCompetitionSeasonMembership(
+                    $instanceId,
+                    $nextSeason->id,
+                    (int) $membership->competition_id,
+                    (int) $membership->club_id
+                );
+            }
+
+            $progressions = ClubCompetitionProgression::query()
+                ->where('instance_id', $instanceId)
+                ->where('source_season_id', $sourceSeasonId)
+                ->whereIn('status', ['pending', 'applied'])
+                ->lockForUpdate()
+                ->get();
+
+            foreach ($progressions as $progression) {
+                if (in_array($progression->progression_type, ['promotion', 'relegation'], true)) {
+                    DB::table('competition_season')
+                        ->where('instance_id', $instanceId)
+                        ->where('season_id', $nextSeason->id)
+                        ->where('competition_id', $progression->source_competition_id)
+                        ->where('club_id', $progression->club_id)
+                        ->delete();
+                }
+
+                $this->storeCompetitionSeasonMembership(
+                    $instanceId,
+                    $nextSeason->id,
+                    (int) $progression->target_competition_id,
+                    (int) $progression->club_id
+                );
+
+                if ($progression->status === 'pending') {
+                    $progression->forceFill([
+                        'status' => 'applied',
+                        'applied_at' => now(),
+                    ])->save();
+                }
+            }
+
+            return $nextSeason;
+        });
+    }
+
+    private function storeCompetitionSeasonMembership(
+        int $instanceId,
+        int $seasonId,
+        int $competitionId,
+        int $clubId
+    ): void {
+        DB::table('competition_season')->updateOrInsert(
+            [
+                'instance_id' => $instanceId,
+                'season_id' => $seasonId,
+                'competition_id' => $competitionId,
+                'club_id' => $clubId,
+            ],
+            [
+                'group_id' => null,
+                'points' => 0,
+                'goals_for' => 0,
+                'goals_against' => 0,
+                'played' => 0,
+                'wins' => 0,
+                'draws' => 0,
+                'losses' => 0,
+            ]
+        );
+    }
+
     public function getScheduledGames(Instance $instance)
     {
         return Game::where('instance_id', $instance->id)
-                   ->whereDate('match_start', $instance->instance_date)
-                   ->whereNull('processed_at')
-                   ->whereIn('status', [Game::STATUS_SCHEDULED, Game::STATUS_POSTPONED])
-                   ->get();
+            ->whereDate('match_start', $instance->instance_date)
+            ->whereNull('processed_at')
+            ->whereIn('status', [Game::STATUS_SCHEDULED, Game::STATUS_POSTPONED])
+            ->get();
     }
 
     public function updateCompetitionTable(array $game): void
@@ -195,7 +303,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
         }
 
         DB::update(
-            "
+            '
                 UPDATE competition_season
                 SET points = coalesce(points, 0) + :points,
                     played = played + 1,
@@ -208,23 +316,23 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                 AND competition_id = :competitionId
                 AND season_id = :seasonId
                 AND instance_id = :instanceId
-            ",
+            ',
             [
-                "points" => $homeTeamPoints,
-                "wins" => $homeTeamWins,
-                "draws" => $homeTeamDraws,
-                "losses" => $homeTeamLosses,
-                "goalsFor" => $game['home_team_goals'],
-                "goalsAgainst" => $game['away_team_goals'],
-                "clubId" => $game['hometeam_id'],
-                "competitionId" => $game['competition_id'],
-                "seasonId" => $game['season_id'],
-                "instanceId" => $game['instance_id'],
+                'points' => $homeTeamPoints,
+                'wins' => $homeTeamWins,
+                'draws' => $homeTeamDraws,
+                'losses' => $homeTeamLosses,
+                'goalsFor' => $game['home_team_goals'],
+                'goalsAgainst' => $game['away_team_goals'],
+                'clubId' => $game['hometeam_id'],
+                'competitionId' => $game['competition_id'],
+                'seasonId' => $game['season_id'],
+                'instanceId' => $game['instance_id'],
             ]
         );
 
         DB::update(
-            "
+            '
                 UPDATE competition_season
                 SET points = coalesce(points, 0) + :points,
                     played = played + 1,
@@ -237,33 +345,28 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                 AND competition_id = :competitionId
                 AND season_id = :seasonId
                 AND instance_id = :instanceId
-            ",
+            ',
             [
-                "points" => $awayTeamPoints,
-                "wins" => $awayTeamWins,
-                "draws" => $awayTeamDraws,
-                "losses" => $awayTeamLosses,
-                "goalsFor" => $game['away_team_goals'],
-                "goalsAgainst" => $game['home_team_goals'],
-                "clubId" => $game['awayteam_id'],
-                "competitionId" => $game['competition_id'],
-                "seasonId" => $game['season_id'],
-                "instanceId" => $game['instance_id'],
+                'points' => $awayTeamPoints,
+                'wins' => $awayTeamWins,
+                'draws' => $awayTeamDraws,
+                'losses' => $awayTeamLosses,
+                'goalsFor' => $game['away_team_goals'],
+                'goalsAgainst' => $game['home_team_goals'],
+                'clubId' => $game['awayteam_id'],
+                'competitionId' => $game['competition_id'],
+                'seasonId' => $game['season_id'],
+                'instanceId' => $game['instance_id'],
             ]
         );
     }
 
-
     /**
      * Checks if all the games from the group stage have been played
-     *
-     * @param array $match
-     *
-     * @return bool
      */
     public function tournamentGroupsFinished(array $match): bool
     {
-        return !DB::table('games')
+        return ! DB::table('games')
             ->where('competition_id', $match['competition_id'])
             ->where('season_id', $match['season_id'])
             ->where('instance_id', $match['instance_id'])
@@ -281,7 +384,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
     public function topClubsByTournamentGroup(int $competitionId): array
     {
         return DB::select(
-            "
+            '
                 SELECT ranked.*
                 FROM (
                     SELECT
@@ -305,7 +408,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                 ) AS ranked
                 WHERE ranked.position <= 2
                 ORDER BY ranked.group_id, ranked.position
-            ",
+            ',
             [
                 'competitionId' => $competitionId,
                 'seasonId' => $this->seasonId(),
@@ -323,15 +426,15 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             return false;
         }
 
-        $team1 = new \stdClass();
-        $team2 = new \stdClass();
+        $team1 = new \stdClass;
+        $team2 = new \stdClass;
 
-        $team1->id     = $match1->hometeam_id;
-        $team2->id     = $match1->awayteam_id;
-        $team1->goals  = $match1->home_team_goals;
-        $team2->goals  = $match1->away_team_goals;
-        $team1->goals  += $match2->away_team_goals;
-        $team2->goals  += $match2->home_team_goals;
+        $team1->id = $match1->hometeam_id;
+        $team2->id = $match1->awayteam_id;
+        $team1->goals = $match1->home_team_goals;
+        $team2->goals = $match1->away_team_goals;
+        $team1->goals += $match2->away_team_goals;
+        $team2->goals += $match2->home_team_goals;
         $team1->points = 0;
         $team2->points = 0;
 
@@ -364,7 +467,8 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
         // same amount of points - checking goal difference or simulating extra time
         if ($team1->points == $team2->points) {
             if ($team1->goals == $team2->goals) {
-                $matchService = new GameService();
+                $matchService = new GameService;
+
                 return $matchService->simulateMatchExtraTime($match2->id);
             } else {
                 return $team1->goals > $team2->goals ? $team1->id : $team2->id;
