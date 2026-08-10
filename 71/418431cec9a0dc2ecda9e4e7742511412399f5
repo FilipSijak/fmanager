@@ -1,0 +1,34 @@
+app/Events/SeasonStarted.php
+  s_d6a527b03c4b5b::t_7f9608eaeefaae 13
+  s_d6a527b03c4b5b::t_3ae379261b3b99 1-12,14
+tests/Integration/Instance/SeasonStartTest.php
+  s_d6a527b03c4b5b::t_7f9608eaeefaae 39
+  s_d6a527b03c4b5b::t_3ae379261b3b99 1-38,40-72
+app/Services/SeasonService/SeasonStartService.php
+  s_d6a527b03c4b5b::t_3ae379261b3b99 1-13
+app/Providers/EventServiceProvider.php
+  s_d6a527b03c4b5b::t_2c1f748c490c5e 7,13,35-36
+  s_d6a527b03c4b5b::t_e846867fbe0af0 37
+app/Listeners/StartSeason.php
+  s_d6a527b03c4b5b::t_7f9608eaeefaae 12
+  s_d6a527b03c4b5b::t_3ae379261b3b99 1-11,13-18
+app/Services/InstanceService/InstanceService.php
+  s_d6a527b03c4b5b::t_2c1f748c490c5e 7,85-86
+  s_d6a527b03c4b5b::t_77b10b87e34521 87-88
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "71418431cec9a0dc2ecda9e4e7742511412399f5",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
