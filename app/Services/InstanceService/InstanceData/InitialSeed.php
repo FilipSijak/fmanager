@@ -36,6 +36,7 @@ class InitialSeed
             $club->rank = $baseClub->rank;
             $club->rank_academy = $baseClub->rank_academy;
             $club->rank_training = $baseClub->rank_training;
+            $club->financial_rank = $baseClub->financial_rank;
             $club->base_club_id = $baseClub->id;
 
             $clubs[] = $club->toArray();
@@ -49,18 +50,12 @@ class InitialSeed
             $account = new Account;
             $account->club_id = $club->id;
 
-            if ($club->rank > 15) {
-                $account->balance = $club->rank * 4 * 1000000;
-            } elseif ($club->rank >= 10 && $club->rank <= 15) {
-                $account->balance = $club->rank * 1000000;
-            } else {
-                $account->balance = $club->rank * 100000;
-            }
-
+            $baseClub = $baseClubs->firstWhere('id', $club->base_club_id);
+            $account->balance = $baseClub->starting_balance;
             $account->future_balance = $account->balance;
-            $account->allowed_debt = $account->balance;
-            $account->transfer_budget = $account->balance;
-            $account->salaries_yearly_budget = $account->balance * 2;
+            $account->allowed_debt = $baseClub->allowed_debt;
+            $account->transfer_budget = $baseClub->transfer_budget;
+            $account->salaries_yearly_budget = $baseClub->salaries_yearly_budget;
 
             $account->save();
         }

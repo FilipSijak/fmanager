@@ -30,6 +30,7 @@ class DashboardResource extends JsonResource
                 'rank' => $dashboard->club->rank,
                 'rank_academy' => $dashboard->club->rank_academy,
                 'rank_training' => $dashboard->club->rank_training,
+                'financial_rank' => $dashboard->club->financial_rank,
             ],
             'account' => [
                 'balance' => $dashboard->account?->balance,

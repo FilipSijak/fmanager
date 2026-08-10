@@ -23,6 +23,7 @@ class CreateClubsTable extends Migration
             $table->integer('rank');
             $table->integer('rank_academy');
             $table->integer('rank_training');
+            $table->integer('financial_rank')->default(1);
             $table->integer('base_club_id')->unsigned()->nullable();
             $table->index(['instance_id', 'base_club_id']);
 

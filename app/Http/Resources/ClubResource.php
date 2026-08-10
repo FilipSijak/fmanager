@@ -16,6 +16,7 @@ class ClubResource extends JsonResource
             'rank' => $this->rank,
             'rank_academy' => $this->rank_academy,
             'rank_training' => $this->rank_training,
+            'financial_rank' => $this->financial_rank,
             'country_code' => $this->country_code,
         ];
     }

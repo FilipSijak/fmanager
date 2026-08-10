@@ -157,6 +157,7 @@ class PlayerRepository implements IPlayerRepository
     }
 
     private function valuationByAttribute(int $attributeValue) {
+        $attributeValue = min($attributeValue, 200);
         for ($k = 0.1, $i = 10; $i <= 200; $i +=10, $k += 0.06) {
             if ($attributeValue > $i) {
                 continue;
