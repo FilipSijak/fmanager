@@ -32,6 +32,8 @@ class DatabaseSeeder extends Seeder
         $path = 'database/competition_hierarchy.sql';
         DB::unprepared(file_get_contents($path));
 
+        (new CompetitionProgressionRulesSeeder)->run();
+
 /*        if (env('APP_ENV') == 'local') {
             $gameInstance = new CreateGame(
                 1

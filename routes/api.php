@@ -69,6 +69,8 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
         function () {
             Route::get('/{competitionId}', [CompetitionController::class, 'show']);
             Route::get('/{competitionId}/table', [CompetitionController::class, 'competitionTable']);
+            Route::get('/{competitionId}/movement-preview', [CompetitionController::class, 'movementPreview']);
+            Route::get('/{competitionId}/qualification-preview', [CompetitionController::class, 'qualificationPreview']);
             Route::get('/{competitionId}/tournament-groups-tables',
                 [CompetitionController::class, 'tournamentGroupsTables']
             );

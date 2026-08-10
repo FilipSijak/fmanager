@@ -9,6 +9,8 @@ use App\Models\Competition;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\GameRepository;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
+use App\Services\CompetitionService\Progression\ContinentalQualificationService;
+use App\Services\CompetitionService\Progression\DomesticMovementService;
 use App\Support\GameContext;
 use Illuminate\Http\JsonResponse;
 
@@ -18,7 +20,9 @@ class CompetitionController extends CoreController
         private readonly GameContext $gameContext,
         private readonly  CompetitionRepository $competitionRepository,
         private readonly GameRepository $gameRepository,
-        private readonly KnockoutSummaryRoundsData $knockoutSummaryRoundsData
+        private readonly KnockoutSummaryRoundsData $knockoutSummaryRoundsData,
+        private readonly DomesticMovementService $domesticMovementService,
+        private readonly ContinentalQualificationService $continentalQualificationService
     ) {
     }
 
@@ -34,6 +38,20 @@ class CompetitionController extends CoreController
             (new CompetitionResource($competition))->toArray(request()),
             ResponseHelper::RESPONSE_SUCCESS_CODE
         );
+    }
+
+    public function movementPreview(int $competitionId): JsonResponse
+    {
+        $competition = Competition::query()->forInstance($this->gameContext->instanceId())->findOrFail($competitionId);
+        return ResponseHelper::success($this->domesticMovementService
+            ->previewForCompetition($competition, $this->gameContext->seasonId())->all());
+    }
+
+    public function qualificationPreview(int $competitionId): JsonResponse
+    {
+        $competition = Competition::query()->forInstance($this->gameContext->instanceId())->findOrFail($competitionId);
+        return ResponseHelper::success($this->continentalQualificationService
+            ->previewForCompetition($competition, $this->gameContext->seasonId())->all());
     }
 
     public function competitionTable(int $competitionId): JsonResponse
