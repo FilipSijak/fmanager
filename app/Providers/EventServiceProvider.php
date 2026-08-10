@@ -4,11 +4,13 @@ namespace App\Providers;
 
 use App\Events\NextDay;
 use App\Events\SeasonCompleted;
+use App\Events\SeasonStarted;
 use App\Events\Transfers\TransferEvent;
 use App\Listeners\CompleteSeason;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\ProcessTransfers;
+use App\Listeners\StartSeason;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -29,6 +31,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         SeasonCompleted::class => [
             CompleteSeason::class,
+        ],
+        SeasonStarted::class => [
+            StartSeason::class,
         ],
         TransferEvent::class => [
             CreateTransferNews::class,

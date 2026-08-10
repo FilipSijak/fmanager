@@ -4,6 +4,7 @@ namespace App\Services\InstanceService;
 
 use App\Events\NextDay;
 use App\Events\SeasonCompleted;
+use App\Events\SeasonStarted;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Repositories\CompetitionRepository;
@@ -79,6 +80,10 @@ class InstanceService implements IInstanceService
 
         if ($currentGameDate->month === 6 && $currentGameDate->day === 15) {
             event(new SeasonCompleted($instance));
+        }
+
+        if ($currentGameDate->month === 6 && $currentGameDate->day === 16) {
+            event(new SeasonStarted($instance));
         }
 
         // update player training progress, morale
