@@ -2,24 +2,18 @@
 
 namespace App\Repositories;
 
-use AllowDynamicProperties;
 use App\Http\Requests\CreateTransferRequest;
 use App\Http\Requests\FreeTransferRequest;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
-use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
-use App\Services\FinanceService\FinanceService;
 use App\Services\TransferService\TransferEntityAnalysis\PlayerValuation;
-use App\Services\TransferService\TransferFinancialSettlement;
 use App\Services\TransferService\TransferState;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferTypes;
-use App\Services\TransferService\TransferWindowConfig\TransferWindowAvailability;
-use Illuminate\Support\Facades\DB;
 
 class TransferRepository extends CoreRepository
 {
@@ -27,8 +21,7 @@ class TransferRepository extends CoreRepository
 
     public function __construct(
         TransferState $transferState
-    )
-    {
+    ) {
         $this->transferState = $transferState;
     }
 
@@ -36,8 +29,7 @@ class TransferRepository extends CoreRepository
         Player $player,
         Club $buyingClub,
         $transferType,
-    ): Transfer
-    {
+    ): Transfer {
         $transfer = new Transfer([
             'instance_id' => $this->instanceId(),
             'season_id' => $this->seasonId(),
@@ -57,12 +49,17 @@ class TransferRepository extends CoreRepository
         Player $player,
         Club $buyingClub,
         bool $urgentTransfer,
-    ): TransferFinancialDetails
-    {
+    ): TransferFinancialDetails {
+        $amount = PlayerValuation::buyingClubValuation($player, $buyingClub, $urgentTransfer);
+
+        if ($amount <= 0) {
+            throw new \LogicException('The buying club cannot afford this transfer.');
+        }
+
         $transferFinancialDetails = TransferFinancialDetails::create([
-            'amount' => PlayerValuation::buyingClubValuation($player, $buyingClub, $urgentTransfer),
+            'amount' => $amount,
             'transfer_id' => $transfer->id,
-            'installments' => $this->setTransferInstallments($transfer, $buyingClub),
+            'installments' => $this->setTransferInstallments($buyingClub, $amount),
         ]);
 
         $transferFinancialDetails->save();
@@ -156,15 +153,10 @@ class TransferRepository extends CoreRepository
         $transferFinancialDetails?->delete();
     }
 
-    private function setTransferInstallments(Transfer $transfer, Club $club): int
+    private function setTransferInstallments(Club $club, int $amount): int
     {
-        $account = $club->account()->first();
-        $transferFinancialDetails = $transfer->transferFinancialDetails()->first();
+        $transferBudget = (int) $club->account()->value('transfer_budget');
 
-        if ($account->transfer_budget / 2 < $transferFinancialDetails->amount) {
-            return 24;
-        }
-
-        return 0;
+        return $amount > $transferBudget / 2 ? 24 : 0;
     }
 }

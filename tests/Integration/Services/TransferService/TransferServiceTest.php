@@ -22,6 +22,7 @@ use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferTypes;
 use App\Services\TransferService\TransferWorkflow;
+use App\Support\GameContext;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -32,7 +33,7 @@ class TransferServiceTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function itIsAbleToCompleteFreeTransfers()
+    public function it_is_able_to_complete_free_transfers()
     {
         Instance::factory()->create([
             'id' => 1,
@@ -70,12 +71,12 @@ class TransferServiceTest extends TestCase
         $transferService->setInstanceId(1);
         $transferService->processTransferBids($transfer);
 
-        //player has a new contract and a new club
+        // player has a new contract and a new club
         $player = Player::where('id', $player->id)->first();
         $this->assertEquals($player->club_id, $buyingClubId);
 
         $playerContract = $player->contract()->get();
-        //$this->assertEquals($player->id, $playerContract->player_id);
+        // $this->assertEquals($player->id, $playerContract->player_id);
 
         // transfer contract offer was deleted
         $transferContractOffer = TransferContractOffer::where('transfer_id', $transfer->id)->first();
@@ -83,7 +84,7 @@ class TransferServiceTest extends TestCase
     }
 
     #[Test]
-    public function isAbleToCompletePermanentTransferWithoutInstallments()
+    public function is_able_to_complete_permanent_transfer_without_installments()
     {
         Instance::factory()->create([
             'id' => 1,
@@ -95,7 +96,7 @@ class TransferServiceTest extends TestCase
             [
                 'id' => 1,
                 'club_id' => 2,
-                'contract_id' => 1
+                'contract_id' => 1,
             ]
         );
 
@@ -107,7 +108,7 @@ class TransferServiceTest extends TestCase
         $transferService->setInstanceId(1);
         $transferService->processTransferBids();
 
-        //player has a new contract and a new club
+        // player has a new contract and a new club
         $player = Player::where('id', $player->id)->first();
         $this->assertEquals($player->club_id, $buyingClubId);
 
@@ -125,7 +126,7 @@ class TransferServiceTest extends TestCase
     }
 
     #[Test]
-    public function itIsAbleToCompleteTransfersWithInstallments()
+    public function it_is_able_to_complete_transfers_with_installments()
     {
         Instance::factory()->create([
             'id' => 1,
@@ -154,11 +155,11 @@ class TransferServiceTest extends TestCase
     }
 
     #[Test]
-    public function itCanRunAutomaticBidsForMissingPositions()
+    public function it_can_run_automatic_bids_for_missing_positions()
     {
         Instance::factory()->create(
             [
-                'id' => 1
+                'id' => 1,
             ]
         );
 
@@ -191,36 +192,36 @@ class TransferServiceTest extends TestCase
             }
 
             Player::factory()
-                  ->count($playerCount)
-                  ->sequence(function (Sequence $sequence) use ($position) {
-                      return [
-                          'club_id' => 1,
-                          'position' => $position,
-                          'potential' => 100,
-                      ];
-                  })
-                  ->create();
+                ->count($playerCount)
+                ->sequence(function (Sequence $sequence) use ($position) {
+                    return [
+                        'club_id' => 1,
+                        'position' => $position,
+                        'potential' => 100,
+                    ];
+                })
+                ->create();
         }
 
         foreach (SquadPlayersConfig::POSITION_COUNT as $position => $playerCount) {
             Player::factory()
-                  ->count($playerCount)
-                  ->sequence(function (Sequence $sequence) use ($position) {
-                      return [
-                          'club_id' => 2,
-                          'position' => $position,
-                          'value' => 10000,
-                          'potential' => 100,
-                      ];
-                  })
-                  ->create();
+                ->count($playerCount)
+                ->sequence(function (Sequence $sequence) use ($position) {
+                    return [
+                        'club_id' => 2,
+                        'position' => $position,
+                        'value' => 10000,
+                        'potential' => 100,
+                    ];
+                })
+                ->create();
         }
 
         $transferRepository = app()->make(TransferRepository::class);
         $transferRequestValidator = app()->make(TransferRequestValidator::class);
         $transferSearchRepository = app()->make(TransferSearchRepository::class);
         $clubTransferAnalysis = app()->make(ClubTransferAnalysis::class);
-        $transferStatusUpdates =  app()->make(TransferStatusUpdates::class);
+        $transferStatusUpdates = app()->make(TransferStatusUpdates::class);
         $transferWorkflow = app()->make(TransferWorkflow::class);
 
         $transferRepository->setSeasonId(1);
@@ -246,6 +247,65 @@ class TransferServiceTest extends TestCase
         $transferService->automaticTransferBids();
 
         $this->assertCount(1, Transfer::all());
+    }
+
+    #[Test]
+    public function luxury_transfer_attempt_creates_financial_details_and_installments(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'season_id' => 1,
+            'instance_date' => '2026-07-01',
+        ]);
+        Season::factory()->create(['id' => 1, 'instance_id' => 1]);
+
+        $buyingClub = Club::factory()->create([
+            'id' => 1,
+            'instance_id' => 1,
+            'rank' => 10,
+        ]);
+        $sellingClub = Club::factory()->create([
+            'id' => 2,
+            'instance_id' => 1,
+            'rank' => 10,
+        ]);
+        Account::factory()->create([
+            'club_id' => $buyingClub->id,
+            'transfer_budget' => 68000000,
+        ]);
+        Account::factory()->create(['club_id' => $sellingClub->id]);
+
+        Player::factory()->create([
+            'club_id' => $buyingClub->id,
+            'instance_id' => 1,
+            'position' => 'CB',
+            'potential' => 100,
+            'value' => 10000000,
+        ]);
+        $target = Player::factory()->create([
+            'club_id' => $sellingClub->id,
+            'instance_id' => 1,
+            'position' => 'CB',
+            'potential' => 120,
+            'value' => 40000000,
+        ]);
+
+        app(GameContext::class)->set(1, 1);
+        app(TransferServiceHandler::class)->luxuryTransferAttempt(
+            $buyingClub,
+            68000000,
+            'CB'
+        );
+
+        $transfer = Transfer::query()->sole();
+
+        $this->assertSame($target->id, $transfer->player_id);
+        $this->assertSame(TransferTypes::PERMANENT_TRANSFER, $transfer->transfer_type);
+        $this->assertDatabaseHas('transfer_financial_details', [
+            'transfer_id' => $transfer->id,
+            'amount' => 44000000,
+            'installments' => 24,
+        ]);
     }
 
     private function setupTransferBetweenTwoClubs(int $buyingClubId, int $sellingClubId, int $playerId, int $transferType)
@@ -282,7 +342,7 @@ class TransferServiceTest extends TestCase
                 [
                     'club_id' => $sellingClubId,
                     'balance' => 10000,
-                    'transfer_budget' => 10000
+                    'transfer_budget' => 10000,
                 ]
             );
 
@@ -290,7 +350,7 @@ class TransferServiceTest extends TestCase
                 [
                     'club_id' => $buyingClubId,
                     'balance' => 10000,
-                    'transfer_budget' => 10000
+                    'transfer_budget' => 10000,
                 ]
             );
 
