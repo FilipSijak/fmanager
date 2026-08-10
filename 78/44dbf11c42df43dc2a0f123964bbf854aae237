@@ -1,0 +1,34 @@
+app/Services/CompetitionService/Progression/ProgressionRuleValidator.php
+  s_8e3e42f4a1ca30::t_de948fe4bb7877 29-30,45
+  s_8e3e42f4a1ca30::t_99f041db0b6d81 31-34,36-39,50-53,64-74
+  s_8e3e42f4a1ca30::t_57daed86f26891 75-77
+tests/Integration/Services/CompetitionService/Progression/SeasonProgressionServiceTest.php
+  s_8e3e42f4a1ca30::t_1ed0ee0ce7095a 31,33,68-74,111,120-121,123,150
+  s_8e3e42f4a1ca30::t_e1ceae4f558322 118-119,122
+  s_8e3e42f4a1ca30::t_455a9173c05380 131,140,173-177
+database/migrations/2026_08_10_000001_create_competition_progression_tables.php
+  s_8e3e42f4a1ca30::t_482f1ca73a6499 12-15,17-21,26-27,107,109-111,113-114
+  s_8e3e42f4a1ca30::t_caed1d7f4d2197 16,22-25,75,108,112
+app/Services/InstanceService/InstanceData/InitialSeed.php
+  s_8e3e42f4a1ca30::t_482f1ca73a6499 26,29-37,39,49,55,72,75,77-78,80-81,92,95-106
+database/base_competitions.sql
+  s_8e3e42f4a1ca30::t_482f1ca73a6499 9-10
+database/seeders/CompetitionProgressionRulesSeeder.php
+  s_8e3e42f4a1ca30::t_482f1ca73a6499 12-19,26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "7844dbf11c42df43dc2a0f123964bbf854aae237",
+  "prompts": {},
+  "sessions": {
+    "s_8e3e42f4a1ca30": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019fe5fe-e871-7c02-a6ea-4d27c1fa741a",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
