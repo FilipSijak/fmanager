@@ -32,10 +32,14 @@ class CompetitionUpdater
             if ($competition->type == 'league') {
                 $this->leagueUpdater->updatePointsTable($games);
             } elseif ($competition->type == 'tournament') {
-                if ((int) $competition->groups === 1) {
-                    $this->tournamentUpdater->updatePointsTable($games);
-                } elseif ((int) $competition->groups === 0) {
+                $isKnockoutPhase = collect($games)->contains(
+                    static fn (array $game): bool => ! empty($game['knockout_tie_id'])
+                );
+
+                if ($isKnockoutPhase || (int) $competition->groups === 0) {
                     $this->tournamentUpdater->updateTournamentSummary($games);
+                } else {
+                    $this->tournamentUpdater->updatePointsTable($games);
                 }
             }
         }

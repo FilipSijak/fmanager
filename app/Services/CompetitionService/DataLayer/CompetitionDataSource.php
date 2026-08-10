@@ -27,7 +27,7 @@ class CompetitionDataSource
 
         foreach ($fixtures as $fixture) {
             $homeClubId = (int) $fixture['home_club_id'];
-            if (!isset($clubStadiums[$homeClubId])) {
+            if (! isset($clubStadiums[$homeClubId])) {
                 throw new \UnexpectedValueException(
                     "Unable to schedule fixture: home club {$homeClubId} has no stadium for instance {$instanceId}."
                 );
@@ -86,6 +86,7 @@ class CompetitionDataSource
 
             $participants = collect($firstRoundPairs)->flatMap(function (array $entry): array {
                 $pair = $entry['pair'];
+
                 return [(int) $pair['match1']->homeTeamId, (int) $pair['match1']->awayTeamId];
             })->unique()->values();
 
@@ -118,7 +119,9 @@ class CompetitionDataSource
                         'tournament_knockout_id' => $knockoutId,
                         'round_number' => $roundNumber,
                         'bracket_side' => $side,
-                        'name' => $this->roundName($numberOfRounds - $roundNumber + 2),
+                        'name' => $this->roundName(
+                            (int) ($participants->count() / (2 ** ($roundNumber - 1)))
+                        ),
                         'number_of_legs' => 2,
                         'created_at' => now(),
                         'updated_at' => now(),
@@ -200,7 +203,17 @@ class CompetitionDataSource
                 ];
             }
         }
-        DB::table('competition_season')->insert($rows);
+        foreach ($rows as $row) {
+            DB::table('competition_season')->updateOrInsert(
+                [
+                    'instance_id' => $row['instance_id'],
+                    'competition_id' => $row['competition_id'],
+                    'season_id' => $row['season_id'],
+                    'club_id' => $row['club_id'],
+                ],
+                ['group_id' => $row['group_id']]
+            );
+        }
     }
 
     private function nextPowerOfTwo(int $number): int
@@ -209,17 +222,18 @@ class CompetitionDataSource
         while ($power < $number) {
             $power *= 2;
         }
+
         return $power;
     }
 
     private function roundName(int $clubsRemaining): string
     {
         return match ($clubsRemaining) {
-            2 => 'semi_final',
-            4 => 'quarter_final',
-            8 => 'round_of_16',
-            16 => 'round_of_32',
-            default => 'round_of_'.$clubsRemaining * 2,
+            4 => 'semi_final',
+            8 => 'quarter_final',
+            16 => 'round_of_16',
+            32 => 'round_of_32',
+            default => 'round_of_'.$clubsRemaining,
         };
     }
 }

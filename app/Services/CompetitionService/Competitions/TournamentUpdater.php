@@ -8,16 +8,21 @@ use App\Models\Season;
 use App\Repositories\CompetitionRepository;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\GameService\GameService;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class TournamentUpdater
 {
     private int $instanceId;
+
     private Season $season;
 
-    public function __construct(public CompetitionRepository $competitionRepository)
-    {
+    private TournamentConfig $tournamentConfig;
+
+    public function __construct(
+        public CompetitionRepository $competitionRepository,
+        ?TournamentConfig $tournamentConfig = null
+    ) {
+        $this->tournamentConfig = $tournamentConfig ?? new TournamentConfig;
     }
 
     public function setInstanceId(int $instanceId): void
@@ -29,6 +34,7 @@ class TournamentUpdater
     public function setSeason(Season $season): void
     {
         $this->season = $season;
+        $this->tournamentConfig = new TournamentConfig($season->start_date);
         $this->competitionRepository->setSeasonId($season->id);
     }
 
@@ -45,30 +51,38 @@ class TournamentUpdater
 
     public function transitionToKnockoutIfFinished(array $game): void
     {
-        if (!$this->competitionRepository->tournamentGroupsFinished($game)) {
+        if (! $this->competitionRepository->tournamentGroupsFinished($game)) {
             return;
         }
 
         $competitionId = $game['competition_id'];
+
+        if (DB::table('tournament_knockout')
+            ->where('instance_id', $this->instanceId)
+            ->where('competition_id', $competitionId)
+            ->where('season_id', $this->season->id)
+            ->exists()) {
+            return;
+        }
+
         $knockoutClubs = collect($this->competitionRepository->topClubsByTournamentGroup($competitionId))
             ->pluck('club_id')->map(fn ($clubId) => (int) $clubId)->all();
-        $tournament = new Tournament();
+        $tournament = new Tournament($this->tournamentConfig);
         $schedule = $tournament->createTournament($knockoutClubs, $this->instanceId, $this->season->id);
         $schedule = $tournament->setTournamentFixtures(
             $this->instanceId,
             $this->season->id,
             $schedule,
             $competitionId,
-            $this->season->start_date
+            $this->tournamentConfig->getWinterKnockoutStartDate()
         );
 
-        (new CompetitionDataSource())->storeTournamentKnockoutSchedule(
+        (new CompetitionDataSource)->storeTournamentKnockoutSchedule(
             $this->instanceId,
             $competitionId,
             $this->season->id,
             $schedule
         );
-        $this->competitionRepository->resetTournamentGroupRule($competitionId);
     }
 
     public function updateTournamentSummary(array $games): void
@@ -92,19 +106,19 @@ class TournamentUpdater
             ->where('t.id', $tieId)
             ->first();
 
-        if (!$tie || $tie->winner_club_id) {
+        if (! $tie || $tie->winner_club_id) {
             return;
         }
 
         $games = Game::query()->where('knockout_tie_id', $tieId)->orderBy('leg_number')->get();
-        if ($games->count() !== (int) $tie->number_of_legs || $games->contains(fn (Game $game) => $game->status !== Game::STATUS_COMPLETED || !$game->winner)) {
+        if ($games->count() !== (int) $tie->number_of_legs || $games->contains(fn (Game $game) => $game->status !== Game::STATUS_COMPLETED || ! $game->winner)) {
             return;
         }
 
         if ((int) $tie->number_of_legs === 1) {
             $game = $games->first();
             $winnerClubId = (int) $game->winner === 3
-                ? (new GameService())->simulateMatchExtraTime($game->id)
+                ? (new GameService)->simulateMatchExtraTime($game->id)
                 : ((int) $game->winner === 1 ? $game->hometeam_id : $game->awayteam_id);
         } else {
             $winnerClubId = $this->competitionRepository->tournamentRoundWinner(
@@ -113,7 +127,7 @@ class TournamentUpdater
             );
         }
 
-        if (!$winnerClubId) {
+        if (! $winnerClubId) {
             return;
         }
 
@@ -128,19 +142,20 @@ class TournamentUpdater
                 ->where('round_id', $tie->round_id)
                 ->whereNull('winner_club_id')
                 ->exists();
-            if (!$remainingTies) {
+            if (! $remainingTies) {
                 DB::table('tournament_knockout_rounds')->where('id', $tie->round_id)->update([
                     'status' => 'completed',
                     'updated_at' => now(),
                 ]);
             }
 
-            if (!$tie->next_tie_id) {
+            if (! $tie->next_tie_id) {
                 DB::table('tournament_knockout')->where('id', $tie->tournament_knockout_id)->update([
                     'winner_club_id' => $winnerClubId,
                     'status' => 'completed',
                     'updated_at' => now(),
                 ]);
+
                 return;
             }
 
@@ -162,7 +177,7 @@ class TournamentUpdater
             ->lockForUpdate()
             ->first();
 
-        if (!$tie || !$tie->home_club_id || !$tie->away_club_id) {
+        if (! $tie || ! $tie->home_club_id || ! $tie->away_club_id) {
             return;
         }
         if (DB::table('games')->where('knockout_tie_id', $tieId)->exists()) {
@@ -174,7 +189,9 @@ class TournamentUpdater
             ->join('games', 'games.knockout_tie_id', '=', 'feeder.id')
             ->where('feeder.next_tie_id', $tieId)
             ->max('games.match_start');
-        $firstDate = Carbon::parse($lastFeederDate ?? $this->season->start_date)->addWeek();
+        $firstDate = $this->tournamentConfig->getNextRoundStartDate(
+            $lastFeederDate ?? $this->tournamentConfig->getWinterKnockoutStartDate()
+        );
         $homeStadiumId = Club::query()->findOrFail($tie->home_club_id)->stadium_id;
         $awayStadiumId = Club::query()->findOrFail($tie->away_club_id)->stadium_id;
 
@@ -200,7 +217,7 @@ class TournamentUpdater
                 'hometeam_id' => $tie->away_club_id,
                 'awayteam_id' => $tie->home_club_id,
                 'stadium_id' => $awayStadiumId,
-                'match_start' => $firstDate->copy()->addWeek(),
+                'match_start' => $this->tournamentConfig->getSecondLegDate($firstDate),
             ]);
         }
 

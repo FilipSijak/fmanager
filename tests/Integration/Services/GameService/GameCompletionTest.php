@@ -1,7 +1,12 @@
 <?php
+
 namespace Tests\Integration\Services\GameService;
 
-use App\Models\{Club, Competition, Game, Instance, Season};
+use App\Models\Club;
+use App\Models\Competition;
+use App\Models\Game;
+use App\Models\Instance;
+use App\Models\Season;
 use App\Services\GameService\CompleteGameService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +56,7 @@ class GameCompletionTest extends TestCase
         $this->assertSame(Game::STATUS_CANCELLED, $cancelled->status);
         $this->assertNotNull($cancelled->processed_at);
         $this->assertDatabaseHas('competition_season', ['club_id' => 1, 'played' => 0]);
-        $this->assertDatabaseHas('competitions', ['id' => 1, 'groups' => 0]);
+        $this->assertDatabaseHas('competitions', ['id' => 1, 'groups' => 1]);
         $this->assertDatabaseHas('tournament_knockout', ['competition_id' => 1, 'participant_count' => 4, 'status' => 'in_progress']);
         $this->assertSame(4, DB::table('games')->whereNotNull('knockout_tie_id')->count());
     }
@@ -66,6 +71,7 @@ class GameCompletionTest extends TestCase
             $clubs->push(Club::factory()->create(['id' => $id, 'instance_id' => 1, 'stadium_id' => 1000 + $id]));
             DB::table('competition_season')->insert(['instance_id' => 1, 'competition_id' => 1, 'season_id' => 1, 'club_id' => $id, 'group_id' => $groups === 1 ? ($id <= 2 ? 1 : 2) : null, 'points' => $groups === 1 ? $clubCount - $id : 0]);
         }
+
         return [$instance, $season, $competition, $clubs];
     }
 

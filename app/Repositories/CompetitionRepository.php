@@ -147,6 +147,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                         'awayTeamId' => $secondGame->awayteam_id ?? $tie->home_club_id,
                     ],
                     'winner' => $tie->winner_club_id,
+                    'status' => $tie->status,
                     'match1Id' => $firstGame->id ?? null,
                     'match2Id' => $secondGame->id ?? null,
                 ];

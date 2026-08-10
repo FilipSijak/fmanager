@@ -88,13 +88,17 @@ class GroupToKnockoutTransitionTest extends TestCase
         ]);
         $updater->distributeGamesForCompetitionUpdates($season, $instance->id);
 
-        $this->assertDatabaseHas('competitions', ['id' => $competition->id, 'groups' => 0]);
+        $this->assertDatabaseHas('competitions', ['id' => $competition->id, 'groups' => 1]);
         $this->assertDatabaseHas('tournament_knockout', [
             'competition_id' => $competition->id,
             'participant_count' => 4,
             'status' => 'in_progress',
         ]);
         $this->assertSame(4, DB::table('games')->whereNotNull('knockout_tie_id')->count());
+        $this->assertSame(
+            '2027-02-16',
+            substr((string) Game::query()->whereNotNull('knockout_tie_id')->min('match_start'), 0, 10)
+        );
 
         $firstRoundGames = Game::query()->whereNotNull('knockout_tie_id')->get();
         foreach ($firstRoundGames as $game) {
@@ -133,7 +137,7 @@ class GroupToKnockoutTransitionTest extends TestCase
 
     private function competitionUpdater(): CompetitionUpdater
     {
-        $repository = new CompetitionRepository(new CompetitionDataSource());
+        $repository = new CompetitionRepository(new CompetitionDataSource);
 
         return new CompetitionUpdater(
             new LeagueUpdater($repository),
