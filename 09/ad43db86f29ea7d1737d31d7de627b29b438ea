@@ -1,0 +1,45 @@
+database/factories/StaffPhysioFactory.php
+  s_d6a527b03c4b5b::t_e7036f403603f8 1-30
+tests/Integration/Person/PersonCareerTest.php
+  s_d6a527b03c4b5b::t_8a3485804cd7d3 9-10,20,42-49,55-56,59-60
+  s_d6a527b03c4b5b::t_d41046f72a3885 8,36,54,58
+app/Models/StaffPhysio.php
+  s_d6a527b03c4b5b::t_6a01cf7b26c584 1-4,7-12,14-18,39,41-42
+  s_d6a527b03c4b5b::t_7460d001ae1d4a 5-6,13,19-38,40
+app/Models/StaffScout.php
+  s_d6a527b03c4b5b::t_6a01cf7b26c584 11,15
+  s_d6a527b03c4b5b::t_7460d001ae1d4a 28-32
+app/Models/Person.php
+  s_d6a527b03c4b5b::t_d41046f72a3885 28,30-40
+database/factories/StaffCoachingFactory.php
+  s_d6a527b03c4b5b::t_d41046f72a3885 1-41
+database/factories/StaffScoutFactory.php
+  s_d6a527b03c4b5b::t_e7036f403603f8 1-30
+database/migrations/2026_08_11_000004_create_staff_specialist_tables.php
+  s_d6a527b03c4b5b::t_6a01cf7b26c584 1-10,18-19,28-32,35-38,47-51,54-60,71-72
+  s_d6a527b03c4b5b::t_99020a99c47d4a 15,69
+  s_d6a527b03c4b5b::t_117253051f0877 24,43
+  s_d6a527b03c4b5b::t_1f4f46831e6e94 12-14,16,61-68
+  s_d6a527b03c4b5b::t_f0d33d462de80a 11,17,20-23,25-27,33-34,39-42,44-46,52-53,70
+app/Models/StaffCoaching.php
+  s_d6a527b03c4b5b::t_d41046f72a3885 1-27,33-42
+  s_d6a527b03c4b5b::t_1f4f46831e6e94 28-32
+app/Services/ClubService/SquadAnalysis/SquadStaffConfig.php
+  s_d6a527b03c4b5b::t_86abbf5f8d386c 1-15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "09ad43db86f29ea7d1737d31d7de627b29b438ea",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
