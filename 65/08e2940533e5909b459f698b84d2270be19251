@@ -1,0 +1,27 @@
+app/Repositories/PlayerRepository.php
+  s_d6a527b03c4b5b::t_c43d451521202b 206-207
+  s_d6a527b03c4b5b::t_bef46489cf5927 12
+  s_d6a527b03c4b5b::t_72131648ef4a27 212-235
+tests/Integration/Services/SeasonService/PlayerRetirementTest.php
+  s_d6a527b03c4b5b::t_3460c7af682c0e 59-70
+  s_d6a527b03c4b5b::t_1aefeaaa09befb 5,97-100
+  s_d6a527b03c4b5b::t_65f33d355eadb4 42-58,71
+  s_d6a527b03c4b5b::t_2e9593fb08ce28 10-12,17
+  s_d6a527b03c4b5b::t_a1f9994977463e 101-107
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "6508e2940533e5909b459f698b84d2270be19251",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
