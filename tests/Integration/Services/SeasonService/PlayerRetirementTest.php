@@ -2,14 +2,19 @@
 
 namespace Tests\Integration\Services\SeasonService;
 
+use App\Models\AccountsDebtLines;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
+use App\Models\Transfer;
+use App\Models\TransferContractOffer;
+use App\Models\TransferFinancialDetails;
 use App\Repositories\PlayerRepository;
 use App\Repositories\TransferSearchRepository;
 use App\Services\SeasonService\PlayerRetirement;
 use App\Services\SeasonService\RetirementDecision;
+use App\Services\TransferService\TransferStatusTypes;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -33,6 +38,36 @@ class PlayerRetirementTest extends TestCase
         $age32 = $this->playerWithContract(2, $club->id, $asOfDate->subYears(32));
         $age44 = $this->playerWithContract(3, $club->id, $asOfDate->subYears(44));
         $age45 = $this->playerWithContract(4, $club->id, $asOfDate->subYears(45));
+
+        $ongoingTransfer = Transfer::factory()->create([
+            'instance_id' => $instance->id,
+            'player_id' => $age32->id,
+            'source_club_id' => $club->id,
+            'target_club_id' => null,
+            'transfer_status' => TransferStatusTypes::WAITING_TARGET_CLUB->value,
+        ]);
+        TransferContractOffer::factory()->create(['transfer_id' => $ongoingTransfer->id]);
+        TransferFinancialDetails::factory()->create(['transfer_id' => $ongoingTransfer->id]);
+
+        $completedTransfer = Transfer::factory()->create([
+            'instance_id' => $instance->id,
+            'player_id' => $age32->id,
+            'source_club_id' => $club->id,
+            'target_club_id' => null,
+            'transfer_status' => TransferStatusTypes::TRANSFER_COMPLETED->value,
+        ]);
+        $completedFinancialDetails = TransferFinancialDetails::factory()->create([
+            'transfer_id' => $completedTransfer->id,
+            'amount' => 10000,
+            'installments' => 3,
+        ]);
+        $installmentDebt = AccountsDebtLines::query()->create([
+            'sending_account_id' => 1,
+            'receiving_account_id' => 2,
+            'amount' => 4000,
+            'created_at' => '2027-05-01',
+            'due_date' => '2027-08-01',
+        ]);
 
         $rolls = collect([1, 10000, 10000]);
         $service = new PlayerRetirement(
@@ -58,6 +93,17 @@ class PlayerRetirementTest extends TestCase
         $this->assertNull(
             (new TransferSearchRepository)->findFreePlayerForPosition($club, 'CB')
         );
+
+        $this->assertDatabaseMissing('transfers', ['id' => $ongoingTransfer->id]);
+        $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $ongoingTransfer->id]);
+        $this->assertDatabaseMissing('transfer_financial_details', ['transfer_id' => $ongoingTransfer->id]);
+        $this->assertDatabaseHas('transfers', ['id' => $completedTransfer->id]);
+        $this->assertDatabaseHas('transfer_financial_details', [
+            'id' => $completedFinancialDetails->id,
+            'transfer_id' => $completedTransfer->id,
+            'installments' => 3,
+        ]);
+        $this->assertDatabaseHas('accounts_debt_lines', ['id' => $installmentDebt->id]);
 
         foreach ([$age31, $age44] as $activePlayer) {
             $this->assertDatabaseHas('players', [

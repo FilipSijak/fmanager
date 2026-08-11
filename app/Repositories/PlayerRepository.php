@@ -9,6 +9,7 @@ use App\Repositories\Interfaces\IPlayerRepository;
 use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\PersonService\PersonService;
+use App\Services\TransferService\TransferStatusTypes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 
@@ -202,8 +203,34 @@ class PlayerRepository implements IPlayerRepository
                 DB::table('players_contracts')->where('id', $contractId)->delete();
             }
 
+            $this->voidOngoingTransfersForPlayer($player->id);
+
             return true;
         });
+    }
+
+    private function voidOngoingTransfersForPlayer(int $playerId): void
+    {
+        $ongoingTransferIds = DB::table('transfers')
+            ->where('player_id', $playerId)
+            ->where(function ($query): void {
+                $query
+                    ->whereNull('transfer_status')
+                    ->orWhereNotIn('transfer_status', [
+                        TransferStatusTypes::TRANSFER_COMPLETED->value,
+                        TransferStatusTypes::TRANSFER_FAILED->value,
+                    ]);
+            })
+            ->pluck('id');
+
+        if ($ongoingTransferIds->isEmpty()) {
+            return;
+        }
+
+        DB::table('transfer_contract_offers')->whereIn('transfer_id', $ongoingTransferIds)->delete();
+        DB::table('transfer_financial_details')->whereIn('transfer_id', $ongoingTransferIds)->delete();
+        DB::table('transfer_payments')->whereIn('transfer_id', $ongoingTransferIds)->delete();
+        DB::table('transfers')->whereIn('id', $ongoingTransferIds)->delete();
     }
 
     public function contractBasedOnPotential(Player $player): array
