@@ -1,0 +1,19 @@
+app/Services/InstanceService/CreateInstance.php
+  s_d6a527b03c4b5b::t_f962782d7d619b 62,174,179-181,183-188,190-195,197,199-207
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a0feec0fc629a13a76ce06cd058a6fe0f01e3c6c",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "unknown"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
