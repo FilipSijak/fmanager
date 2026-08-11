@@ -16,10 +16,10 @@ class ClubSquadPlayerResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
+            'first_name' => $this->person->first_name,
+            'last_name' => $this->person->last_name,
             'position' => $this->position,
-            'country_code' => $this->country_code,
+            'country_code' => $this->person->country_code,
             'value' => $this->value,
             'salary' => $this->contract?->salary,
         ];

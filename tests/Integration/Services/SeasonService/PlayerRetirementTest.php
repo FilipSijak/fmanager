@@ -5,6 +5,7 @@ namespace Tests\Integration\Services\SeasonService;
 use App\Models\AccountsDebtLines;
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Person;
 use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Models\Transfer;
@@ -136,15 +137,20 @@ class PlayerRetirementTest extends TestCase
             'contract_end' => '2028-06-30',
         ]);
 
+        $person = Person::factory()->create([
+            'instance_id' => 1,
+            'dob' => $dob->toDateString(),
+        ]);
+
         return Player::factory()->create([
             'id' => $id,
             'instance_id' => 1,
+            'person_id' => $person->id,
             'club_id' => $clubId,
             'loan_club_id' => $clubId,
             'loan_start' => '2027-01-01',
             'loan_end' => '2027-06-30',
             'contract_id' => $contract->id,
-            'dob' => $dob->toDateString(),
             'is_retired' => false,
         ]);
     }

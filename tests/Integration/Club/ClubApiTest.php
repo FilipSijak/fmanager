@@ -5,6 +5,7 @@ namespace Tests\Integration\Club;
 use App\Models\Account;
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Person;
 use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Models\Stadium;
@@ -86,39 +87,52 @@ class ClubApiTest extends TestCase
 
         $firstContract = PlayerContract::factory()->create(['salary' => 200]);
         $secondContract = PlayerContract::factory()->create(['salary' => 400]);
+        $firstPerson = Person::factory()->create([
+            'instance_id' => $instance->id,
+            'first_name' => 'Alpha',
+            'last_name' => 'Midfielder',
+            'country_code' => 'GB',
+        ]);
+        $secondPerson = Person::factory()->create([
+            'instance_id' => $instance->id,
+            'first_name' => 'Beta',
+            'last_name' => 'Striker',
+            'country_code' => 'FR',
+        ]);
+
         $firstPlayer = Player::factory()->create([
             'id' => 100,
             'instance_id' => $instance->id,
+            'person_id' => $firstPerson->id,
             'club_id' => $club->id,
             'contract_id' => $firstContract->id,
-            'first_name' => 'Alpha',
-            'last_name' => 'Midfielder',
             'position' => 'CM',
-            'country_code' => 'GB',
             'value' => 1000,
         ]);
         $secondPlayer = Player::factory()->create([
             'id' => 101,
             'instance_id' => $instance->id,
+            'person_id' => $secondPerson->id,
             'club_id' => $club->id,
             'contract_id' => $secondContract->id,
-            'first_name' => 'Beta',
-            'last_name' => 'Striker',
             'position' => 'ST',
-            'country_code' => 'FR',
             'value' => 3000,
         ]);
         Player::factory()->create([
             'instance_id' => $instance->id,
+            'person_id' => Person::factory()->create([
+                'instance_id' => $instance->id,
+                'first_name' => 'OtherClub',
+            ])->id,
             'club_id' => $otherClub->id,
-            'first_name' => 'OtherClub',
-            'last_name' => 'Player',
         ]);
         Player::factory()->create([
             'instance_id' => 2,
+            'person_id' => Person::factory()->create([
+                'instance_id' => 2,
+                'first_name' => 'OtherInstance',
+            ])->id,
             'club_id' => $club->id,
-            'first_name' => 'OtherInstance',
-            'last_name' => 'Player',
         ]);
 
         $response = $this

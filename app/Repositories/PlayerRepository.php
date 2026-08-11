@@ -46,19 +46,24 @@ class PlayerRepository implements IPlayerRepository
                 $player->marketing_rank = $player->potential;
             }
 
-            $playerData = [
+            $personId = DB::table('people')->insertGetId([
                 'instance_id' => $instanceId,
-                'value' => $playerValue,
                 'first_name' => $player->first_name,
                 'last_name' => $player->last_name,
+                'country_code' => $player->country_code,
+                'dob' => $player->dob,
+            ]);
+
+            $playerData = [
+                'instance_id' => $instanceId,
+                'person_id' => $personId,
+                'value' => $playerValue,
                 'marketing_rank' => $player->marketing_rank,
                 'potential' => $player->potential,
                 'max_potential' => $player->max_potential,
                 'ambition' => rand(floor(($player->potential / 10)), 20),
                 'loyalty' => rand(1, 20),
                 'position' => $player->position,
-                'country_code' => $player->country_code,
-                'dob' => $player->dob,
                 'technical' => $attributesCategories->technical,
                 'mental' => $attributesCategories->mental,
                 'physical' => $attributesCategories->physical,
@@ -174,8 +179,10 @@ class PlayerRepository implements IPlayerRepository
         return Player::query()
             ->forInstance($instanceId)
             ->where('is_retired', false)
-            ->whereNotNull('dob')
-            ->whereDate('dob', '<=', $date)
+            ->whereHas('person', function ($query) use ($date): void {
+                $query->whereNotNull('dob')->whereDate('dob', '<=', $date);
+            })
+            ->with('person')
             ->lazyById(200);
     }
 

@@ -11,15 +11,14 @@ class PlayerController extends CoreController
 {
     public function __construct(
         private readonly GameContext $gameContext
-    ) {
-    }
+    ) {}
 
     public function show(int $playerId)
     {
         $instanceId = $this->gameContext->instanceId();
 
         $player = Player::query()
-            ->with(['club', 'contract'])
+            ->with(['person', 'club', 'contract'])
             ->forInstance($instanceId)
             ->findOrFail($playerId);
 

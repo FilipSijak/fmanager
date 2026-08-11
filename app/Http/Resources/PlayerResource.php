@@ -19,11 +19,11 @@ class PlayerResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'first_name' => $this->first_name,
-            'last_name' => $this->last_name,
+            'first_name' => $this->person->first_name,
+            'last_name' => $this->person->last_name,
             'position' => $this->position,
-            'country_code' => $this->country_code,
-            'dob' => $this->dob,
+            'country_code' => $this->person->country_code,
+            'dob' => $this->person->dob?->toDateString(),
             'is_retired' => (bool) $this->is_retired,
             'club' => $this->club ? [
                 'id' => $this->club->id,

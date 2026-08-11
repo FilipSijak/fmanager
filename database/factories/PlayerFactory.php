@@ -4,12 +4,13 @@ namespace Database\Factories;
 
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Person;
+use App\Models\Player;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Player>
+ * @extends Factory<Player>
  */
 class PlayerFactory extends Factory
 {
@@ -32,18 +33,14 @@ class PlayerFactory extends Factory
             $playerFieldsValues[$field] = random_int(1, 20);
         }
 
-        return array_merge
-        (
+        return array_merge(
             [
                 'instance_id' => Instance::factory()->make(['id' => 1])->id,
+                'person_id' => Person::factory(),
                 'club_id' => Club::factory()->make(['id' => 1])->id,
                 'value' => random_int(100000, 100000000),
-                'first_name' => $this->faker->firstName,
-                'last_name' => $this->faker->lastName,
-                'potential' => random_int(20,200),
+                'potential' => random_int(20, 200),
                 'position' => 'CB',
-                'country_code' => $this->faker->countryCode,
-                'dob' => Carbon::now()->subYears(random_int(15, 42)),
             ],
             $playerFieldsValues
         );
