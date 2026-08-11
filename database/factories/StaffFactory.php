@@ -3,14 +3,17 @@
 namespace Database\Factories;
 
 use App\Models\Instance;
+use App\Models\Staff;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Manager>
+ * @extends Factory<Staff>
  */
 class StaffFactory extends Factory
 {
+    protected $model = Staff::class;
+
     /**
      * Define the model's default state.
      *
@@ -27,7 +30,7 @@ class StaffFactory extends Factory
             'type' => 'MANAGER',
             'first_name' => $this->faker->firstName,
             'last_name' => $this->faker->lastName,
-            'dob'=> Carbon::createFromDate($randomYear, $randomMonth, $randomDay)->format('Y-m-d')
+            'dob' => Carbon::createFromDate($randomYear, $randomMonth, $randomDay)->format('Y-m-d'),
         ];
     }
 }
