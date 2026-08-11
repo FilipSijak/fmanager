@@ -35,6 +35,11 @@ class PlayerPotential extends PersonPotential
         return $playerPotentialList;
     }
 
+    public function getStaffPotential(int $rank): array
+    {
+
+    }
+
     public function assignPlayerPositions(array $playersPotentialList): array
     {
         $positionsCount = SquadPlayersConfig::POSITION_COUNT;

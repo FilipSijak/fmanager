@@ -204,6 +204,11 @@ class CreateInstance
         $this->playerRepository->bulkAssignmentPlayersPositions($players);
     }
 
+    private function assignStaffToClubs(): void
+    {
+
+    }
+
     public function generateFreeAgents()
     {
         $generatedPlayers = [];

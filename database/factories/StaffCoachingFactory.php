@@ -4,15 +4,15 @@ namespace Database\Factories;
 
 use App\Models\Instance;
 use App\Models\Person;
-use App\Models\Staff;
+use App\Models\StaffCoaching;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Staff>
+ * @extends Factory<StaffCoaching>
  */
-class StaffFactory extends Factory
+class StaffCoachingFactory extends Factory
 {
-    protected $model = Staff::class;
+    protected $model = StaffCoaching::class;
 
     /**
      * Define the model's default state.

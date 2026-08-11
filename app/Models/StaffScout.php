@@ -8,11 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Staff extends Model
+class StaffScout extends Model
 {
     use BelongsToGameInstance, HasFactory;
 
-    protected $table = 'staff';
+    protected $table = 'staff_scouts';
 
     public $timestamps = false;
 
@@ -23,6 +23,11 @@ class Staff extends Model
     public function person(): BelongsTo
     {
         return $this->belongsTo(Person::class);
+    }
+
+    public function club(): BelongsTo
+    {
+        return $this->belongsTo(Club::class);
     }
 
     public function scopeActive(Builder $query): Builder
