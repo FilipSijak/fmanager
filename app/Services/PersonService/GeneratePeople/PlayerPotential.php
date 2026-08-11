@@ -8,14 +8,13 @@ use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 
 class PlayerPotential extends PersonPotential
 {
-    public function getPlayerPotentialAndInitialPosition(int $clubAcademyRank): array
+    public function getPlayerPotential(int $rank): array
     {
         $playerPotentialList = [];
-        $rank                = $clubAcademyRank * 10;
-        $positionsCount      = SquadPlayersConfig::POSITION_COUNT;
+        $rank = $rank * 10;
 
         for ($i = 1; $i <= SquadPlayersConfig::PLAYER_COUNT; $i++) {
-            $newPlayer = new \stdClass();
+            $newPlayer = new \stdClass;
 
             if ($i <= 5) {
                 // special players
@@ -33,7 +32,19 @@ class PlayerPotential extends PersonPotential
 
         shuffle($playerPotentialList);
 
-        foreach ($playerPotentialList as $player) {
+        return $playerPotentialList;
+    }
+
+    public function getStaffPotential(int $rank): array
+    {
+
+    }
+
+    public function assignPlayerPositions(array $playersPotentialList): array
+    {
+        $positionsCount = SquadPlayersConfig::POSITION_COUNT;
+
+        foreach ($playersPotentialList as $player) {
             foreach ($positionsCount as $position => $count) {
                 if ($count == 0) {
                     continue;
@@ -46,12 +57,12 @@ class PlayerPotential extends PersonPotential
             }
         }
 
-        return $playerPotentialList;
+        return $playersPotentialList;
     }
 
     public function generateFreeAgent(int $maxPotential): \stdClass
     {
-        $newPlayer = new \stdClass();
+        $newPlayer = new \stdClass;
 
         $newPlayer->potential = rand(30, $maxPotential);
         $newPlayer->position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1, 14)];
@@ -62,18 +73,18 @@ class PlayerPotential extends PersonPotential
 
     public function getStaffPotentialAndRole(int $rank): array
     {
-        $staffList  = [];
+        $staffList = [];
         $staffRoles = [
-            PersonTypes::COACH             => 7,
-            PersonTypes::YOUTH_COACH       => 5,
-            PersonTypes::PHYSIO            => 3,
-            PersonTypes::MANAGER           => 1,
+            PersonTypes::COACH => 7,
+            PersonTypes::YOUTH_COACH => 5,
+            PersonTypes::PHYSIO => 3,
+            PersonTypes::MANAGER => 1,
             PersonTypes::ASSISTANT_MANAGER => 1,
         ];
 
         foreach ($staffRoles as $role => $count) {
             for ($i = 1; $i <= $count; $i++) {
-                $newStaffMember = new \stdClass();
+                $newStaffMember = new \stdClass;
 
                 $newStaffMember->role = $role;
 

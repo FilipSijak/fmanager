@@ -59,7 +59,7 @@ class CreateInstance
         $this->startFirstSeason();
         $this->mapInitialCompetitionsToSeasonsWithClubs();
         $this->setCompetitionsForTheFirstSeason();
-        $this->assignPlayersToClubs();
+        $this->assignPeopleToClubs();
         $this->generateFreeAgents();
 
         return $this->instance;
@@ -171,30 +171,42 @@ class CreateInstance
         }
     }
 
-    public function assignPlayersToClubs()
+    public function assignPeopleToClubs(): void
     {
-        $clubs = Club::all();
+        $clubs = Club::query()
+            ->forInstance($this->instance->id)
+            ->get();
 
         foreach ($clubs as $club) {
-            $academyRank = $club->rank_academy;
-
-            $playerListWithInitialPotential = $this->playerPotentialGenerator->getPlayerPotentialAndInitialPosition($academyRank);
-            $generatedPlayers = [];
-
-            foreach ($playerListWithInitialPotential as $playerPotential) {
-                $player = $this->personService->createPerson(
-                    $playerPotential,
-                    $this->instance->id,
-                    PersonTypes::PLAYER
-                );
-
-                $generatedPlayers[] = $player;
-            }
-
-            $this->playerRepository->bulkPlayerInsert($this->instance->id, $club, $generatedPlayers);
-            $players = Player::where('club_id', $club->id)->get();
-            $this->playerRepository->bulkAssignmentPlayersPositions($players);
+            $this->assignPlayersToClubs($club);
         }
+    }
+
+    public function assignPlayersToClubs(Club $club): void
+    {
+        $academyRank = $club->rank_academy;
+        $playerPotentialList = $this->playerPotentialGenerator->getPlayerPotential($academyRank);
+        $playersPotentialWithPosition = $this->playerPotentialGenerator->assignPlayerPositions($playerPotentialList);
+        $generatedPlayers = [];
+
+        foreach ($playersPotentialWithPosition as $playerPotential) {
+            $player = $this->personService->createPerson(
+                $playerPotential,
+                $this->instance->id,
+                PersonTypes::PLAYER
+            );
+
+            $generatedPlayers[] = $player;
+        }
+
+        $this->playerRepository->bulkPlayerInsert($this->instance->id, $club, $generatedPlayers);
+        $players = Player::where('club_id', $club->id)->get();
+        $this->playerRepository->bulkAssignmentPlayersPositions($players);
+    }
+
+    private function assignStaffToClubs(): void
+    {
+
     }
 
     public function generateFreeAgents()

@@ -25,8 +25,18 @@ class Person extends Model
         return $this->hasOne(Player::class);
     }
 
-    public function staffCareers(): HasMany
+    public function coachingCareers(): HasMany
     {
-        return $this->hasMany(Staff::class);
+        return $this->hasMany(StaffCoaching::class);
+    }
+
+    public function physioCareers(): HasMany
+    {
+        return $this->hasMany(StaffPhysio::class);
+    }
+
+    public function scoutCareers(): HasMany
+    {
+        return $this->hasMany(StaffScout::class);
     }
 }

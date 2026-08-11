@@ -13,9 +13,10 @@ class InitialPotentialTest extends TestCase
     public function it_can_create_player_potential_based_on_club_rank()
     {
         $clubAcademyRank = 15;
-        $playerPotential = new PlayerPotential();
+        $playerPotential = new PlayerPotential;
 
-        $playerList = $playerPotential->getPlayerPotentialAndInitialPosition($clubAcademyRank);
+        $playerPotentialList = $playerPotential->getPlayerPotential($clubAcademyRank);
+        $playerList = $playerPotential->assignPlayerPositions($playerPotentialList);
         $cbs = array_filter($playerList, function ($v, $k) {
             return $v->position == 'CB';
         }, ARRAY_FILTER_USE_BOTH);
