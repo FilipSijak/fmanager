@@ -8,11 +8,10 @@ use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 
 class PlayerPotential extends PersonPotential
 {
-    public function getPlayerPotentialAndInitialPosition(int $clubAcademyRank): array
+    public function getPlayerPotential(int $rank): array
     {
         $playerPotentialList = [];
-        $rank                = $clubAcademyRank * 10;
-        $positionsCount      = SquadPlayersConfig::POSITION_COUNT;
+        $rank                = $rank * 10;
 
         for ($i = 1; $i <= SquadPlayersConfig::PLAYER_COUNT; $i++) {
             $newPlayer = new \stdClass();
@@ -33,7 +32,14 @@ class PlayerPotential extends PersonPotential
 
         shuffle($playerPotentialList);
 
-        foreach ($playerPotentialList as $player) {
+        return $playerPotentialList;
+    }
+
+    public function getPlayersPosition(array $playersPotentialList): array
+    {
+        $positionsCount = SquadPlayersConfig::POSITION_COUNT;
+
+        foreach ($playersPotentialList as $player) {
             foreach ($positionsCount as $position => $count) {
                 if ($count == 0) {
                     continue;
@@ -46,7 +52,7 @@ class PlayerPotential extends PersonPotential
             }
         }
 
-        return $playerPotentialList;
+        return $playersPotentialList;
     }
 
     public function generateFreeAgent(int $maxPotential): \stdClass
