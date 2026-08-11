@@ -173,7 +173,9 @@ class CreateInstance
 
     public function assignPeopleToClubs(): void
     {
-        $clubs = Club::all();
+        $clubs = Club::query()
+            ->forInstance($this->instance->id)
+            ->get();
 
         foreach ($clubs as $club) {
             $this->assignPlayersToClubs($club);
@@ -184,7 +186,7 @@ class CreateInstance
     {
         $academyRank = $club->rank_academy;
         $playerPotentialList = $this->playerPotentialGenerator->getPlayerPotential($academyRank);
-        $playersPotentialWithPosition = $this->playerPotentialGenerator->getPlayersPosition($playerPotentialList);
+        $playersPotentialWithPosition = $this->playerPotentialGenerator->assignPlayerPositions($playerPotentialList);
         $generatedPlayers = [];
 
         foreach ($playersPotentialWithPosition as $playerPotential) {
@@ -200,11 +202,6 @@ class CreateInstance
         $this->playerRepository->bulkPlayerInsert($this->instance->id, $club, $generatedPlayers);
         $players = Player::where('club_id', $club->id)->get();
         $this->playerRepository->bulkAssignmentPlayersPositions($players);
-    }
-
-    private function assignStaffToClubs(Club $club)
-    {
-
     }
 
     public function generateFreeAgents()
