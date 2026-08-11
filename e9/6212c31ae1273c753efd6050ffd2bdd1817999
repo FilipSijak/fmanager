@@ -1,0 +1,59 @@
+app/Repositories/PlayerRepository.php
+  s_d6a527b03c4b5b::t_f178de5c95846a 13,26,34,119,124,132,147,151,156-157,159,172-207
+  s_d6a527b03c4b5b::t_4a419ed42e5542 171
+  s_d6a527b03c4b5b::t_dd4b5bb8376bc2 208
+app/Http/Requests/CreateTransferRequest.php
+  s_d6a527b03c4b5b::t_ae6798309f5fdb 15
+  s_d6a527b03c4b5b::t_41932e9130eb73 26-36
+app/Services/SeasonService/SeasonCompletion.php
+  s_d6a527b03c4b5b::t_08df02158327c7 1-32
+database/migrations/2026_08_11_000001_add_is_retired_to_players_table.php
+  s_d6a527b03c4b5b::t_e96dfaae8b4880 1-22
+app/Services/SeasonService/PlayerRetirement.php
+  s_d6a527b03c4b5b::t_08df02158327c7 1-5,7-19,24-30,32,38,50-77
+  s_d6a527b03c4b5b::t_f178de5c95846a 6,20-23,31,33,35-37,39-49
+  s_d6a527b03c4b5b::t_4a419ed42e5542 34
+app/Models/Player.php
+  s_d6a527b03c4b5b::t_19712c3813c99e 10,15-20,35,43,63
+app/Http/Requests/FreeTransferRequest.php
+  s_d6a527b03c4b5b::t_41932e9130eb73 6,19-23
+app/Listeners/CompleteSeason.php
+  s_d6a527b03c4b5b::t_08df02158327c7 6,11,16
+app/Services/SeasonService/SeasonService.php
+  s_d6a527b03c4b5b::t_85ed4db689374e 1-23
+app/Listeners/StartSeason.php
+  s_d6a527b03c4b5b::t_08df02158327c7 6,11,16
+app/Repositories/TransferSearchRepository.php
+  s_d6a527b03c4b5b::t_ae6798309f5fdb 20,25,32-33,35,47,52-54,67,76,95,104,111,123,131,156,158,171,176,179-181
+  s_d6a527b03c4b5b::t_41932e9130eb73 70,81,97,148
+app/Services/SeasonService/SeasonStart.php
+  s_d6a527b03c4b5b::t_08df02158327c7 13,17-18,21,27-28
+tests/Integration/Instance/SeasonCompletionTest.php
+  s_d6a527b03c4b5b::t_08df02158327c7 11-12,53,82
+tests/Integration/Instance/SeasonStartTest.php
+  s_d6a527b03c4b5b::t_08df02158327c7 9,50
+tests/Integration/Services/SeasonService/PlayerRetirementTest.php
+  s_d6a527b03c4b5b::t_f178de5c95846a 9,24,50-53
+  s_d6a527b03c4b5b::t_08df02158327c7 1-8,10-23,25-49,54-110
+tests/Integration/Instance/SeasonStartSchedulingTest.php
+  s_d6a527b03c4b5b::t_08df02158327c7 9,57-59
+app/Repositories/Interfaces/IPlayerRepository.php
+  s_d6a527b03c4b5b::t_4a419ed42e5542 9
+  s_d6a527b03c4b5b::t_e51933c3d2e16d 5-6,11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "e96212c31ae1273c753efd6050ffd2bdd1817999",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
