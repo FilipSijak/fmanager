@@ -3,16 +3,16 @@
 namespace App\Listeners;
 
 use App\Events\SeasonCompleted;
-use App\Services\SeasonService\SeasonCompletionService;
+use App\Services\SeasonService\SeasonService;
 
 class CompleteSeason
 {
     public function __construct(
-        private readonly SeasonCompletionService $seasonCompletionService
+        private readonly SeasonService $seasonService
     ) {}
 
     public function handle(SeasonCompleted $event): void
     {
-        $this->seasonCompletionService->complete($event->instance);
+        $this->seasonService->complete($event->instance);
     }
 }

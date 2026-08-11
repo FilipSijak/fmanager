@@ -7,11 +7,17 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Schema\Grammars\MySqlGrammar;
 
 class Player extends Model
 {
     public $timestamps = false;
-    use HasFactory, BelongsToGameInstance;
+
+    protected $casts = [
+        'is_retired' => 'boolean',
+    ];
+
+    use BelongsToGameInstance, HasFactory;
 
     public function positions()
     {
@@ -26,7 +32,7 @@ class Player extends Model
     public function getTableColumns()
     {
         $columns = $this->getConnection()->select(
-            (new \Illuminate\Database\Schema\Grammars\MySqlGrammar)->compileColumnListing()
+            (new MySqlGrammar)->compileColumnListing()
             .' order by ordinal_position',
             [$this->getConnection()->getDatabaseName(), $this->getTable()]
         );
@@ -34,7 +40,7 @@ class Player extends Model
         return array_map(function ($value) {
             return $value->column_name;
         }, $columns);
-        //return $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
+        // return $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
     }
 
     public function setPositions(array $positions)
@@ -54,7 +60,7 @@ class Player extends Model
 
     public function getAttributeCategoriesPotential()
     {
-        return $this->attributesCategories["potentialByCategory"];
+        return $this->attributesCategories['potentialByCategory'];
     }
 
     public function contract(): BelongsTo

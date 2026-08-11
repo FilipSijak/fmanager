@@ -6,7 +6,7 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Services\SeasonService\SeasonStartService;
+use App\Services\SeasonService\SeasonStart;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
@@ -54,9 +54,9 @@ class SeasonStartSchedulingTest extends TestCase
             }
         }
 
-        $service = app(SeasonStartService::class);
-        $service->start($instance);
-        $service->start($instance);
+        $service = app(SeasonStart::class);
+        $service->process($instance);
+        $service->process($instance);
 
         $this->assertSame(12, DB::table('games')->where('competition_id', $league->id)->count());
         $this->assertSame(12, DB::table('games')->where('competition_id', $groupTournament->id)->count());

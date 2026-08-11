@@ -3,6 +3,8 @@
 namespace App\Http\Resources;
 
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
+use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PlayerResource extends JsonResource
@@ -10,8 +12,8 @@ class PlayerResource extends JsonResource
     /**
      * Transform the resource into an array.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
+     * @param  Request  $request
+     * @return array|Arrayable|\JsonSerializable
      */
     public function toArray($request)
     {
@@ -22,11 +24,12 @@ class PlayerResource extends JsonResource
             'position' => $this->position,
             'country_code' => $this->country_code,
             'dob' => $this->dob,
+            'is_retired' => (bool) $this->is_retired,
             'club' => $this->club ? [
                 'id' => $this->club->id,
                 'name' => $this->club->name,
             ] : null,
-            'contract' => new PlayerContractResource($this->contract),
+            'contract' => $this->contract ? new PlayerContractResource($this->contract) : null,
             'attributes' => [
                 'technical' => collect(PlayerFields::TECHNICAL_FIELDS)
                     ->mapWithKeys(fn ($field) => [$field => $this->{$field}])

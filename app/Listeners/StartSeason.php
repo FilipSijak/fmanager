@@ -3,16 +3,16 @@
 namespace App\Listeners;
 
 use App\Events\SeasonStarted;
-use App\Services\SeasonService\SeasonStartService;
+use App\Services\SeasonService\SeasonService;
 
 class StartSeason
 {
     public function __construct(
-        private readonly SeasonStartService $seasonStartService
+        private readonly SeasonService $seasonService
     ) {}
 
     public function handle(SeasonStarted $event): void
     {
-        $this->seasonStartService->start($event->instance);
+        $this->seasonService->start($event->instance);
     }
 }

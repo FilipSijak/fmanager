@@ -60,6 +60,7 @@ class PlayerApiTest extends TestCase
             ->assertJsonPath('data.position', 'CM')
             ->assertJsonPath('data.country_code', 'GB')
             ->assertJsonPath('data.dob', '2000-01-02')
+            ->assertJsonPath('data.is_retired', false)
             ->assertJsonPath('data.club.id', $club->id)
             ->assertJsonPath('data.club.name', 'Managed FC')
             ->assertJsonPath('data.contract.salary', 1000)
@@ -70,6 +71,20 @@ class PlayerApiTest extends TestCase
             ->assertJsonPath('data.attributes.physical.pace', 13)
             ->assertJsonMissingPath('data.potential')
             ->assertJsonMissingPath('data.max_potential');
+
+        $player->forceFill([
+            'is_retired' => true,
+            'club_id' => null,
+            'contract_id' => null,
+        ])->save();
+
+        $this
+            ->withHeaders(['instanceHash' => 'current-instance'])
+            ->getJson("/api/player/{$player->id}")
+            ->assertOk()
+            ->assertJsonPath('data.is_retired', true)
+            ->assertJsonPath('data.club', null)
+            ->assertJsonPath('data.contract', null);
     }
 
     #[Test]

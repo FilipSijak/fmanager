@@ -9,7 +9,9 @@ use App\Repositories\Interfaces\IPlayerRepository;
 use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\PersonService\PersonService;
+use App\Services\TransferService\TransferStatusTypes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 
 class PlayerRepository implements IPlayerRepository
 {
@@ -22,7 +24,7 @@ class PlayerRepository implements IPlayerRepository
 
     public function bulkPlayerInsert(
         int $instanceId,
-        Club $club = null, /*when creating free players*/
+        ?Club $club, /* when creating free players */
         array $generatedPlayers): void
     {
         foreach ($generatedPlayers as $player) {
@@ -30,8 +32,7 @@ class PlayerRepository implements IPlayerRepository
             $attributesCategories = $player->getAttributeCategoriesPotential();
             $playerValue = 0;
 
-            if ($club)
-            {
+            if ($club) {
                 $clubRank = $club->rank * 10;
 
                 if ($clubRank > $player->potential) {
@@ -114,17 +115,14 @@ class PlayerRepository implements IPlayerRepository
         }
     }
 
-    /**
-     * @param $players
-     */
     public function bulkAssignmentPlayersPositions($players): void
     {
-        $personService = new PersonService();
+        $personService = new PersonService;
         $playerPositionsData = [];
 
         foreach ($players as $player) {
 
-            $attributes   = $player->getAttributes();
+            $attributes = $player->getAttributes();
             $positionList = $personService->generatePlayerPositionList($attributes);
             $playerPositions = array_flip(PlayerPositionConfig::PLAYER_POSITIONS);
 
@@ -132,7 +130,7 @@ class PlayerRepository implements IPlayerRepository
                 $playerPositionsData[] = [
                     'player_id' => $player->id,
                     'position_id' => $playerPositions[$position],
-                    'position_grade' => $grade
+                    'position_grade' => $grade,
                 ];
             }
         }
@@ -147,18 +145,19 @@ class PlayerRepository implements IPlayerRepository
         $maxPotentialValue = $this->valuationByAttribute($player->max_potential);
         $marketingRankValue = $this->valuationByAttribute($player->marketing_rank);
 
-        $amount = $currentPotentialValue > $maxPotentialValue ? $currentPotentialValue:
+        $amount = $currentPotentialValue > $maxPotentialValue ? $currentPotentialValue :
             $maxPotentialValue - (($maxPotentialValue - $currentPotentialValue) / 2);
 
         $amount = $marketingRankValue > $amount ? $amount + (($maxPotentialValue - $amount) / 2) :
-            $amount - (($amount - $maxPotentialValue) /2);
+            $amount - (($amount - $maxPotentialValue) / 2);
 
         return DisplayHelpers::roundAmounts($amount);
     }
 
-    private function valuationByAttribute(int $attributeValue) {
+    private function valuationByAttribute(int $attributeValue)
+    {
         $attributeValue = min($attributeValue, 200);
-        for ($k = 0.1, $i = 10; $i <= 200; $i +=10, $k += 0.06) {
+        for ($k = 0.1, $i = 10; $i <= 200; $i += 10, $k += 0.06) {
             if ($attributeValue > $i) {
                 continue;
             }
@@ -168,6 +167,71 @@ class PlayerRepository implements IPlayerRepository
         }
 
         return $value;
+    }
+
+    public function playersEligibleForRetirement(int $instanceId, string $date): LazyCollection
+    {
+        return Player::query()
+            ->forInstance($instanceId)
+            ->where('is_retired', false)
+            ->whereNotNull('dob')
+            ->whereDate('dob', '<=', $date)
+            ->lazyById(200);
+    }
+
+    public function retirePlayer(int $playerId): bool
+    {
+        return DB::transaction(function () use ($playerId): bool {
+            $player = Player::query()->lockForUpdate()->findOrFail($playerId);
+
+            if ($player->is_retired) {
+                return false;
+            }
+
+            $contractId = $player->contract_id;
+
+            $player->forceFill([
+                'is_retired' => true,
+                'club_id' => null,
+                'loan_club_id' => null,
+                'loan_start' => null,
+                'loan_end' => null,
+                'contract_id' => null,
+            ])->save();
+
+            if ($contractId !== null) {
+                DB::table('players_contracts')->where('id', $contractId)->delete();
+            }
+
+            DB::table('transfer_list')->where('player_id', $player->id)->delete();
+            $this->voidOngoingTransfersForPlayer($player->id);
+
+            return true;
+        });
+    }
+
+    private function voidOngoingTransfersForPlayer(int $playerId): void
+    {
+        $ongoingTransferIds = DB::table('transfers')
+            ->where('player_id', $playerId)
+            ->where(function ($query): void {
+                $query
+                    ->whereNull('transfer_status')
+                    ->orWhereNotIn('transfer_status', [
+                        TransferStatusTypes::TRANSFER_COMPLETED->value,
+                        TransferStatusTypes::TRANSFER_FAILED->value,
+                    ]);
+            })
+            ->pluck('id');
+
+        if ($ongoingTransferIds->isEmpty()) {
+            return;
+        }
+
+        DB::table('transfer_contract_offers')->whereIn('transfer_id', $ongoingTransferIds)->delete();
+        DB::table('transfer_financial_details')->whereIn('transfer_id', $ongoingTransferIds)->delete();
+        DB::table('transfer_payments')->whereIn('transfer_id', $ongoingTransferIds)->delete();
+        DB::table('transfers')->whereIn('id', $ongoingTransferIds)->delete();
     }
 
     public function contractBasedOnPotential(Player $player): array
