@@ -1,0 +1,25 @@
+database/factories/StaffFactory.php
+  s_d6a527b03c4b5b::t_2f0c1ce2966e3d 6,15-16
+  s_d6a527b03c4b5b::t_0b49c3062e61f0 11,33
+app/Models/Staff.php
+  s_d6a527b03c4b5b::t_ab5ddc03ce15b4 1-31
+database/migrations/2026_08_11_000002_add_is_retired_to_staff_table.php
+  s_d6a527b03c4b5b::t_ab5ddc03ce15b4 1-12,14-19,21-24
+  s_d6a527b03c4b5b::t_0b49c3062e61f0 13,20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "3d1ed3e4950757b365535f514fa101a3522df155",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
