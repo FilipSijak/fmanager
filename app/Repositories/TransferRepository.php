@@ -28,8 +28,15 @@ class TransferRepository extends CoreRepository
     public function createAutomaticTransfer(
         Player $player,
         Club $buyingClub,
-        $transferType,
+        int $transferType,
     ): Transfer {
+        $transferStatus = match ($transferType) {
+            TransferTypes::FREE_TRANSFER => TransferStatusTypes::WAITING_PLAYER,
+            TransferTypes::PERMANENT_TRANSFER,
+            TransferTypes::LOAN_TRANSFER => TransferStatusTypes::WAITING_TARGET_CLUB,
+            default => throw new \InvalidArgumentException("Unsupported transfer type: {$transferType}"),
+        };
+
         $transfer = new Transfer([
             'instance_id' => $this->instanceId(),
             'season_id' => $this->seasonId(),
@@ -37,6 +44,7 @@ class TransferRepository extends CoreRepository
             'player_id' => $player->id,
             'offer_date' => Instance::find($this->instanceId())->instance_date,
             'transfer_type' => $transferType,
+            'transfer_status' => $transferStatus->value,
         ]);
 
         $transfer->save();

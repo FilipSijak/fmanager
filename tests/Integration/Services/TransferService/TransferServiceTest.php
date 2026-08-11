@@ -247,6 +247,61 @@ class TransferServiceTest extends TestCase
         $transferService->automaticTransferBids();
 
         $this->assertCount(1, Transfer::all());
+        $transfer = Transfer::query()->sole();
+        $expectedStatus = $transfer->transfer_type === TransferTypes::FREE_TRANSFER
+            ? TransferStatusTypes::WAITING_PLAYER
+            : TransferStatusTypes::WAITING_TARGET_CLUB;
+
+        $this->assertSame($expectedStatus->value, $transfer->transfer_status);
+    }
+
+    #[Test]
+    public function automatic_transfers_are_created_with_the_status_for_the_first_responder(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'season_id' => 1,
+            'instance_date' => '2026-07-01',
+        ]);
+        Season::factory()->create(['id' => 1, 'instance_id' => 1]);
+        $buyingClub = Club::factory()->create(['id' => 1, 'instance_id' => 1]);
+        $player = Player::factory()->create(['instance_id' => 1, 'club_id' => 2]);
+        $repository = app(TransferRepository::class);
+        $repository->setInstanceId(1);
+        $repository->setSeasonId(1);
+
+        $expectedStatuses = [
+            TransferTypes::FREE_TRANSFER => TransferStatusTypes::WAITING_PLAYER,
+            TransferTypes::PERMANENT_TRANSFER => TransferStatusTypes::WAITING_TARGET_CLUB,
+            TransferTypes::LOAN_TRANSFER => TransferStatusTypes::WAITING_TARGET_CLUB,
+        ];
+
+        foreach ($expectedStatuses as $transferType => $expectedStatus) {
+            $transfer = $repository->createAutomaticTransfer($player, $buyingClub, $transferType);
+
+            $this->assertSame($expectedStatus->value, $transfer->transfer_status);
+            $this->assertDatabaseHas('transfers', [
+                'id' => $transfer->id,
+                'transfer_type' => $transferType,
+                'transfer_status' => $expectedStatus->value,
+            ]);
+        }
+    }
+
+    #[Test]
+    public function automatic_transfers_reject_an_unsupported_transfer_type(): void
+    {
+        Instance::factory()->create(['id' => 1, 'season_id' => 1]);
+        $buyingClub = Club::factory()->create(['id' => 1, 'instance_id' => 1]);
+        $player = Player::factory()->create(['instance_id' => 1]);
+        $repository = app(TransferRepository::class);
+        $repository->setInstanceId(1);
+        $repository->setSeasonId(1);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Unsupported transfer type: 999');
+
+        $repository->createAutomaticTransfer($player, $buyingClub, 999);
     }
 
     #[Test]
@@ -301,6 +356,7 @@ class TransferServiceTest extends TestCase
 
         $this->assertSame($target->id, $transfer->player_id);
         $this->assertSame(TransferTypes::PERMANENT_TRANSFER, $transfer->transfer_type);
+        $this->assertSame(TransferStatusTypes::WAITING_TARGET_CLUB->value, $transfer->transfer_status);
         $this->assertDatabaseHas('transfer_financial_details', [
             'transfer_id' => $transfer->id,
             'amount' => 44000000,

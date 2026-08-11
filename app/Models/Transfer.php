@@ -17,6 +17,7 @@ class Transfer extends Model
         'player_id',
         'offer_date',
         'transfer_type',
+        'transfer_status',
     ];
 
     public $timestamps = false;
