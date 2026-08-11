@@ -1,0 +1,14 @@
+.gitignore
+  h_45e806f151446f 27-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "a40bd0b71b760009c32b3b0be69830db5f50cbba",
+  "prompts": {},
+  "humans": {
+    "h_45e806f151446f": {
+      "author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
