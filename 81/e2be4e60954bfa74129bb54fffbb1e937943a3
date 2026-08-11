@@ -1,0 +1,25 @@
+app/Services/SeasonService/RetirementDecision.php
+  s_d6a527b03c4b5b::t_1d55e9047915f2 1-49
+app/Services/SeasonService/PlayerRetirement.php
+  s_d6a527b03c4b5b::t_a286f79840f790 15-16,30
+tests/Unit/Services/SeasonService/RetirementDecisionTest.php
+  s_d6a527b03c4b5b::t_26b448408c9e5c 1-23
+tests/Integration/Services/SeasonService/PlayerRetirementTest.php
+  s_d6a527b03c4b5b::t_6d3878a381cdfe 12,40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "81e2be4e60954bfa74129bb54fffbb1e937943a3",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
