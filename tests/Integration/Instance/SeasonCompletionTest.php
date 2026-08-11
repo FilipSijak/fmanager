@@ -8,7 +8,8 @@ use App\Models\Season;
 use App\Repositories\CompetitionRepository;
 use App\Services\CompetitionService\Progression\SeasonProgressionService;
 use App\Services\InstanceService\InstanceService;
-use App\Services\SeasonService\SeasonCompletionService;
+use App\Services\SeasonService\SeasonCompletion;
+use App\Services\SeasonService\SeasonService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\Test;
@@ -49,7 +50,7 @@ class SeasonCompletionTest extends TestCase
     public function its_listener_calls_the_season_completion_service(): void
     {
         $instance = $this->createInstance('2027-06-15');
-        $service = $this->mock(SeasonCompletionService::class);
+        $service = $this->mock(SeasonService::class);
 
         $service->shouldReceive('complete')
             ->once()
@@ -78,7 +79,7 @@ class SeasonCompletionTest extends TestCase
             ->with(1, 1)
             ->andReturn($nextSeason);
 
-        app(SeasonCompletionService::class)->complete($instance);
+        app(SeasonCompletion::class)->process($instance);
 
         $this->assertSame(2, $instance->fresh()->season_id);
     }

@@ -12,7 +12,7 @@ class CreateTransferRequest extends FormRequest
     {
         return [
             'source_club_id' => 'required|integer',
-            'target_club_id'=> 'required|integer|different:source_club_id',
+            'target_club_id' => 'required|integer|different:source_club_id',
             'player_id' => [
                 'required',
                 'integer',
@@ -20,6 +20,17 @@ class CreateTransferRequest extends FormRequest
                     $sourceClubId = $this->input('source_club_id');
 
                     if (! $sourceClubId) {
+                        return;
+                    }
+
+                    $retired = Player::query()
+                        ->whereKey($value)
+                        ->where('is_retired', true)
+                        ->exists();
+
+                    if ($retired) {
+                        $fail('A retired player cannot be transferred.');
+
                         return;
                     }
 

@@ -1,0 +1,110 @@
+<?php
+
+namespace Tests\Integration\Services\SeasonService;
+
+use App\Models\Club;
+use App\Models\Instance;
+use App\Models\Player;
+use App\Models\PlayerContract;
+use App\Repositories\PlayerRepository;
+use App\Repositories\TransferSearchRepository;
+use App\Services\SeasonService\PlayerRetirement;
+use Carbon\CarbonImmutable;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
+use Tests\TestCase;
+
+class PlayerRetirementTest extends TestCase
+{
+    use RefreshDatabase;
+
+    #[Test]
+    public function retirement_chance_increases_with_age_and_is_guaranteed_at_45(): void
+    {
+        $service = new PlayerRetirement(app(PlayerRepository::class));
+
+        $this->assertSame(0, $service->retirementChanceBasisPoints(31));
+        $this->assertSame(714, $service->retirementChanceBasisPoints(32));
+        $this->assertSame(5000, $service->retirementChanceBasisPoints(38));
+        $this->assertSame(9286, $service->retirementChanceBasisPoints(44));
+        $this->assertSame(10000, $service->retirementChanceBasisPoints(45));
+        $this->assertSame(10000, $service->retirementChanceBasisPoints(50));
+    }
+
+    #[Test]
+    public function it_retires_selected_older_players_and_voids_their_contracts(): void
+    {
+        $instance = Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2027-06-16',
+        ]);
+        $club = Club::factory()->create(['id' => 1, 'instance_id' => 1]);
+        $asOfDate = CarbonImmutable::parse($instance->instance_date);
+
+        $age31 = $this->playerWithContract(1, $club->id, $asOfDate->subYears(31));
+        $age32 = $this->playerWithContract(2, $club->id, $asOfDate->subYears(32));
+        $age44 = $this->playerWithContract(3, $club->id, $asOfDate->subYears(44));
+        $age45 = $this->playerWithContract(4, $club->id, $asOfDate->subYears(45));
+
+        $rolls = collect([1, 10000, 10000]);
+        $service = new PlayerRetirement(
+            app(PlayerRepository::class),
+            fn (): int => (int) $rolls->shift()
+        );
+
+        $this->assertSame(2, $service->retireEligiblePlayers($instance));
+
+        foreach ([$age32, $age45] as $retiredPlayer) {
+            $this->assertDatabaseHas('players', [
+                'id' => $retiredPlayer->id,
+                'is_retired' => true,
+                'club_id' => null,
+                'loan_club_id' => null,
+                'contract_id' => null,
+            ]);
+            $this->assertDatabaseMissing('players_contracts', [
+                'id' => $retiredPlayer->contract_id,
+            ]);
+        }
+
+        $this->assertNull(
+            (new TransferSearchRepository)->findFreePlayerForPosition($club, 'CB')
+        );
+
+        foreach ([$age31, $age44] as $activePlayer) {
+            $this->assertDatabaseHas('players', [
+                'id' => $activePlayer->id,
+                'is_retired' => false,
+                'club_id' => $club->id,
+                'contract_id' => $activePlayer->contract_id,
+            ]);
+            $this->assertDatabaseHas('players_contracts', [
+                'id' => $activePlayer->contract_id,
+            ]);
+        }
+
+    }
+
+    private function playerWithContract(
+        int $id,
+        int $clubId,
+        CarbonImmutable $dob
+    ): Player {
+        $contract = PlayerContract::factory()->create([
+            'contract_start' => '2026-07-01',
+            'contract_end' => '2028-06-30',
+        ]);
+
+        return Player::factory()->create([
+            'id' => $id,
+            'instance_id' => 1,
+            'club_id' => $clubId,
+            'loan_club_id' => $clubId,
+            'loan_start' => '2027-01-01',
+            'loan_end' => '2027-06-30',
+            'contract_id' => $contract->id,
+            'dob' => $dob->toDateString(),
+            'is_retired' => false,
+        ]);
+    }
+}

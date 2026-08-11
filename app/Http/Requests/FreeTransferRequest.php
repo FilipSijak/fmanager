@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class FreeTransferRequest extends FormRequest
 {
@@ -15,7 +16,11 @@ class FreeTransferRequest extends FormRequest
     {
         return [
             'source_club_id' => 'required|integer|exists:clubs,id',
-            'player_id' => 'required|integer|exists:players,id',
+            'player_id' => [
+                'required',
+                'integer',
+                Rule::exists('players', 'id')->where('is_retired', false),
+            ],
             'salary' => 'required|integer',
             'appearance' => 'integer',
             'assist' => 'integer',

@@ -10,18 +10,21 @@ use App\Repositories\CompetitionRepository;
 use App\Services\CompetitionService\CompetitionService;
 use Illuminate\Support\Facades\DB;
 
-class SeasonStartService
+class SeasonStart
 {
     public function __construct(
         private readonly CompetitionRepository $competitionRepository,
-        private readonly CompetitionService $competitionService
+        private readonly CompetitionService $competitionService,
+        private readonly PlayerRetirement $playerRetirement
     ) {}
 
-    public function start(Instance $instance): void
+    public function process(Instance $instance): void
     {
         $season = Season::query()
             ->where('instance_id', $instance->id)
             ->findOrFail($instance->season_id);
+
+        $this->playerRetirement->retireEligiblePlayers($instance);
 
         Competition::query()
             ->forInstance($instance->id)

@@ -6,7 +6,7 @@ use App\Events\SeasonStarted;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Services\InstanceService\InstanceService;
-use App\Services\SeasonService\SeasonStartService;
+use App\Services\SeasonService\SeasonService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\Test;
@@ -47,7 +47,7 @@ class SeasonStartTest extends TestCase
     public function its_listener_calls_the_season_start_service(): void
     {
         $instance = $this->createInstance('2027-06-16');
-        $service = $this->mock(SeasonStartService::class);
+        $service = $this->mock(SeasonService::class);
 
         $service->shouldReceive('start')
             ->once()
