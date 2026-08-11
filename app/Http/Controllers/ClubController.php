@@ -13,9 +13,7 @@ class ClubController extends Controller
 {
     public function __construct(
         private readonly GameContext $gameContext,
-    )
-    {
-    }
+    ) {}
 
     public function show(int $clubId)
     {
@@ -41,11 +39,13 @@ class ClubController extends Controller
             ->findOrFail($clubId);
 
         $players = Player::query()
-            ->with('contract')
-            ->forInstance($instanceId)
-            ->where('club_id', $clubId)
+            ->with(['person', 'contract'])
+            ->join('people', 'people.id', '=', 'players.person_id')
+            ->select('players.*')
+            ->where('players.instance_id', $instanceId)
+            ->where('players.club_id', $clubId)
             ->orderBy('position')
-            ->orderBy('last_name')
+            ->orderBy('people.last_name')
             ->get();
 
         return ResponseHelper::success(

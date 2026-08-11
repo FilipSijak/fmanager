@@ -196,6 +196,10 @@ class CreateInstanceTest extends TestCase
 
         // atm each club should have 36 players assigned when creating a game
         $this->assertEquals(36, $players->count());
+        $this->assertSame($players->count(), $players->whereNotNull('person_id')->count());
+        $this->assertSame($players->count(), $players->pluck('person_id')->unique()->count());
+        $this->assertNotNull($players->first()->person);
+        $this->assertNotEmpty($players->first()->first_name);
     }
 
     protected function getNewInstance(): CreateInstance

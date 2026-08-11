@@ -4,6 +4,7 @@ namespace Tests\Integration\Player;
 
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Person;
 use App\Models\Player;
 use App\Models\PlayerContract;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,16 +32,21 @@ class PlayerApiTest extends TestCase
             'contract_start' => '2024-07-01',
             'contract_end' => '2028-06-30',
         ]);
+        $person = Person::factory()->create([
+            'instance_id' => $instance->id,
+            'first_name' => 'Alpha',
+            'last_name' => 'Player',
+            'country_code' => 'GB',
+            'dob' => '2000-01-02',
+        ]);
+
         $player = Player::factory()->create([
             'id' => 100,
             'instance_id' => $instance->id,
+            'person_id' => $person->id,
             'club_id' => $club->id,
             'contract_id' => $contract->id,
-            'first_name' => 'Alpha',
-            'last_name' => 'Player',
             'position' => 'CM',
-            'country_code' => 'GB',
-            'dob' => '2000-01-02',
             'potential' => 200,
             'max_potential' => 200,
             'corners' => 11,
@@ -101,6 +107,9 @@ class PlayerApiTest extends TestCase
         $otherPlayer = Player::factory()->create([
             'id' => 100,
             'instance_id' => $otherInstance->id,
+            'person_id' => Person::factory()->create([
+                'instance_id' => $otherInstance->id,
+            ])->id,
         ]);
 
         $response = $this

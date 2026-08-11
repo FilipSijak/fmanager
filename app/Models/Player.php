@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToGameInstance;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,46 @@ class Player extends Model
     ];
 
     use BelongsToGameInstance, HasFactory;
+
+    public function person(): BelongsTo
+    {
+        return $this->belongsTo(Person::class);
+    }
+
+    private array $personIdentity = [];
+
+    public function setPersonIdentity(array $identity): void
+    {
+        $this->personIdentity = $identity;
+    }
+
+    protected function firstName(): Attribute
+    {
+        return Attribute::get(
+            fn (): ?string => $this->person?->first_name ?? $this->personIdentity['first_name'] ?? null
+        );
+    }
+
+    protected function lastName(): Attribute
+    {
+        return Attribute::get(
+            fn (): ?string => $this->person?->last_name ?? $this->personIdentity['last_name'] ?? null
+        );
+    }
+
+    protected function dob(): Attribute
+    {
+        return Attribute::get(
+            fn (): ?string => $this->person?->dob?->toDateString() ?? $this->personIdentity['dob'] ?? null
+        );
+    }
+
+    protected function countryCode(): Attribute
+    {
+        return Attribute::get(
+            fn (): ?string => $this->person?->country_code ?? $this->personIdentity['country_code'] ?? null
+        );
+    }
 
     public function positions()
     {
@@ -66,6 +107,16 @@ class Player extends Model
     public function contract(): BelongsTo
     {
         return $this->belongsTo(PlayerContract::class);
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_retired', false);
+    }
+
+    public function scopeRetired(Builder $query): Builder
+    {
+        return $query->where('is_retired', true);
     }
 
     public function scopeKeyPlayers(Builder $query)

@@ -6,6 +6,7 @@ use App\Models\Concerns\BelongsToGameInstance;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Staff extends Model
 {
@@ -18,6 +19,11 @@ class Staff extends Model
     protected $casts = [
         'is_retired' => 'boolean',
     ];
+
+    public function person(): BelongsTo
+    {
+        return $this->belongsTo(Person::class);
+    }
 
     public function scopeActive(Builder $query): Builder
     {

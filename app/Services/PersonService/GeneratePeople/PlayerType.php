@@ -7,19 +7,20 @@ use stdClass;
 
 class PlayerType
 {
-    /**
-     * @param stdClass $playerAttributes
-     * @param int      $gameId
-     *
-     * @return PlayerModel
-     */
     public function create(stdClass $playerAttributes, int $gameId): PlayerModel
     {
-        $player              = new PlayerModel();
-        $generatedPositions  = [];
+        $player = new PlayerModel;
+        $generatedPositions = [];
         $potentialByCategory = [];
+        $personIdentity = [];
 
         foreach ($playerAttributes as $field => $value) {
+            if (in_array($field, ['first_name', 'last_name', 'dob', 'country_code'], true)) {
+                $personIdentity[$field] = $value;
+
+                continue;
+            }
+
             if ($field == 'potentialByCategory') {
                 $potentialByCategory[$field] = $value;
 
@@ -36,6 +37,8 @@ class PlayerType
 
             $player->{$field} = $value;
         }
+
+        $player->setPersonIdentity($personIdentity);
 
         $player->game_id = $gameId;
 
