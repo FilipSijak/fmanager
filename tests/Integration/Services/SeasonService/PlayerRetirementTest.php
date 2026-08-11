@@ -10,6 +10,7 @@ use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
+use App\Models\TransferList;
 use App\Repositories\PlayerRepository;
 use App\Repositories\TransferSearchRepository;
 use App\Services\SeasonService\PlayerRetirement;
@@ -38,6 +39,11 @@ class PlayerRetirementTest extends TestCase
         $age32 = $this->playerWithContract(2, $club->id, $asOfDate->subYears(32));
         $age44 = $this->playerWithContract(3, $club->id, $asOfDate->subYears(44));
         $age45 = $this->playerWithContract(4, $club->id, $asOfDate->subYears(45));
+
+        TransferList::factory()->create([
+            'player_id' => $age32->id,
+            'club_id' => $club->id,
+        ]);
 
         $ongoingTransfer = Transfer::factory()->create([
             'instance_id' => $instance->id,
@@ -94,6 +100,7 @@ class PlayerRetirementTest extends TestCase
             (new TransferSearchRepository)->findFreePlayerForPosition($club, 'CB')
         );
 
+        $this->assertDatabaseMissing('transfer_list', ['player_id' => $age32->id]);
         $this->assertDatabaseMissing('transfers', ['id' => $ongoingTransfer->id]);
         $this->assertDatabaseMissing('transfer_contract_offers', ['transfer_id' => $ongoingTransfer->id]);
         $this->assertDatabaseMissing('transfer_financial_details', ['transfer_id' => $ongoingTransfer->id]);
