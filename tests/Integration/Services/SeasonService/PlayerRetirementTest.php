@@ -9,6 +9,7 @@ use App\Models\PlayerContract;
 use App\Repositories\PlayerRepository;
 use App\Repositories\TransferSearchRepository;
 use App\Services\SeasonService\PlayerRetirement;
+use App\Services\SeasonService\RetirementDecision;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -17,19 +18,6 @@ use Tests\TestCase;
 class PlayerRetirementTest extends TestCase
 {
     use RefreshDatabase;
-
-    #[Test]
-    public function retirement_chance_increases_with_age_and_is_guaranteed_at_45(): void
-    {
-        $service = new PlayerRetirement(app(PlayerRepository::class));
-
-        $this->assertSame(0, $service->retirementChanceBasisPoints(31));
-        $this->assertSame(714, $service->retirementChanceBasisPoints(32));
-        $this->assertSame(5000, $service->retirementChanceBasisPoints(38));
-        $this->assertSame(9286, $service->retirementChanceBasisPoints(44));
-        $this->assertSame(10000, $service->retirementChanceBasisPoints(45));
-        $this->assertSame(10000, $service->retirementChanceBasisPoints(50));
-    }
 
     #[Test]
     public function it_retires_selected_older_players_and_voids_their_contracts(): void
@@ -49,7 +37,7 @@ class PlayerRetirementTest extends TestCase
         $rolls = collect([1, 10000, 10000]);
         $service = new PlayerRetirement(
             app(PlayerRepository::class),
-            fn (): int => (int) $rolls->shift()
+            new RetirementDecision(fn (): int => (int) $rolls->shift())
         );
 
         $this->assertSame(2, $service->retireEligiblePlayers($instance));
