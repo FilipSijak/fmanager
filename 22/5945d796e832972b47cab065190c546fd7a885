@@ -1,0 +1,26 @@
+tests/Integration/Services/TransferService/TransferServiceTest.php
+  s_d6a527b03c4b5b::t_d59c32b6303d02 256,258-304
+  s_d6a527b03c4b5b::t_10c2ec1cd10f76 250-255
+  s_d6a527b03c4b5b::t_98cda088247fc5 359
+  s_d6a527b03c4b5b::t_de1ac4e98d30c1 257
+app/Models/Transfer.php
+  s_d6a527b03c4b5b::t_98cda088247fc5 20
+app/Repositories/TransferRepository.php
+  s_d6a527b03c4b5b::t_98cda088247fc5 31,33-39,47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "225945d796e832972b47cab065190c546fd7a885",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
