@@ -24,3 +24,5 @@ integration-tests.sh
 .pnpm-store
 .phplint-cache
 .phplint.cache
+season-test.md
+full-test.md
