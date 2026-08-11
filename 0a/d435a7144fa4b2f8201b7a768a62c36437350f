@@ -1,0 +1,70 @@
+app/Models/Staff.php
+  s_d6a527b03c4b5b::t_40420875258716 9,23-26
+  s_d6a527b03c4b5b::t_75f023fe3c47fc 27
+tests/Integration/Person/PersonCareerTest.php
+  s_d6a527b03c4b5b::t_d615b43adf67be 1-48
+tests/Integration/Instance/CreateInstanceTest.php
+  s_d6a527b03c4b5b::t_1bf3f14f2627f0 199-202
+tests/Integration/Club/ClubApiTest.php
+  s_d6a527b03c4b5b::t_9a8eff814b9c36 8,90-91,95-97,101-102,106,115,123-126,131-134
+  s_d6a527b03c4b5b::t_554c439d227f3e 92-94,98-100
+database/migrations/2026_08_11_000003_extract_people_from_players_and_staff.php
+  s_d6a527b03c4b5b::t_7f9f398e92be4a 53-54,59,61-63
+  s_d6a527b03c4b5b::t_d53561791fb5b9 55-58,60
+  s_d6a527b03c4b5b::t_7df3bc08f1969f 1-52,64-99
+app/Repositories/PlayerRepository.php
+  s_d6a527b03c4b5b::t_430cf7118330da 49,55-60,182-185
+  s_d6a527b03c4b5b::t_20f2dcc426d817 53-54
+app/Services/PersonService/GeneratePeople/PlayerType.php
+  s_d6a527b03c4b5b::t_4f63b04a27154b 15,18-23,41
+  s_d6a527b03c4b5b::t_bdb5c5775b7921 42
+  s_d6a527b03c4b5b::t_62f4e08874c267 12-13
+database/factories/PersonFactory.php
+  s_d6a527b03c4b5b::t_7df3bc08f1969f 1-27
+app/Http/Controllers/ClubController.php
+  s_d6a527b03c4b5b::t_588249267c5076 16
+  s_d6a527b03c4b5b::t_a514c18ff3ec86 42-46,48
+tests/Integration/Player/PlayerApiTest.php
+  s_d6a527b03c4b5b::t_23008b16cfe052 110-112
+  s_d6a527b03c4b5b::t_e9f0200c28f147 37-40
+  s_d6a527b03c4b5b::t_9a8eff814b9c36 7,35-36,41-42,46
+app/Models/Person.php
+  s_d6a527b03c4b5b::t_7df3bc08f1969f 1-32
+database/factories/StaffFactory.php
+  s_d6a527b03c4b5b::t_2e976f9e381bb7 6
+  s_d6a527b03c4b5b::t_64b767539e9abe 24-29,31-39
+database/factories/PlayerFactory.php
+  s_d6a527b03c4b5b::t_588249267c5076 8,13,36,42
+  s_d6a527b03c4b5b::t_2e976f9e381bb7 7,39
+tests/Integration/Services/SeasonService/PlayerRetirementTest.php
+  s_d6a527b03c4b5b::t_9a8eff814b9c36 8,140-143
+  s_d6a527b03c4b5b::t_0c7701b640836c 144,148
+app/Http/Controllers/PlayerController.php
+  s_d6a527b03c4b5b::t_588249267c5076 14,21
+app/Models/Player.php
+  s_d6a527b03c4b5b::t_4f63b04a27154b 28-34,37-39,44-46,51-53,58-60
+  s_d6a527b03c4b5b::t_588249267c5076 7
+  s_d6a527b03c4b5b::t_7ff5f9686fe7de 23-27,35-36,40-43,47-50,54-57,61
+  s_d6a527b03c4b5b::t_64b767539e9abe 112-121
+  s_d6a527b03c4b5b::t_d42a42e4594d52 62
+app/Http/Resources/ClubSquadPlayerResource.php
+  s_d6a527b03c4b5b::t_e4e63d66118523 19-20,22
+app/Http/Resources/PlayerResource.php
+  s_d6a527b03c4b5b::t_9d2062e33bf043 22-23,25-26
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.21",
+  "base_commit_sha": "0ad435a7144fa4b2f8201b7a768a62c36437350f",
+  "prompts": {},
+  "sessions": {
+    "s_d6a527b03c4b5b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019febd2-5c46-7000-9fc5-68cd2471314e",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
