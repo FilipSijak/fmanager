@@ -1,0 +1,21 @@
+app/Repositories/StaffRepository.php
+  s_67e6c3e25651d8::t_39e4a837b9cef1 43-49,57-59,66-68
+app/Services/InstanceService/CreateInstance.php
+  s_67e6c3e25651d8::t_dc71f0da31c2c3 220
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "fe2db2f1637c9bf0bd91b85955e8da7061b7978e",
+  "prompts": {},
+  "sessions": {
+    "s_67e6c3e25651d8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ff779-0d81-7950-82ce-68cd12983cad",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
