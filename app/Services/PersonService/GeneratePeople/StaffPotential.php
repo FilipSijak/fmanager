@@ -7,6 +7,7 @@ use App\Services\PersonService\PersonConfig\PersonTypes;
 
 class StaffPotential extends PersonPotential
 {
+    /**  list<StaffPotentialData> */
     public function getStaffPotentialAndRole(int $rank): array
     {
         $staffList = [];
@@ -23,10 +24,6 @@ class StaffPotential extends PersonPotential
 
         foreach ($staffRoles as $role => $count) {
             for ($i = 1; $i <= $count; $i++) {
-                $newStaffMember = new \stdClass;
-
-                $newStaffMember->role = $role;
-
                 if ($role == PersonTypes::MANAGER) {
                     $minimumPotential = $rank;
                     $maximumPotential = min(200, $rank + 20);
@@ -41,8 +38,10 @@ class StaffPotential extends PersonPotential
                     $maximumPotential = $rank + 5;
                 }
 
-                $newStaffMember->potential = rand(max(30, $minimumPotential), min(200, max(30, $maximumPotential)));
-                $staffList[] = $newStaffMember;
+                $staffList[] = new StaffPotentialData(
+                    $role,
+                    rand(max(30, $minimumPotential), min(200, max(30, $maximumPotential)))
+                );
             }
         }
 

@@ -31,22 +31,22 @@ class StaffGenerator
         $this->faker = FakerFactory::create();
     }
 
+    /**  list<GeneratedStaffData> */
     public function generateForClubRank(int $rank): array
     {
-        return array_map(function (\stdClass $staffPotential): \stdClass {
-            $staffMember = new \stdClass;
-            $staffMember->role = $staffPotential->role;
-            $staffMember->potential = $staffPotential->potential;
-            $staffMember->first_name = $this->faker->firstNameMale;
-            $staffMember->last_name = $this->faker->lastName;
-            $staffMember->dob = $this->faker->dateTimeBetween('-65 years', '-28 years')->format('Y-m-d');
-            $staffMember->country_code = $this->faker->countryCode;
-            $staffMember->attributes = $this->generateAttributes(
-                $staffPotential->potential,
-                $this->attributeNamesForRole($staffPotential->role)
+        return array_map(function (StaffPotentialData $staffPotential): GeneratedStaffData {
+            return new GeneratedStaffData(
+                role: $staffPotential->role,
+                potential: $staffPotential->potential,
+                firstName: $this->faker->firstNameMale,
+                lastName: $this->faker->lastName,
+                dateOfBirth: $this->faker->dateTimeBetween('-65 years', '-28 years')->format('Y-m-d'),
+                countryCode: $this->faker->countryCode,
+                attributes: $this->generateAttributes(
+                    $staffPotential->potential,
+                    $this->attributeNamesForRole($staffPotential->role)
+                ),
             );
-
-            return $staffMember;
         }, $this->staffPotential->getStaffPotentialAndRole($rank));
     }
 

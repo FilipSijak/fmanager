@@ -3,21 +3,23 @@
 namespace App\Repositories;
 
 use App\Models\Club;
+use App\Services\PersonService\GeneratePeople\GeneratedStaffData;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Illuminate\Support\Facades\DB;
 
 class StaffRepository
 {
+    /**  list<GeneratedStaffData> $staffMembers */
     public function bulkStaffInsert(int $instanceId, Club $club, array $staffMembers): void
     {
         DB::transaction(function () use ($instanceId, $club, $staffMembers): void {
             foreach ($staffMembers as $staffMember) {
                 $personId = DB::table('people')->insertGetId([
                     'instance_id' => $instanceId,
-                    'first_name' => $staffMember->first_name,
-                    'last_name' => $staffMember->last_name,
-                    'dob' => $staffMember->dob,
-                    'country_code' => $staffMember->country_code,
+                    'first_name' => $staffMember->firstName,
+                    'last_name' => $staffMember->lastName,
+                    'dob' => $staffMember->dateOfBirth,
+                    'country_code' => $staffMember->countryCode,
                 ]);
 
                 if (in_array($staffMember->role, PersonTypes::COACHING_ROLES, true)) {
@@ -37,7 +39,7 @@ class StaffRepository
         });
     }
 
-    private function insertCoachingStaff(int $instanceId, int $clubId, int $personId, \stdClass $staff): void
+    private function insertCoachingStaff(int $instanceId, int $clubId, int $personId, GeneratedStaffData $staff): void
     {
         DB::table('staff_coaching')->insert(array_merge([
             'instance_id' => $instanceId,
@@ -51,7 +53,7 @@ class StaffRepository
         ], $staff->attributes));
     }
 
-    private function insertScout(int $instanceId, int $clubId, int $personId, \stdClass $staff): void
+    private function insertScout(int $instanceId, int $clubId, int $personId, GeneratedStaffData $staff): void
     {
         DB::table('staff_scouts')->insert(array_merge([
             'instance_id' => $instanceId,
@@ -60,7 +62,7 @@ class StaffRepository
         ], $staff->attributes));
     }
 
-    private function insertPhysio(int $instanceId, int $clubId, int $personId, \stdClass $staff): void
+    private function insertPhysio(int $instanceId, int $clubId, int $personId, GeneratedStaffData $staff): void
     {
         DB::table('staff_physio')->insert(array_merge([
             'instance_id' => $instanceId,
