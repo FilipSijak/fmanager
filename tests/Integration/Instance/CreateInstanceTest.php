@@ -9,6 +9,9 @@ use App\Models\Instance;
 use App\Models\Manager;
 use App\Models\Player;
 use App\Models\Season;
+use App\Models\StaffCoaching;
+use App\Models\StaffPhysio;
+use App\Models\StaffScout;
 use App\Models\User;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\PlayerRepository;
@@ -18,6 +21,7 @@ use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
+use App\Services\PersonService\GeneratePeople\StaffPotential;
 use App\Services\PersonService\PersonService;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
@@ -200,6 +204,21 @@ class CreateInstanceTest extends TestCase
         $this->assertSame($players->count(), $players->pluck('person_id')->unique()->count());
         $this->assertNotNull($players->first()->person);
         $this->assertNotEmpty($players->first()->first_name);
+
+        $coachingStaff = StaffCoaching::where('club_id', $club->id)->get();
+        $physios = StaffPhysio::where('club_id', $club->id)->get();
+        $scouts = StaffScout::where('club_id', $club->id)->get();
+
+        $this->assertCount(11, $coachingStaff);
+        $this->assertCount(1, $coachingStaff->where('type', 'MANAGER'));
+        $this->assertCount(1, $coachingStaff->where('type', 'ASSISTANT_MANAGER'));
+        $this->assertCount(6, $coachingStaff->where('type', 'COACH'));
+        $this->assertCount(3, $coachingStaff->where('type', 'YOUTH_COACH'));
+        $this->assertCount(5, $scouts);
+        $this->assertCount(3, $physios->where('team_type', 'FIRST_TEAM'));
+        $this->assertCount(1, $physios->where('team_type', 'YOUTH_TEAM'));
+        $this->assertSame(20, $coachingStaff->pluck('person_id')->merge($physios->pluck('person_id'))
+            ->merge($scouts->pluck('person_id'))->unique()->count());
     }
 
     protected function getNewInstance(): CreateInstance
@@ -219,6 +238,7 @@ class CreateInstanceTest extends TestCase
                 app()->make(PersonService::class),
                 app()->make(CompetitionRepository::class),
                 app()->make(PlayerPotential::class),
+                app()->make(StaffPotential::class),
                 app()->make(PlayerRepository::class)
             );
     }
