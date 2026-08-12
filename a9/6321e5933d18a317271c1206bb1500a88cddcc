@@ -1,0 +1,33 @@
+app/Services/InstanceService/CreateInstance.php
+  s_67e6c3e25651d8::t_e7a8a030b82b0a 12,16,37-39,50,52,58,60,220,222
+app/Repositories/StaffRepository.php
+  s_67e6c3e25651d8::t_ee5c55b5002fbe 1-14,21-24,26-30,32-41,48-51,55-58,63-64
+  s_67e6c3e25651d8::t_a2688452b76096 15-20,25,31,42-46,52-53,59-61
+  s_67e6c3e25651d8::t_7f05ad11b4a41e 47,54,62
+app/Services/PersonService/GeneratePeople/StaffGenerator.php
+  s_67e6c3e25651d8::t_ee5c55b5002fbe 1-4,6-10,27-41,43,48-50,60-61,63-76
+  s_67e6c3e25651d8::t_7f05ad11b4a41e 5,11-26,44-47,51-59,62
+  s_67e6c3e25651d8::t_a2688452b76096 42
+app/Services/PersonService/GeneratePeople/StaffPotential.php
+  s_67e6c3e25651d8::t_a2688452b76096 21
+app/Services/PersonService/PersonConfig/PersonTypes.php
+  s_67e6c3e25651d8::t_a2688452b76096 7-22,24-30
+tests/Integration/Instance/CreateInstanceTest.php
+  s_67e6c3e25651d8::t_e7a8a030b82b0a 18,25,242-244
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "a96321e5933d18a317271c1206bb1500a88cddcc",
+  "prompts": {},
+  "sessions": {
+    "s_67e6c3e25651d8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ff779-0d81-7950-82ce-68cd12983cad",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
