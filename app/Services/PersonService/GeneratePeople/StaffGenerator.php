@@ -31,23 +31,41 @@ class StaffGenerator
         $this->faker = FakerFactory::create();
     }
 
-    /**  list<GeneratedStaffData> */
+    /** @return list<GeneratedStaffData> */
     public function generateForClubRank(int $rank): array
     {
-        return array_map(function (StaffPotentialData $staffPotential): GeneratedStaffData {
-            return new GeneratedStaffData(
-                role: $staffPotential->role,
-                potential: $staffPotential->potential,
-                firstName: $this->faker->firstNameMale,
-                lastName: $this->faker->lastName,
-                dateOfBirth: $this->faker->dateTimeBetween('-65 years', '-28 years')->format('Y-m-d'),
-                countryCode: $this->faker->countryCode,
-                attributes: $this->generateAttributes(
-                    $staffPotential->potential,
-                    $this->attributeNamesForRole($staffPotential->role)
-                ),
-            );
-        }, $this->staffPotential->getStaffPotentialAndRole($rank));
+        return array_map(
+            fn (StaffPotentialData $staffPotential): GeneratedStaffData => $this->generateStaffMember($staffPotential),
+            $this->staffPotential->getStaffPotentialAndRole($rank)
+        );
+    }
+
+    /** @return list<GeneratedStaffData> */
+    public function generateFreeStaff(int $count): array
+    {
+        $staffMembers = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            $staffMembers[] = $this->generateStaffMember($this->staffPotential->getRandomStaffPotential());
+        }
+
+        return $staffMembers;
+    }
+
+    private function generateStaffMember(StaffPotentialData $staffPotential): GeneratedStaffData
+    {
+        return new GeneratedStaffData(
+            role: $staffPotential->role,
+            potential: $staffPotential->potential,
+            firstName: $this->faker->firstNameMale,
+            lastName: $this->faker->lastName,
+            dateOfBirth: $this->faker->dateTimeBetween('-65 years', '-28 years')->format('Y-m-d'),
+            countryCode: $this->faker->countryCode,
+            attributes: $this->generateAttributes(
+                $staffPotential->potential,
+                $this->attributeNamesForRole($staffPotential->role)
+            ),
+        );
     }
 
     private function attributeNamesForRole(string $role): array

@@ -220,6 +220,26 @@ class CreateInstanceTest extends TestCase
         $this->assertCount(1, $physios->where('team_type', 'YOUTH_TEAM'));
         $this->assertSame(20, $coachingStaff->pluck('person_id')->merge($physios->pluck('person_id'))
             ->merge($scouts->pluck('person_id'))->unique()->count());
+        $this->assertSame(11, $coachingStaff->whereNotNull('contract_start')->whereNotNull('contract_end')->count());
+        $this->assertSame(4, $physios->whereNotNull('contract_start')->whereNotNull('contract_end')->count());
+        $this->assertSame(5, $scouts->whereNotNull('contract_start')->whereNotNull('contract_end')->count());
+
+        $clubCount = Club::where('instance_id', $instance->id)->count();
+        $assignedStaffCount = StaffCoaching::where('instance_id', $instance->id)->whereNotNull('club_id')->count()
+            + StaffPhysio::where('instance_id', $instance->id)->whereNotNull('club_id')->count()
+            + StaffScout::where('instance_id', $instance->id)->whereNotNull('club_id')->count();
+        $freeStaffCount = StaffCoaching::where('instance_id', $instance->id)->whereNull('club_id')->count()
+            + StaffPhysio::where('instance_id', $instance->id)->whereNull('club_id')->count()
+            + StaffScout::where('instance_id', $instance->id)->whereNull('club_id')->count();
+
+        $this->assertSame($clubCount * 20, $assignedStaffCount);
+        $this->assertSame($clubCount * 5, $freeStaffCount);
+        $this->assertSame(0.2, $freeStaffCount / ($assignedStaffCount + $freeStaffCount));
+        $this->assertSame($freeStaffCount, StaffCoaching::whereNull('club_id')->whereNull('contract_start')
+            ->whereNull('contract_end')->count() + StaffPhysio::whereNull('club_id')
+            ->whereNull('contract_start')->whereNull('contract_end')->count()
+            + StaffScout::whereNull('club_id')->whereNull('contract_start')
+                ->whereNull('contract_end')->count());
     }
 
     protected function getNewInstance(): CreateInstance

@@ -42,6 +42,8 @@ class CreateInstance
 
     const FREE_AGENTS_POTENTIAL_LIMIT = 150;
 
+    const FREE_STAFF_PER_CLUB = 5;
+
     public function __construct(
         CompetitionService $competitionService,
         PersonService $personService,
@@ -191,6 +193,8 @@ class CreateInstance
             $this->assignPlayersToClubs($club);
             $this->assignStaffToClubs($club);
         }
+
+        $this->generateFreeStaff($clubs->count() * self::FREE_STAFF_PER_CLUB);
     }
 
     public function assignPlayersToClubs(Club $club): void
@@ -220,6 +224,17 @@ class CreateInstance
         $staffMembers = $this->staffGenerator->generateForClubRank($club->rank);
 
         $this->staffRepository->bulkStaffInsert($this->instance->id, $club, $staffMembers);
+    }
+
+    private function generateFreeStaff(int $count): void
+    {
+        $freeStaff = $this->staffGenerator->generateFreeStaff($count);
+
+        $this->staffRepository->bulkStaffInsert(
+            $this->instance->id,
+            null,
+            $freeStaff
+        );
     }
 
     public function generateFreeAgents()
