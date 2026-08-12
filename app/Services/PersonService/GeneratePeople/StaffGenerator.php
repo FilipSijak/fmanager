@@ -57,10 +57,11 @@ class StaffGenerator
         return new GeneratedStaffData(
             role: $staffPotential->role,
             potential: $staffPotential->potential,
-            firstName: $this->faker->firstNameMale,
-            lastName: $this->faker->lastName,
+            rank: $staffPotential->rank,
+            firstName: $this->faker->firstNameMale(),
+            lastName: $this->faker->lastName(),
             dateOfBirth: $this->faker->dateTimeBetween('-65 years', '-28 years')->format('Y-m-d'),
-            countryCode: $this->faker->countryCode,
+            countryCode: $this->faker->countryCode(),
             attributes: $this->generateAttributes(
                 $staffPotential->potential,
                 $this->attributeNamesForRole($staffPotential->role)

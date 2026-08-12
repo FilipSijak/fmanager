@@ -71,8 +71,9 @@ class StaffPotential extends PersonPotential
         }
 
         return new StaffPotentialData(
-            $role,
-            rand(max(30, $minimumPotential), min(200, max(30, $maximumPotential)))
+            role: $role,
+            potential: rand(max(30, $minimumPotential), min(200, max(30, $maximumPotential))),
+            rank: (int) ($rank / 10),
         );
     }
 }
