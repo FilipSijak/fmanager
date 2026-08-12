@@ -217,7 +217,7 @@ class CreateInstance
 
     private function assignStaffToClubs(Club $club): void
     {
-        $staffMembers = $this->staffGenerator->generateForClubRank($club->rank_training);
+        $staffMembers = $this->staffGenerator->generateForClubRank($club->rank);
 
         $this->staffRepository->bulkStaffInsert($this->instance->id, $club, $staffMembers);
     }

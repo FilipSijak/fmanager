@@ -40,9 +40,13 @@ class StaffRepository
     private function insertCoachingStaff(int $instanceId, int $clubId, int $personId, \stdClass $staff): void
     {
         DB::table('staff_coaching')->insert(array_merge([
-            'instance_id' => $instanceId, 'person_id' => $personId, 'club_id' => $clubId,
-            'type' => $staff->role, 'coaching_potential' => $staff->potential,
-            'mental_potential' => $staff->potential, 'goalkeeping_potential' => $staff->potential,
+            'instance_id' => $instanceId,
+            'person_id' => $personId,
+            'club_id' => $clubId,
+            'type' => $staff->role,
+            'coaching_potential' => $staff->potential,
+            'mental_potential' => $staff->potential,
+            'goalkeeping_potential' => $staff->potential,
             'knowledge_potential' => $staff->potential,
         ], $staff->attributes));
     }
@@ -50,14 +54,18 @@ class StaffRepository
     private function insertScout(int $instanceId, int $clubId, int $personId, \stdClass $staff): void
     {
         DB::table('staff_scouts')->insert(array_merge([
-            'instance_id' => $instanceId, 'person_id' => $personId, 'club_id' => $clubId,
+            'instance_id' => $instanceId,
+            'person_id' => $personId,
+            'club_id' => $clubId,
         ], $staff->attributes));
     }
 
     private function insertPhysio(int $instanceId, int $clubId, int $personId, \stdClass $staff): void
     {
         DB::table('staff_physio')->insert(array_merge([
-            'instance_id' => $instanceId, 'person_id' => $personId, 'club_id' => $clubId,
+            'instance_id' => $instanceId,
+            'person_id' => $personId,
+            'club_id' => $clubId,
             'team_type' => $staff->role === PersonTypes::YOUTH_PHYSIO ? 'YOUTH_TEAM' : 'FIRST_TEAM',
         ], $staff->attributes));
     }
