@@ -1,0 +1,35 @@
+app/Services/PersonService/GeneratePeople/StaffGenerator.php
+  s_67e6c3e25651d8::t_6b3b2cb18dc9f5 60
+  s_67e6c3e25651d8::t_990705ba6350b0 61-62,64
+tests/Integration/Person/StaffRepositoryTest.php
+  s_67e6c3e25651d8::t_010423cca4f74a 1-4,6,11-14,16-19,21,25,27,29,74,76-77
+  s_67e6c3e25651d8::t_1491f16bb9c18d 5,7-10,15,20,22-24,26,28,30-73,75
+tests/Unit/Person/StaffPotentialTest.php
+  s_67e6c3e25651d8::t_010423cca4f74a 1-46,48-82
+  s_67e6c3e25651d8::t_1491f16bb9c18d 47
+app/Services/PersonService/GeneratePeople/StaffPotentialData.php
+  s_67e6c3e25651d8::t_114a79c78c1382 10
+tests/Unit/Person/StaffGeneratorTest.php
+  s_67e6c3e25651d8::t_990705ba6350b0 34-52
+  s_67e6c3e25651d8::t_010423cca4f74a 1-33,53-67
+app/Services/PersonService/GeneratePeople/GeneratedStaffData.php
+  s_67e6c3e25651d8::t_114a79c78c1382 10,15
+app/Services/PersonService/GeneratePeople/StaffPotential.php
+  s_67e6c3e25651d8::t_114a79c78c1382 74-76
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8fae93998b7638b393cb19f0a228ce9d6bdb203b",
+  "prompts": {},
+  "sessions": {
+    "s_67e6c3e25651d8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ff779-0d81-7950-82ce-68cd12983cad",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
