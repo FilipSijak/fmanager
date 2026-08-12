@@ -18,7 +18,7 @@ class StaffPotential extends PersonPotential
             PersonTypes::YOUTH_COACH => SquadStaffConfig::YOUTH_TEAM_COACH_COUNT,
             PersonTypes::SCOUT => SquadStaffConfig::SCOUT_COUNT,
             PersonTypes::PHYSIO => SquadStaffConfig::PHYSIO_FIRST_TEAM_COUNT,
-            'YOUTH_PHYSIO' => SquadStaffConfig::PHYSIO_YOUTH_TEAM_COUNT,
+            PersonTypes::YOUTH_PHYSIO => SquadStaffConfig::PHYSIO_YOUTH_TEAM_COUNT,
         ];
 
         foreach ($staffRoles as $role => $count) {

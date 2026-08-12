@@ -7,20 +7,16 @@ use App\Models\Competition;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\Season;
-use App\Models\StaffCoaching;
-use App\Models\StaffPhysio;
-use App\Models\StaffScout;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\PlayerRepository;
+use App\Repositories\StaffRepository;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
-use App\Services\PersonService\GeneratePeople\StaffPotential;
+use App\Services\PersonService\GeneratePeople\StaffGenerator;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\PersonService\PersonService;
 use Carbon\Carbon;
-use Faker\Factory as FakerFactory;
-use Illuminate\Support\Facades\DB;
 
 class CreateInstance
 {
@@ -38,7 +34,9 @@ class CreateInstance
 
     private PlayerPotential $playerPotentialGenerator;
 
-    private StaffPotential $staffPotentialGenerator;
+    private StaffGenerator $staffGenerator;
+
+    private StaffRepository $staffRepository;
 
     const FREE_AGENTS_COUNT = 200;
 
@@ -49,15 +47,17 @@ class CreateInstance
         PersonService $personService,
         CompetitionRepository $competitionRepository,
         PlayerPotential $playerPotential,
-        StaffPotential $staffPotential,
+        StaffGenerator $staffGenerator,
         PlayerRepository $playerRepository,
+        StaffRepository $staffRepository,
     ) {
         $this->competitionService = $competitionService;
         $this->personService = $personService;
         $this->competitionRepository = $competitionRepository;
         $this->playerPotentialGenerator = $playerPotential;
-        $this->staffPotentialGenerator = $staffPotential;
+        $this->staffGenerator = $staffGenerator;
         $this->playerRepository = $playerRepository;
+        $this->staffRepository = $staffRepository;
     }
 
     public function instanceInit(): Instance
@@ -217,59 +217,9 @@ class CreateInstance
 
     private function assignStaffToClubs(Club $club): void
     {
-        $staffMembers = $this->staffPotentialGenerator->getStaffPotentialAndRole($club->rank_training);
-        $faker = FakerFactory::create();
+        $staffMembers = $this->staffGenerator->generateForClubRank($club->rank_training);
 
-        DB::transaction(function () use ($club, $staffMembers, $faker): void {
-            foreach ($staffMembers as $staffMember) {
-                $personId = DB::table('people')->insertGetId([
-                    'instance_id' => $this->instance->id,
-                    'first_name' => $faker->firstNameMale,
-                    'last_name' => $faker->lastName,
-                    'dob' => $faker->dateTimeBetween('-65 years', '-28 years')->format('Y-m-d'),
-                    'country_code' => $faker->countryCode,
-                ]);
-                $attributes = fn (array $names): array => array_combine($names,
-                    array_map(fn (): int => $this->staffAttribute($staffMember->potential), $names));
-
-                if (in_array($staffMember->role, [PersonTypes::MANAGER, PersonTypes::ASSISTANT_MANAGER,
-                    PersonTypes::COACH, PersonTypes::YOUTH_COACH], true)) {
-                    StaffCoaching::forceCreate(array_merge([
-                        'instance_id' => $this->instance->id, 'person_id' => $personId, 'club_id' => $club->id,
-                        'type' => $staffMember->role, 'coaching_potential' => $staffMember->potential,
-                        'mental_potential' => $staffMember->potential, 'goalkeeping_potential' => $staffMember->potential,
-                        'knowledge_potential' => $staffMember->potential,
-                    ], $attributes(['attacking', 'defending', 'fitness', 'mental', 'tactical', 'technical',
-                        'working_with_youngsters', 'adaptability', 'determination', 'discipline', 'man_management',
-                        'motivating', 'judging_player_potential', 'judging_player_ability', 'judging_staff_ability',
-                        'negotiating', 'tactics', 'distribution', 'handling', 'shot_stopping'])));
-
-                    continue;
-                }
-
-                if ($staffMember->role === PersonTypes::SCOUT) {
-                    StaffScout::forceCreate(array_merge(['instance_id' => $this->instance->id,
-                        'person_id' => $personId, 'club_id' => $club->id],
-                        $attributes(['judging_player_ability', 'judging_player_potential', 'tactical_knowledge',
-                            'data_analysis', 'market_knowledge'])));
-
-                    continue;
-                }
-
-                StaffPhysio::forceCreate(array_merge(['instance_id' => $this->instance->id,
-                    'person_id' => $personId, 'club_id' => $club->id,
-                    'team_type' => $staffMember->role === 'YOUTH_PHYSIO' ? 'YOUTH_TEAM' : 'FIRST_TEAM'],
-                    $attributes(['physiotherapy', 'injury_prevention', 'rehabilitation', 'sports_science',
-                        'fitness_assessment'])));
-            }
-        });
-    }
-
-    private function staffAttribute(int $potential): int
-    {
-        $ability = (int) round($potential / 10);
-
-        return rand(max(1, $ability - 3), min(20, $ability + 2));
+        $this->staffRepository->bulkStaffInsert($this->instance->id, $club, $staffMembers);
     }
 
     public function generateFreeAgents()
