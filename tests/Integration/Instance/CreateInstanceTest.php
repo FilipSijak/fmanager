@@ -9,15 +9,20 @@ use App\Models\Instance;
 use App\Models\Manager;
 use App\Models\Player;
 use App\Models\Season;
+use App\Models\StaffCoaching;
+use App\Models\StaffPhysio;
+use App\Models\StaffScout;
 use App\Models\User;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\PlayerRepository;
+use App\Repositories\StaffRepository;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
+use App\Services\PersonService\GeneratePeople\StaffGenerator;
 use App\Services\PersonService\PersonService;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
@@ -200,6 +205,41 @@ class CreateInstanceTest extends TestCase
         $this->assertSame($players->count(), $players->pluck('person_id')->unique()->count());
         $this->assertNotNull($players->first()->person);
         $this->assertNotEmpty($players->first()->first_name);
+
+        $coachingStaff = StaffCoaching::where('club_id', $club->id)->get();
+        $physios = StaffPhysio::where('club_id', $club->id)->get();
+        $scouts = StaffScout::where('club_id', $club->id)->get();
+
+        $this->assertCount(11, $coachingStaff);
+        $this->assertCount(1, $coachingStaff->where('type', 'MANAGER'));
+        $this->assertCount(1, $coachingStaff->where('type', 'ASSISTANT_MANAGER'));
+        $this->assertCount(6, $coachingStaff->where('type', 'COACH'));
+        $this->assertCount(3, $coachingStaff->where('type', 'YOUTH_COACH'));
+        $this->assertCount(5, $scouts);
+        $this->assertCount(3, $physios->where('team_type', 'FIRST_TEAM'));
+        $this->assertCount(1, $physios->where('team_type', 'YOUTH_TEAM'));
+        $this->assertSame(20, $coachingStaff->pluck('person_id')->merge($physios->pluck('person_id'))
+            ->merge($scouts->pluck('person_id'))->unique()->count());
+        $this->assertSame(11, $coachingStaff->whereNotNull('contract_start')->whereNotNull('contract_end')->count());
+        $this->assertSame(4, $physios->whereNotNull('contract_start')->whereNotNull('contract_end')->count());
+        $this->assertSame(5, $scouts->whereNotNull('contract_start')->whereNotNull('contract_end')->count());
+
+        $clubCount = Club::where('instance_id', $instance->id)->count();
+        $assignedStaffCount = StaffCoaching::where('instance_id', $instance->id)->whereNotNull('club_id')->count()
+            + StaffPhysio::where('instance_id', $instance->id)->whereNotNull('club_id')->count()
+            + StaffScout::where('instance_id', $instance->id)->whereNotNull('club_id')->count();
+        $freeStaffCount = StaffCoaching::where('instance_id', $instance->id)->whereNull('club_id')->count()
+            + StaffPhysio::where('instance_id', $instance->id)->whereNull('club_id')->count()
+            + StaffScout::where('instance_id', $instance->id)->whereNull('club_id')->count();
+
+        $this->assertSame($clubCount * 20, $assignedStaffCount);
+        $this->assertSame($clubCount * 5, $freeStaffCount);
+        $this->assertSame(0.2, $freeStaffCount / ($assignedStaffCount + $freeStaffCount));
+        $this->assertSame($freeStaffCount, StaffCoaching::whereNull('club_id')->whereNull('contract_start')
+            ->whereNull('contract_end')->count() + StaffPhysio::whereNull('club_id')
+            ->whereNull('contract_start')->whereNull('contract_end')->count()
+            + StaffScout::whereNull('club_id')->whereNull('contract_start')
+                ->whereNull('contract_end')->count());
     }
 
     protected function getNewInstance(): CreateInstance
@@ -219,7 +259,9 @@ class CreateInstanceTest extends TestCase
                 app()->make(PersonService::class),
                 app()->make(CompetitionRepository::class),
                 app()->make(PlayerPotential::class),
-                app()->make(PlayerRepository::class)
+                app()->make(StaffGenerator::class),
+                app()->make(PlayerRepository::class),
+                app()->make(StaffRepository::class)
             );
     }
 }
