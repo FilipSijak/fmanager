@@ -21,6 +21,7 @@ class SeasonStart
         private readonly CompetitionRepository $competitionRepository,
         private readonly CompetitionService $competitionService,
         private readonly PlayerRetirement $playerRetirement,
+        private readonly StaffRetirement $staffRetirement,
         private readonly StaffGenerator $staffGenerator,
         private readonly StaffRepository $staffRepository,
     ) {}
@@ -33,6 +34,7 @@ class SeasonStart
 
         $retiredPlayers = $this->playerRetirement->retireEligiblePlayers($instance);
         $this->retiredPlayerTransitionToStaff($retiredPlayers);
+        $this->staffRetirement->retireEligibleStaff($instance);
 
         Competition::query()
             ->forInstance($instance->id)

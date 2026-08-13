@@ -10,6 +10,7 @@ use App\Services\PersonService\GeneratePeople\GeneratedStaffData;
 use App\Services\PersonService\GeneratePeople\StaffGenerator;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -40,23 +41,24 @@ class StaffRepositoryTest extends TestCase
         $repository->bulkStaffInsert($instance->id, null, $staff);
 
         foreach (['staff_coaching', 'staff_scouts', 'staff_physio'] as $table) {
-            $this->assertDatabaseHas($table, [
-                'instance_id' => $instance->id,
-                'club_id' => $club->id,
-                'contract_start' => '2026-07-01',
-            ]);
-            $this->assertDatabaseMissing($table, [
-                'instance_id' => $instance->id,
-                'club_id' => $club->id,
-                'contract_end' => null,
-            ]);
+            $this->assertSame(1, DB::table($table)
+                ->where('instance_id', $instance->id)
+                ->where('club_id', $club->id)
+                ->whereNotNull('contract_id')
+                ->count());
             $this->assertDatabaseHas($table, [
                 'instance_id' => $instance->id,
                 'club_id' => null,
-                'contract_start' => null,
-                'contract_end' => null,
+                'contract_id' => null,
             ]);
         }
+
+        $this->assertDatabaseCount('staff_contracts', 3);
+        $this->assertDatabaseHas('staff_contracts', [
+            'contract_start' => '2026-07-01',
+            'salary' => 15000,
+            'signing_fee' => null,
+        ]);
 
         $this->assertDatabaseHas('staff_coaching', ['type' => PersonTypes::MANAGER]);
         $this->assertDatabaseHas('staff_physio', ['team_type' => 'FIRST_TEAM']);
@@ -82,9 +84,9 @@ class StaffRepositoryTest extends TestCase
             'person_id' => $person->id,
             'club_id' => null,
             'type' => $staff->role,
-            'contract_start' => null,
-            'contract_end' => null,
+            'contract_id' => null,
         ]);
+        $this->assertDatabaseCount('staff_contracts', 0);
     }
 
     /** @param list<GeneratedStaffData> $staff */
