@@ -82,7 +82,9 @@ class PlayerRetirementTest extends TestCase
             new RetirementDecision(fn (): int => (int) $rolls->shift())
         );
 
-        $this->assertSame(2, $service->retireEligiblePlayers($instance));
+        $retiredPlayers = $service->retireEligiblePlayers($instance);
+
+        $this->assertSame([$age32->id, $age45->id], collect($retiredPlayers)->pluck('id')->all());
 
         foreach ([$age32, $age45] as $retiredPlayer) {
             $this->assertDatabaseHas('players', [

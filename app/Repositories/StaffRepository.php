@@ -50,6 +50,22 @@ class StaffRepository
         });
     }
 
+    public function insertForExistingPerson(
+        int $instanceId,
+        int $personId,
+        GeneratedStaffData $staffMember
+    ): void {
+        DB::transaction(function () use ($instanceId, $personId, $staffMember): void {
+            $this->insertCoachingStaff(
+                $instanceId,
+                null,
+                $personId,
+                $staffMember,
+                ['contract_start' => null, 'contract_end' => null]
+            );
+        });
+    }
+
     private function insertCoachingStaff(int $instanceId, ?int $clubId, int $personId, GeneratedStaffData $staff, array $contract): void
     {
         DB::table('staff_coaching')->insert(array_merge([

@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Person;
 
+use App\Models\Person;
 use App\Services\PersonService\GeneratePeople\GeneratedStaffData;
 use App\Services\PersonService\GeneratePeople\StaffGenerator;
 use App\Services\PersonService\PersonConfig\PersonTypes;
@@ -63,5 +64,30 @@ class StaffGeneratorTest extends TestCase
             fn (GeneratedStaffData $staffMember): int => $staffMember->rank,
             $staff
         ))));
+    }
+
+    #[Test]
+    public function it_reuses_a_former_players_identity_for_a_random_coaching_role(): void
+    {
+        $person = new Person([
+            'first_name' => 'Former',
+            'last_name' => 'Player',
+            'dob' => '1988-04-12',
+            'country_code' => 'GB',
+        ]);
+
+        $staff = app(StaffGenerator::class)->generateFromFormerPlayer($person);
+
+        $this->assertContains($staff->role, [
+            PersonTypes::MANAGER,
+            PersonTypes::ASSISTANT_MANAGER,
+            PersonTypes::COACH,
+        ]);
+        $this->assertSame('Former', $staff->firstName);
+        $this->assertSame('Player', $staff->lastName);
+        $this->assertSame('1988-04-12', $staff->dateOfBirth);
+        $this->assertSame('GB', $staff->countryCode);
+        $this->assertGreaterThanOrEqual(1, $staff->rank);
+        $this->assertLessThanOrEqual(20, $staff->rank);
     }
 }

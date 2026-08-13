@@ -3,6 +3,7 @@
 namespace App\Services\SeasonService;
 
 use App\Models\Instance;
+use App\Models\Player;
 use App\Repositories\PlayerRepository;
 use Carbon\CarbonImmutable;
 
@@ -15,11 +16,12 @@ class PlayerRetirement
         private readonly RetirementDecision $retirementDecision
     ) {}
 
-    public function retireEligiblePlayers(Instance $instance): int
+    /** @return list<Player> */
+    public function retireEligiblePlayers(Instance $instance): array
     {
         $asOfDate = CarbonImmutable::parse($instance->instance_date)->startOfDay();
         $cutoffDate = $asOfDate->subYears(self::MINIMUM_RETIREMENT_AGE);
-        $retiredCount = 0;
+        $retiredPlayers = [];
 
         $players = $this->playerRepository->playersEligibleForRetirement(
             (int) $instance->id,
@@ -32,10 +34,10 @@ class PlayerRetirement
             }
 
             if ($this->playerRepository->retirePlayer((int) $player->id)) {
-                $retiredCount++;
+                $retiredPlayers[] = $player;
             }
         }
 
-        return $retiredCount;
+        return $retiredPlayers;
     }
 }

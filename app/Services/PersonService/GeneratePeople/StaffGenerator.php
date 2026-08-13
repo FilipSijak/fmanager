@@ -2,6 +2,7 @@
 
 namespace App\Services\PersonService\GeneratePeople;
 
+use App\Models\Person;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Faker\Factory as FakerFactory;
 use Faker\Generator;
@@ -50,6 +51,25 @@ class StaffGenerator
         }
 
         return $staffMembers;
+    }
+
+    public function generateFromFormerPlayer(Person $person): GeneratedStaffData
+    {
+        $staffPotential = $this->staffPotential->getRandomFormerPlayerStaffPotential();
+
+        return new GeneratedStaffData(
+            role: $staffPotential->role,
+            potential: $staffPotential->potential,
+            rank: $staffPotential->rank,
+            firstName: $person->first_name,
+            lastName: $person->last_name,
+            dateOfBirth: $person->dob->toDateString(),
+            countryCode: $person->country_code,
+            attributes: $this->generateAttributes(
+                $staffPotential->potential,
+                $this->attributeNamesForRole($staffPotential->role)
+            ),
+        );
     }
 
     private function generateStaffMember(StaffPotentialData $staffPotential): GeneratedStaffData

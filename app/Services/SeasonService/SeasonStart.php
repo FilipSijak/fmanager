@@ -5,17 +5,24 @@ namespace App\Services\SeasonService;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
+use App\Models\Player;
 use App\Models\Season;
 use App\Repositories\CompetitionRepository;
+use App\Repositories\StaffRepository;
 use App\Services\CompetitionService\CompetitionService;
+use App\Services\PersonService\GeneratePeople\StaffGenerator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Lottery;
 
 class SeasonStart
 {
     public function __construct(
         private readonly CompetitionRepository $competitionRepository,
         private readonly CompetitionService $competitionService,
-        private readonly PlayerRetirement $playerRetirement
+        private readonly PlayerRetirement $playerRetirement,
+        private readonly StaffGenerator $staffGenerator,
+        private readonly StaffRepository $staffRepository,
     ) {}
 
     public function process(Instance $instance): void
@@ -24,7 +31,8 @@ class SeasonStart
             ->where('instance_id', $instance->id)
             ->findOrFail($instance->season_id);
 
-        $this->playerRetirement->retireEligiblePlayers($instance);
+        $retiredPlayers = $this->playerRetirement->retireEligiblePlayers($instance);
+        $this->retiredPlayerTransitionToStaff($retiredPlayers);
 
         Competition::query()
             ->forInstance($instance->id)
@@ -93,5 +101,21 @@ class SeasonStart
             ->where('season_id', $seasonId)
             ->where('competition_id', $competitionId)
             ->exists();
+    }
+
+    /** @param list<Player> $retiredPlayers */
+    private function retiredPlayerTransitionToStaff(array $retiredPlayers): void
+    {
+        Collection::make($retiredPlayers)
+            ->filter(fn (): bool => Lottery::odds(8, 100)->choose())
+            ->each(function ($player): void {
+                $person = $player->person;
+
+                $this->staffRepository->insertForExistingPerson(
+                    (int) $player->instance_id,
+                    (int) $person->id,
+                    $this->staffGenerator->generateFromFormerPlayer($person)
+                );
+            });
     }
 }
