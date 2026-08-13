@@ -63,6 +63,22 @@ class SeasonStartSchedulingTest extends TestCase
         $this->assertSame(4, DB::table('games')->where('competition_id', $knockoutCup->id)->count());
         $this->assertSame(28, DB::table('games')->count());
         $this->assertSame(
+            100,
+            DB::table('staff_coaching')->where('is_retired', false)->count()
+                + DB::table('staff_scouts')->where('is_retired', false)->count()
+                + DB::table('staff_physio')->where('is_retired', false)->count()
+        );
+        $this->assertSame(
+            100,
+            DB::table('staff_coaching')->where('is_retired', false)
+                ->whereNull('club_id')->whereNull('contract_id')->count()
+                + DB::table('staff_scouts')->where('is_retired', false)
+                    ->whereNull('club_id')->whereNull('contract_id')->count()
+                + DB::table('staff_physio')->where('is_retired', false)
+                    ->whereNull('club_id')->whereNull('contract_id')->count()
+        );
+        $this->assertDatabaseCount('staff_contracts', 0);
+        $this->assertSame(
             4,
             DB::table('competition_season')
                 ->where('competition_id', $groupTournament->id)

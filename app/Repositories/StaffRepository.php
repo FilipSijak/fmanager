@@ -100,6 +100,17 @@ class StaffRepository
         });
     }
 
+    public function activeStaffCount(int $instanceId): int
+    {
+        return array_sum(array_map(
+            fn (string $staffModel): int => $staffModel::query()
+                ->forInstance($instanceId)
+                ->active()
+                ->count(),
+            self::STAFF_MODELS
+        ));
+    }
+
     public function retireStaff(StaffCoaching|StaffScout|StaffPhysio $staff): bool
     {
         return DB::transaction(function () use ($staff): bool {
