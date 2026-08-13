@@ -36,7 +36,10 @@ class StaffRepository
                     ? DB::table('staff_contracts')->insertGetId([
                         'contract_start' => $contractStart,
                         'contract_end' => Carbon::parse($contractStart)->addYears(rand(1, 3))->toDateString(),
-                        'salary' => $this->staffSalary->forPotential($staffMember->potential),
+                        'salary' => $this->staffSalary->estimatedSalaryForStaffRole(
+                            $staffMember->role,
+                            $staffMember->potential
+                        ),
                         'signing_fee' => null,
                     ])
                     : null;

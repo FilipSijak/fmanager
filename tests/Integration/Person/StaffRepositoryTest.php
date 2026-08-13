@@ -62,7 +62,10 @@ class StaffRepositoryTest extends TestCase
 
         foreach ($staff as $staffMember) {
             $this->assertDatabaseHas('staff_contracts', [
-                'salary' => app(StaffSalary::class)->forPotential($staffMember->potential),
+                'salary' => app(StaffSalary::class)->estimatedSalaryForStaffRole(
+                    $staffMember->role,
+                    $staffMember->potential
+                ),
             ]);
         }
 
