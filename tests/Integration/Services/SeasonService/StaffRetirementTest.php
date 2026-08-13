@@ -6,6 +6,7 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Person;
 use App\Models\StaffCoaching;
+use App\Models\StaffContract;
 use App\Models\StaffPhysio;
 use App\Models\StaffScout;
 use App\Repositories\StaffRepository;
@@ -48,9 +49,9 @@ class StaffRetirementTest extends TestCase
                 'id' => $retiredStaff->id,
                 'is_retired' => true,
                 'club_id' => null,
-                'contract_start' => null,
-                'contract_end' => null,
+                'contract_id' => null,
             ]);
+            $this->assertDatabaseMissing('staff_contracts', ['id' => $retiredStaff->contract_id]);
         }
 
         foreach ([$age59, $age67] as $activeStaff) {
@@ -58,6 +59,10 @@ class StaffRetirementTest extends TestCase
                 'id' => $activeStaff->id,
                 'is_retired' => false,
                 'club_id' => $club->id,
+                'contract_id' => $activeStaff->contract_id,
+            ]);
+            $this->assertDatabaseHas('staff_contracts', [
+                'id' => $activeStaff->contract_id,
                 'contract_start' => '2026-07-01',
                 'contract_end' => '2028-06-30',
             ]);
@@ -71,12 +76,18 @@ class StaffRetirementTest extends TestCase
             'dob' => $dob->toDateString(),
         ]);
 
+        $contract = StaffContract::query()->create([
+            'contract_start' => '2026-07-01',
+            'contract_end' => '2028-06-30',
+            'salary' => 10000,
+            'signing_fee' => null,
+        ]);
+
         return $model::factory()->create([
             'instance_id' => $club->instance_id,
             'person_id' => $person->id,
             'club_id' => $club->id,
-            'contract_start' => '2026-07-01',
-            'contract_end' => '2028-06-30',
+            'contract_id' => $contract->id,
             'is_retired' => false,
         ]);
     }

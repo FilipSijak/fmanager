@@ -30,6 +30,11 @@ class StaffScout extends Model
         return $this->belongsTo(Club::class);
     }
 
+    public function contract(): BelongsTo
+    {
+        return $this->belongsTo(StaffContract::class);
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_retired', false);

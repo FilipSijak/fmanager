@@ -29,12 +29,14 @@ class StaffRepository
         DB::transaction(function () use ($instanceId, $club, $staffMembers): void {
             $contractStart = $club ? Instance::query()->findOrFail($instanceId)->instance_date : null;
             foreach ($staffMembers as $staffMember) {
-                $contract = [
-                    'contract_start' => $contractStart,
-                    'contract_end' => $contractStart
-                        ? Carbon::parse($contractStart)->addYears(rand(1, 3))->toDateString()
-                        : null,
-                ];
+                $contractId = $contractStart
+                    ? DB::table('staff_contracts')->insertGetId([
+                        'contract_start' => $contractStart,
+                        'contract_end' => Carbon::parse($contractStart)->addYears(rand(1, 3))->toDateString(),
+                        'salary' => $staffMember->rank * 1000,
+                        'signing_fee' => null,
+                    ])
+                    : null;
                 $personId = DB::table('people')->insertGetId([
                     'instance_id' => $instanceId,
                     'first_name' => $staffMember->firstName,
@@ -44,18 +46,18 @@ class StaffRepository
                 ]);
 
                 if (in_array($staffMember->role, PersonTypes::COACHING_ROLES, true)) {
-                    $this->insertCoachingStaff($instanceId, $club?->id, $personId, $staffMember, $contract);
+                    $this->insertCoachingStaff($instanceId, $club?->id, $contractId, $personId, $staffMember);
 
                     continue;
                 }
 
                 if ($staffMember->role === PersonTypes::SCOUT) {
-                    $this->insertScout($instanceId, $club?->id, $personId, $staffMember, $contract);
+                    $this->insertScout($instanceId, $club?->id, $contractId, $personId, $staffMember);
 
                     continue;
                 }
 
-                $this->insertPhysio($instanceId, $club?->id, $personId, $staffMember, $contract);
+                $this->insertPhysio($instanceId, $club?->id, $contractId, $personId, $staffMember);
             }
         });
     }
@@ -69,9 +71,9 @@ class StaffRepository
             $this->insertCoachingStaff(
                 $instanceId,
                 null,
+                null,
                 $personId,
-                $staffMember,
-                ['contract_start' => null, 'contract_end' => null]
+                $staffMember
             );
         });
     }
@@ -101,47 +103,55 @@ class StaffRepository
                 return false;
             }
 
+            $contractId = $staff->contract_id;
+
             $staff->forceFill([
                 'is_retired' => true,
                 'club_id' => null,
-                'contract_start' => null,
-                'contract_end' => null,
+                'contract_id' => null,
             ])->save();
+
+            if ($contractId !== null) {
+                DB::table('staff_contracts')->where('id', $contractId)->delete();
+            }
 
             return true;
         });
     }
 
-    private function insertCoachingStaff(int $instanceId, ?int $clubId, int $personId, GeneratedStaffData $staff, array $contract): void
+    private function insertCoachingStaff(int $instanceId, ?int $clubId, ?int $contractId, int $personId, GeneratedStaffData $staff): void
     {
         DB::table('staff_coaching')->insert(array_merge([
             'instance_id' => $instanceId,
             'person_id' => $personId,
             'club_id' => $clubId,
+            'contract_id' => $contractId,
             'type' => $staff->role,
             'coaching_potential' => $staff->potential,
             'mental_potential' => $staff->potential,
             'goalkeeping_potential' => $staff->potential,
             'knowledge_potential' => $staff->potential,
-        ], $contract, $staff->attributes));
+        ], $staff->attributes));
     }
 
-    private function insertScout(int $instanceId, ?int $clubId, int $personId, GeneratedStaffData $staff, array $contract): void
+    private function insertScout(int $instanceId, ?int $clubId, ?int $contractId, int $personId, GeneratedStaffData $staff): void
     {
         DB::table('staff_scouts')->insert(array_merge([
             'instance_id' => $instanceId,
             'person_id' => $personId,
             'club_id' => $clubId,
-        ], $contract, $staff->attributes));
+            'contract_id' => $contractId,
+        ], $staff->attributes));
     }
 
-    private function insertPhysio(int $instanceId, ?int $clubId, int $personId, GeneratedStaffData $staff, array $contract): void
+    private function insertPhysio(int $instanceId, ?int $clubId, ?int $contractId, int $personId, GeneratedStaffData $staff): void
     {
         DB::table('staff_physio')->insert(array_merge([
             'instance_id' => $instanceId,
             'person_id' => $personId,
             'club_id' => $clubId,
+            'contract_id' => $contractId,
             'team_type' => $staff->role === PersonTypes::YOUTH_PHYSIO ? 'YOUTH_TEAM' : 'FIRST_TEAM',
-        ], $contract, $staff->attributes));
+        ], $staff->attributes));
     }
 }
