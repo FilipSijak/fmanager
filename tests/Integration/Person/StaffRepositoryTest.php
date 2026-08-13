@@ -8,6 +8,7 @@ use App\Models\Person;
 use App\Repositories\StaffRepository;
 use App\Services\PersonService\GeneratePeople\GeneratedStaffData;
 use App\Services\PersonService\GeneratePeople\StaffGenerator;
+use App\Services\PersonService\GeneratePeople\StaffSalary;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -56,9 +57,17 @@ class StaffRepositoryTest extends TestCase
         $this->assertDatabaseCount('staff_contracts', 3);
         $this->assertDatabaseHas('staff_contracts', [
             'contract_start' => '2026-07-01',
-            'salary' => 15000,
             'signing_fee' => null,
         ]);
+
+        foreach ($staff as $staffMember) {
+            $this->assertDatabaseHas('staff_contracts', [
+                'salary' => app(StaffSalary::class)->estimatedSalaryForStaffRole(
+                    $staffMember->role,
+                    $staffMember->potential
+                ),
+            ]);
+        }
 
         $this->assertDatabaseHas('staff_coaching', ['type' => PersonTypes::MANAGER]);
         $this->assertDatabaseHas('staff_physio', ['team_type' => 'FIRST_TEAM']);

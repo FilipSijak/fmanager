@@ -13,7 +13,19 @@ class PlayerContract extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['salary', 'signing_fee', 'appearance', 'clean_sheet', 'goal',
-        'assist', 'league', 'promotion', 'cup', 'el',
-        'cl', 'pc_promotion_salary_raise', 'pc_demotion_salary_cut'];
+    protected $fillable = [
+        'salary',
+        'signing_fee',
+        'appearance',
+        'clean_sheet',
+        'goal',
+        'assist',
+        'league',
+        'promotion',
+        'cup',
+        'el',
+        'cl',
+        'pc_promotion_salary_raise',
+        'pc_demotion_salary_cut',
+    ];
 }
