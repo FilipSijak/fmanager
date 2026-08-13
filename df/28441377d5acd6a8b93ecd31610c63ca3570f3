@@ -1,0 +1,40 @@
+database/migrations/2026_08_11_000005_create_staff_contracts_table.php
+  s_a9fecbbd152dc9::t_5603f2294c5077 1-95
+app/Models/StaffContract.php
+  s_a9fecbbd152dc9::t_5603f2294c5077 1-22
+tests/Integration/Instance/CreateInstanceTest.php
+  s_a9fecbbd152dc9::t_aef46525d76cd2 223-225,238-240
+app/Models/PlayerContract.php
+  s_a9fecbbd152dc9::t_5603f2294c5077 16
+  s_a9fecbbd152dc9::t_c947fff15bef20 17-18
+  s_a9fecbbd152dc9::t_ca2729b6e5147f 13
+app/Models/StaffCoaching.php
+  s_a9fecbbd152dc9::t_5603f2294c5077 33-37
+tests/Integration/Person/StaffRepositoryTest.php
+  s_a9fecbbd152dc9::t_aef46525d76cd2 52,56-62,87,89
+  s_a9fecbbd152dc9::t_aff6e681208196 13,44-48
+app/Repositories/StaffRepository.php
+  s_a9fecbbd152dc9::t_5603f2294c5077 32-39,49,55,60,74,76,106-107,111,114-117,122,128,134,137,143-144,147,153,155
+tests/Integration/Services/SeasonService/StaffRetirementTest.php
+  s_a9fecbbd152dc9::t_aef46525d76cd2 9,52,54,62-65,79-85,90
+app/Models/StaffPhysio.php
+  s_a9fecbbd152dc9::t_5603f2294c5077 33-37
+app/Models/StaffScout.php
+  s_a9fecbbd152dc9::t_5603f2294c5077 33-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "df28441377d5acd6a8b93ecd31610c63ca3570f3",
+  "prompts": {},
+  "sessions": {
+    "s_a9fecbbd152dc9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffc79-b043-7542-a54b-61f1c0012e87",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
