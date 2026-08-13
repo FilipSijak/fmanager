@@ -8,6 +8,7 @@ use App\Models\StaffCoaching;
 use App\Models\StaffPhysio;
 use App\Models\StaffScout;
 use App\Services\PersonService\GeneratePeople\GeneratedStaffData;
+use App\Services\PersonService\GeneratePeople\StaffSalary;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,8 @@ class StaffRepository
         StaffPhysio::class,
     ];
 
+    public function __construct(private readonly StaffSalary $staffSalary) {}
+
     /**
      * @param  list<GeneratedStaffData>  $staffMembers
      */
@@ -33,7 +36,7 @@ class StaffRepository
                     ? DB::table('staff_contracts')->insertGetId([
                         'contract_start' => $contractStart,
                         'contract_end' => Carbon::parse($contractStart)->addYears(rand(1, 3))->toDateString(),
-                        'salary' => $staffMember->rank * 1000,
+                        'salary' => $this->staffSalary->forPotential($staffMember->potential),
                         'signing_fee' => null,
                     ])
                     : null;
