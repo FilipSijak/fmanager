@@ -1,0 +1,40 @@
+app/Services/SeasonService/PlayerRetirement.php
+  s_a9fecbbd152dc9::t_dff92db6d6c945 6,19
+  s_a9fecbbd152dc9::t_c231fa12aeb84a 20,24,37,41
+app/Repositories/StaffRepository.php
+  s_a9fecbbd152dc9::t_3cf15d2dc4550e 53-68
+app/Services/PersonService/GeneratePeople/StaffPotential.php
+  s_a9fecbbd152dc9::t_3cf15d2dc4550e 41-54
+app/Services/SeasonService/SeasonStart.php
+  s_a9fecbbd152dc9::t_3cf15d2dc4550e 11,13-14,16,23-25,107-119
+  s_a9fecbbd152dc9::t_dff92db6d6c945 8,106
+  s_a9fecbbd152dc9::t_536e1c279f9555 34-35,105,120
+tests/Unit/Person/StaffGeneratorTest.php
+  s_a9fecbbd152dc9::t_092ff267b4441c 5,68-91
+  s_a9fecbbd152dc9::t_fd1c247eb1a673 92
+tests/Integration/Services/SeasonService/PlayerRetirementTest.php
+  s_a9fecbbd152dc9::t_092ff267b4441c 87
+  s_a9fecbbd152dc9::t_3cf15d2dc4550e 85-86
+tests/Integration/Person/StaffRepositoryTest.php
+  s_a9fecbbd152dc9::t_092ff267b4441c 7,66-87
+  s_a9fecbbd152dc9::t_ad2e4c939961b8 88-89
+app/Services/PersonService/GeneratePeople/StaffGenerator.php
+  s_a9fecbbd152dc9::t_3cf15d2dc4550e 5,56-72
+  s_a9fecbbd152dc9::t_789688470dbe12 73-74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "431eef9710202e0fd8e69e2d4ad552f98edaf3aa",
+  "prompts": {},
+  "sessions": {
+    "s_a9fecbbd152dc9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffc79-b043-7542-a54b-61f1c0012e87",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
