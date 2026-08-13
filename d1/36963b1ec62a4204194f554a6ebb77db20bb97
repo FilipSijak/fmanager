@@ -1,0 +1,32 @@
+app/Repositories/StaffRepository.php
+  s_a9fecbbd152dc9::t_7f83f79323fe36 40-42
+  s_a9fecbbd152dc9::t_59cf5216dec6c4 39
+app/Services/PersonService/GeneratePeople/StaffSalary.php
+  s_a9fecbbd152dc9::t_f90edd958b1dee 14,24,29
+  s_a9fecbbd152dc9::t_59cf5216dec6c4 16
+  s_a9fecbbd152dc9::t_7f83f79323fe36 5-7,18-19,21,25,28,30,35-46
+  s_a9fecbbd152dc9::t_873958710d343c 47
+tests/Unit/Staff/StaffSalaryTest.php
+  s_a9fecbbd152dc9::t_f90edd958b1dee 21-24
+  s_a9fecbbd152dc9::t_7f83f79323fe36 6-7,14,18-20,25-31,33-41
+  s_a9fecbbd152dc9::t_59cf5216dec6c4 32,42-46
+tests/Integration/Person/StaffRepositoryTest.php
+  s_a9fecbbd152dc9::t_59cf5216dec6c4 65
+  s_a9fecbbd152dc9::t_7f83f79323fe36 66-68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d136963b1ec62a4204194f554a6ebb77db20bb97",
+  "prompts": {},
+  "sessions": {
+    "s_a9fecbbd152dc9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffc79-b043-7542-a54b-61f1c0012e87",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
