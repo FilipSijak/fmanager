@@ -1,0 +1,30 @@
+app/Services/SeasonService/StaffRetirement.php
+  s_a9fecbbd152dc9::t_1910b0f8de4551 1-41
+app/Repositories/StaffRepository.php
+  s_a9fecbbd152dc9::t_1910b0f8de4551 7-9,14,18-23,79-113
+  s_a9fecbbd152dc9::t_d5fcd42466490c 114
+app/Services/SeasonService/StaffRetirementDecision.php
+  s_a9fecbbd152dc9::t_1910b0f8de4551 1-49
+tests/Integration/Services/SeasonService/StaffRetirementTest.php
+  s_a9fecbbd152dc9::t_0d3952c09fdc71 1-83
+app/Services/SeasonService/SeasonStart.php
+  s_a9fecbbd152dc9::t_1910b0f8de4551 24,37
+tests/Unit/Services/SeasonService/StaffRetirementDecisionTest.php
+  s_a9fecbbd152dc9::t_0d3952c09fdc71 1-23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0090ff40249973f672cd241870724d58f56141f9",
+  "prompts": {},
+  "sessions": {
+    "s_a9fecbbd152dc9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffc79-b043-7542-a54b-61f1c0012e87",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
