@@ -125,16 +125,16 @@ class SeasonStart
 
     private function generateMissingStaff(Instance $instance): void
     {
-        $missingStaffCount = $this->staffCountValidator->missingStaffCount($instance);
+        foreach ($this->staffCountValidator->missingStaffByRole($instance) as $role => $missingCount) {
+            if ($missingCount === 0) {
+                continue;
+            }
 
-        if ($missingStaffCount === 0) {
-            return;
+            $this->staffRepository->bulkStaffInsert(
+                (int) $instance->id,
+                null,
+                $this->staffGenerator->generateFreeStaffForRole($role, $missingCount)
+            );
         }
-
-        $this->staffRepository->bulkStaffInsert(
-            (int) $instance->id,
-            null,
-            $this->staffGenerator->generateFreeStaff($missingStaffCount)
-        );
     }
 }
