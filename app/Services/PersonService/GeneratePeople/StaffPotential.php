@@ -38,6 +38,14 @@ class StaffPotential extends PersonPotential
         );
     }
 
+    public function getRandomPotentialForRole(string $role): StaffPotentialData
+    {
+        return $this->createStaffPotential(
+            $role,
+            random_int(self::MINIMUM_RANK, self::MAXIMUM_RANK)
+        );
+    }
+
     public function getRandomFormerPlayerStaffPotential(): StaffPotentialData
     {
         $roles = [

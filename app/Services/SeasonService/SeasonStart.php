@@ -22,6 +22,7 @@ class SeasonStart
         private readonly CompetitionService $competitionService,
         private readonly PlayerRetirement $playerRetirement,
         private readonly StaffRetirement $staffRetirement,
+        private readonly StaffCountValidator $staffCountValidator,
         private readonly StaffGenerator $staffGenerator,
         private readonly StaffRepository $staffRepository,
     ) {}
@@ -35,6 +36,7 @@ class SeasonStart
         $retiredPlayers = $this->playerRetirement->retireEligiblePlayers($instance);
         $this->retiredPlayerTransitionToStaff($retiredPlayers);
         $this->staffRetirement->retireEligibleStaff($instance);
+        $this->generateMissingStaff($instance);
 
         Competition::query()
             ->forInstance($instance->id)
@@ -119,5 +121,20 @@ class SeasonStart
                     $this->staffGenerator->generateFromFormerPlayer($person)
                 );
             });
+    }
+
+    private function generateMissingStaff(Instance $instance): void
+    {
+        foreach ($this->staffCountValidator->missingStaffByRole($instance) as $role => $missingCount) {
+            if ($missingCount === 0) {
+                continue;
+            }
+
+            $this->staffRepository->bulkStaffInsert(
+                (int) $instance->id,
+                null,
+                $this->staffGenerator->generateFreeStaffForRole($role, $missingCount)
+            );
+        }
     }
 }

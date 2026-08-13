@@ -100,6 +100,27 @@ class StaffRepository
         });
     }
 
+    /** @return array<string, int> */
+    public function activeStaffCountByRole(int $instanceId): array
+    {
+        $coachingRoles = StaffCoaching::query()
+            ->forInstance($instanceId)
+            ->active()
+            ->selectRaw('type, COUNT(*) AS aggregate')
+            ->groupBy('type')
+            ->pluck('aggregate', 'type')
+            ->map(fn ($count): int => (int) $count)
+            ->all();
+
+        return array_merge($coachingRoles, [
+            PersonTypes::SCOUT => StaffScout::query()->forInstance($instanceId)->active()->count(),
+            PersonTypes::PHYSIO => StaffPhysio::query()->forInstance($instanceId)->active()
+                ->where('team_type', 'FIRST_TEAM')->count(),
+            PersonTypes::YOUTH_PHYSIO => StaffPhysio::query()->forInstance($instanceId)->active()
+                ->where('team_type', 'YOUTH_TEAM')->count(),
+        ]);
+    }
+
     public function retireStaff(StaffCoaching|StaffScout|StaffPhysio $staff): bool
     {
         return DB::transaction(function () use ($staff): bool {

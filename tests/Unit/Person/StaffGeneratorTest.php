@@ -90,4 +90,16 @@ class StaffGeneratorTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $staff->rank);
         $this->assertLessThanOrEqual(20, $staff->rank);
     }
+
+    #[Test]
+    public function it_generates_free_staff_for_a_specific_role(): void
+    {
+        $staff = app(StaffGenerator::class)->generateFreeStaffForRole(PersonTypes::SCOUT, 10);
+
+        $this->assertCount(10, $staff);
+        $this->assertSame([PersonTypes::SCOUT], array_values(array_unique(array_map(
+            fn (GeneratedStaffData $staffMember): string => $staffMember->role,
+            $staff
+        ))));
+    }
 }

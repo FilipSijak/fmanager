@@ -53,6 +53,19 @@ class StaffGenerator
         return $staffMembers;
     }
 
+    public function generateFreeStaffForRole(string $role, int $count): array
+    {
+        $staffMembers = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            $staffMembers[] = $this->generateStaffMember(
+                $this->staffPotential->getRandomPotentialForRole($role)
+            );
+        }
+
+        return $staffMembers;
+    }
+
     public function generateFromFormerPlayer(Person $person): GeneratedStaffData
     {
         $staffPotential = $this->staffPotential->getRandomFormerPlayerStaffPotential();
