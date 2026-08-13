@@ -1,0 +1,31 @@
+app/Services/PersonService/GeneratePeople/StaffSalary.php
+  s_a9fecbbd152dc9::t_eabfdc33c3e8e8 1-32
+tests/Unit/Staff/StaffSalaryTest.php
+  s_a9fecbbd152dc9::t_8258332eed08de 1-4,6-23
+  s_a9fecbbd152dc9::t_eabfdc33c3e8e8 5
+app/Models/PlayerContract.php
+  s_a9fecbbd152dc9::t_78537a8b5a2c95 16-30
+app/Repositories/StaffRepository.php
+  s_a9fecbbd152dc9::t_eabfdc33c3e8e8 11
+  s_a9fecbbd152dc9::t_8258332eed08de 25-26,39
+tests/Integration/Person/StaffRepositoryTest.php
+  s_a9fecbbd152dc9::t_eabfdc33c3e8e8 11,65
+  s_a9fecbbd152dc9::t_8258332eed08de 63-64,66-67
+  s_a9fecbbd152dc9::t_580833c0631247 68
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "8d5c9eea7260bb595172366fbd174cb97cf16bd6",
+  "prompts": {},
+  "sessions": {
+    "s_a9fecbbd152dc9": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019ffc79-b043-7542-a54b-61f1c0012e87",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
