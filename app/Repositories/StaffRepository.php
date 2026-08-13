@@ -4,13 +4,23 @@ namespace App\Repositories;
 
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\StaffCoaching;
+use App\Models\StaffPhysio;
+use App\Models\StaffScout;
 use App\Services\PersonService\GeneratePeople\GeneratedStaffData;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 
 class StaffRepository
 {
+    private const STAFF_MODELS = [
+        StaffCoaching::class,
+        StaffScout::class,
+        StaffPhysio::class,
+    ];
+
     /**
      * @param  list<GeneratedStaffData>  $staffMembers
      */
@@ -63,6 +73,42 @@ class StaffRepository
                 $staffMember,
                 ['contract_start' => null, 'contract_end' => null]
             );
+        });
+    }
+
+    public function staffEligibleForRetirement(int $instanceId, string $date): LazyCollection
+    {
+        return LazyCollection::make(function () use ($instanceId, $date) {
+            foreach (self::STAFF_MODELS as $staffModel) {
+                yield from $staffModel::query()
+                    ->forInstance($instanceId)
+                    ->active()
+                    ->whereHas('person', function ($query) use ($date): void {
+                        $query->whereNotNull('dob')->whereDate('dob', '<=', $date);
+                    })
+                    ->with('person')
+                    ->lazyById(200);
+            }
+        });
+    }
+
+    public function retireStaff(StaffCoaching|StaffScout|StaffPhysio $staff): bool
+    {
+        return DB::transaction(function () use ($staff): bool {
+            $staff = $staff::query()->lockForUpdate()->findOrFail($staff->id);
+
+            if ($staff->is_retired) {
+                return false;
+            }
+
+            $staff->forceFill([
+                'is_retired' => true,
+                'club_id' => null,
+                'contract_start' => null,
+                'contract_end' => null,
+            ])->save();
+
+            return true;
         });
     }
 
