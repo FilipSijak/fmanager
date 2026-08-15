@@ -12,12 +12,16 @@ class PlayerType
         $player = new PlayerModel;
         $generatedPositions = [];
         $potentialByCategory = [];
-        $personIdentity = [];
+        $personIdentity = null;
 
         foreach ($playerAttributes as $field => $value) {
-            if (in_array($field, ['first_name', 'last_name', 'dob', 'country_code'], true)) {
-                $personIdentity[$field] = $value;
+            if ($field === 'personDetails') {
+                $personIdentity = $value;
 
+                continue;
+            }
+
+            if (in_array($field, ['first_name', 'last_name', 'dob', 'country_code'], true)) {
                 continue;
             }
 
@@ -38,7 +42,9 @@ class PlayerType
             $player->{$field} = $value;
         }
 
-        $player->setPersonIdentity($personIdentity);
+        if ($personIdentity instanceof PersonInfo) {
+            $player->setPersonIdentity($personIdentity);
+        }
 
         $player->game_id = $gameId;
 

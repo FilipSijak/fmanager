@@ -8,7 +8,7 @@ use App\Models\Player;
 use App\Repositories\Interfaces\IPlayerRepository;
 use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
-use App\Services\PersonService\PersonService;
+use App\Services\PersonService\GeneratePeople\PlayerPosition;
 use App\Services\TransferService\TransferStatusTypes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
@@ -122,13 +122,13 @@ class PlayerRepository implements IPlayerRepository
 
     public function bulkAssignmentPlayersPositions($players): void
     {
-        $personService = new PersonService;
+        $playerPositionGenerator = new PlayerPosition();
         $playerPositionsData = [];
 
         foreach ($players as $player) {
 
             $attributes = $player->getAttributes();
-            $positionList = $personService->generatePlayerPositionList($attributes);
+            $positionList = $playerPositionGenerator->getInitialPositionsBasedOnAttributes($attributes);
             $playerPositions = array_flip(PlayerPositionConfig::PLAYER_POSITIONS);
 
             foreach ($positionList as $position => $grade) {

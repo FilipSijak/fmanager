@@ -22,7 +22,7 @@ use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
-use App\Services\PersonService\GeneratePeople\StaffGenerator;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffGenerator;
 use App\Services\PersonService\PersonService;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
@@ -249,7 +249,7 @@ class CreateInstanceTest extends TestCase
             (new TournamentUpdater($this->competitionRepository)),
             $this->competitionDataSource
         );
-        $this->personService = new PersonService;
+        $this->personService = app()->make(PersonService::class);
 
         return
             new CreateInstance(
@@ -257,9 +257,7 @@ class CreateInstanceTest extends TestCase
                 app()->make(PersonService::class),
                 app()->make(CompetitionRepository::class),
                 app()->make(PlayerPotential::class),
-                app()->make(StaffGenerator::class),
-                app()->make(PlayerRepository::class),
-                app()->make(StaffRepository::class)
+                app()->make(PlayerRepository::class)
             );
     }
 }

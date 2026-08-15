@@ -3,8 +3,8 @@
 namespace Tests\Unit\Person;
 
 use App\Services\ClubService\SquadAnalysis\SquadStaffConfig;
-use App\Services\PersonService\GeneratePeople\StaffPotential;
-use App\Services\PersonService\GeneratePeople\StaffPotentialData;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffPotential;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffPotentialData;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;

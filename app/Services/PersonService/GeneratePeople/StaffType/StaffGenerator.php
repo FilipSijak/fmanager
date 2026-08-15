@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Services\PersonService\GeneratePeople;
+namespace App\Services\PersonService\GeneratePeople\StaffType;
 
 use App\Models\Person;
+use App\Services\PersonService\GeneratePeople\PersonDetails;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Faker\Factory as FakerFactory;
 use Faker\Generator;
@@ -27,7 +28,10 @@ class StaffGenerator
 
     private Generator $faker;
 
-    public function __construct(private readonly StaffPotential $staffPotential)
+    public function __construct(
+        private readonly StaffPotential $staffPotential,
+        private readonly PersonDetails $personDetails
+    )
     {
         $this->faker = FakerFactory::create();
     }
@@ -74,10 +78,7 @@ class StaffGenerator
             role: $staffPotential->role,
             potential: $staffPotential->potential,
             rank: $staffPotential->rank,
-            firstName: $person->first_name,
-            lastName: $person->last_name,
-            dateOfBirth: $person->dob->toDateString(),
-            countryCode: $person->country_code,
+            personDetails: $person->personDetails,
             attributes: $this->generateAttributes(
                 $staffPotential->potential,
                 $this->attributeNamesForRole($staffPotential->role)
@@ -91,10 +92,7 @@ class StaffGenerator
             role: $staffPotential->role,
             potential: $staffPotential->potential,
             rank: $staffPotential->rank,
-            firstName: $this->faker->firstNameMale(),
-            lastName: $this->faker->lastName(),
-            dateOfBirth: $this->faker->dateTimeBetween('-65 years', '-28 years')->format('Y-m-d'),
-            countryCode: $this->faker->countryCode(),
+            personDetails: $this->personDetails->setPersonDetails(PersonTypes::MANAGER),
             attributes: $this->generateAttributes(
                 $staffPotential->potential,
                 $this->attributeNamesForRole($staffPotential->role)

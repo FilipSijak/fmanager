@@ -2,6 +2,7 @@
 
 namespace App\Services\PersonService\GeneratePeople;
 
+use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
 use Faker\Factory;
 use stdClass;
@@ -26,10 +27,14 @@ class PlayerAttributesGenerator
 
     private $player;
 
+    private ?PersonDetails $personDetails;
+
     public function __construct(
-        private readonly PlayerInitialAttributes $playerInitialAttributes
+        private readonly PlayerInitialAttributes $playerInitialAttributes,
+        ?PersonDetails $personDetails = null
     )
     {
+        $this->personDetails = $personDetails;
         $this->faker = Factory::create();
     }
 
@@ -40,16 +45,14 @@ class PlayerAttributesGenerator
         $this->player->potentialByCategory = $playerPotentialWithPosition->potentialByCategory;
         $this->player->max_potential = $playerPotentialWithPosition->potential;
 
-        $startDate = '-40 years';
-        $endDate   = '-16 years';
+        $personDetailsGenerator = $this->personDetails ?? new PersonDetails($this->faker);
+        $personDetails = $personDetailsGenerator->setPersonDetails(PersonTypes::PLAYER);
 
-        $dob =  $this->faker->dateTimeBetween($startDate, $endDate);
-        $dob = date_format($dob, 'Y-m-d');
-
-        $this->player->first_name   = $this->faker->firstNameMale;
-        $this->player->last_name    = $this->faker->lastName;
-        $this->player->country_code = $this->faker->countryCode;
-        $this->player->dob          = $dob;
+        $this->player->personDetails = $personDetails;
+        $this->player->first_name = $personDetails->firstName;
+        $this->player->last_name = $personDetails->lastName;
+        $this->player->country_code = $personDetails->countryCode;
+        $this->player->dob = $personDetails->dateOfBirth;
 
         return $this;
     }

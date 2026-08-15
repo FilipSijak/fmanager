@@ -3,8 +3,8 @@
 namespace Tests\Unit\Person;
 
 use App\Models\Person;
-use App\Services\PersonService\GeneratePeople\GeneratedStaffData;
-use App\Services\PersonService\GeneratePeople\StaffGenerator;
+use App\Services\PersonService\GeneratePeople\StaffType\GeneratedStaffData;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffGenerator;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;

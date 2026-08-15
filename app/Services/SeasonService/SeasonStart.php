@@ -10,7 +10,7 @@ use App\Models\Season;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\StaffRepository;
 use App\Services\CompetitionService\CompetitionService;
-use App\Services\PersonService\GeneratePeople\StaffGenerator;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffGenerator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Lottery;

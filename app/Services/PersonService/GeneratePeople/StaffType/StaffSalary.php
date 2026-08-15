@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\PersonService\GeneratePeople;
+namespace App\Services\PersonService\GeneratePeople\StaffType;
 
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use InvalidArgumentException;
