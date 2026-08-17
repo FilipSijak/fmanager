@@ -2,7 +2,7 @@
 
 namespace App\Services\PersonService\Data;
 
-readonly class PlayerPotentialData
+readonly class GeneratedPlayerProfile
 {
     public function __construct(
         public int $potential,

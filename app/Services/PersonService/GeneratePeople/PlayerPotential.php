@@ -3,12 +3,12 @@
 namespace App\Services\PersonService\GeneratePeople;
 
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
-use App\Services\PersonService\Data\PlayerPotentialData;
+use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 
 class PlayerPotential extends PersonPotential
 {
-    /** @return list<PlayerPotentialData> */
+    /** @return list<GeneratedPlayerProfile> */
     public function createForClubRank(int $academyRank): array
     {
         $potentials = [];
@@ -16,22 +16,22 @@ class PlayerPotential extends PersonPotential
 
         for ($index = 1; $index <= SquadPlayersConfig::PLAYER_COUNT; $index++) {
             if ($index <= 5) {
-                $potentials[] = rand($rank, 200);
+                $potentials[] = $this->randomizer->getInt($rank, 200);
             } elseif ($index <= 15) {
-                $potentials[] = rand($rank - 15, $rank + 5);
+                $potentials[] = $this->randomizer->getInt($rank - 15, $rank + 5);
             } else {
-                $potentials[] = rand($rank - 40, $rank - 20);
+                $potentials[] = $this->randomizer->getInt($rank - 40, $rank - 20);
             }
         }
 
-        shuffle($potentials);
+        $potentials = $this->randomizer->shuffleArray($potentials);
         $players = [];
         $potentialIndex = 0;
 
         foreach (SquadPlayersConfig::POSITION_COUNT as $position => $count) {
             for ($index = 0; $index < $count; $index++) {
                 $potential = $potentials[$potentialIndex++];
-                $players[] = new PlayerPotentialData(
+                $players[] = new GeneratedPlayerProfile(
                     potential: $potential,
                     position: $position,
                     potentialByCategory: $this->calculatePotentialByCategory($potential),
@@ -42,13 +42,13 @@ class PlayerPotential extends PersonPotential
         return $players;
     }
 
-    public function createFreeAgent(int $maxPotential): PlayerPotentialData
+    public function createFreeAgent(int $maxPotential): GeneratedPlayerProfile
     {
-        $potential = rand(30, $maxPotential);
+        $potential = $this->randomizer->getInt(30, $maxPotential);
 
-        return new PlayerPotentialData(
+        return new GeneratedPlayerProfile(
             potential: $potential,
-            position: PlayerPositionConfig::PLAYER_POSITIONS[array_rand(PlayerPositionConfig::PLAYER_POSITIONS)],
+            position: $this->randomizer->shuffleArray(array_values(PlayerPositionConfig::PLAYER_POSITIONS))[0],
             potentialByCategory: $this->calculatePotentialByCategory($potential),
         );
     }

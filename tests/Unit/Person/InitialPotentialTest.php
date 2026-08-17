@@ -3,7 +3,7 @@
 namespace Tests\Unit\Person;
 
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
-use App\Services\PersonService\Data\PlayerPotentialData;
+use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -26,7 +26,7 @@ class InitialPotentialTest extends TestCase
         }, ARRAY_FILTER_USE_BOTH);
 
         $this->assertCount(SquadPlayersConfig::PLAYER_COUNT, $playerList);
-        $this->assertContainsOnlyInstancesOf(PlayerPotentialData::class, $playerList);
+        $this->assertContainsOnlyInstancesOf(GeneratedPlayerProfile::class, $playerList);
         $this->assertEquals(count($cbs), SquadPlayersConfig::POSITION_COUNT['CB']);
         $this->assertEquals(count($st), SquadPlayersConfig::POSITION_COUNT['ST']);
     }

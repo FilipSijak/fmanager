@@ -6,7 +6,7 @@ use App\Models\Club;
 use App\Models\Player;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
-use App\Services\PersonService\Data\PlayerPotentialData;
+use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
@@ -28,7 +28,7 @@ class PersonService
         private readonly GameContext $gameContext,
     ) {}
 
-    public function createPlayer(PlayerPotentialData $playerPotential): Player
+    public function createPlayer(GeneratedPlayerProfile $playerPotential): Player
     {
         return $this->playerCreator->create(
             $playerPotential,

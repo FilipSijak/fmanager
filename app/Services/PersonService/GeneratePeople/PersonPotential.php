@@ -4,10 +4,18 @@ namespace App\Services\PersonService\GeneratePeople;
 
 use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
+use Random\Randomizer;
 
 class PersonPotential
 {
     const POTENTIAL_BOUNDARIES = [0, 50, 75, 100, 130, 160, 180, 200];
+
+    protected readonly Randomizer $randomizer;
+
+    public function __construct(?Randomizer $randomizer = null)
+    {
+        $this->randomizer = $randomizer ?? new Randomizer;
+    }
 
     public function calculatePotentialByCategory(int $potential): PotentialByCategoryData
     {
@@ -24,7 +32,10 @@ class PersonPotential
 
             for ($k = 1; $k < count(self::POTENTIAL_BOUNDARIES); $k++) {
                 if ($potential < self::POTENTIAL_BOUNDARIES[$k] && $potential > self::POTENTIAL_BOUNDARIES[$k - 1]) {
-                    $potentialValue = rand(self::POTENTIAL_BOUNDARIES[$k - 1], self::POTENTIAL_BOUNDARIES[$k]);
+                    $potentialValue = $this->randomizer->getInt(
+                        self::POTENTIAL_BOUNDARIES[$k - 1],
+                        self::POTENTIAL_BOUNDARIES[$k],
+                    );
                 }
             }
 
@@ -38,10 +49,7 @@ class PersonPotential
         );
     }
 
-    /**
-     * @return string
-     */
-    public static function personPotentialLabel(int $potential)
+    public static function personPotentialLabel(int $potential): string
     {
         $labels = [
             'amateur' => 50,
@@ -58,5 +66,7 @@ class PersonPotential
                 return $label;
             }
         }
+
+        return array_key_last($labels);
     }
 }

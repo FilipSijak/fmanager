@@ -3,7 +3,7 @@
 namespace App\Services\PersonService\GeneratePeople;
 
 use App\Models\Player;
-use App\Services\PersonService\Data\PlayerPotentialData;
+use App\Services\PersonService\Data\GeneratedPlayerProfile;
 
 class PlayerCreator
 {
@@ -12,7 +12,7 @@ class PlayerCreator
         private readonly PersonFactory $personFactory,
     ) {}
 
-    public function create(PlayerPotentialData $playerPotential, int $instanceId): Player
+    public function create(GeneratedPlayerProfile $playerPotential, int $instanceId): Player
     {
         $generatedAttributes = $this->attributesGenerator->setPlayerDetails($playerPotential)->generateAttributes();
 

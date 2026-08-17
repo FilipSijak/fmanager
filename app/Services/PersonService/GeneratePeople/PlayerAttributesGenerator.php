@@ -2,10 +2,11 @@
 
 namespace App\Services\PersonService\GeneratePeople;
 
-use App\Services\PersonService\Data\PlayerPotentialData;
+use App\Services\PersonService\Data\GeneratedPlayerData;
+use App\Services\PersonService\Data\GeneratedPlayerProfile;
+use App\Services\PersonService\Data\PersonInfo;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
-use stdClass;
 
 class PlayerAttributesGenerator
 {
@@ -23,74 +24,54 @@ class PlayerAttributesGenerator
         41 => 0.67,
     ];
 
-    private $player;
+    private GeneratedPlayerProfile $playerProfile;
 
-    private PersonDetailsGenerator $personDetailsGenerator;
+    private PersonInfo $personDetails;
 
     public function __construct(
         private readonly PlayerInitialAttributes $playerInitialAttributes,
-        PersonDetailsGenerator $personDetailsGenerator,
-    ) {
-        $this->personDetailsGenerator = $personDetailsGenerator;
-    }
+        private readonly PersonDetailsGenerator $personDetailsGenerator,
+    ) {}
 
-    public function setPlayerDetails(PlayerPotentialData $playerPotentialWithPosition)
+    public function setPlayerDetails(GeneratedPlayerProfile $playerProfile): self
     {
-        $this->player = new stdClass;
-        $this->player->position = $playerPotentialWithPosition->position;
-        $this->player->potentialByCategory = $playerPotentialWithPosition->potentialByCategory;
-        $this->player->max_potential = $playerPotentialWithPosition->potential;
-
-        $personDetails = $this->personDetailsGenerator->generate(PersonTypes::PLAYER);
-
-        $this->player->personDetails = $personDetails;
+        $this->playerProfile = $playerProfile;
+        $this->personDetails = $this->personDetailsGenerator->generate(PersonTypes::PLAYER);
 
         return $this;
     }
 
-    public function generateAttributes()
+    public function generateAttributes(): GeneratedPlayerData
     {
-        $this->setInitialAttributes();
-        $this->setPlayerPositionList();
-        $this->setCurrentPotential();
-
-        return $this->player;
-    }
-
-    protected function setInitialAttributes()
-    {
-        $playerInitialAttributes = $this->playerInitialAttributes->setPlayerPosition($this->player->position)
-            ->setPlayerPotentialByCategory((array) $this->player->potentialByCategory)
+        $attributes = $this->playerInitialAttributes
+            ->setPlayerPosition($this->playerProfile->position)
+            ->setPlayerPotentialByCategory((array) $this->playerProfile->potentialByCategory)
             ->initAllAttributes();
 
-        foreach ($playerInitialAttributes as $attribute => $value) {
-            $this->player->{$attribute} = $value;
-        }
+        return new GeneratedPlayerData(
+            personDetails: $this->personDetails,
+            position: $this->playerProfile->position,
+            potentialByCategory: $this->playerProfile->potentialByCategory,
+            maxPotential: $this->playerProfile->potential,
+            potential: $this->currentPotential(),
+            positions: [$this->playerProfile->position],
+            attributes: $attributes,
+        );
     }
 
-    protected function setCurrentPotential()
+    private function currentPotential(): float
     {
-        $currentAge = Carbon::parse($this->player->personDetails->dateOfBirth)->age;
+        $currentAge = Carbon::parse($this->personDetails->dateOfBirth)->age;
+        $ages = array_keys(self::AGE_POTENTIAL_BRACKETS);
 
-        $agePotentialBrackets = self::AGE_POTENTIAL_BRACKETS;
-
-        $ages = array_keys($agePotentialBrackets);
-        sort($ages);
-
-        for ($i = 0; $i < count($ages) - 1; $i++) {
-            if ($currentAge >= $ages[$i] && $currentAge < $ages[$i + 1]) {
-                $this->player->potential = $this->player->max_potential * $agePotentialBrackets[$ages[$i]];
-                break;
+        for ($index = 0; $index < count($ages) - 1; $index++) {
+            if ($currentAge >= $ages[$index] && $currentAge < $ages[$index + 1]) {
+                return $this->playerProfile->potential * self::AGE_POTENTIAL_BRACKETS[$ages[$index]];
             }
         }
 
-        if ($currentAge >= end($ages)) {
-            $this->player->potential = $this->player->max_potential * $agePotentialBrackets[end($ages)];
-        }
-    }
+        $oldestAge = end($ages);
 
-    protected function setPlayerPositionList()
-    {
-        $this->player->positions = [$this->player->position];
+        return $this->playerProfile->potential * self::AGE_POTENTIAL_BRACKETS[$oldestAge];
     }
 }

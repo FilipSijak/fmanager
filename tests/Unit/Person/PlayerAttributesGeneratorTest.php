@@ -2,8 +2,8 @@
 
 namespace Tests\Unit\Person;
 
+use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\Data\PersonInfo;
-use App\Services\PersonService\Data\PlayerPotentialData;
 use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\GeneratePeople\PersonDetailsGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
@@ -23,7 +23,7 @@ class PlayerAttributesGeneratorTest extends TestCase
 
     public function test_generate_attributes()
     {
-        $player = new PlayerPotentialData(
+        $player = new GeneratedPlayerProfile(
             potential: 90,
             position: 'striker',
             potentialByCategory: new PotentialByCategoryData(80, 75, 85),
@@ -38,7 +38,7 @@ class PlayerAttributesGeneratorTest extends TestCase
 
         $this->assertEquals('striker', $result->position);
         $this->assertEquals($player->potentialByCategory, $result->potentialByCategory);
-        $this->assertEquals(90, $result->max_potential);
+        $this->assertEquals(90, $result->maxPotential);
         $this->assertIsArray($result->positions);
         $this->assertContains('striker', $result->positions);
         $this->assertNotEmpty($result->personDetails->firstName);
@@ -53,7 +53,7 @@ class PlayerAttributesGeneratorTest extends TestCase
     #[DataProvider('ageMaxPotentialProvider')]
     public function test_current_potential_for_different_ages(int $age, float $expectedMultiplier)
     {
-        $player = new PlayerPotentialData(
+        $player = new GeneratedPlayerProfile(
             potential: 100,
             position: 'CB',
             potentialByCategory: new PotentialByCategoryData(80, 80, 80),
@@ -71,8 +71,8 @@ class PlayerAttributesGeneratorTest extends TestCase
         $generator->setPlayerDetails($player);
         $generatedPlayer = $generator->generateAttributes();
 
-        $message = "Age $age should have potential of ".($generatedPlayer->max_potential * $expectedMultiplier);
-        $this->assertEquals($generatedPlayer->max_potential * $expectedMultiplier, $generatedPlayer->potential, $message);
+        $message = "Age $age should have potential of ".($generatedPlayer->maxPotential * $expectedMultiplier);
+        $this->assertEquals($generatedPlayer->maxPotential * $expectedMultiplier, $generatedPlayer->potential, $message);
     }
 
     public static function ageMaxPotentialProvider(): array
@@ -94,7 +94,7 @@ class PlayerAttributesGeneratorTest extends TestCase
 
     public function test_set_person_info_generates_valid_data()
     {
-        $player = new PlayerPotentialData(
+        $player = new GeneratedPlayerProfile(
             potential: 100,
             position: 'striker',
             potentialByCategory: new PotentialByCategoryData(100, 100, 100),
@@ -102,10 +102,7 @@ class PlayerAttributesGeneratorTest extends TestCase
         $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
         $generator = new PlayerAttributesGenerator($playerInitialAttributes, new PersonDetailsGenerator);
 
-        $generator->setPlayerDetails($player);
-        $generatorReflection = new \ReflectionObject($generator);
-        $player = $generatorReflection->getProperty('player');
-        $player = $player->getValue($generator);
+        $player = $generator->setPlayerDetails($player)->generateAttributes();
 
         $this->assertIsString($player->personDetails->firstName);
         $this->assertIsString($player->personDetails->lastName);
@@ -115,7 +112,7 @@ class PlayerAttributesGeneratorTest extends TestCase
         $this->assertTrue($dob->age >= 16 && $dob->age <= 40, "Age should be between 16 and 40 but was {$dob->age}");
     }
 
-    private function createPlayerInitialAttributesMock(PlayerPotentialData $playerDetails)
+    private function createPlayerInitialAttributesMock(GeneratedPlayerProfile $playerDetails)
     {
         $initialAttributesMock = $this->createMock(PlayerInitialAttributes::class);
 

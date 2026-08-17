@@ -2,14 +2,13 @@
 
 namespace App\Services\PersonService\GeneratePeople;
 
-use App\Services\PersonService\GeneratePeople\PlayerType;
+use App\Models\Player;
+use App\Services\PersonService\Data\GeneratedPlayerData;
 
 class PersonFactory
 {
-    public function createPlayer(\stdClass $generatedAttributes, $instanceId)
+    public function createPlayer(GeneratedPlayerData $generatedPlayer, int $instanceId): Player
     {
-        $player = new PlayerType();
-
-        return $player->create($generatedAttributes, $instanceId);
+        return (new PlayerType)->create($generatedPlayer, $instanceId);
     }
 }
