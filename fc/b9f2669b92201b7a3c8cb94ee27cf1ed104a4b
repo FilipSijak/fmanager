@@ -1,0 +1,23 @@
+app/Services/PersonService/PersonService.php
+  s_d4fea276a4cb0b::t_4e140c5bc9fbd6 7,26,63,76-84,87,97-105
+app/Services/InstanceService/CreateInstance.php
+  s_d4fea276a4cb0b::t_fc843fecd2204f 182,187
+tests/Integration/Instance/CreateInstanceTest.php
+  s_d4fea276a4cb0b::t_fc843fecd2204f 254
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "fcb9f2669b92201b7a3c8cb94ee27cf1ed104a4b",
+  "prompts": {},
+  "sessions": {
+    "s_d4fea276a4cb0b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a006b1-93a6-70a3-a22f-a9ec7a92e87b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
