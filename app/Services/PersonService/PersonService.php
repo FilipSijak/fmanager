@@ -6,6 +6,7 @@ use App\Models\Club;
 use App\Models\Player;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
+use App\Services\PersonService\Data\PlayerPotentialData;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
@@ -27,7 +28,7 @@ class PersonService
         private readonly GameContext $gameContext,
     ) {}
 
-    public function createPlayer(\stdClass $playerPotential): Player
+    public function createPlayer(PlayerPotentialData $playerPotential): Player
     {
         return $this->playerCreator->create(
             $playerPotential,
@@ -37,9 +38,7 @@ class PersonService
 
     public function createPlayersForClub(Club $club): void
     {
-        $academyRank = $club->rank_academy;
-        $playerPotentialList = $this->playerPotential->getPlayerPotential($academyRank);
-        $playersPotentialWithPosition = $this->playerPotential->assignPlayerPositions($playerPotentialList);
+        $playersPotentialWithPosition = $this->playerPotential->createForClubRank($club->rank_academy);
         $generatedPlayers = [];
 
         foreach ($playersPotentialWithPosition as $playerPotential) {
@@ -56,7 +55,7 @@ class PersonService
         $generatedPlayers = [];
 
         for ($i = 0; $i < $count; $i++) {
-            $playerWithPositionAndPotential = $this->playerPotential->generateFreeAgent(self::FREE_AGENTS_POTENTIAL_LIMIT);
+            $playerWithPositionAndPotential = $this->playerPotential->createFreeAgent(self::FREE_AGENTS_POTENTIAL_LIMIT);
 
             $generatedPlayers[] = $this->createPlayer($playerWithPositionAndPotential);
         }

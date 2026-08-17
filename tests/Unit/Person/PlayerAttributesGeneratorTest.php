@@ -3,13 +3,14 @@
 namespace Tests\Unit\Person;
 
 use App\Services\PersonService\Data\PersonInfo;
+use App\Services\PersonService\Data\PlayerPotentialData;
+use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\GeneratePeople\PersonDetailsGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerInitialAttributes;
 use Carbon\Carbon;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 class PlayerAttributesGeneratorTest extends TestCase
 {
@@ -22,14 +23,11 @@ class PlayerAttributesGeneratorTest extends TestCase
 
     public function test_generate_attributes()
     {
-        $player = new stdClass;
-        $player->position = 'striker';
-        $player->potentialByCategory = (object) [
-            'technical' => 80,
-            'mental' => 75,
-            'physical' => 85,
-        ];
-        $player->potential = 90;
+        $player = new PlayerPotentialData(
+            potential: 90,
+            position: 'striker',
+            potentialByCategory: new PotentialByCategoryData(80, 75, 85),
+        );
 
         $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
 
@@ -55,10 +53,11 @@ class PlayerAttributesGeneratorTest extends TestCase
     #[DataProvider('ageMaxPotentialProvider')]
     public function test_current_potential_for_different_ages(int $age, float $expectedMultiplier)
     {
-        $player = new stdClass;
-        $player->position = 'CB';
-        $player->potentialByCategory = (object) ['technical' => 80];
-        $player->potential = 100;
+        $player = new PlayerPotentialData(
+            potential: 100,
+            position: 'CB',
+            potentialByCategory: new PotentialByCategoryData(80, 80, 80),
+        );
 
         $playerInitialAttributesMock = $this->createPlayerInitialAttributesMock($player);
         $mockDob = new \DateTime(date('Y') - $age.'-01-01');
@@ -95,10 +94,11 @@ class PlayerAttributesGeneratorTest extends TestCase
 
     public function test_set_person_info_generates_valid_data()
     {
-        $player = new stdClass;
-        $player->position = 'striker';
-        $player->potentialByCategory = null;
-        $player->potential = 100;
+        $player = new PlayerPotentialData(
+            potential: 100,
+            position: 'striker',
+            potentialByCategory: new PotentialByCategoryData(100, 100, 100),
+        );
         $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
         $generator = new PlayerAttributesGenerator($playerInitialAttributes, new PersonDetailsGenerator);
 
@@ -115,7 +115,7 @@ class PlayerAttributesGeneratorTest extends TestCase
         $this->assertTrue($dob->age >= 16 && $dob->age <= 40, "Age should be between 16 and 40 but was {$dob->age}");
     }
 
-    private function createPlayerInitialAttributesMock(stdClass $playerDetails)
+    private function createPlayerInitialAttributesMock(PlayerPotentialData $playerDetails)
     {
         $initialAttributesMock = $this->createMock(PlayerInitialAttributes::class);
 

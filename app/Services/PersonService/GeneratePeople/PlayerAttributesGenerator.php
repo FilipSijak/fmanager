@@ -2,6 +2,7 @@
 
 namespace App\Services\PersonService\GeneratePeople;
 
+use App\Services\PersonService\Data\PlayerPotentialData;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
 use stdClass;
@@ -33,7 +34,7 @@ class PlayerAttributesGenerator
         $this->personDetailsGenerator = $personDetailsGenerator;
     }
 
-    public function setPlayerDetails(stdClass $playerPotentialWithPosition)
+    public function setPlayerDetails(PlayerPotentialData $playerPotentialWithPosition)
     {
         $this->player = new stdClass;
         $this->player->position = $playerPotentialWithPosition->position;
