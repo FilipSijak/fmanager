@@ -1,0 +1,47 @@
+app/Services/PersonService/GeneratePeople/StaffType/StaffCreator.php
+  s_d4fea276a4cb0b::t_24ec01fc5113a0 6,95
+  s_d4fea276a4cb0b::t_241793cc4d3153 29-30
+app/Services/PersonService/Data/PersonInfo.php
+  s_d4fea276a4cb0b::t_241793cc4d3153 11
+  s_d4fea276a4cb0b::t_5cc23b4ee2fd75 1-10,12-13
+app/Models/Person.php
+  s_d4fea276a4cb0b::t_5cc23b4ee2fd75 6
+  s_d4fea276a4cb0b::t_241793cc4d3153 30
+app/Services/PersonService/GeneratePeople/StaffType/GeneratedStaffData.php
+  s_d4fea276a4cb0b::t_5cc23b4ee2fd75 5
+app/Services/PersonService/GeneratePeople/PlayerAttributesGenerator.php
+  s_d4fea276a4cb0b::t_24ec01fc5113a0 27,33,43
+  s_d4fea276a4cb0b::t_ac83a900c5cc77 38,62
+  s_d4fea276a4cb0b::t_241793cc4d3153 31-32
+tests/Unit/Person/PlayerAttributesGeneratorTest.php
+  s_d4fea276a4cb0b::t_ae5a1c79d0aa43 5-6,36,70,103
+  s_d4fea276a4cb0b::t_588f6ed8a05c29 64-68
+  s_d4fea276a4cb0b::t_ac83a900c5cc77 23,25,27,30,56,58,60,75,92,96,98,118,123-125,128-130
+app/Services/PersonService/GeneratePeople/PlayerType.php
+  s_d4fea276a4cb0b::t_5cc23b4ee2fd75 6
+app/Services/PersonService/GeneratePeople/PersonDetailsGenerator.php
+  s_d4fea276a4cb0b::t_ac83a900c5cc77 19
+  s_d4fea276a4cb0b::t_24ec01fc5113a0 5-9,13-18,22-33
+app/Services/PersonService/PersonService.php
+  s_d4fea276a4cb0b::t_5cc23b4ee2fd75 15
+tests/Unit/Person/StaffCreatorTest.php
+  s_d4fea276a4cb0b::t_241793cc4d3153 24-27,104-107
+app/Models/Player.php
+  s_d4fea276a4cb0b::t_5cc23b4ee2fd75 6
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "46a9e530bf4c0c2e20bebe203a0ca76801e4c32b",
+  "prompts": {},
+  "sessions": {
+    "s_d4fea276a4cb0b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a006b1-93a6-70a3-a22f-a9ec7a92e87b",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
