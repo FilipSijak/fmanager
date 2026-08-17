@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToGameInstance;
+use App\Services\PersonService\Data\PersonInfo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +20,16 @@ class Person extends Model
     protected $casts = [
         'dob' => 'date:Y-m-d',
     ];
+
+    public function getPersonDetailsAttribute(): PersonInfo
+    {
+        return new PersonInfo(
+            firstName: $this->first_name,
+            lastName: $this->last_name,
+            countryCode: $this->country_code,
+            dateOfBirth: $this->dob?->toDateString(),
+        );
+    }
 
     public function player(): HasOne
     {

@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Services\PersonService\GeneratePeople;
+namespace App\Services\PersonService\GeneratePeople\StaffType;
 
 use App\Services\ClubService\SquadAnalysis\SquadStaffConfig;
+use App\Services\PersonService\GeneratePeople\PersonPotential;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 
 class StaffPotential extends PersonPotential
@@ -74,7 +75,7 @@ class StaffPotential extends PersonPotential
         ];
     }
 
-    private function createStaffPotential(string $role, int $rank): StaffPotentialData
+    public function createStaffPotential(string $role, int $rank): StaffPotentialData
     {
         $rank *= 10;
 

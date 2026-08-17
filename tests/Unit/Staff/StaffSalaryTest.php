@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Staff;
 
-use App\Services\PersonService\GeneratePeople\StaffSalary;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffSalary;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\Test;

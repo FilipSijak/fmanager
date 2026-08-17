@@ -2,48 +2,28 @@
 
 namespace App\Services\PersonService\GeneratePeople;
 
-use App\Models\Player as PlayerModel;
-use stdClass;
+use App\Models\Player;
+use App\Services\PersonService\Data\GeneratedPlayerData;
 
 class PlayerType
 {
-    public function create(stdClass $playerAttributes, int $gameId): PlayerModel
+    public function create(GeneratedPlayerData $generatedPlayer, int $instanceId): Player
     {
-        $player = new PlayerModel;
-        $generatedPositions = [];
-        $potentialByCategory = [];
-        $personIdentity = [];
+        $player = new Player;
+        $player->position = $generatedPlayer->position;
+        $player->max_potential = $generatedPlayer->maxPotential;
+        $player->potential = $generatedPlayer->potential;
 
-        foreach ($playerAttributes as $field => $value) {
-            if (in_array($field, ['first_name', 'last_name', 'dob', 'country_code'], true)) {
-                $personIdentity[$field] = $value;
-
-                continue;
-            }
-
-            if ($field == 'potentialByCategory') {
-                $potentialByCategory[$field] = $value;
-
-                continue;
-            }
-
-            if ($field == 'playerPositions') {
-                foreach ($playerAttributes->playerPositions as $alias => $grade) {
-                    $generatedPositions[$alias] = $grade;
-                }
-
-                continue;
-            }
-
-            $player->{$field} = $value;
+        foreach ($generatedPlayer->attributes as $attribute => $value) {
+            $player->{$attribute} = $value;
         }
 
-        $player->setPersonIdentity($personIdentity);
-
-        $player->game_id = $gameId;
-
-        $player->setPositions($generatedPositions);
-        $player->setAttributesCategoriesPotential($potentialByCategory);
+        $player->setPersonIdentity($generatedPlayer->personDetails);
+        $player->game_id = $instanceId;
+        $player->setPositions($generatedPlayer->positions);
+        $player->setAttributesCategoriesPotential([
+            'potentialByCategory' => $generatedPlayer->potentialByCategory,
+        ]);
 
         return $player;
     }

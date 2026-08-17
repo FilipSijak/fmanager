@@ -10,7 +10,7 @@ use App\Models\Season;
 use App\Repositories\CompetitionRepository;
 use App\Repositories\StaffRepository;
 use App\Services\CompetitionService\CompetitionService;
-use App\Services\PersonService\GeneratePeople\StaffGenerator;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Lottery;
@@ -23,7 +23,7 @@ class SeasonStart
         private readonly PlayerRetirement $playerRetirement,
         private readonly StaffRetirement $staffRetirement,
         private readonly StaffCountValidator $staffCountValidator,
-        private readonly StaffGenerator $staffGenerator,
+        private readonly StaffCreator $staffCreator,
         private readonly StaffRepository $staffRepository,
     ) {}
 
@@ -118,7 +118,7 @@ class SeasonStart
                 $this->staffRepository->insertForExistingPerson(
                     (int) $player->instance_id,
                     (int) $person->id,
-                    $this->staffGenerator->generateFromFormerPlayer($person)
+                    $this->staffCreator->generateFromFormerPlayer($person)
                 );
             });
     }
@@ -133,7 +133,7 @@ class SeasonStart
             $this->staffRepository->bulkStaffInsert(
                 (int) $instance->id,
                 null,
-                $this->staffGenerator->generateFreeStaffForRole($role, $missingCount)
+                $this->staffCreator->generateFreeStaffForRole($role, $missingCount)
             );
         }
     }

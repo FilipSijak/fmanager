@@ -3,8 +3,8 @@
 namespace Tests\Unit\Person;
 
 use App\Services\ClubService\SquadAnalysis\SquadStaffConfig;
-use App\Services\PersonService\GeneratePeople\StaffPotential;
-use App\Services\PersonService\GeneratePeople\StaffPotentialData;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffPotential;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffPotentialData;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -51,6 +51,16 @@ class StaffPotentialTest extends TestCase
             $this->assertLessThanOrEqual(20, $staffMember->rank);
             $this->assertPotentialMatchesRankAndRole($staffMember);
         }
+    }
+
+    #[Test]
+    public function it_creates_potential_for_a_specific_role_and_rank(): void
+    {
+        $staff = (new StaffPotential)->createStaffPotential(PersonTypes::MANAGER, 12);
+
+        $this->assertSame(PersonTypes::MANAGER, $staff->role);
+        $this->assertSame(12, $staff->rank);
+        $this->assertPotentialMatchesRankAndRole($staff);
     }
 
     /** @param list<StaffPotentialData> $staff */

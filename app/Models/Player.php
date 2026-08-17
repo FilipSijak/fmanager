@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToGameInstance;
+use App\Services\PersonService\Data\PersonInfo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -27,9 +28,14 @@ class Player extends Model
 
     private array $personIdentity = [];
 
-    public function setPersonIdentity(array $identity): void
+    public function setPersonIdentity(PersonInfo $personDetails): void
     {
-        $this->personIdentity = $identity;
+        $this->personIdentity = [
+            'first_name' => $personDetails->firstName,
+            'last_name' => $personDetails->lastName,
+            'country_code' => $personDetails->countryCode,
+            'dob' => $personDetails->dateOfBirth,
+        ];
     }
 
     protected function firstName(): Attribute

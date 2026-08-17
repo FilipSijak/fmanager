@@ -14,15 +14,11 @@ use App\Models\StaffPhysio;
 use App\Models\StaffScout;
 use App\Models\User;
 use App\Repositories\CompetitionRepository;
-use App\Repositories\PlayerRepository;
-use App\Repositories\StaffRepository;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\CreateInstance;
-use App\Services\PersonService\GeneratePeople\PlayerPotential;
-use App\Services\PersonService\GeneratePeople\StaffGenerator;
 use App\Services\PersonService\PersonService;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
@@ -249,17 +245,13 @@ class CreateInstanceTest extends TestCase
             (new TournamentUpdater($this->competitionRepository)),
             $this->competitionDataSource
         );
-        $this->personService = new PersonService;
+        $this->personService = app()->make(PersonService::class);
 
         return
             new CreateInstance(
                 app()->make(CompetitionService::class),
                 app()->make(PersonService::class),
-                app()->make(CompetitionRepository::class),
-                app()->make(PlayerPotential::class),
-                app()->make(StaffGenerator::class),
-                app()->make(PlayerRepository::class),
-                app()->make(StaffRepository::class)
+                app()->make(CompetitionRepository::class)
             );
     }
 }

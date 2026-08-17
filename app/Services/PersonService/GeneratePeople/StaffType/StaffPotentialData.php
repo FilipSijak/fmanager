@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\PersonService\GeneratePeople;
+namespace App\Services\PersonService\GeneratePeople\StaffType;
 
 readonly class StaffPotentialData
 {

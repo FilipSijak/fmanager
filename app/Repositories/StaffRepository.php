@@ -7,8 +7,8 @@ use App\Models\Instance;
 use App\Models\StaffCoaching;
 use App\Models\StaffPhysio;
 use App\Models\StaffScout;
-use App\Services\PersonService\GeneratePeople\GeneratedStaffData;
-use App\Services\PersonService\GeneratePeople\StaffSalary;
+use App\Services\PersonService\GeneratePeople\StaffType\GeneratedStaffData;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffSalary;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -45,10 +45,10 @@ class StaffRepository
                     : null;
                 $personId = DB::table('people')->insertGetId([
                     'instance_id' => $instanceId,
-                    'first_name' => $staffMember->firstName,
-                    'last_name' => $staffMember->lastName,
-                    'dob' => $staffMember->dateOfBirth,
-                    'country_code' => $staffMember->countryCode,
+                    'first_name' => $staffMember->personDetails->firstName,
+                    'last_name' => $staffMember->personDetails->lastName,
+                    'dob' => $staffMember->personDetails->dateOfBirth,
+                    'country_code' => $staffMember->personDetails->countryCode,
                 ]);
 
                 if (in_array($staffMember->role, PersonTypes::COACHING_ROLES, true)) {

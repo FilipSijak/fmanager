@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Services\PersonService\GeneratePeople;
+namespace App\Services\PersonService\GeneratePeople\StaffType;
+
+use App\Services\PersonService\Data\PersonInfo;
 
 readonly class GeneratedStaffData
 {
@@ -8,10 +10,7 @@ readonly class GeneratedStaffData
         public string $role,
         public int $potential,
         public int $rank,
-        public string $firstName,
-        public string $lastName,
-        public string $dateOfBirth,
-        public string $countryCode,
+        public PersonInfo $personDetails,
         /** @var array<string, int> */
         public array $attributes,
     ) {}
