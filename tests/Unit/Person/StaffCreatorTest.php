@@ -4,17 +4,17 @@ namespace Tests\Unit\Person;
 
 use App\Models\Person;
 use App\Services\PersonService\GeneratePeople\StaffType\GeneratedStaffData;
-use App\Services\PersonService\GeneratePeople\StaffType\StaffGenerator;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class StaffGeneratorTest extends TestCase
+class StaffCreatorTest extends TestCase
 {
     #[Test]
     public function it_generates_typed_staff_with_identity_and_role_attributes(): void
     {
-        $staff = app(StaffGenerator::class)->generateForClubRank(12);
+        $staff = app(StaffCreator::class)->generateForClubRank(12);
 
         $this->assertCount(20, $staff);
 
@@ -55,9 +55,27 @@ class StaffGeneratorTest extends TestCase
     }
 
     #[Test]
+    public function it_creates_a_single_staff_member_for_a_type_and_club_rank(): void
+    {
+        $staff = app(StaffCreator::class)->createStaffMember(PersonTypes::SCOUT, 14);
+
+        $this->assertInstanceOf(GeneratedStaffData::class, $staff);
+        $this->assertSame(PersonTypes::SCOUT, $staff->role);
+        $this->assertSame(14, $staff->rank);
+        $this->assertNotEmpty($staff->personDetails->firstName);
+        $this->assertSame([
+            'judging_player_ability',
+            'judging_player_potential',
+            'tactical_knowledge',
+            'data_analysis',
+            'market_knowledge',
+        ], array_keys($staff->attributes));
+    }
+
+    #[Test]
     public function it_generates_the_requested_number_of_independently_ranked_free_staff(): void
     {
-        $staff = app(StaffGenerator::class)->generateFreeStaff(100);
+        $staff = app(StaffCreator::class)->generateFreeStaff(100);
 
         $this->assertCount(100, $staff);
         $this->assertGreaterThan(1, count(array_unique(array_map(
@@ -76,7 +94,7 @@ class StaffGeneratorTest extends TestCase
             'country_code' => 'GB',
         ]);
 
-        $staff = app(StaffGenerator::class)->generateFromFormerPlayer($person);
+        $staff = app(StaffCreator::class)->generateFromFormerPlayer($person);
 
         $this->assertContains($staff->role, [
             PersonTypes::MANAGER,
@@ -94,7 +112,7 @@ class StaffGeneratorTest extends TestCase
     #[Test]
     public function it_generates_free_staff_for_a_specific_role(): void
     {
-        $staff = app(StaffGenerator::class)->generateFreeStaffForRole(PersonTypes::SCOUT, 10);
+        $staff = app(StaffCreator::class)->generateFreeStaffForRole(PersonTypes::SCOUT, 10);
 
         $this->assertCount(10, $staff);
         $this->assertSame([PersonTypes::SCOUT], array_values(array_unique(array_map(

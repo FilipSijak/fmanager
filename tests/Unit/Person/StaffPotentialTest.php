@@ -53,6 +53,16 @@ class StaffPotentialTest extends TestCase
         }
     }
 
+    #[Test]
+    public function it_creates_potential_for_a_specific_role_and_rank(): void
+    {
+        $staff = (new StaffPotential)->createStaffPotential(PersonTypes::MANAGER, 12);
+
+        $this->assertSame(PersonTypes::MANAGER, $staff->role);
+        $this->assertSame(12, $staff->rank);
+        $this->assertPotentialMatchesRankAndRole($staff);
+    }
+
     /** @param list<StaffPotentialData> $staff */
     private function withRole(array $staff, string $role): array
     {

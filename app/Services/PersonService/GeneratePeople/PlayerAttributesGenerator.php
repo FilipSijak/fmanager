@@ -49,10 +49,6 @@ class PlayerAttributesGenerator
         $personDetails = $personDetailsGenerator->setPersonDetails(PersonTypes::PLAYER);
 
         $this->player->personDetails = $personDetails;
-        $this->player->first_name = $personDetails->firstName;
-        $this->player->last_name = $personDetails->lastName;
-        $this->player->country_code = $personDetails->countryCode;
-        $this->player->dob = $personDetails->dateOfBirth;
 
         return $this;
     }
@@ -79,7 +75,7 @@ class PlayerAttributesGenerator
 
     protected function setCurrentPotential()
     {
-        $currentAge = Carbon::parse($this->player->dob)->age;
+        $currentAge = Carbon::parse($this->player->personDetails->dateOfBirth)->age;
 
         $agePotentialBrackets = self::AGE_POTENTIAL_BRACKETS;
 

@@ -46,11 +46,11 @@ class PlayerAttributesGeneratorTest extends TestCase
         $this->assertEquals(90, $result->max_potential);
         $this->assertIsArray($result->positions);
         $this->assertContains('striker', $result->positions);
-        $this->assertNotEmpty($result->first_name);
-        $this->assertNotEmpty($result->last_name);
-        $this->assertNotEmpty($result->country_code);
+        $this->assertNotEmpty($result->personDetails->firstName);
+        $this->assertNotEmpty($result->personDetails->lastName);
+        $this->assertNotEmpty($result->personDetails->countryCode);
 
-        $dob = Carbon::parse($result->dob);
+        $dob = Carbon::parse($result->personDetails->dateOfBirth);
         $this->assertTrue($dob->age >= 16 && $dob->age <= 40);
         $this->assertObjectHasProperty('potential', $result);
     }
@@ -118,11 +118,11 @@ class PlayerAttributesGeneratorTest extends TestCase
         $player = $generatorReflection->getProperty('player');
         $player = $player->getValue($generator);
 
-        $this->assertIsString($player->first_name);
-        $this->assertIsString($player->last_name);
-        $this->assertIsString($player->country_code);
+        $this->assertIsString($player->personDetails->firstName);
+        $this->assertIsString($player->personDetails->lastName);
+        $this->assertIsString($player->personDetails->countryCode);
 
-        $dob = Carbon::parse($player->dob);
+        $dob = Carbon::parse($player->personDetails->dateOfBirth);
         $this->assertTrue($dob->age >= 16 && $dob->age <= 40, "Age should be between 16 and 40 but was {$dob->age}");
     }
 

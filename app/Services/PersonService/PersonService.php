@@ -7,32 +7,33 @@ use App\Repositories\StaffRepository;
 use App\Services\PersonService\GeneratePeople\PersonFactory;
 use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerPosition;
-use App\Services\PersonService\GeneratePeople\StaffType\StaffGenerator;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 
 class PersonService implements IPersonService
 {
     public function __construct(
         private readonly StaffRepository $staffRepository,
-        private readonly StaffGenerator $staffGenerator,
+        private readonly StaffCreator $staffCreator,
     ) {}
 
     public function createPerson(\stdClass $playerPotential,int $instanceId, string $personType)
     {
         $personFactory = new PersonFactory();
+        $person = null;
 
         switch ($personType) {
             case PersonTypes::PLAYER:
                 $attributesGenerator = app(PlayerAttributesGenerator::class);
                 $generatedAttributes = $attributesGenerator->setPlayerDetails($playerPotential)->generateAttributes();
 
-                $player = $personFactory->createPlayer($generatedAttributes, $instanceId);
+                $person = $personFactory->createPlayer($generatedAttributes, $instanceId);
                 break;
             case PersonTypes::MANAGER:
 
         }
 
-        return $player;
+        return $person;
     }
 
     /**
@@ -49,14 +50,14 @@ class PersonService implements IPersonService
 
     public function initialStaffClubSeed(int $instanceId, Club $club): void
     {
-        $staffMembers = $this->staffGenerator->generateForClubRank($club->rank);
+        $staffMembers = $this->staffCreator->generateForClubRank($club->rank);
 
         $this->staffRepository->bulkStaffInsert($instanceId, $club, $staffMembers);
     }
 
     public function generateFreeStaff(int $instanceId, int $count): void
     {
-        $freeStaff = $this->staffGenerator->generateFreeStaff($count);
+        $freeStaff = $this->staffCreator->generateFreeStaff($count);
 
         $this->staffRepository->bulkStaffInsert(
             $instanceId,

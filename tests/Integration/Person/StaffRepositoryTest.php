@@ -7,7 +7,7 @@ use App\Models\Instance;
 use App\Models\Person;
 use App\Repositories\StaffRepository;
 use App\Services\PersonService\GeneratePeople\StaffType\GeneratedStaffData;
-use App\Services\PersonService\GeneratePeople\StaffType\StaffGenerator;
+use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffSalary;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +30,7 @@ class StaffRepositoryTest extends TestCase
             'instance_id' => $instance->id,
             'rank' => 15,
         ]);
-        $generatedStaff = app(StaffGenerator::class)->generateForClubRank($club->rank);
+        $generatedStaff = app(StaffCreator::class)->generateForClubRank($club->rank);
         $staff = [
             $this->staffWithRole($generatedStaff, PersonTypes::MANAGER),
             $this->staffWithRole($generatedStaff, PersonTypes::SCOUT),
@@ -79,7 +79,7 @@ class StaffRepositoryTest extends TestCase
     {
         $instance = Instance::factory()->create(['id' => 1]);
         $person = Person::factory()->create(['instance_id' => $instance->id]);
-        $staff = app(StaffGenerator::class)->generateFromFormerPlayer($person);
+        $staff = app(StaffCreator::class)->generateFromFormerPlayer($person);
 
         app(StaffRepository::class)->insertForExistingPerson(
             $instance->id,

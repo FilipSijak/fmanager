@@ -75,7 +75,7 @@ class StaffPotential extends PersonPotential
         ];
     }
 
-    private function createStaffPotential(string $role, int $rank): StaffPotentialData
+    public function createStaffPotential(string $role, int $rank): StaffPotentialData
     {
         $rank *= 10;
 

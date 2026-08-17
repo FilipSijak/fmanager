@@ -8,7 +8,7 @@ use App\Services\PersonService\PersonConfig\PersonTypes;
 use Faker\Factory as FakerFactory;
 use Faker\Generator;
 
-class StaffGenerator
+class StaffCreator
 {
     private const COACHING_ATTRIBUTES = [
         'attacking', 'defending', 'fitness', 'mental', 'tactical', 'technical',
@@ -42,6 +42,13 @@ class StaffGenerator
         return array_map(
             fn (StaffPotentialData $staffPotential): GeneratedStaffData => $this->generateStaffMember($staffPotential),
             $this->staffPotential->getStaffPotentialAndRole($rank)
+        );
+    }
+
+    public function createStaffMember(string $type, int $clubRank): GeneratedStaffData
+    {
+        return $this->generateStaffMember(
+            $this->staffPotential->createStaffPotential($type, $clubRank)
         );
     }
 
