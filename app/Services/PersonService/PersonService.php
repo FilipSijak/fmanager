@@ -4,6 +4,7 @@ namespace App\Services\PersonService;
 
 use App\Models\Club;
 use App\Models\Player;
+use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
 use App\Services\PersonService\GeneratePeople\PersonFactory;
 use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
@@ -22,6 +23,7 @@ class PersonService implements IPersonService
 
     public function __construct(
         private readonly StaffRepository $staffRepository,
+        private readonly PlayerRepository $playerRepository,
         private readonly PlayerCreator $playerCreator,
         private readonly StaffCreator $staffCreator,
         private readonly PlayerPotential $playerPotential,
@@ -58,7 +60,7 @@ class PersonService implements IPersonService
         );
     }
 
-    public function createPlayersForClub(Club $club): array
+    public function createPlayersForClub(Club $club): void
     {
         $academyRank = $club->rank_academy;
         $playerPotentialList = $this->playerPotential->getPlayerPotential($academyRank);
@@ -71,10 +73,18 @@ class PersonService implements IPersonService
             $generatedPlayers[] = $player;
         }
 
-        return $generatedPlayers;
+        $instanceId = $this->gameContext->instanceId();
+        $this->playerRepository->bulkPlayerInsert($instanceId, $club, $generatedPlayers);
+
+        $players = Player::query()
+            ->forInstance($instanceId)
+            ->where('club_id', $club->id)
+            ->get();
+
+        $this->playerRepository->bulkAssignmentPlayersPositions($players);
     }
 
-    public function createFreePlayers(int $count = self::FREE_AGENTS_COUNT)
+    public function createFreePlayers(int $count = self::FREE_AGENTS_COUNT): void
     {
         $generatedPlayers = [];
 
@@ -84,7 +94,15 @@ class PersonService implements IPersonService
             $generatedPlayers[] = $this->createPlayer($playerWithPositionAndPotential);
         }
 
-        return $generatedPlayers;
+        $instanceId = $this->gameContext->instanceId();
+        $this->playerRepository->bulkPlayerInsert($instanceId, null, $generatedPlayers);
+
+        $players = Player::query()
+            ->forInstance($instanceId)
+            ->whereNull('club_id')
+            ->get();
+
+        $this->playerRepository->bulkAssignmentPlayersPositions($players);
     }
 
     /**

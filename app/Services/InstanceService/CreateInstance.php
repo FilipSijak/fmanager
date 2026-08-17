@@ -5,14 +5,10 @@ namespace App\Services\InstanceService;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
-use App\Models\Player;
 use App\Models\Season;
 use App\Repositories\CompetitionRepository;
-use App\Repositories\PlayerRepository;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
-use App\Services\PersonService\GeneratePeople\PlayerPotential;
-use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\Carbon;
@@ -21,8 +17,6 @@ class CreateInstance
 {
     private Instance $instance;
 
-    private PlayerRepository $playerRepository;
-
     private CompetitionService $competitionService;
 
     private Season $season;
@@ -30,8 +24,6 @@ class CreateInstance
     private PersonService $personService;
 
     private CompetitionRepository $competitionRepository;
-
-    private PlayerPotential $playerPotentialGenerator;
 
     const FREE_AGENTS_COUNT = 200;
 
@@ -43,14 +35,10 @@ class CreateInstance
         CompetitionService $competitionService,
         PersonService $personService,
         CompetitionRepository $competitionRepository,
-        PlayerPotential $playerPotential,
-        PlayerRepository $playerRepository,
     ) {
         $this->competitionService = $competitionService;
         $this->personService = $personService;
         $this->competitionRepository = $competitionRepository;
-        $this->playerPotentialGenerator = $playerPotential;
-        $this->playerRepository = $playerRepository;
     }
 
     public function instanceInit(): Instance
@@ -191,19 +179,11 @@ class CreateInstance
 
     public function assignPlayersToClubs(Club $club): void
     {
-        $generatedPlayers = $this->personService->createPlayersForClub($club);
-
-        $this->playerRepository->bulkPlayerInsert($this->instance->id, $club, $generatedPlayers);
-        $players = Player::where('club_id', $club->id)->get();
-        $this->playerRepository->bulkAssignmentPlayersPositions($players);
+        $this->personService->createPlayersForClub($club);
     }
 
     public function generateFreeAgents()
     {
-        $generatedPlayers = $this->personService->createFreePlayers(self::FREE_AGENTS_COUNT);
-
-        $this->playerRepository->bulkPlayerInsert($this->instance->id, null, $generatedPlayers);
-        $players = Player::whereNull('club_id')->get();
-        $this->playerRepository->bulkAssignmentPlayersPositions($players);
+        $this->personService->createFreePlayers(self::FREE_AGENTS_COUNT);
     }
 }
