@@ -15,6 +15,8 @@ class PlayerCreator
 
     public function create(stdClass $playerPotential, int $instanceId): Player
     {
-        throw new LogicException('Player creation has not been implemented.');
+        $generatedAttributes = $this->attributesGenerator->setPlayerDetails($playerPotential)->generateAttributes();
+
+        return $this->personFactory->createPlayer($generatedAttributes, $instanceId);
     }
 }

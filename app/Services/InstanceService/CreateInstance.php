@@ -14,6 +14,7 @@ use App\Services\InstanceService\InstanceData\InitialSeed;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\PersonService\PersonService;
+use App\Support\GameContext;
 use Carbon\Carbon;
 
 class CreateInstance
@@ -79,6 +80,7 @@ class CreateInstance
         $this->instance->instance_hash = uniqid();
 
         $this->instance->save();
+        app(GameContext::class)->setInstanceId($this->instance->id);
 
         return $this->instance;
     }
@@ -181,28 +183,15 @@ class CreateInstance
 
         foreach ($clubs as $club) {
             $this->assignPlayersToClubs($club);
-            $this->personService->initialStaffClubSeed($this->instance->id, $club);
+            $this->personService->initialStaffClubSeed($club);
         }
 
-        $this->personService->generateFreeStaff($this->instance->id, $clubs->count() * self::FREE_STAFF_PER_CLUB);
+        $this->personService->generateFreeStaff($clubs->count() * self::FREE_STAFF_PER_CLUB);
     }
 
     public function assignPlayersToClubs(Club $club): void
     {
-        $academyRank = $club->rank_academy;
-        $playerPotentialList = $this->playerPotentialGenerator->getPlayerPotential($academyRank);
-        $playersPotentialWithPosition = $this->playerPotentialGenerator->assignPlayerPositions($playerPotentialList);
-        $generatedPlayers = [];
-
-        foreach ($playersPotentialWithPosition as $playerPotential) {
-            $player = $this->personService->createPerson(
-                $playerPotential,
-                $this->instance->id,
-                PersonTypes::PLAYER
-            );
-
-            $generatedPlayers[] = $player;
-        }
+        $generatedPlayers = $this->personService->createPlayersForClub($club);
 
         $this->playerRepository->bulkPlayerInsert($this->instance->id, $club, $generatedPlayers);
         $players = Player::where('club_id', $club->id)->get();
@@ -211,17 +200,7 @@ class CreateInstance
 
     public function generateFreeAgents()
     {
-        $generatedPlayers = [];
-
-        for ($i = 0; $i < self::FREE_AGENTS_COUNT; $i++) {
-            $playerWithPositionAndPotential = $this->playerPotentialGenerator->generateFreeAgent(self::FREE_AGENTS_POTENTIAL_LIMIT);
-
-            $generatedPlayers[] = $this->personService->createPerson(
-                $playerWithPositionAndPotential,
-                $this->instance->id,
-                PersonTypes::PLAYER
-            );
-        }
+        $generatedPlayers = $this->personService->createFreePlayers(self::FREE_AGENTS_COUNT);
 
         $this->playerRepository->bulkPlayerInsert($this->instance->id, null, $generatedPlayers);
         $players = Player::whereNull('club_id')->get();
