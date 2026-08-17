@@ -170,16 +170,11 @@ class CreateInstance
             ->get();
 
         foreach ($clubs as $club) {
-            $this->assignPlayersToClubs($club);
+            $this->personService->createPlayersForClub($club);
             $this->personService->initialStaffClubSeed($club);
         }
 
         $this->personService->generateFreeStaff($clubs->count() * self::FREE_STAFF_PER_CLUB);
-    }
-
-    public function assignPlayersToClubs(Club $club): void
-    {
-        $this->personService->createPlayersForClub($club);
     }
 
     public function generateFreeAgents()

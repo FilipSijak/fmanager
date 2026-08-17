@@ -3,7 +3,6 @@
 namespace App\Services\PersonService\GeneratePeople;
 
 use App\Models\Player;
-use LogicException;
 use stdClass;
 
 class PlayerCreator

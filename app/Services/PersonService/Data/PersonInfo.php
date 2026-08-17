@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\PersonService\GeneratePeople;
+namespace App\Services\PersonService\Data;
 
 readonly class PersonInfo
 {
@@ -8,6 +8,6 @@ readonly class PersonInfo
         public string $firstName,
         public string $lastName,
         public string $countryCode,
-        public string $dateOfBirth,
+        public ?string $dateOfBirth,
     ) {}
 }

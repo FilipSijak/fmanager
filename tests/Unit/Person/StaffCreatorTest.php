@@ -21,10 +21,10 @@ class StaffCreatorTest extends TestCase
         foreach ($staff as $staffMember) {
             $this->assertInstanceOf(GeneratedStaffData::class, $staffMember);
             $this->assertSame(12, $staffMember->rank);
-            $this->assertNotEmpty($staffMember->firstName);
-            $this->assertNotEmpty($staffMember->lastName);
-            $this->assertMatchesRegularExpression("/^\d{4}-\d{2}-\d{2}$/", $staffMember->dateOfBirth);
-            $this->assertNotEmpty($staffMember->countryCode);
+            $this->assertNotEmpty($staffMember->personDetails->firstName);
+            $this->assertNotEmpty($staffMember->personDetails->lastName);
+            $this->assertMatchesRegularExpression("/^\d{4}-\d{2}-\d{2}$/", $staffMember->personDetails->dateOfBirth);
+            $this->assertNotEmpty($staffMember->personDetails->countryCode);
             $this->assertNotEmpty($staffMember->attributes);
 
             foreach ($staffMember->attributes as $attribute) {
@@ -101,10 +101,10 @@ class StaffCreatorTest extends TestCase
             PersonTypes::ASSISTANT_MANAGER,
             PersonTypes::COACH,
         ]);
-        $this->assertSame('Former', $staff->firstName);
-        $this->assertSame('Player', $staff->lastName);
-        $this->assertSame('1988-04-12', $staff->dateOfBirth);
-        $this->assertSame('GB', $staff->countryCode);
+        $this->assertSame('Former', $staff->personDetails->firstName);
+        $this->assertSame('Player', $staff->personDetails->lastName);
+        $this->assertSame('1988-04-12', $staff->personDetails->dateOfBirth);
+        $this->assertSame('GB', $staff->personDetails->countryCode);
         $this->assertGreaterThanOrEqual(1, $staff->rank);
         $this->assertLessThanOrEqual(20, $staff->rank);
     }

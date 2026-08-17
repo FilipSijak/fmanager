@@ -3,10 +3,8 @@
 namespace App\Services\PersonService\GeneratePeople\StaffType;
 
 use App\Models\Person;
-use App\Services\PersonService\GeneratePeople\PersonDetails;
+use App\Services\PersonService\GeneratePeople\PersonDetailsGenerator;
 use App\Services\PersonService\PersonConfig\PersonTypes;
-use Faker\Factory as FakerFactory;
-use Faker\Generator;
 
 class StaffCreator
 {
@@ -26,15 +24,10 @@ class StaffCreator
         'physiotherapy', 'injury_prevention', 'rehabilitation', 'sports_science', 'fitness_assessment',
     ];
 
-    private Generator $faker;
-
     public function __construct(
         private readonly StaffPotential $staffPotential,
-        private readonly PersonDetails $personDetails
-    )
-    {
-        $this->faker = FakerFactory::create();
-    }
+        private readonly PersonDetailsGenerator $personDetailsGenerator,
+    ) {}
 
     /** @return list<GeneratedStaffData> */
     public function generateForClubRank(int $rank): array
@@ -99,7 +92,7 @@ class StaffCreator
             role: $staffPotential->role,
             potential: $staffPotential->potential,
             rank: $staffPotential->rank,
-            personDetails: $this->personDetails->setPersonDetails(PersonTypes::MANAGER),
+            personDetails: $this->personDetailsGenerator->generate(PersonTypes::MANAGER),
             attributes: $this->generateAttributes(
                 $staffPotential->potential,
                 $this->attributeNamesForRole($staffPotential->role)

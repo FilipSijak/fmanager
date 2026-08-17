@@ -2,7 +2,7 @@
 
 namespace App\Services\PersonService\GeneratePeople\StaffType;
 
-use App\Services\PersonService\GeneratePeople\PersonInfo;
+use App\Services\PersonService\Data\PersonInfo;
 
 readonly class GeneratedStaffData
 {
@@ -14,9 +14,4 @@ readonly class GeneratedStaffData
         /** @var array<string, int> */
         public array $attributes,
     ) {}
-
-    public function __get(string $name): mixed
-    {
-        return $this->personDetails->{$name};
-    }
 }

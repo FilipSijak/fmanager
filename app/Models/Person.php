@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToGameInstance;
-use App\Services\PersonService\GeneratePeople\PersonInfo;
+use App\Services\PersonService\Data\PersonInfo;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,7 +27,7 @@ class Person extends Model
             firstName: $this->first_name,
             lastName: $this->last_name,
             countryCode: $this->country_code,
-            dateOfBirth: $this->dob->toDateString(),
+            dateOfBirth: $this->dob?->toDateString(),
         );
     }
 

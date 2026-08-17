@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToGameInstance;
-use App\Services\PersonService\GeneratePeople\PersonInfo;
+use App\Services\PersonService\Data\PersonInfo;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

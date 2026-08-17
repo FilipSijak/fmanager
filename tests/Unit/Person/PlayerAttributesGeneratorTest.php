@@ -2,17 +2,14 @@
 
 namespace Tests\Unit\Person;
 
+use App\Services\PersonService\Data\PersonInfo;
+use App\Services\PersonService\GeneratePeople\PersonDetailsGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerInitialAttributes;
 use Carbon\Carbon;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-
-interface FakerDateTimeExtendedInterface
-{
-    public function dateTimeBetween($startDate = '-30 years', $endDate = 'now', $timezone = null);
-}
 
 class PlayerAttributesGeneratorTest extends TestCase
 {
@@ -23,20 +20,20 @@ class PlayerAttributesGeneratorTest extends TestCase
         parent::setUp();
     }
 
-    public function testGenerateAttributes()
+    public function test_generate_attributes()
     {
-        $player = new stdClass();
+        $player = new stdClass;
         $player->position = 'striker';
-        $player->potentialByCategory = (object)[
+        $player->potentialByCategory = (object) [
             'technical' => 80,
             'mental' => 75,
-            'physical' => 85
+            'physical' => 85,
         ];
         $player->potential = 90;
 
         $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
 
-        $this->playerAttributesGenerator = new PlayerAttributesGenerator($playerInitialAttributes);
+        $this->playerAttributesGenerator = new PlayerAttributesGenerator($playerInitialAttributes, new PersonDetailsGenerator);
         $this->playerAttributesGenerator->setPlayerDetails($player);
 
         $result = $this->playerAttributesGenerator->generateAttributes();
@@ -56,34 +53,26 @@ class PlayerAttributesGeneratorTest extends TestCase
     }
 
     #[DataProvider('ageMaxPotentialProvider')]
-    public function testCurrentPotentialForDifferentAges(int $age, float $expectedMultiplier)
+    public function test_current_potential_for_different_ages(int $age, float $expectedMultiplier)
     {
-        $player = new stdClass();
+        $player = new stdClass;
         $player->position = 'CB';
-        $player->potentialByCategory = (object)['technical' => 80];
+        $player->potentialByCategory = (object) ['technical' => 80];
         $player->potential = 100;
 
-        $fakerMock = $this->getMockBuilder(FakerDateTimeExtendedInterface::class)
-                          ->onlyMethods(['dateTimeBetween'])
-                          ->getMock();
         $playerInitialAttributesMock = $this->createPlayerInitialAttributesMock($player);
-        $mockDob = new \DateTime(date("Y") - $age .'-01-01');
+        $mockDob = new \DateTime(date('Y') - $age.'-01-01');
+        $personDetailsGenerator = $this->createMock(PersonDetailsGenerator::class);
+        $personDetailsGenerator->expects($this->once())
+            ->method('generate')
+            ->willReturn(new PersonInfo('Test', 'Player', 'GB', $mockDob->format('Y-m-d')));
 
-        $fakerMock->expects($this->any())
-                  ->method('dateTimeBetween')
-                  ->with('-40 years', '-16 years')
-                  ->willReturn($mockDob);
-
-        $generator = new PlayerAttributesGenerator($playerInitialAttributesMock);
-        $reflection    = new \ReflectionClass($generator);
-        $fakerProperty = $reflection->getProperty('faker');
-        $fakerProperty->setValue($generator, $fakerMock);
-
+        $generator = new PlayerAttributesGenerator($playerInitialAttributesMock, $personDetailsGenerator);
 
         $generator->setPlayerDetails($player);
         $generatedPlayer = $generator->generateAttributes();
 
-        $message = "Age $age should have potential of " . ($generatedPlayer->max_potential * $expectedMultiplier);
+        $message = "Age $age should have potential of ".($generatedPlayer->max_potential * $expectedMultiplier);
         $this->assertEquals($generatedPlayer->max_potential * $expectedMultiplier, $generatedPlayer->potential, $message);
     }
 
@@ -100,18 +89,18 @@ class PlayerAttributesGeneratorTest extends TestCase
             '33 years old' => [33, 0.89],
             '35 years old' => [35, 0.83],
             '38 years old' => [38, 0.75],
-            '41 years old' => [41, 0.67]
+            '41 years old' => [41, 0.67],
         ];
     }
 
-    public function testSetPersonInfoGeneratesValidData()
+    public function test_set_person_info_generates_valid_data()
     {
-        $player = new stdClass();
+        $player = new stdClass;
         $player->position = 'striker';
         $player->potentialByCategory = null;
         $player->potential = 100;
         $playerInitialAttributes = $this->createPlayerInitialAttributesMock($player);
-        $generator = new PlayerAttributesGenerator($playerInitialAttributes);
+        $generator = new PlayerAttributesGenerator($playerInitialAttributes, new PersonDetailsGenerator);
 
         $generator->setPlayerDetails($player);
         $generatorReflection = new \ReflectionObject($generator);
@@ -126,19 +115,19 @@ class PlayerAttributesGeneratorTest extends TestCase
         $this->assertTrue($dob->age >= 16 && $dob->age <= 40, "Age should be between 16 and 40 but was {$dob->age}");
     }
 
-    private function createPlayerInitialAttributesMock(\stdClass $playerDetails)
+    private function createPlayerInitialAttributesMock(stdClass $playerDetails)
     {
         $initialAttributesMock = $this->createMock(PlayerInitialAttributes::class);
 
         $initialAttributesMock->expects($this->any())
-                                          ->method('setPlayerPosition')
-                                          ->with($playerDetails->position)
-                                          ->willReturn($initialAttributesMock);
+            ->method('setPlayerPosition')
+            ->with($playerDetails->position)
+            ->willReturn($initialAttributesMock);
 
         $initialAttributesMock->expects($this->any())
-                                          ->method('setPlayerPotentialByCategory')
-                                          ->with((array)$playerDetails->potentialByCategory)
-                                          ->willReturn($initialAttributesMock);
+            ->method('setPlayerPotentialByCategory')
+            ->with((array) $playerDetails->potentialByCategory)
+            ->willReturn($initialAttributesMock);
 
         return $initialAttributesMock;
     }

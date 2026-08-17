@@ -3,6 +3,7 @@
 namespace App\Services\PersonService\GeneratePeople;
 
 use App\Models\Player as PlayerModel;
+use App\Services\PersonService\Data\PersonInfo;
 use stdClass;
 
 class PlayerType

@@ -6,17 +6,13 @@ use App\Models\Club;
 use App\Models\Player;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
-use App\Services\PersonService\GeneratePeople\PersonFactory;
-use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
-use App\Services\PersonService\GeneratePeople\PlayerPosition;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
-use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Support\GameContext;
 use Illuminate\Support\Facades\DB;
 
-class PersonService implements IPersonService
+class PersonService
 {
     const int FREE_AGENTS_COUNT = 200;
 
@@ -66,13 +62,6 @@ class PersonService implements IPersonService
         }
 
         $this->persistGeneratedPlayers(null, $generatedPlayers);
-    }
-
-    public function generatePlayerPositionList(array $playerAttributes): array
-    {
-        $playerPosition = new PlayerPosition;
-
-        return $playerPosition->getInitialPositionsBasedOnAttributes($playerAttributes);
     }
 
     private function persistGeneratedPlayers(?Club $club, array $generatedPlayers): void

@@ -4,7 +4,6 @@ namespace App\Services\PersonService\GeneratePeople;
 
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
-use Faker\Factory;
 use stdClass;
 
 class PlayerAttributesGenerator
@@ -23,30 +22,25 @@ class PlayerAttributesGenerator
         41 => 0.67,
     ];
 
-    private $faker;
-
     private $player;
 
-    private ?PersonDetails $personDetails;
+    private PersonDetailsGenerator $personDetailsGenerator;
 
     public function __construct(
         private readonly PlayerInitialAttributes $playerInitialAttributes,
-        ?PersonDetails $personDetails = null
-    )
-    {
-        $this->personDetails = $personDetails;
-        $this->faker = Factory::create();
+        PersonDetailsGenerator $personDetailsGenerator,
+    ) {
+        $this->personDetailsGenerator = $personDetailsGenerator;
     }
 
     public function setPlayerDetails(stdClass $playerPotentialWithPosition)
     {
-        $this->player = new \stdClass();
+        $this->player = new stdClass;
         $this->player->position = $playerPotentialWithPosition->position;
         $this->player->potentialByCategory = $playerPotentialWithPosition->potentialByCategory;
         $this->player->max_potential = $playerPotentialWithPosition->potential;
 
-        $personDetailsGenerator = $this->personDetails ?? new PersonDetails($this->faker);
-        $personDetails = $personDetailsGenerator->setPersonDetails(PersonTypes::PLAYER);
+        $personDetails = $this->personDetailsGenerator->generate(PersonTypes::PLAYER);
 
         $this->player->personDetails = $personDetails;
 
@@ -65,7 +59,7 @@ class PlayerAttributesGenerator
     protected function setInitialAttributes()
     {
         $playerInitialAttributes = $this->playerInitialAttributes->setPlayerPosition($this->player->position)
-            ->setPlayerPotentialByCategory((array)$this->player->potentialByCategory)
+            ->setPlayerPotentialByCategory((array) $this->player->potentialByCategory)
             ->initAllAttributes();
 
         foreach ($playerInitialAttributes as $attribute => $value) {
