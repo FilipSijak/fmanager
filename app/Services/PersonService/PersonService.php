@@ -14,12 +14,13 @@ use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Support\GameContext;
+use Illuminate\Support\Facades\DB;
 
 class PersonService implements IPersonService
 {
-    const FREE_AGENTS_COUNT = 200;
+    const int FREE_AGENTS_COUNT = 200;
 
-    const FREE_AGENTS_POTENTIAL_LIMIT = 150;
+    const int FREE_AGENTS_POTENTIAL_LIMIT = 150;
 
     public function __construct(
         private readonly StaffRepository $staffRepository,
@@ -29,28 +30,6 @@ class PersonService implements IPersonService
         private readonly PlayerPotential $playerPotential,
         private readonly GameContext $gameContext,
     ) {}
-
-    public function createPerson(\stdClass $playerPotential, string $personType)
-    {
-        $personFactory = new PersonFactory();
-        $person = null;
-
-        switch ($personType) {
-            case PersonTypes::PLAYER:
-                $attributesGenerator = app(PlayerAttributesGenerator::class);
-                $generatedAttributes = $attributesGenerator->setPlayerDetails($playerPotential)->generateAttributes();
-
-                $person = $personFactory->createPlayer(
-                    $generatedAttributes,
-                    $this->gameContext->instanceId()
-                );
-                break;
-            case PersonTypes::MANAGER:
-
-        }
-
-        return $person;
-    }
 
     public function createPlayer(\stdClass $playerPotential): Player
     {
@@ -73,15 +52,7 @@ class PersonService implements IPersonService
             $generatedPlayers[] = $player;
         }
 
-        $instanceId = $this->gameContext->instanceId();
-        $this->playerRepository->bulkPlayerInsert($instanceId, $club, $generatedPlayers);
-
-        $players = Player::query()
-            ->forInstance($instanceId)
-            ->where('club_id', $club->id)
-            ->get();
-
-        $this->playerRepository->bulkAssignmentPlayersPositions($players);
+        $this->persistGeneratedPlayers($club, $generatedPlayers);
     }
 
     public function createFreePlayers(int $count = self::FREE_AGENTS_COUNT): void
@@ -94,27 +65,27 @@ class PersonService implements IPersonService
             $generatedPlayers[] = $this->createPlayer($playerWithPositionAndPotential);
         }
 
-        $instanceId = $this->gameContext->instanceId();
-        $this->playerRepository->bulkPlayerInsert($instanceId, null, $generatedPlayers);
-
-        $players = Player::query()
-            ->forInstance($instanceId)
-            ->whereNull('club_id')
-            ->get();
-
-        $this->playerRepository->bulkAssignmentPlayersPositions($players);
+        $this->persistGeneratedPlayers(null, $generatedPlayers);
     }
 
-    /**
-     * @param array $playerAttributes
-     *
-     * @return array
-     */
     public function generatePlayerPositionList(array $playerAttributes): array
     {
-        $playerPosition = new PlayerPosition();
+        $playerPosition = new PlayerPosition;
 
         return $playerPosition->getInitialPositionsBasedOnAttributes($playerAttributes);
+    }
+
+    private function persistGeneratedPlayers(?Club $club, array $generatedPlayers): void
+    {
+        DB::transaction(function () use ($club, $generatedPlayers): void {
+            $players = $this->playerRepository->bulkPlayerInsert(
+                $this->gameContext->instanceId(),
+                $club,
+                $generatedPlayers
+            );
+
+            $this->playerRepository->bulkAssignmentPlayersPositions($players);
+        });
     }
 
     public function initialStaffClubSeed(Club $club): void

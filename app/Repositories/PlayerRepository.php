@@ -7,14 +7,27 @@ use App\Models\Club;
 use App\Models\Player;
 use App\Repositories\Interfaces\IPlayerRepository;
 use App\Services\PersonService\DataLayer\PlayerDataSource;
-use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\PersonService\GeneratePeople\PlayerPosition;
+use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TransferService\TransferStatusTypes;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
+use RuntimeException;
 
 class PlayerRepository implements IPlayerRepository
 {
+    private const INSERT_CHUNK_SIZE = 250;
+
+    private const PLAYER_ATTRIBUTE_COLUMNS = [
+        'corners', 'crossing', 'dribbling', 'finishing', 'first_touch', 'freeKick',
+        'heading', 'long_shots', 'long_throws', 'marking', 'passing', 'penalty_taking',
+        'tackling', 'technique', 'aggression', 'anticipation', 'bravery', 'composure',
+        'concentration', 'creativity', 'decisions', 'determination', 'flair', 'leadership',
+        'of_the_ball', 'positioning', 'teamwork', 'workrate', 'acceleration', 'agility',
+        'balance', 'jumping', 'natural_fitness', 'pace', 'stamina', 'strength',
+    ];
+
     private PlayerDataSource $playerDataSource;
 
     public function __construct(PlayerDataSource $playerDataSource)
@@ -22,29 +35,24 @@ class PlayerRepository implements IPlayerRepository
         $this->playerDataSource = $playerDataSource;
     }
 
+    /** @return EloquentCollection<int, Player> */
     public function bulkPlayerInsert(
         int $instanceId,
-        ?Club $club, /* when creating free players */
-        array $generatedPlayers): void
-    {
+        ?Club $club,
+        array $generatedPlayers
+    ): EloquentCollection {
+        $instanceDate = DB::table('instances')->where('id', $instanceId)->value('instance_date');
+
+        if ($instanceDate === null) {
+            throw new RuntimeException("Instance {$instanceId} does not exist.");
+        }
+
+        $personIds = [];
+        $playerRows = [];
+
         foreach ($generatedPlayers as $player) {
-
-            $attributesCategories = $player->getAttributeCategoriesPotential();
-            $playerValue = 0;
-
-            if ($club) {
-                $clubRank = $club->rank * 10;
-
-                if ($clubRank > $player->potential) {
-                    $player->marketing_rank = $player->potential + (($clubRank - $player->potential) / 2);
-                } else {
-                    $player->marketing_rank = $player->potential - (($player->potential - $clubRank) / 2);
-                }
-
-                $playerValue = $this->calculatePlayerValueWithinClub($player);
-            } else {
-                $player->marketing_rank = $player->potential;
-            }
+            [$marketingRank, $playerValue] = $this->marketingRankAndValue($player, $club);
+            $player->marketing_rank = $marketingRank;
 
             $personId = DB::table('people')->insertGetId([
                 'instance_id' => $instanceId,
@@ -54,75 +62,31 @@ class PlayerRepository implements IPlayerRepository
                 'dob' => $player->dob,
             ]);
 
-            $playerData = [
-                'instance_id' => $instanceId,
-                'person_id' => $personId,
-                'value' => $playerValue,
-                'marketing_rank' => $player->marketing_rank,
-                'potential' => $player->potential,
-                'max_potential' => $player->max_potential,
-                'ambition' => rand(floor(($player->potential / 10)), 20),
-                'loyalty' => rand(1, 20),
-                'position' => $player->position,
-                'technical' => $attributesCategories->technical,
-                'mental' => $attributesCategories->mental,
-                'physical' => $attributesCategories->physical,
-                'corners' => $player->corners,
-                'crossing' => $player->crossing,
-                'dribbling' => $player->dribbling,
-                'finishing' => $player->finishing,
-                'first_touch' => $player->first_touch,
-                'freeKick' => $player->freeKick,
-                'heading' => $player->heading,
-                'long_shots' => $player->long_shots,
-                'long_throws' => $player->long_throws,
-                'marking' => $player->marking,
-                'passing' => $player->passing,
-                'penalty_taking' => $player->penalty_taking,
-                'tackling' => $player->tackling,
-                'technique' => $player->technique,
-                'aggression' => $player->aggression,
-                'anticipation' => $player->anticipation,
-                'bravery' => $player->bravery,
-                'composure' => $player->composure,
-                'concentration' => $player->concentration,
-                'creativity' => $player->creativity,
-                'decisions' => $player->decisions,
-                'determination' => $player->determination,
-                'flair' => $player->flair,
-                'leadership' => $player->leadership,
-                'of_the_ball' => $player->of_the_ball,
-                'positioning' => $player->positioning,
-                'teamwork' => $player->teamwork,
-                'workrate' => $player->workrate,
-                'acceleration' => $player->acceleration,
-                'agility' => $player->agility,
-                'balance' => $player->balance,
-                'jumping' => $player->jumping,
-                'natural_fitness' => $player->natural_fitness,
-                'pace' => $player->pace,
-                'stamina' => $player->stamina,
-                'strength' => $player->strength,
-            ];
-
-            if ($club) {
-                $playerData['club_id'] = $club->id;
-            }
-
-            $playerId = DB::table('players')->insertGetId($playerData);
-
-            $contractId = $this->playerDataSource->createContractForGeneratedPlayerByPotential(
-                $playerId,
-                $instanceId
+            $contractId = DB::table('players_contracts')->insertGetId(
+                $this->playerDataSource->generatedContractData($player, (string) $instanceDate)
             );
 
-            Player::where('id', $playerId)->update(['contract_id' => $contractId]);
+            $personIds[] = $personId;
+            $playerRows[] = $this->playerInsertRow(
+                $player,
+                $instanceId,
+                $personId,
+                $contractId,
+                $club?->id,
+                $playerValue
+            );
         }
+
+        foreach (array_chunk($playerRows, self::INSERT_CHUNK_SIZE) as $chunk) {
+            DB::table('players')->insert($chunk);
+        }
+
+        return Player::query()->whereIn('person_id', $personIds)->get();
     }
 
     public function bulkAssignmentPlayersPositions($players): void
     {
-        $playerPositionGenerator = new PlayerPosition();
+        $playerPositionGenerator = new PlayerPosition;
         $playerPositionsData = [];
 
         foreach ($players as $player) {
@@ -140,7 +104,58 @@ class PlayerRepository implements IPlayerRepository
             }
         }
 
-        DB::table('player_position')->insert($playerPositionsData);
+        foreach (array_chunk($playerPositionsData, self::INSERT_CHUNK_SIZE) as $chunk) {
+            DB::table('player_position')->insert($chunk);
+        }
+    }
+
+    private function marketingRankAndValue(Player $player, ?Club $club): array
+    {
+        if ($club === null) {
+            return [$player->potential, 0];
+        }
+
+        $clubRank = $club->rank * 10;
+        $marketingRank = $clubRank > $player->potential
+            ? $player->potential + (($clubRank - $player->potential) / 2)
+            : $player->potential - (($player->potential - $clubRank) / 2);
+
+        $player->marketing_rank = $marketingRank;
+
+        return [$marketingRank, $this->calculatePlayerValueWithinClub($player)];
+    }
+
+    private function playerInsertRow(
+        Player $player,
+        int $instanceId,
+        int $personId,
+        int $contractId,
+        ?int $clubId,
+        int $playerValue
+    ): array {
+        $attributesCategories = $player->getAttributeCategoriesPotential();
+        $row = [
+            'instance_id' => $instanceId,
+            'person_id' => $personId,
+            'club_id' => $clubId,
+            'contract_id' => $contractId,
+            'value' => $playerValue,
+            'marketing_rank' => $player->marketing_rank,
+            'potential' => $player->potential,
+            'max_potential' => $player->max_potential,
+            'ambition' => rand((int) floor($player->potential / 10), 20),
+            'loyalty' => rand(1, 20),
+            'position' => $player->position,
+            'technical' => $attributesCategories->technical,
+            'mental' => $attributesCategories->mental,
+            'physical' => $attributesCategories->physical,
+        ];
+
+        foreach (self::PLAYER_ATTRIBUTE_COLUMNS as $column) {
+            $row[$column] = $player->{$column};
+        }
+
+        return $row;
     }
 
     public function calculatePlayerValueWithinClub(Player $player): int
