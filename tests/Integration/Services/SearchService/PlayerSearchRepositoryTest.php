@@ -3,13 +3,13 @@
 namespace Tests\Integration\Services\SearchService;
 
 use App\Models\Player;
-use App\Services\SearchService\PlayerSearchQuery;
+use App\Repositories\PlayerSearchRepository;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
-class PlayerSearchQueryTest extends TestCase
+class PlayerSearchRepositoryTest extends TestCase
 {
     use RefreshDatabase;
 
@@ -39,9 +39,8 @@ class PlayerSearchQueryTest extends TestCase
             'technical' => 20,
         ]);
 
-        $players = app(PlayerSearchQuery::class)
-            ->activeMatchingAttributes(['pace' => 18, 'technical' => 15])
-            ->get();
+        $players = app(PlayerSearchRepository::class)
+            ->findByAttributes(['pace' => 18, 'technical' => 15]);
 
         $this->assertSame([$matching->id], $players->pluck('id')->all());
     }
@@ -52,8 +51,7 @@ class PlayerSearchQueryTest extends TestCase
         app(GameContext::class)->set(1, null, '2024-01-01');
 
         $this->expectException(\InvalidArgumentException::class);
-        app(PlayerSearchQuery::class)
-            ->activeMatchingAttributes(['not_a_column' => 1])
-            ->get();
+        app(PlayerSearchRepository::class)
+            ->findByAttributes(['not_a_column' => 1]);
     }
 }
