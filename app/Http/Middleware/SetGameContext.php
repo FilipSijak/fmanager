@@ -21,7 +21,7 @@ class SetGameContext
             $instance = Instance::where('instance_hash', $instanceHash)->first();
 
             if ($instance !== null) {
-                $this->gameContext->set($instance->id, $instance->season_id);
+                $this->gameContext->set($instance->id, $instance->season_id, (string) $instance->instance_date);
             }
         }
 
