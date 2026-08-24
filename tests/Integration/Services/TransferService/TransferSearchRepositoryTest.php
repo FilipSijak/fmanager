@@ -47,7 +47,7 @@ class TransferSearchRepositoryTest extends TestCase
         );
 
         TransferList::factory()->create(
-            ['player_id' =>  $listedPlayer->id, 'club_id' => $sellingClub->id, 'transfer_type' => TransferTypes::PERMANENT_TRANSFER]
+            ['player_id' =>  $listedPlayer->id, 'club_id' => $sellingClub->id, 'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value]
         );
 
         $transferSearchRepository = app(TransferSearchRepository::class);
@@ -78,7 +78,7 @@ class TransferSearchRepositoryTest extends TestCase
         );
 
         TransferList::factory()->create(
-            ['player_id' =>  $listedPlayer->id, 'club_id' => $sellingClub->id, 'transfer_type' => TransferTypes::LOAN_TRANSFER]
+            ['player_id' =>  $listedPlayer->id, 'club_id' => $sellingClub->id, 'transfer_type' => TransferTypes::LOAN_TRANSFER->value]
         );
 
         Player::factory()->create(
@@ -268,7 +268,7 @@ class TransferSearchRepositoryTest extends TestCase
             TransferList::factory()->create([
                 'player_id' => $player->id,
                 'club_id' => $sellingClub->id,
-                'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+                'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
             ]);
         }
 
@@ -283,6 +283,10 @@ class TransferSearchRepositoryTest extends TestCase
         Player::factory()->create([
             'instance_id' => 2, 'club_id' => null, 'contract_id' => null,
             'position' => 'CB', 'potential' => 200,
+        ]);
+        Player::factory()->create([
+            'instance_id' => 1, 'club_id' => $sellingClub->id, 'contract_id' => null,
+            'position' => 'CB', 'potential' => 250,
         ]);
 
         $listedResult = $repository->findListedPlayer(
@@ -314,11 +318,15 @@ class TransferSearchRepositoryTest extends TestCase
         ]);
         $first = Player::factory()->create([
             'instance_id' => 1, 'club_id' => $sellingClub->id, 'contract_id' => $startContract->id,
-            'position' => 'CB', 'potential' => 120,
+            'position' => 'CB', 'potential' => 120, 'value' => 50000,
         ]);
         $second = Player::factory()->create([
             'instance_id' => 1, 'club_id' => $sellingClub->id, 'contract_id' => $endContract->id,
-            'position' => 'CB', 'potential' => 120,
+            'position' => 'CB', 'potential' => 120, 'value' => 50000,
+        ]);
+        Player::factory()->create([
+            'instance_id' => 1, 'club_id' => $sellingClub->id, 'contract_id' => $startContract->id,
+            'position' => 'CB', 'potential' => 200, 'value' => 1000001,
         ]);
         Player::factory()->create([
             'instance_id' => 1, 'club_id' => $sellingClub->id, 'contract_id' => $outsideContract->id,

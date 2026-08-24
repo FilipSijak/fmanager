@@ -324,7 +324,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             'target_club_id' => $sellingClub->id,
             'player_id' => $player->id,
             'transfer_status' => TransferStatusTypes::WAITING_PLAYER->value,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
         ]);
 
         TransferContractOffer::factory()->create([
@@ -358,7 +358,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             'target_club_id' => $sellingClub->id,
             'player_id' => $player->id,
             'transfer_status' => TransferStatusTypes::PLAYER_COUNTEROFFER->value,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
         ]);
     }
 

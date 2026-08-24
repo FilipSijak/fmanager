@@ -36,7 +36,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             $parentClub->id,
             $player->id,
             TransferStatusTypes::WAITING_PLAYER->value,
-            TransferTypes::LOAN_TRANSFER
+            TransferTypes::LOAN_TRANSFER->value
         );
         $this->createContractOffer($transfer, salary: 1000);
 
@@ -66,7 +66,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             $parentClub->id,
             $player->id,
             TransferStatusTypes::MOVE_PLAYER->value,
-            TransferTypes::LOAN_TRANSFER
+            TransferTypes::LOAN_TRANSFER->value
         );
         $this->createContractOffer($transfer);
 
@@ -116,7 +116,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             $parentClub->id,
             $player->id,
             TransferStatusTypes::TRANSFER_FAILED->value,
-            TransferTypes::LOAN_TRANSFER
+            TransferTypes::LOAN_TRANSFER->value
         );
         $this->createContractOffer($transfer);
 
@@ -138,7 +138,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             null,
             $player->id,
             TransferStatusTypes::WAITING_PLAYER->value,
-            TransferTypes::FREE_TRANSFER
+            TransferTypes::FREE_TRANSFER->value
         );
         $this->createContractOffer($transfer, salary: 1000);
 
@@ -169,7 +169,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             null,
             $player->id,
             TransferStatusTypes::MOVE_PLAYER->value,
-            TransferTypes::FREE_TRANSFER
+            TransferTypes::FREE_TRANSFER->value
         );
         $this->createContractOffer($transfer, salary: 3000);
 
@@ -222,7 +222,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             null,
             $player->id,
             TransferStatusTypes::TRANSFER_FAILED->value,
-            TransferTypes::FREE_TRANSFER
+            TransferTypes::FREE_TRANSFER->value
         );
         $this->createContractOffer($transfer);
 

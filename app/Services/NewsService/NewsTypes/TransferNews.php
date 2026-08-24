@@ -17,7 +17,7 @@ class TransferNews
         $sellingClub = $transfer->targetClub()->first();
         $playerName = $this->playerName($transfer);
 
-        if ($transfer->transfer_type === TransferTypes::LOAN_TRANSFER) {
+        if ($transfer->transfer_type === TransferTypes::LOAN_TRANSFER->value) {
             return $this->item(
                 $transfer,
                 "{$playerName} joins {$buyingClub->name} on loan",

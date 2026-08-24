@@ -14,7 +14,7 @@ class TransferListFactory extends Factory
         return [
             'player_id' => Player::factory()->make(['id' => 1])->id,
             'club_id' => Club::factory()->make(['id' => 1])->id,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
             'transfer_fee' => $this->faker->randomNumber(4)
         ];
     }

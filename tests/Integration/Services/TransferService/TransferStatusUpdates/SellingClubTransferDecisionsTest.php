@@ -202,7 +202,7 @@ class SellingClubTransferDecisionsTest extends TestCase
             'target_club_id' => $sellingClubId,
             'player_id' => $playerId,
             'transfer_status' => TransferStatusTypes::WAITING_TARGET_CLUB->value,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
         ]);
 
         TransferFinancialDetails::factory()->create([

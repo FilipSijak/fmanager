@@ -390,7 +390,7 @@ class PermanentTransfersEndToEndTest extends TestCase
             'target_club_id' => $targetClubId,
             'player_id' => $playerId,
             'transfer_status' => $status,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
         ]);
     }
 

@@ -102,7 +102,7 @@ class TransferFinancialSettlementTest extends TestCase
         $transfer = Transfer::factory()->create([
             'source_club_id' => $sourceClub->id,
             'target_club_id' => $targetClub->id,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
         ]);
 
         return [$transfer, $sourceAccount, $targetAccount];
