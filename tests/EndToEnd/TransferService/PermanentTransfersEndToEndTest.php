@@ -21,7 +21,7 @@ use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use App\Services\TransferService\TransferWorkflow;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -390,7 +390,7 @@ class PermanentTransfersEndToEndTest extends TestCase
             'target_club_id' => $targetClubId,
             'player_id' => $playerId,
             'transfer_status' => $status,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+            'transfer_type' => TransferType::PERMANENT_TRANSFER->value,
         ]);
     }
 

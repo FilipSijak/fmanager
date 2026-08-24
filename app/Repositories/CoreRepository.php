@@ -26,4 +26,9 @@ class CoreRepository implements ICoreRepository
     {
         return app(GameContext::class)->instanceId();
     }
+
+    protected function instanceDate(): string
+    {
+        return app(GameContext::class)->instanceDate();
+    }
 }

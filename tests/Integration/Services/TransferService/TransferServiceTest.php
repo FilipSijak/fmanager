@@ -20,7 +20,7 @@ use App\Services\TransferService\TransferService;
 use App\Services\TransferService\TransferServiceHandler;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use App\Services\TransferService\TransferWorkflow;
 use App\Support\GameContext;
 use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -58,7 +58,7 @@ class TransferServiceTest extends TestCase
                 'season_id' => 1,
                 'source_club_id' => $buyingClubId,
                 'player_id' => $player->id,
-                'transfer_type' => TransferTypes::FREE_TRANSFER,
+                'transfer_type' => TransferType::FREE_TRANSFER->value,
                 'transfer_status' => TransferStatusTypes::MOVE_PLAYER->value,
             ]
         );
@@ -100,7 +100,7 @@ class TransferServiceTest extends TestCase
             ]
         );
 
-        $transfer = $this->setupTransferBetweenTwoClubs($buyingClubId, $sellingClubId, $player->id, TransferTypes::PERMANENT_TRANSFER);
+        $transfer = $this->setupTransferBetweenTwoClubs($buyingClubId, $sellingClubId, $player->id, TransferType::PERMANENT_TRANSFER->value);
         $transferContractOffer = TransferContractOffer::factory()->create(['transfer_id' => $transfer->id, 'salary' => 20000]);
         $transferService = app()->make(TransferService::class);
 
@@ -141,7 +141,7 @@ class TransferServiceTest extends TestCase
             ]
         );
 
-        $transfer = $this->setupTransferBetweenTwoClubs($newClub, $currentClub, $player->id, TransferTypes::LOAN_TRANSFER);
+        $transfer = $this->setupTransferBetweenTwoClubs($newClub, $currentClub, $player->id, TransferType::LOAN_TRANSFER->value);
         TransferContractOffer::factory()->create(['transfer_id' => $transfer->id]);
         $transferService = app()->make(TransferService::class);
 
@@ -160,6 +160,7 @@ class TransferServiceTest extends TestCase
         Instance::factory()->create(
             [
                 'id' => 1,
+                'instance_date' => '2024-01-01',
             ]
         );
 
@@ -226,8 +227,6 @@ class TransferServiceTest extends TestCase
 
         $transferRepository->setSeasonId(1);
         $transferRepository->setInstanceId(1);
-        $transferSearchRepository->setInstanceId(1);
-        $transferSearchRepository->setSeasonId(1);
 
         $transferServiceHandler = new TransferServiceHandler(
             $transferSearchRepository,
@@ -244,11 +243,12 @@ class TransferServiceTest extends TestCase
         $transferService->setForceLuxuryBids(false);
         $transferService->setSeasonId(1);
         $transferService->setInstanceId(1);
+        app(GameContext::class)->set(1, 1, '2024-01-01');
         $transferService->automaticTransferBids();
 
         $this->assertCount(1, Transfer::all());
         $transfer = Transfer::query()->sole();
-        $expectedStatus = $transfer->transfer_type === TransferTypes::FREE_TRANSFER
+        $expectedStatus = $transfer->transfer_type === TransferType::FREE_TRANSFER->value
             ? TransferStatusTypes::WAITING_PLAYER
             : TransferStatusTypes::WAITING_TARGET_CLUB;
 
@@ -271,9 +271,9 @@ class TransferServiceTest extends TestCase
         $repository->setSeasonId(1);
 
         $expectedStatuses = [
-            TransferTypes::FREE_TRANSFER => TransferStatusTypes::WAITING_PLAYER,
-            TransferTypes::PERMANENT_TRANSFER => TransferStatusTypes::WAITING_TARGET_CLUB,
-            TransferTypes::LOAN_TRANSFER => TransferStatusTypes::WAITING_TARGET_CLUB,
+            TransferType::FREE_TRANSFER->value => TransferStatusTypes::WAITING_PLAYER,
+            TransferType::PERMANENT_TRANSFER->value => TransferStatusTypes::WAITING_TARGET_CLUB,
+            TransferType::LOAN_TRANSFER->value => TransferStatusTypes::WAITING_TARGET_CLUB,
         ];
 
         foreach ($expectedStatuses as $transferType => $expectedStatus) {
@@ -345,7 +345,7 @@ class TransferServiceTest extends TestCase
             'value' => 40000000,
         ]);
 
-        app(GameContext::class)->set(1, 1);
+        app(GameContext::class)->set(1, 1, '2024-01-01');
         app(TransferServiceHandler::class)->luxuryTransferAttempt(
             $buyingClub,
             68000000,
@@ -355,7 +355,7 @@ class TransferServiceTest extends TestCase
         $transfer = Transfer::query()->sole();
 
         $this->assertSame($target->id, $transfer->player_id);
-        $this->assertSame(TransferTypes::PERMANENT_TRANSFER, $transfer->transfer_type);
+        $this->assertSame(TransferType::PERMANENT_TRANSFER->value, $transfer->transfer_type);
         $this->assertSame(TransferStatusTypes::WAITING_TARGET_CLUB->value, $transfer->transfer_status);
         $this->assertDatabaseHas('transfer_financial_details', [
             'transfer_id' => $transfer->id,
@@ -385,7 +385,7 @@ class TransferServiceTest extends TestCase
             ]
         );
 
-        if ($transferType == TransferTypes::PERMANENT_TRANSFER) {
+        if ($transferType == TransferType::PERMANENT_TRANSFER->value) {
             TransferFinancialDetails::factory()->create(
                 [
                     'transfer_id' => $transfer->id,

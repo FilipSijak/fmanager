@@ -20,6 +20,8 @@ return new class extends Migration
             $table->integer('transfer_type')->unsigned();
             $table->integer('transfer_fee')->nullable();
 
+            $table->index(['player_id', 'transfer_type'], 'transfer_list_player_type_idx');
+
             $table->foreign('player_id')->references('id')->on('players')->onDelete('cascade');
             $table->foreign('club_id')->references('id')->on('clubs')->onDelete('cascade');
         });

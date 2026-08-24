@@ -13,7 +13,7 @@ use App\Services\TransferService\TransferConsiderations\ClubConsideration;
 use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use App\Services\TransferService\TransferWorkflow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -202,7 +202,7 @@ class SellingClubTransferDecisionsTest extends TestCase
             'target_club_id' => $sellingClubId,
             'player_id' => $playerId,
             'transfer_status' => TransferStatusTypes::WAITING_TARGET_CLUB->value,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER,
+            'transfer_type' => TransferType::PERMANENT_TRANSFER->value,
         ]);
 
         TransferFinancialDetails::factory()->create([

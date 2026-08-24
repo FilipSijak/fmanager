@@ -85,7 +85,7 @@ class TransferService extends BaseService
     public function makeTransferRequest(array $requestParams)
     {
         switch ($requestParams) {
-            case TransferTypes::FREE_TRANSFER:
+            case TransferType::FREE_TRANSFER->value:
                 $validationErrors = $this->transferRequestValidator->validateFreeTransferRequest($requestParams);
 
                 if (!empty($validationErrors)) {
@@ -93,7 +93,7 @@ class TransferService extends BaseService
                 }
 
                 break;
-            case TransferTypes::LOAN_TRANSFER:
+            case TransferType::LOAN_TRANSFER->value:
                 $validationErrors = $this->transferRequestValidator->validateLoanTransferRequest($requestParams);
 
                 if (!empty($validationErrors)) {
@@ -101,7 +101,7 @@ class TransferService extends BaseService
                 }
 
                 break;
-            case TransferTypes::PERMANENT_TRANSFER:
+            case TransferType::PERMANENT_TRANSFER->value:
                 $validationErrors = $this->transferRequestValidator->validatePermanentTransferRequest($requestParams);
 
                 if (!empty($validationErrors)) {
@@ -115,16 +115,16 @@ class TransferService extends BaseService
     public function transferRequestDecision($requestParams)
     {
         switch ($requestParams['type']) {
-            case TransferTypes::FREE_TRANSFER:
+            case TransferType::FREE_TRANSFER->value:
                 // player decision
 
                 break;
-            case TransferTypes::LOAN_TRANSFER:
+            case TransferType::LOAN_TRANSFER->value:
                 // club analysis (availability)
                 // player decision
 
                 break;
-            case TransferTypes::PERMANENT_TRANSFER:
+            case TransferType::PERMANENT_TRANSFER->value:
                 // club analysis (valuation, availability, budget, etc.)
                 // player decision
 

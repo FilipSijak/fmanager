@@ -13,7 +13,7 @@ use App\Services\NewsService\NewsPriority;
 use App\Services\NewsService\NewsType;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use App\Services\TransferService\TransferWorkflow;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,7 +36,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             $parentClub->id,
             $player->id,
             TransferStatusTypes::WAITING_PLAYER->value,
-            TransferTypes::LOAN_TRANSFER
+            TransferType::LOAN_TRANSFER->value
         );
         $this->createContractOffer($transfer, salary: 1000);
 
@@ -66,7 +66,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             $parentClub->id,
             $player->id,
             TransferStatusTypes::MOVE_PLAYER->value,
-            TransferTypes::LOAN_TRANSFER
+            TransferType::LOAN_TRANSFER->value
         );
         $this->createContractOffer($transfer);
 
@@ -116,7 +116,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             $parentClub->id,
             $player->id,
             TransferStatusTypes::TRANSFER_FAILED->value,
-            TransferTypes::LOAN_TRANSFER
+            TransferType::LOAN_TRANSFER->value
         );
         $this->createContractOffer($transfer);
 
@@ -138,7 +138,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             null,
             $player->id,
             TransferStatusTypes::WAITING_PLAYER->value,
-            TransferTypes::FREE_TRANSFER
+            TransferType::FREE_TRANSFER->value
         );
         $this->createContractOffer($transfer, salary: 1000);
 
@@ -169,7 +169,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             null,
             $player->id,
             TransferStatusTypes::MOVE_PLAYER->value,
-            TransferTypes::FREE_TRANSFER
+            TransferType::FREE_TRANSFER->value
         );
         $this->createContractOffer($transfer, salary: 3000);
 
@@ -222,7 +222,7 @@ class LoanAndFreeTransfersEndToEndTest extends TestCase
             null,
             $player->id,
             TransferStatusTypes::TRANSFER_FAILED->value,
-            TransferTypes::FREE_TRANSFER
+            TransferType::FREE_TRANSFER->value
         );
         $this->createContractOffer($transfer);
 
