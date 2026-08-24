@@ -90,7 +90,7 @@ class TransferSearchRepositoryTest extends TestCase
         $transferSearchRepository = new TransferSearchRepository();
         $transferSearchRepository->setInstanceId(1);
 
-        $player = $transferSearchRepository->findListedLoanPlayers($buyingClub, $position);
+        $player = $transferSearchRepository->findListedLoanPlayer($buyingClub, $position);
 
         $this->assertInstanceOf(Player::class, $player);
         $this->assertEquals($listedPlayer->id, $player->id);
@@ -127,7 +127,7 @@ class TransferSearchRepositoryTest extends TestCase
         $transferSearchRepository->setInstanceId(1);
         $clubBudget = $buyingClub->account->transfer_budget;
 
-        $player = $transferSearchRepository->findLuxuryPlayersForPosition($buyingClub, $position, $clubBudget);
+        $player = $transferSearchRepository->findLuxuryPlayerForPosition($buyingClub, $position, $clubBudget);
 
         $this->assertInstanceOf(Player::class, $player);
         $this->assertEquals($luxuryPlayer->id, $player->id);
@@ -157,7 +157,7 @@ class TransferSearchRepositoryTest extends TestCase
         $transferSearchRepository->setInstanceId(1);
         $clubBudget = $buyingClub->account->transfer_budget;
 
-        $player = $transferSearchRepository->findPlayersWithUnprotectedContracts($buyingClub, $position, $clubBudget);
+        $player = $transferSearchRepository->findPlayerWithUnprotectedContract($buyingClub, $position, $clubBudget);
 
         $this->assertInstanceOf(Player::class, $player);
         $this->assertEquals($unprotectedPlayer->id, $player->id);

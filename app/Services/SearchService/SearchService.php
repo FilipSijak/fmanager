@@ -4,10 +4,8 @@ namespace App\Services\SearchService;
 
 use App\Models\Club;
 use App\Models\Player;
-
 use App\Repositories\TransferSearchRepository;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class SearchService
 {
@@ -28,7 +26,7 @@ class SearchService
             }
         }
 
-        return $this->transferSearchRepository->playersByAttributes($club, $searchableAttribute);
+        return $this->transferSearchRepository->findPlayersByAttributes($club, $searchableAttribute);
     }
 
     public function playerComparison(Player $playerOne, Player $playerTwo)

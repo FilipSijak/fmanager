@@ -10,17 +10,16 @@ use App\Services\TransferService\TransferTypes;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class TransferSearchRepository extends CoreRepository
 {
-    public function playersByAttributes(Club $club, array $searchableAttribute)
+    public function findPlayersByAttributes(Club $club, array $searchableAttributes): Collection
     {
-        $searchableAttribute = $this->validatedSearchableAttributes($searchableAttribute);
+        $searchableAttributes = $this->validatedSearchableAttributes($searchableAttributes);
         $instanceId = $this->instanceId();
         $recentOfferCutoff = Carbon::parse($this->instanceDate($instanceId))->subYears(2);
 
-        return DB::table('players AS p')
+        return Player::query()->from('players AS p')
             ->select('p.*')
             ->where('p.is_retired', false)
             ->leftJoin('transfers AS t', function ($query) use ($instanceId, $club, $recentOfferCutoff) {
@@ -29,8 +28,8 @@ class TransferSearchRepository extends CoreRepository
                     ->where('t.source_club_id', '=', $club->id)
                     ->where('t.offer_date', '>', $recentOfferCutoff);
             })
-            ->where(function ($query) use ($searchableAttribute) {
-                foreach ($searchableAttribute as $attribute => $value) {
+            ->where(function ($query) use ($searchableAttributes) {
+                foreach ($searchableAttributes as $attribute => $value) {
                     $query->where("p.{$attribute}", '>=', $value);
                 }
             })
@@ -45,7 +44,7 @@ class TransferSearchRepository extends CoreRepository
         $instanceId = $this->instanceId();
         $recentOfferCutoff = Carbon::parse($this->instanceDate($instanceId))->subYears(2);
 
-        $collection = DB::table('players AS p')
+        $collection = Player::query()->from('players AS p')
             ->select('p.*')
             ->where('p.is_retired', false)
             ->leftJoin('transfers AS t', function ($query) use ($instanceId, $club, $recentOfferCutoff) {
@@ -59,13 +58,14 @@ class TransferSearchRepository extends CoreRepository
             ->where('p.club_id', '<>', $club->id)
             ->where('p.position', '=', $position)
             ->where('p.potential', '>=', $club->rank * 10 - 20)
-            ->orderBy('p.potential', 'desc')
+            ->orderByDesc('p.potential')
+            ->orderBy('p.id')
             ->get();
 
-        return Player::hydrate($collection->toArray());
+        return $collection;
     }
 
-    public function findLuxuryPlayersForPosition(Club $buyingClub, string $position, int $clubBudget): ?Player
+    public function findLuxuryPlayerForPosition(Club $buyingClub, string $position, int $clubBudget): ?Player
     {
         $instanceId = $this->instanceId();
 
@@ -73,7 +73,8 @@ class TransferSearchRepository extends CoreRepository
             ->where('is_retired', false)
             ->where('club_id', $buyingClub->id)
             ->where('instance_id', $instanceId)
-            ->orderBy('potential', 'DESC')
+            ->orderByDesc('potential')
+            ->orderBy('id')
             ->first();
 
         if (! $highestPotentialPlayer) {
@@ -86,6 +87,8 @@ class TransferSearchRepository extends CoreRepository
             ->where('potential', '>', $highestPotentialPlayer->potential)
             ->where('club_id', '<>', $buyingClub->id)
             ->where('value', '<=', $clubBudget)
+            ->orderByDesc('potential')
+            ->orderBy('id')
             ->get();
 
         return $players->first();
@@ -95,7 +98,7 @@ class TransferSearchRepository extends CoreRepository
         Club $buyingClub,
         int $transferType,
         string $position,
-        ?int $clubBudget = 0
+        int $clubBudget = 0
     ): ?Player {
         $instanceId = $this->instanceId();
 
@@ -103,29 +106,31 @@ class TransferSearchRepository extends CoreRepository
             ->where('is_retired', false)
             ->where('instance_id', $instanceId)
             ->where('club_id', $buyingClub->id)
-            ->orderBy('potential', 'DESC')
+            ->orderByDesc('potential')
+            ->orderBy('id')
             ->first();
 
-        $players = DB::table('players AS p')
+        $players = Player::query()->from('players AS p')
             ->select('p.*')
             ->where('p.is_retired', false)
             ->where('p.instance_id', $instanceId)
             ->join('transfer_list AS tl', 'tl.player_id', '=', 'p.id')
             ->where('p.club_id', '<>', $buyingClub->id)
             ->where('tl.transfer_type', '=', $transferType)
-            ->when($transferType == TransferTypes::PERMANENT_TRANSFER, function ($query) use ($highestPotentialPlayer) {
+            ->when($transferType === TransferTypes::PERMANENT_TRANSFER, function ($query) use ($highestPotentialPlayer) {
                 return $query->where('p.potential', '>', $highestPotentialPlayer ? $highestPotentialPlayer->potential : 0);
             })
-            ->when($transferType == TransferTypes::PERMANENT_TRANSFER, function ($query) use ($clubBudget) {
+            ->when($transferType === TransferTypes::PERMANENT_TRANSFER, function ($query) use ($clubBudget) {
                 return $query->where('p.value', '<=', $clubBudget);
             })
-            ->orderBy('p.potential', 'desc')
+            ->orderByDesc('p.potential')
+            ->orderBy('p.id')
             ->get();
 
-        return Player::hydrate($players->toArray())->first();
+        return $players->first();
     }
 
-    public function findListedLoanPlayers(
+    public function findListedLoanPlayer(
         Club $club,
         string $position,
     ): ?Player {
@@ -133,11 +138,11 @@ class TransferSearchRepository extends CoreRepository
 
         // find average potential for players within club
         // loan offer should be fore more than that
-        $averagePlayerPotentialForClub = DB::table('players AS p')
+        $averagePlayerPotentialForClub = Player::query()->from('players AS p')
             ->where('p.instance_id', $instanceId)
             ->where('p.club_id', '=', $club->id)->pluck('potential')->avg();
 
-        $listedPlayers = DB::table('players AS p')
+        $listedPlayers = Player::query()->from('players AS p')
             ->select('p.*')
             ->where('p.is_retired', false)
             ->where('p.instance_id', $instanceId)
@@ -146,12 +151,14 @@ class TransferSearchRepository extends CoreRepository
             ->where('p.club_id', '<>', $club->id)
             ->where('p.position', '=', $position)
             ->where('p.potential', '>=', $averagePlayerPotentialForClub)
+            ->orderByDesc('p.potential')
+            ->orderBy('p.id')
             ->get();
 
-        return Player::hydrate($listedPlayers->toArray())->first();
+        return $listedPlayers->first();
     }
 
-    public function findFreePlayerForPosition(Club $club, string $position, bool $luxury = false)
+    public function findFreePlayerForPosition(Club $club, string $position, bool $luxury = false): ?Player
     {
         $instanceId = $this->instanceId();
         $highestPotentialPlayer = null;
@@ -161,11 +168,12 @@ class TransferSearchRepository extends CoreRepository
                 ->where('is_retired', false)
                 ->where('instance_id', $instanceId)
                 ->where('club_id', $club->id)
-                ->orderBy('potential', 'DESC')
+                ->orderByDesc('potential')
+                ->orderBy('id')
                 ->first();
         }
 
-        $players = DB::table('players AS p')
+        $players = Player::query()->from('players AS p')
             ->select('p.*')
             ->where('p.is_retired', false)
             ->where('p.instance_id', $instanceId)
@@ -174,12 +182,14 @@ class TransferSearchRepository extends CoreRepository
             ->when($luxury && $highestPotentialPlayer, function ($query) use ($highestPotentialPlayer) {
                 $query->where('p.potential', '>', $highestPotentialPlayer->potential);
             })
+            ->orderByDesc('p.potential')
+            ->orderBy('p.id')
             ->get();
 
-        return Player::hydrate($players->toArray())->first();
+        return $players->first();
     }
 
-    public function findPlayersWithUnprotectedContracts(
+    public function findPlayerWithUnprotectedContract(
         Club $club,
         string $position,
         int $clubBudget
@@ -189,7 +199,7 @@ class TransferSearchRepository extends CoreRepository
         $contractStart = $instanceDate->toDateString();
         $contractEnd = $instanceDate->copy()->addMonths(6)->toDateString();
 
-        $player = DB::table('players AS p')
+        $player = Player::query()->from('players AS p')
             ->select('p.*')
             ->where('p.is_retired', false)
             ->where('p.instance_id', $instanceId)
@@ -200,10 +210,11 @@ class TransferSearchRepository extends CoreRepository
             ->where('p.club_id', '<>', $club->id)
             ->where('p.potential', '>=', $club->rank * 10 - 20)
             ->where('p.position', '=', $position)
-            ->orderBy('p.potential', 'desc')
+            ->orderByDesc('p.potential')
+            ->orderBy('p.id')
             ->get();
 
-        return Player::hydrate($player->toArray())->first();
+        return $player->first();
     }
 
     private function validatedSearchableAttributes(array $searchableAttributes): array

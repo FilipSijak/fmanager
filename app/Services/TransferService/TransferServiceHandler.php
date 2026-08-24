@@ -72,7 +72,7 @@ readonly class TransferServiceHandler
         }
 
         // Try loan transfer
-        $player = $this->transferSearchRepository->findListedLoanPlayers($club, $position);
+        $player = $this->transferSearchRepository->findListedLoanPlayer($club, $position);
         if ($player) {
             return ['player' => $player, 'type' => TransferTypes::LOAN_TRANSFER];
         }
@@ -97,7 +97,7 @@ readonly class TransferServiceHandler
 
     private function findLuxuryTargetPlayer(Club $club, string $position, int $clubBudget): ?array
     {
-        $selectedPlayer = $this->transferSearchRepository->findPlayersWithUnprotectedContracts($club, $position, $clubBudget);
+        $selectedPlayer = $this->transferSearchRepository->findPlayerWithUnprotectedContract($club, $position, $clubBudget);
 
         if ($selectedPlayer) {
             return ['player' => $selectedPlayer, 'type' => TransferTypes::PERMANENT_TRANSFER];
@@ -115,7 +115,7 @@ readonly class TransferServiceHandler
             return ['player' => $selectedPlayer, 'type' => TransferTypes::PERMANENT_TRANSFER];
         }
 
-        $selectedPlayer = $this->transferSearchRepository->findLuxuryPlayersForPosition(
+        $selectedPlayer = $this->transferSearchRepository->findLuxuryPlayerForPosition(
             $club,
             $position,
             $clubBudget
