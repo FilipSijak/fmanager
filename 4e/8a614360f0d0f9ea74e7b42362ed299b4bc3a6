@@ -1,0 +1,23 @@
+tests/Integration/Services/SearchService/PlayerSearchRepositoryTest.php
+  s_e39b540334aad8::t_dec013ad8cd1b8 1-57
+app/Services/SearchService/SearchService.php
+  s_e39b540334aad8::t_dec013ad8cd1b8 7,15,21-23
+app/Repositories/PlayerSearchRepository.php
+  s_e39b540334aad8::t_dec013ad8cd1b8 1-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "4e8a614360f0d0f9ea74e7b42362ed299b4bc3a6",
+  "prompts": {},
+  "sessions": {
+    "s_e39b540334aad8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0343f-f34d-7e01-bf6b-ad8f00ac60b4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
