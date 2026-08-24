@@ -1,0 +1,25 @@
+database/migrations/2025_02_24_135958_create_transfer_list_table.php
+  s_e39b540334aad8::t_6067b4f4aa45d1 23-24
+database/migrations/2020_02_08_131509_create_players_contracts_table.php
+  s_e39b540334aad8::t_6067b4f4aa45d1 19
+database/migrations/2020_06_02_170103_create_transfers_table.php
+  s_e39b540334aad8::t_6067b4f4aa45d1 4-5,30-34
+database/migrations/2026_08_11_000001_add_is_retired_to_players_table.php
+  s_e39b540334aad8::t_6067b4f4aa45d1 13-20,27-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "dc2f039870af539d6c48e070f293ba3cd35c2727",
+  "prompts": {},
+  "sessions": {
+    "s_e39b540334aad8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0343f-f34d-7e01-bf6b-ad8f00ac60b4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
