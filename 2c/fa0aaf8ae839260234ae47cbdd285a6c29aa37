@@ -1,0 +1,58 @@
+tests/EndToEnd/TransferService/LoanAndFreeTransfersEndToEndTest.php
+  s_e39b540334aad8::t_1b86a058932203 16,39,69,119,141,172,225
+app/Repositories/TransferRepository.php
+  s_e39b540334aad8::t_1b86a058932203 16,34-36,111
+app/Repositories/TransferSearchRepository.php
+  s_e39b540334aad8::t_1b86a058932203 7,86,109,132,149,167,202
+  s_e39b540334aad8::t_ef867f23cea633 146,163
+  s_e39b540334aad8::t_d7424dd0929d1b 11,111,114,116,122,136,139,147
+  s_e39b540334aad8::t_2b68127fb3c8e0 61,85
+app/Services/NewsService/NewsTypes/TransferNews.php
+  s_e39b540334aad8::t_1b86a058932203 9,20
+app/Services/TransferService/TransferWorkflow.php
+  s_e39b540334aad8::t_1b86a058932203 58,67-69,191,200,206
+app/Http/Requests/CreateTransferRequest.php
+  s_e39b540334aad8::t_1b86a058932203 6,49
+database/factories/TransferListFactory.php
+  s_e39b540334aad8::t_1b86a058932203 7,17
+tests/EndToEnd/TransferService/PermanentTransfersEndToEndTest.php
+  s_e39b540334aad8::t_1b86a058932203 24,393
+tests/Integration/Services/TransferService/TransferStatusUpdates/PermanentTransferWaitingPlayerStatusUpdatesTest.php
+  s_e39b540334aad8::t_1b86a058932203 22,327,361
+tests/Integration/Services/TransferService/TransferFinancialSettlementTest.php
+  s_e39b540334aad8::t_1b86a058932203 12,105
+app/Services/TransferService/TransferServiceHandler.php
+  s_e39b540334aad8::t_1b86a058932203 48,51,70,76,82,87,91,94,99,102,107,113,116,122
+tests/Integration/Services/TransferService/TransferSearchRepositoryTest.php
+  s_e39b540334aad8::t_79953017197911 13,17
+  s_e39b540334aad8::t_af9a6a4184da1a 26,52,66,83,104,141,170,204,242,307,327,352,366-462
+  s_e39b540334aad8::t_2b68127fb3c8e0 318-320,324-326,348
+  s_e39b540334aad8::t_1b86a058932203 14,59,134,163,236,273,296,345
+  s_e39b540334aad8::t_7c4c80bcdedc43 463
+tests/Integration/Services/TransferService/TransferStatusUpdates/SellingClubTransferDecisionsTest.php
+  s_e39b540334aad8::t_1b86a058932203 16,205
+tests/Integration/Services/TransferService/TransferServiceTest.php
+  s_e39b540334aad8::t_1b86a058932203 23,61,103,144,251,274-276,358,388
+tests/Integration/Services/TransferService/TransferWorkflowTransferPlayerTest.php
+  s_e39b540334aad8::t_1b86a058932203 16,42,72,102,126,176,218,266
+app/Services/TransferService/TransferService.php
+  s_e39b540334aad8::t_1b86a058932203 88,96,104,118,122,127
+app/Services/TransferService/TransferType.php
+  s_e39b540334aad8::t_1b86a058932203 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "2cfa0aaf8ae839260234ae47cbdd285a6c29aa37",
+  "prompts": {},
+  "sessions": {
+    "s_e39b540334aad8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0343f-f34d-7e01-bf6b-ad8f00ac60b4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
