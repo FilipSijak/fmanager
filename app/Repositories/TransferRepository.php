@@ -13,7 +13,7 @@ use App\Models\TransferFinancialDetails;
 use App\Services\TransferService\TransferEntityAnalysis\PlayerValuation;
 use App\Services\TransferService\TransferState;
 use App\Services\TransferService\TransferStatusTypes;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 
 class TransferRepository extends CoreRepository
 {
@@ -31,9 +31,9 @@ class TransferRepository extends CoreRepository
         int $transferType,
     ): Transfer {
         $transferStatus = match ($transferType) {
-            TransferTypes::FREE_TRANSFER->value => TransferStatusTypes::WAITING_PLAYER,
-            TransferTypes::PERMANENT_TRANSFER->value,
-            TransferTypes::LOAN_TRANSFER->value => TransferStatusTypes::WAITING_TARGET_CLUB,
+            TransferType::FREE_TRANSFER->value => TransferStatusTypes::WAITING_PLAYER,
+            TransferType::PERMANENT_TRANSFER->value,
+            TransferType::LOAN_TRANSFER->value => TransferStatusTypes::WAITING_TARGET_CLUB,
             default => throw new \InvalidArgumentException("Unsupported transfer type: {$transferType}"),
         };
 
@@ -108,7 +108,7 @@ class TransferRepository extends CoreRepository
         $transfer->season_id = $this->seasonId();
         $transfer->source_club_id = $request->input('source_club_id');
         $transfer->player_id = $request->input('player_id');
-        $transfer->transfer_type = TransferTypes::FREE_TRANSFER->value;
+        $transfer->transfer_type = TransferType::FREE_TRANSFER->value;
         $transfer->offer_date = Instance::where('id', $this->instanceId())->first()->instance_date;
         $transfer->transfer_status = TransferStatusTypes::WAITING_PLAYER->value;
 

@@ -4,11 +4,11 @@ namespace App\Repositories;
 
 use App\Models\Club;
 use App\Models\Player;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection;
 
 class TransferSearchRepository
 {
@@ -58,6 +58,7 @@ class TransferSearchRepository
         'physical' => 'p.physical',
     ];
 
+    /**  Collection<int, Player> */
     public function findPlayersByAttributes(Club $club, array $searchableAttributes): Collection
     {
         $instanceId = $this->gameContext->instanceId();
@@ -81,7 +82,8 @@ class TransferSearchRepository
             ->get();
     }
 
-    public function findPlayersByPositionForClub(Club $club, string $position): Collection
+    /**  Collection<int, Player> */
+    public function findTransferTargetsByPosition(Club $club, string $position): Collection
     {
         $instanceId = $this->gameContext->instanceId();
         $recentOfferCutoff = Carbon::parse($this->gameContext->instanceDate())->subYears(2);
@@ -104,22 +106,20 @@ class TransferSearchRepository
         return $collection;
     }
 
-    public function findLuxuryPlayerForPosition(Club $buyingClub, string $position, int $clubBudget): ?Player
+    public function findUpgradeTargetByPosition(Club $buyingClub, string $position, int $clubBudget): ?Player
     {
-        $highestPotentialPlayer = $this->activePlayers()
+        $highestPotential = $this->activePlayers()
             ->where('position', $position)
             ->where('club_id', $buyingClub->id)
-            ->orderByDesc('potential')
-            ->orderBy('id')
-            ->first();
+            ->max('potential');
 
-        if (! $highestPotentialPlayer) {
+        if ($highestPotential === null) {
             return null;
         }
 
         return $this->activePlayers()
             ->where('position', $position)
-            ->where('potential', '>', $highestPotentialPlayer->potential)
+            ->where('potential', '>', $highestPotential)
             ->where('club_id', '<>', $buyingClub->id)
             ->where('value', '<=', $clubBudget)
             ->orderByDesc('potential')
@@ -129,26 +129,24 @@ class TransferSearchRepository
 
     public function findListedPlayer(
         Club $buyingClub,
-        TransferTypes $transferType,
+        TransferType $transferType,
         string $position,
         int $clubBudget = 0
     ): ?Player {
-        $highestPotentialPlayer = $this->activePlayers()
+        $highestPotential = (int) ($this->activePlayers()
             ->where('position', $position)
             ->where('club_id', $buyingClub->id)
-            ->orderByDesc('potential')
-            ->orderBy('id')
-            ->first();
+            ->max('potential') ?? 0);
 
         return $this->activePlayerSearchQuery()
             ->join('transfer_list AS tl', 'tl.player_id', '=', 'p.id')
             ->where('p.club_id', '<>', $buyingClub->id)
             ->where('p.position', $position)
             ->where('tl.transfer_type', $transferType->value)
-            ->when($transferType === TransferTypes::PERMANENT_TRANSFER, function ($query) use ($highestPotentialPlayer) {
-                return $query->where('p.potential', '>', $highestPotentialPlayer ? $highestPotentialPlayer->potential : 0);
+            ->when($transferType === TransferType::PERMANENT_TRANSFER, function ($query) use ($highestPotential) {
+                return $query->where('p.potential', '>', $highestPotential);
             })
-            ->when($transferType === TransferTypes::PERMANENT_TRANSFER, function ($query) use ($clubBudget) {
+            ->when($transferType === TransferType::PERMANENT_TRANSFER, function ($query) use ($clubBudget) {
                 return $query->where('p.value', '<=', $clubBudget);
             })
             ->orderByDesc('p.potential')
@@ -160,15 +158,13 @@ class TransferSearchRepository
         Club $club,
         string $position,
     ): ?Player {
-        // find average potential for players within club
-        // loan offer should be fore more than that
         $averagePlayerPotentialForClub = $this->activePlayers()
             ->where('club_id', $club->id)
-            ->pluck('potential')->avg();
+            ->avg('potential');
 
         return $this->activePlayerSearchQuery()
             ->join('transfer_list AS tl', 'tl.player_id', '=', 'p.id')
-            ->where('tl.transfer_type', '=', TransferTypes::LOAN_TRANSFER->value)
+            ->where('tl.transfer_type', '=', TransferType::LOAN_TRANSFER->value)
             ->where('p.club_id', '<>', $club->id)
             ->where('p.position', '=', $position)
             ->where('p.potential', '>=', $averagePlayerPotentialForClub)
@@ -179,7 +175,6 @@ class TransferSearchRepository
 
     public function findFreePlayerForPosition(Club $club, string $position, bool $luxury = false): ?Player
     {
-        $instanceId = $this->gameContext->instanceId();
         $highestPotentialPlayer = null;
 
         if ($luxury) {
@@ -204,12 +199,11 @@ class TransferSearchRepository
             ->first();
     }
 
-    public function findPlayerWithUnprotectedContract(
+    public function findExpiringContractTarget(
         Club $club,
         string $position,
         int $clubBudget
     ): ?Player {
-        $instanceId = $this->gameContext->instanceId();
         $instanceDate = Carbon::parse($this->gameContext->instanceDate());
         $contractStart = $instanceDate->toDateString();
         $contractEnd = $instanceDate->copy()->addMonths(6)->toDateString();

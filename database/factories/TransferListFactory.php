@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Club;
 use App\Models\Player;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TransferListFactory extends Factory
@@ -14,7 +14,7 @@ class TransferListFactory extends Factory
         return [
             'player_id' => Player::factory()->make(['id' => 1])->id,
             'club_id' => Club::factory()->make(['id' => 1])->id,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
+            'transfer_type' => TransferType::PERMANENT_TRANSFER->value,
             'transfer_fee' => $this->faker->randomNumber(4)
         ];
     }

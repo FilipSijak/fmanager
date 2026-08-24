@@ -9,7 +9,7 @@ use App\Models\FinanceTransactions;
 use App\Models\Transfer;
 use App\Models\TransferFinancialDetails;
 use App\Services\TransferService\TransferFinancialSettlement;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -102,7 +102,7 @@ class TransferFinancialSettlementTest extends TestCase
         $transfer = Transfer::factory()->create([
             'source_club_id' => $sourceClub->id,
             'target_club_id' => $targetClub->id,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
+            'transfer_type' => TransferType::PERMANENT_TRANSFER->value,
         ]);
 
         return [$transfer, $sourceAccount, $targetAccount];

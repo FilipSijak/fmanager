@@ -6,7 +6,7 @@ use App\Models\Transfer;
 use App\Services\NewsService\NewsItem;
 use App\Services\NewsService\NewsPriority;
 use App\Services\NewsService\NewsType;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 
 class TransferNews
 {
@@ -17,7 +17,7 @@ class TransferNews
         $sellingClub = $transfer->targetClub()->first();
         $playerName = $this->playerName($transfer);
 
-        if ($transfer->transfer_type === TransferTypes::LOAN_TRANSFER->value) {
+        if ($transfer->transfer_type === TransferType::LOAN_TRANSFER->value) {
             return $this->item(
                 $transfer,
                 "{$playerName} joins {$buyingClub->name} on loan",

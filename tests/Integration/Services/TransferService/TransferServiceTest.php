@@ -20,7 +20,7 @@ use App\Services\TransferService\TransferService;
 use App\Services\TransferService\TransferServiceHandler;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use App\Services\TransferService\TransferWorkflow;
 use App\Support\GameContext;
 use Illuminate\Database\Eloquent\Factories\Sequence;
@@ -58,7 +58,7 @@ class TransferServiceTest extends TestCase
                 'season_id' => 1,
                 'source_club_id' => $buyingClubId,
                 'player_id' => $player->id,
-                'transfer_type' => TransferTypes::FREE_TRANSFER->value,
+                'transfer_type' => TransferType::FREE_TRANSFER->value,
                 'transfer_status' => TransferStatusTypes::MOVE_PLAYER->value,
             ]
         );
@@ -100,7 +100,7 @@ class TransferServiceTest extends TestCase
             ]
         );
 
-        $transfer = $this->setupTransferBetweenTwoClubs($buyingClubId, $sellingClubId, $player->id, TransferTypes::PERMANENT_TRANSFER->value);
+        $transfer = $this->setupTransferBetweenTwoClubs($buyingClubId, $sellingClubId, $player->id, TransferType::PERMANENT_TRANSFER->value);
         $transferContractOffer = TransferContractOffer::factory()->create(['transfer_id' => $transfer->id, 'salary' => 20000]);
         $transferService = app()->make(TransferService::class);
 
@@ -141,7 +141,7 @@ class TransferServiceTest extends TestCase
             ]
         );
 
-        $transfer = $this->setupTransferBetweenTwoClubs($newClub, $currentClub, $player->id, TransferTypes::LOAN_TRANSFER->value);
+        $transfer = $this->setupTransferBetweenTwoClubs($newClub, $currentClub, $player->id, TransferType::LOAN_TRANSFER->value);
         TransferContractOffer::factory()->create(['transfer_id' => $transfer->id]);
         $transferService = app()->make(TransferService::class);
 
@@ -248,7 +248,7 @@ class TransferServiceTest extends TestCase
 
         $this->assertCount(1, Transfer::all());
         $transfer = Transfer::query()->sole();
-        $expectedStatus = $transfer->transfer_type === TransferTypes::FREE_TRANSFER->value
+        $expectedStatus = $transfer->transfer_type === TransferType::FREE_TRANSFER->value
             ? TransferStatusTypes::WAITING_PLAYER
             : TransferStatusTypes::WAITING_TARGET_CLUB;
 
@@ -271,9 +271,9 @@ class TransferServiceTest extends TestCase
         $repository->setSeasonId(1);
 
         $expectedStatuses = [
-            TransferTypes::FREE_TRANSFER->value => TransferStatusTypes::WAITING_PLAYER,
-            TransferTypes::PERMANENT_TRANSFER->value => TransferStatusTypes::WAITING_TARGET_CLUB,
-            TransferTypes::LOAN_TRANSFER->value => TransferStatusTypes::WAITING_TARGET_CLUB,
+            TransferType::FREE_TRANSFER->value => TransferStatusTypes::WAITING_PLAYER,
+            TransferType::PERMANENT_TRANSFER->value => TransferStatusTypes::WAITING_TARGET_CLUB,
+            TransferType::LOAN_TRANSFER->value => TransferStatusTypes::WAITING_TARGET_CLUB,
         ];
 
         foreach ($expectedStatuses as $transferType => $expectedStatus) {
@@ -355,7 +355,7 @@ class TransferServiceTest extends TestCase
         $transfer = Transfer::query()->sole();
 
         $this->assertSame($target->id, $transfer->player_id);
-        $this->assertSame(TransferTypes::PERMANENT_TRANSFER->value, $transfer->transfer_type);
+        $this->assertSame(TransferType::PERMANENT_TRANSFER->value, $transfer->transfer_type);
         $this->assertSame(TransferStatusTypes::WAITING_TARGET_CLUB->value, $transfer->transfer_status);
         $this->assertDatabaseHas('transfer_financial_details', [
             'transfer_id' => $transfer->id,
@@ -385,7 +385,7 @@ class TransferServiceTest extends TestCase
             ]
         );
 
-        if ($transferType == TransferTypes::PERMANENT_TRANSFER->value) {
+        if ($transferType == TransferType::PERMANENT_TRANSFER->value) {
             TransferFinancialDetails::factory()->create(
                 [
                     'transfer_id' => $transfer->id,

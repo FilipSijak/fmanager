@@ -3,7 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Models\Player;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -46,7 +46,7 @@ class CreateTransferRequest extends FormRequest
                     }
                 },
             ],
-            'transfer_type' => ['required', 'integer', Rule::enum(TransferTypes::class)],
+            'transfer_type' => ['required', 'integer', Rule::enum(TransferType::class)],
             'loan_start' => 'string|nullable',
             'loan_end' => 'string|nullable',
             'amount' => 'integer|required',

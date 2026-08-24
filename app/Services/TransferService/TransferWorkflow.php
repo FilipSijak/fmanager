@@ -55,7 +55,7 @@ class TransferWorkflow
 
         $transferContractOffer = $transfer->transferContractOffer()->firstOrFail();
 
-        if ($transfer->transfer_type != TransferTypes::LOAN_TRANSFER->value &&
+        if ($transfer->transfer_type != TransferType::LOAN_TRANSFER->value &&
             !$this->checkTransferAffordabilityBeforeCompletion($transfer, $transferContractOffer)) {
             return;
         }
@@ -64,9 +64,9 @@ class TransferWorkflow
 
             DB::transaction(function () use ($transfer, $transferContractOffer) {
                 match ($transfer->transfer_type) {
-                    TransferTypes::LOAN_TRANSFER->value => $this->handleLoanTransferPlayerMove($transfer),
-                    TransferTypes::FREE_TRANSFER->value => $this->handleFreeTransferPlayerMove($transfer, $transferContractOffer),
-                    TransferTypes::PERMANENT_TRANSFER->value => $this->handlePermanentTransferPlayerMove($transfer, $transferContractOffer)
+                    TransferType::LOAN_TRANSFER->value => $this->handleLoanTransferPlayerMove($transfer),
+                    TransferType::FREE_TRANSFER->value => $this->handleFreeTransferPlayerMove($transfer, $transferContractOffer),
+                    TransferType::PERMANENT_TRANSFER->value => $this->handlePermanentTransferPlayerMove($transfer, $transferContractOffer)
                 };
 
                 $transferContractOffer->delete();
@@ -188,7 +188,7 @@ class TransferWorkflow
     public function makeAutomaticTransferWithFinancialDetails(
         Player $player,
         Club $buyingClub,
-        int $transferType = TransferTypes::PERMANENT_TRANSFER->value,
+        int $transferType = TransferType::PERMANENT_TRANSFER->value,
         bool $urgentTransfer = false,
     ): Transfer|null {
         $transfer = $this->transferRepository->createAutomaticTransfer(
@@ -197,13 +197,13 @@ class TransferWorkflow
             $transferType,
         );
 
-        if ($transferType != TransferTypes::FREE_TRANSFER->value) {
+        if ($transferType != TransferType::FREE_TRANSFER->value) {
             $transfer->target_club_id = $player->club_id;
         }
 
         $transfer->save();
 
-        if ($transferType != TransferTypes::FREE_TRANSFER->value) {
+        if ($transferType != TransferType::FREE_TRANSFER->value) {
             $this->transferRepository->createTransferFinancialDetails($transfer, $player, $buyingClub, $urgentTransfer);
         }
 

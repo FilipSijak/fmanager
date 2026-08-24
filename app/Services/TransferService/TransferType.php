@@ -2,7 +2,7 @@
 
 namespace App\Services\TransferService;
 
-enum TransferTypes: int
+enum TransferType: int
 {
     case FREE_TRANSFER = 3;
     case LOAN_TRANSFER = 2;

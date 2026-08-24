@@ -19,7 +19,7 @@ use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use App\Services\TransferService\TransferWorkflow;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -324,7 +324,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             'target_club_id' => $sellingClub->id,
             'player_id' => $player->id,
             'transfer_status' => TransferStatusTypes::WAITING_PLAYER->value,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
+            'transfer_type' => TransferType::PERMANENT_TRANSFER->value,
         ]);
 
         TransferContractOffer::factory()->create([
@@ -358,7 +358,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             'target_club_id' => $sellingClub->id,
             'player_id' => $player->id,
             'transfer_status' => TransferStatusTypes::PLAYER_COUNTEROFFER->value,
-            'transfer_type' => TransferTypes::PERMANENT_TRANSFER->value,
+            'transfer_type' => TransferType::PERMANENT_TRANSFER->value,
         ]);
     }
 

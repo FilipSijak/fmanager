@@ -13,7 +13,7 @@ use App\Models\TransferFinancialDetails;
 use App\Services\NewsService\NewsPriority;
 use App\Services\NewsService\NewsType;
 use App\Services\TransferService\TransferStatusTypes;
-use App\Services\TransferService\TransferTypes;
+use App\Services\TransferService\TransferType;
 use App\Services\TransferService\TransferWorkflow;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,7 +39,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             $buyingClub->id,
             $sellingClub->id,
             $player->id,
-            TransferTypes::PERMANENT_TRANSFER->value
+            TransferType::PERMANENT_TRANSFER->value
         );
 
         $this->transferWorkflow()->transferPlayerToNewClub($transfer);
@@ -69,7 +69,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             $buyingClub->id,
             $sellingClub->id,
             $player->id,
-            TransferTypes::PERMANENT_TRANSFER->value
+            TransferType::PERMANENT_TRANSFER->value
         );
         $transfer->instance_id = 2;
         $transfer->save();
@@ -99,7 +99,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             'source_club_id' => $sourceClub->id,
             'season_id' => 1,
             'transfer_status' => TransferStatusTypes::MOVE_PLAYER->value,
-            'transfer_type' => TransferTypes::FREE_TRANSFER->value,
+            'transfer_type' => TransferType::FREE_TRANSFER->value,
         ]);
 
         $this->expectException(ModelNotFoundException::class);
@@ -123,7 +123,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             $buyingClub->id,
             $sellingClub->id,
             $player->id,
-            TransferTypes::PERMANENT_TRANSFER->value
+            TransferType::PERMANENT_TRANSFER->value
         );
         TransferFinancialDetails::factory()->create([
             'transfer_id' => $transfer->id,
@@ -173,7 +173,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             $loanClub->id,
             $parentClub->id,
             $player->id,
-            TransferTypes::LOAN_TRANSFER->value
+            TransferType::LOAN_TRANSFER->value
         );
         TransferContractOffer::factory()->create(['transfer_id' => $transfer->id]);
 
@@ -215,7 +215,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             $newClub->id,
             null,
             $player->id,
-            TransferTypes::FREE_TRANSFER->value
+            TransferType::FREE_TRANSFER->value
         );
         TransferContractOffer::factory()->create([
             'transfer_id' => $transfer->id,
@@ -263,7 +263,7 @@ class TransferWorkflowTransferPlayerTest extends TestCase
             $buyingClub->id,
             $sellingClub->id,
             $player->id,
-            TransferTypes::PERMANENT_TRANSFER->value
+            TransferType::PERMANENT_TRANSFER->value
         );
         TransferFinancialDetails::factory()->create([
             'transfer_id' => $transfer->id,
