@@ -1,0 +1,32 @@
+app/Support/GameContext.php
+  s_e39b540334aad8::t_792f82cd077623 11,13,17,23-24,45-53,68-71
+  s_e39b540334aad8::t_cd42328fe07fd0 26-28
+  s_e39b540334aad8::t_8335921ab78644 25,72
+app/Http/Middleware/SetGameContext.php
+  s_e39b540334aad8::t_792f82cd077623 24
+app/Repositories/TransferSearchRepository.php
+  s_e39b540334aad8::t_38e8242a490af7 18,43,68,98,130,154,185
+  s_e39b540334aad8::t_b434b073c9acc5 73,83,99,102,110,135,141,160,169,186,191-192,195-196
+  s_e39b540334aad8::t_f740cd81930afe 172
+  s_e39b540334aad8::t_efcf6c1c7b2c4e 19,24,26,35,44,49,51,56
+  s_e39b540334aad8::t_eeda946cc344d3 207-209,216-220,223-225
+  s_e39b540334aad8::t_cd42328fe07fd0 9,210-215,221-222
+  s_e39b540334aad8::t_5b0ac6c6be4b07 69,131
+  s_e39b540334aad8::t_f76aabc110740a 10,27-28,37,52-53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "12b4b2638ee3704727132d21e7910e600832a4bb",
+  "prompts": {},
+  "sessions": {
+    "s_e39b540334aad8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0343f-f34d-7e01-bf6b-ad8f00ac60b4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
