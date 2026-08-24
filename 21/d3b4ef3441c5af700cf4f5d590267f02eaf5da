@@ -1,0 +1,64 @@
+database/factories/TransferListFactory.php
+  s_e39b540334aad8::t_08ccc4c363c236 17
+tests/EndToEnd/TransferService/LoanAndFreeTransfersEndToEndTest.php
+  s_e39b540334aad8::t_08ccc4c363c236 39,69,119,141,172,225
+app/Repositories/TransferRepository.php
+  s_e39b540334aad8::t_08ccc4c363c236 34-36,111
+app/Services/TransferService/TransferService.php
+  s_e39b540334aad8::t_08ccc4c363c236 88,96,104,118,122,127
+app/Services/TransferService/TransferWorkflow.php
+  s_e39b540334aad8::t_08ccc4c363c236 58,67-69,191,200,206
+app/Services/TransferService/TransferTypes.php
+  s_e39b540334aad8::t_08ccc4c363c236 5,7-9
+tests/Integration/Services/TransferService/TransferStatusUpdates/SellingClubTransferDecisionsTest.php
+  s_e39b540334aad8::t_08ccc4c363c236 205
+app/Repositories/TransferSearchRepository.php
+  s_e39b540334aad8::t_64d4fb53de192c 120,127,143,156,166-167,169,177,194,204,217,228
+  s_e39b540334aad8::t_08ccc4c363c236 171
+  s_e39b540334aad8::t_e7bf993ffd2108 10,18-59,247-254,257
+  s_e39b540334aad8::t_59bec06d5b18c3 109-110,121,136-137,165,186-187,229,231-235,238,240-245
+  s_e39b540334aad8::t_6dd258f6175be1 225
+  s_e39b540334aad8::t_6c252682be8ea2 64,75-76,132,147,196
+  s_e39b540334aad8::t_98f720633520c7 67,89
+  s_e39b540334aad8::t_8119e25be20095 60
+  s_e39b540334aad8::t_3c4e9d7927d018 246
+tests/Integration/Services/TransferService/TransferSearchRepositoryTest.php
+  s_e39b540334aad8::t_08ccc4c363c236 50,81,271
+  s_e39b540334aad8::t_66b21152d4ed5f 287-290,326-329
+  s_e39b540334aad8::t_1d382a6f106d41 321,325
+app/Services/TransferService/TransferServiceHandler.php
+  s_e39b540334aad8::t_d6f695d1d84138 10,16-17,26,38,105
+  s_e39b540334aad8::t_08ccc4c363c236 48,51,70,76,87,94,102,113,122
+tests/Integration/Services/TransferService/TransferStatusUpdates/PermanentTransferWaitingPlayerStatusUpdatesTest.php
+  s_e39b540334aad8::t_08ccc4c363c236 327,361
+app/Http/Requests/CreateTransferRequest.php
+  s_e39b540334aad8::t_6072fbeb5b903d 6,8,49
+tests/Integration/Services/TransferService/TransferWorkflowTransferPlayerTest.php
+  s_e39b540334aad8::t_08ccc4c363c236 42,72,102,126,176,218,266
+tests/Integration/Services/TransferService/TransferFinancialSettlementTest.php
+  s_e39b540334aad8::t_08ccc4c363c236 105
+app/Services/NewsService/NewsTypes/TransferNews.php
+  s_e39b540334aad8::t_08ccc4c363c236 20
+tests/Integration/Services/TransferService/TransferServiceTest.php
+  s_e39b540334aad8::t_08ccc4c363c236 61,103,144,251,274-276,358,388
+  s_e39b540334aad8::t_74e3f895714fe8 246
+  s_e39b540334aad8::t_793f251a36c9e9 163
+tests/EndToEnd/TransferService/PermanentTransfersEndToEndTest.php
+  s_e39b540334aad8::t_08ccc4c363c236 393
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "21d3b4ef3441c5af700cf4f5d590267f02eaf5da",
+  "prompts": {},
+  "sessions": {
+    "s_e39b540334aad8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0343f-f34d-7e01-bf6b-ad8f00ac60b4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
