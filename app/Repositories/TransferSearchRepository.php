@@ -116,6 +116,7 @@ class TransferSearchRepository extends CoreRepository
             ->where('p.instance_id', $instanceId)
             ->join('transfer_list AS tl', 'tl.player_id', '=', 'p.id')
             ->where('p.club_id', '<>', $buyingClub->id)
+            ->where('p.position', $position)
             ->where('tl.transfer_type', '=', $transferType)
             ->when($transferType === TransferTypes::PERMANENT_TRANSFER, function ($query) use ($highestPotentialPlayer) {
                 return $query->where('p.potential', '>', $highestPotentialPlayer ? $highestPotentialPlayer->potential : 0);
@@ -178,6 +179,7 @@ class TransferSearchRepository extends CoreRepository
             ->where('p.is_retired', false)
             ->where('p.instance_id', $instanceId)
             ->whereNull('p.contract_id')
+            ->where('p.position', $position)
             ->where('p.potential', '>=', $club->rank * 10 - 20)
             ->when($luxury && $highestPotentialPlayer, function ($query) use ($highestPotentialPlayer) {
                 $query->where('p.potential', '>', $highestPotentialPlayer->potential);
