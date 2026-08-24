@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('players_contracts', function (Blueprint $table) {
             $table->increments('id');
             $table->date('contract_start');
-            $table->date('contract_end');
+            $table->date('contract_end')->index('player_contract_end_idx');
             $table->integer('salary')->unsigned();
             $table->integer('appearance')->unsigned()->nullable();
             $table->integer('clean_sheet')->unsigned()->nullable();

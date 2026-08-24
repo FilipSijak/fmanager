@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateTransfersTable extends Migration
 {
@@ -27,6 +27,11 @@ class CreateTransfersTable extends Migration
             $table->integer('transfer_type');
             $table->date('loan_start')->nullable();
             $table->date('loan_end')->nullable();
+
+            $table->index(
+                ['player_id', 'instance_id', 'source_club_id', 'offer_date'],
+                'transfer_recent_offer_lookup_idx'
+            );
         });
     }
 
