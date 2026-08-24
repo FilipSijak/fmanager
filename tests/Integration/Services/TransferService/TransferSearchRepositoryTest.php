@@ -11,6 +11,7 @@ use App\Models\Transfer;
 use App\Models\TransferList;
 use App\Repositories\TransferSearchRepository;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
+use App\Services\SearchService\PlayerSearchQuery;
 use App\Services\TransferService\TransferType;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -372,11 +373,11 @@ class TransferSearchRepositoryTest extends TestCase
             PlayerFields::PHYSICAL_FIELDS,
             PlayerFields::PERSON_ATTRIBUTE_CATEGORIES,
         );
-        $constant = (new \ReflectionClass(TransferSearchRepository::class))
+        $constant = (new \ReflectionClass(PlayerSearchQuery::class))
             ->getReflectionConstant('SEARCH_COLUMNS');
 
         $this->assertNotFalse($constant);
-        $actual = array_keys($constant->getValue());
+        $actual = $constant->getValue();
         sort($expected);
         sort($actual);
 

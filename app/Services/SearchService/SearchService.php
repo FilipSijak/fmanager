@@ -2,35 +2,19 @@
 
 namespace App\Services\SearchService;
 
-use App\Models\Club;
 use App\Models\Player;
-use App\Repositories\TransferSearchRepository;
-use Illuminate\Support\Collection;
+use App\Repositories\PlayerSearchRepository;
+use Illuminate\Database\Eloquent\Collection;
 
 class SearchService
 {
-    private TransferSearchRepository $transferSearchRepository;
+    public function __construct(private readonly PlayerSearchRepository $playerSearchRepository) {}
 
-    public function __construct(TransferSearchRepository $transferSearchRepository)
+    /** @return Collection<int, Player> */
+    public function searchForPlayersByAttributes(array $attributes): Collection
     {
-        $this->transferSearchRepository = $transferSearchRepository;
+        return $this->playerSearchRepository->findByAttributes($attributes);
     }
 
-    public function transferSearchForPlayerByAttributes(Club $club, array $playerAttributes): Collection
-    {
-        $searchableAttribute = [];
-
-        foreach (current($playerAttributes) as $attribute => $value) {
-            if ($value) {
-                $searchableAttribute[$attribute] = $value;
-            }
-        }
-
-        return $this->transferSearchRepository->findPlayersByAttributes($club, $searchableAttribute);
-    }
-
-    public function playerComparison(Player $playerOne, Player $playerTwo)
-    {
-
-    }
+    public function playerComparison(Player $playerOne, Player $playerTwo) {}
 }

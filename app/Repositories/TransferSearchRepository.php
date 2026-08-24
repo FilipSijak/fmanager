@@ -4,10 +4,10 @@ namespace App\Repositories;
 
 use App\Models\Club;
 use App\Models\Player;
+use App\Services\SearchService\PlayerSearchQuery;
 use App\Services\TransferService\TransferSearchPolicies\TransferSearchCriteria;
 use App\Services\TransferService\TransferType;
 use App\Support\GameContext;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 class TransferSearchRepository
@@ -15,68 +15,21 @@ class TransferSearchRepository
     public function __construct(
         private readonly GameContext $gameContext,
         private readonly TransferSearchCriteria $criteria,
+        private readonly PlayerSearchQuery $playerSearchQuery,
     ) {}
-
-    private const SEARCH_COLUMNS = [
-        'corners' => 'p.corners',
-        'crossing' => 'p.crossing',
-        'dribbling' => 'p.dribbling',
-        'finishing' => 'p.finishing',
-        'first_touch' => 'p.first_touch',
-        'freeKick' => 'p.freeKick',
-        'heading' => 'p.heading',
-        'long_shots' => 'p.long_shots',
-        'long_throws' => 'p.long_throws',
-        'marking' => 'p.marking',
-        'passing' => 'p.passing',
-        'penalty_taking' => 'p.penalty_taking',
-        'tackling' => 'p.tackling',
-        'technique' => 'p.technique',
-        'aggression' => 'p.aggression',
-        'anticipation' => 'p.anticipation',
-        'bravery' => 'p.bravery',
-        'composure' => 'p.composure',
-        'concentration' => 'p.concentration',
-        'creativity' => 'p.creativity',
-        'decisions' => 'p.decisions',
-        'determination' => 'p.determination',
-        'flair' => 'p.flair',
-        'leadership' => 'p.leadership',
-        'of_the_ball' => 'p.of_the_ball',
-        'positioning' => 'p.positioning',
-        'teamwork' => 'p.teamwork',
-        'workrate' => 'p.workrate',
-        'acceleration' => 'p.acceleration',
-        'agility' => 'p.agility',
-        'balance' => 'p.balance',
-        'jumping' => 'p.jumping',
-        'natural_fitness' => 'p.natural_fitness',
-        'pace' => 'p.pace',
-        'stamina' => 'p.stamina',
-        'strength' => 'p.strength',
-        'technical' => 'p.technical',
-        'mental' => 'p.mental',
-        'physical' => 'p.physical',
-    ];
 
     /**  Collection<int, Player> */
     public function findPlayersByAttributes(Club $club, array $searchableAttributes): Collection
     {
         $instanceId = $this->gameContext->instanceId();
-        $searchableAttributes = $this->qualifiedSearchableAttributes($searchableAttributes);
         $recentOfferCutoff = $this->criteria->recentOfferCutoff($this->gameContext->instanceDate());
 
-        return $this->activePlayerSearchQuery()
+        return $this->playerSearchQuery->activeAliasedMatchingAttributes($searchableAttributes)
             ->leftJoin('transfers AS t', function ($query) use ($instanceId, $club, $recentOfferCutoff) {
                 $query->on('t.player_id', '=', 'p.id')
                     ->where('t.instance_id', '=', $instanceId)
                     ->where('t.source_club_id', '=', $club->id)
                     ->where('t.offer_date', '>', $recentOfferCutoff);
-            })
-            ->where(function ($query) use ($searchableAttributes) {
-                foreach ($searchableAttributes as $column => $value) {
-                    $query->where($column, '>=', $value);
-                }
             })
             ->where('p.club_id', '<>', $club->id)
             ->whereNull('t.player_id')
@@ -89,7 +42,7 @@ class TransferSearchRepository
         $instanceId = $this->gameContext->instanceId();
         $recentOfferCutoff = $this->criteria->recentOfferCutoff($this->gameContext->instanceDate());
 
-        $collection = $this->activePlayerSearchQuery()
+        $collection = $this->playerSearchQuery->activeAliased()
             ->leftJoin('transfers AS t', function ($query) use ($instanceId, $club, $recentOfferCutoff) {
                 $query->on('t.player_id', '=', 'p.id')
                     ->where('t.instance_id', '=', $instanceId)
@@ -109,7 +62,7 @@ class TransferSearchRepository
 
     public function findUpgradeTargetByPosition(Club $buyingClub, string $position, int $clubBudget): ?Player
     {
-        $highestPotential = $this->activePlayers()
+        $highestPotential = $this->playerSearchQuery->active()
             ->where('position', $position)
             ->where('club_id', $buyingClub->id)
             ->max('potential');
@@ -118,7 +71,7 @@ class TransferSearchRepository
             return null;
         }
 
-        return $this->activePlayers()
+        return $this->playerSearchQuery->active()
             ->where('position', $position)
             ->where('potential', '>=', $this->criteria->minimumUpgradePotential((int) $highestPotential))
             ->where('club_id', '<>', $buyingClub->id)
@@ -134,12 +87,12 @@ class TransferSearchRepository
         string $position,
         int $clubBudget = 0
     ): ?Player {
-        $highestPotential = (int) ($this->activePlayers()
+        $highestPotential = (int) ($this->playerSearchQuery->active()
             ->where('position', $position)
             ->where('club_id', $buyingClub->id)
             ->max('potential') ?? 0);
 
-        return $this->activePlayerSearchQuery()
+        return $this->playerSearchQuery->activeAliased()
             ->join('transfer_list AS tl', 'tl.player_id', '=', 'p.id')
             ->where('p.club_id', '<>', $buyingClub->id)
             ->where('p.position', $position)
@@ -163,14 +116,14 @@ class TransferSearchRepository
         Club $club,
         string $position,
     ): ?Player {
-        $averagePlayerPotentialForClub = $this->activePlayers()
+        $averagePlayerPotentialForClub = $this->playerSearchQuery->active()
             ->where('club_id', $club->id)
             ->avg('potential');
         $minimumPotential = $this->criteria->minimumLoanPotential(
             $averagePlayerPotentialForClub === null ? null : (float) $averagePlayerPotentialForClub
         );
 
-        return $this->activePlayerSearchQuery()
+        return $this->playerSearchQuery->activeAliased()
             ->join('transfer_list AS tl', 'tl.player_id', '=', 'p.id')
             ->where('tl.transfer_type', '=', TransferType::LOAN_TRANSFER->value)
             ->where('p.club_id', '<>', $club->id)
@@ -186,7 +139,7 @@ class TransferSearchRepository
         $highestPotentialPlayer = null;
 
         if ($luxury) {
-            $highestPotentialPlayer = $this->activePlayers()
+            $highestPotentialPlayer = $this->playerSearchQuery->active()
                 ->where('position', $position)
                 ->where('club_id', $club->id)
                 ->orderByDesc('potential')
@@ -194,7 +147,7 @@ class TransferSearchRepository
                 ->first();
         }
 
-        return $this->activePlayerSearchQuery()
+        return $this->playerSearchQuery->activeAliased()
             ->whereNull('p.contract_id')
             ->whereNull('p.club_id')
             ->where('p.position', $position)
@@ -219,7 +172,7 @@ class TransferSearchRepository
         [$contractStart, $contractEnd] = $this->criteria
             ->expiringContractWindow($this->gameContext->instanceDate());
 
-        return $this->activePlayerSearchQuery()
+        return $this->playerSearchQuery->activeAliased()
             ->join('players_contracts AS pc', function ($query) use ($contractStart, $contractEnd) {
                 $query->on('pc.id', '=', 'p.contract_id')
                     ->whereBetween('pc.contract_end', [$contractStart, $contractEnd]);
@@ -231,34 +184,5 @@ class TransferSearchRepository
             ->orderByDesc('p.potential')
             ->orderBy('p.id')
             ->first();
-    }
-
-    private function activePlayers(): Builder
-    {
-        return Player::query()
-            ->forInstance($this->gameContext->instanceId())
-            ->active();
-    }
-
-    private function activePlayerSearchQuery(): Builder
-    {
-        return Player::query()
-            ->from('players AS p')
-            ->select('p.*')
-            ->where('p.instance_id', $this->gameContext->instanceId())
-            ->where('p.is_retired', false);
-    }
-
-    private function qualifiedSearchableAttributes(array $searchableAttributes): array
-    {
-        $qualifiedAttributes = [];
-
-        foreach ($searchableAttributes as $attribute => $value) {
-            $column = self::SEARCH_COLUMNS[$attribute]
-                ?? throw new \InvalidArgumentException("Unsupported player search attribute: {$attribute}");
-            $qualifiedAttributes[$column] = $value;
-        }
-
-        return $qualifiedAttributes;
     }
 }
