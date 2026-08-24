@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\TransferService\TransferTypes;
 use App\Support\GameContext;
 use Carbon\Carbon;
@@ -15,6 +16,7 @@ class TransferSearchRepository extends CoreRepository
 {
     public function playersByAttributes(Club $club, array $searchableAttribute)
     {
+        $searchableAttribute = $this->validatedSearchableAttributes($searchableAttribute);
         $instanceId = $this->instanceId();
         $recentOfferCutoff = Carbon::parse($this->instanceDate($instanceId))->subYears(2);
 
@@ -29,7 +31,7 @@ class TransferSearchRepository extends CoreRepository
             })
             ->where(function ($query) use ($searchableAttribute) {
                 foreach ($searchableAttribute as $attribute => $value) {
-                    $query->where($attribute, '>=', $value);
+                    $query->where("p.{$attribute}", '>=', $value);
                 }
             })
             ->where('p.instance_id', $instanceId)
@@ -183,18 +185,17 @@ class TransferSearchRepository extends CoreRepository
         int $clubBudget
     ): ?Player {
         $instanceId = $this->instanceId();
-        $instanceDate = $this->instanceDate($instanceId);
+        $instanceDate = Carbon::parse($this->instanceDate($instanceId));
+        $contractStart = $instanceDate->toDateString();
+        $contractEnd = $instanceDate->copy()->addMonths(6)->toDateString();
 
         $player = DB::table('players AS p')
             ->select('p.*')
             ->where('p.is_retired', false)
             ->where('p.instance_id', $instanceId)
-            ->join('players_contracts AS pc', function ($query) use ($instanceDate) {
+            ->join('players_contracts AS pc', function ($query) use ($contractStart, $contractEnd) {
                 $query->on('pc.id', '=', 'p.contract_id')
-                    ->whereRaw("
-                        `pc`.`contract_end` BETWEEN DATE('".$instanceDate."')
-                        AND DATE_ADD('".$instanceDate."', INTERVAL 6 MONTH)
-                    ");
+                    ->whereBetween('pc.contract_end', [$contractStart, $contractEnd]);
             })
             ->where('p.club_id', '<>', $club->id)
             ->where('p.potential', '>=', $club->rank * 10 - 20)
@@ -203,6 +204,24 @@ class TransferSearchRepository extends CoreRepository
             ->get();
 
         return Player::hydrate($player->toArray())->first();
+    }
+
+    private function validatedSearchableAttributes(array $searchableAttributes): array
+    {
+        $allowedAttributes = array_merge(
+            PlayerFields::TECHNICAL_FIELDS,
+            PlayerFields::MENTAL_FIELDS,
+            PlayerFields::PHYSICAL_FIELDS,
+            PlayerFields::PERSON_ATTRIBUTE_CATEGORIES,
+        );
+
+        foreach (array_keys($searchableAttributes) as $attribute) {
+            if (! in_array($attribute, $allowedAttributes, true)) {
+                throw new \InvalidArgumentException("Unsupported player search attribute: {$attribute}");
+            }
+        }
+
+        return $searchableAttributes;
     }
 
     private function instanceDate(int $instanceId): string
