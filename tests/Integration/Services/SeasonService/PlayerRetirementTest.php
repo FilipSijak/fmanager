@@ -17,6 +17,7 @@ use App\Repositories\TransferSearchRepository;
 use App\Services\SeasonService\PlayerRetirement;
 use App\Services\SeasonService\RetirementDecision;
 use App\Services\TransferService\TransferStatusTypes;
+use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -99,8 +100,10 @@ class PlayerRetirementTest extends TestCase
             ]);
         }
 
+        app(GameContext::class)->setInstanceId($instance->id);
+
         $this->assertNull(
-            (new TransferSearchRepository)->findFreePlayerForPosition($club, 'CB')
+            app(TransferSearchRepository::class)->findFreePlayerForPosition($club, 'CB')
         );
 
         $this->assertDatabaseMissing('transfer_list', ['player_id' => $age32->id]);

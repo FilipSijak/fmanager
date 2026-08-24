@@ -3,7 +3,6 @@
 namespace App\Repositories;
 
 use App\Models\Club;
-use App\Models\Instance;
 use App\Models\Player;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\TransferService\TransferTypes;
@@ -11,13 +10,16 @@ use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-class TransferSearchRepository extends CoreRepository
+class TransferSearchRepository
 {
+    public function __construct(
+        private readonly GameContext $gameContext,
+    ) {}
     public function findPlayersByAttributes(Club $club, array $searchableAttributes): Collection
     {
         $searchableAttributes = $this->validatedSearchableAttributes($searchableAttributes);
-        $instanceId = $this->instanceId();
-        $recentOfferCutoff = Carbon::parse($this->instanceDate($instanceId))->subYears(2);
+        $instanceId = $this->gameContext->instanceId();
+        $recentOfferCutoff = Carbon::parse($this->gameContext->instanceDate())->subYears(2);
 
         return Player::query()->from('players AS p')
             ->select('p.*')
@@ -41,8 +43,8 @@ class TransferSearchRepository extends CoreRepository
 
     public function findPlayersByPositionForClub(Club $club, string $position): Collection
     {
-        $instanceId = $this->instanceId();
-        $recentOfferCutoff = Carbon::parse($this->instanceDate($instanceId))->subYears(2);
+        $instanceId = $this->gameContext->instanceId();
+        $recentOfferCutoff = Carbon::parse($this->gameContext->instanceDate())->subYears(2);
 
         $collection = Player::query()->from('players AS p')
             ->select('p.*')
@@ -67,7 +69,7 @@ class TransferSearchRepository extends CoreRepository
 
     public function findLuxuryPlayerForPosition(Club $buyingClub, string $position, int $clubBudget): ?Player
     {
-        $instanceId = $this->instanceId();
+        $instanceId = $this->gameContext->instanceId();
 
         $highestPotentialPlayer = Player::where('position', $position)
             ->where('is_retired', false)
@@ -100,7 +102,7 @@ class TransferSearchRepository extends CoreRepository
         string $position,
         int $clubBudget = 0
     ): ?Player {
-        $instanceId = $this->instanceId();
+        $instanceId = $this->gameContext->instanceId();
 
         $highestPotentialPlayer = Player::where('position', $position)
             ->where('is_retired', false)
@@ -135,7 +137,7 @@ class TransferSearchRepository extends CoreRepository
         Club $club,
         string $position,
     ): ?Player {
-        $instanceId = $this->instanceId();
+        $instanceId = $this->gameContext->instanceId();
 
         // find average potential for players within club
         // loan offer should be fore more than that
@@ -161,7 +163,7 @@ class TransferSearchRepository extends CoreRepository
 
     public function findFreePlayerForPosition(Club $club, string $position, bool $luxury = false): ?Player
     {
-        $instanceId = $this->instanceId();
+        $instanceId = $this->gameContext->instanceId();
         $highestPotentialPlayer = null;
 
         if ($luxury) {
@@ -196,8 +198,8 @@ class TransferSearchRepository extends CoreRepository
         string $position,
         int $clubBudget
     ): ?Player {
-        $instanceId = $this->instanceId();
-        $instanceDate = Carbon::parse($this->instanceDate($instanceId));
+        $instanceId = $this->gameContext->instanceId();
+        $instanceDate = Carbon::parse($this->gameContext->instanceDate());
         $contractStart = $instanceDate->toDateString();
         $contractEnd = $instanceDate->copy()->addMonths(6)->toDateString();
 
@@ -237,22 +239,4 @@ class TransferSearchRepository extends CoreRepository
         return $searchableAttributes;
     }
 
-    private function instanceDate(int $instanceId): string
-    {
-        $gameContext = app(GameContext::class);
-
-        if ($gameContext->hasInstanceDate()) {
-            return $gameContext->instanceDate();
-        }
-
-        $instanceDate = Instance::query()->whereKey($instanceId)->value('instance_date');
-
-        if ($instanceDate === null) {
-            throw new \LogicException("Active game instance {$instanceId} does not exist.");
-        }
-
-        $gameContext->setInstanceDate($instanceDate);
-
-        return $instanceDate;
-    }
 }

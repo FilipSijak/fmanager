@@ -50,8 +50,8 @@ class TransferSearchRepositoryTest extends TestCase
             ['player_id' =>  $listedPlayer->id, 'club_id' => $sellingClub->id, 'transfer_type' => TransferTypes::PERMANENT_TRANSFER]
         );
 
-        $transferSearchRepository = new TransferSearchRepository();
-        $transferSearchRepository->setInstanceId(1);
+        $transferSearchRepository = app(TransferSearchRepository::class);
+        app(GameContext::class)->setInstanceId(1);
         $clubBudget = $buyingClub->account->transfer_budget;
 
         $player = $transferSearchRepository->findListedPlayer($buyingClub, TransferTypes::PERMANENT_TRANSFER, $position, $clubBudget);
@@ -89,8 +89,8 @@ class TransferSearchRepositoryTest extends TestCase
             ]
         );
 
-        $transferSearchRepository = new TransferSearchRepository();
-        $transferSearchRepository->setInstanceId(1);
+        $transferSearchRepository = app(TransferSearchRepository::class);
+        app(GameContext::class)->setInstanceId(1);
 
         $player = $transferSearchRepository->findListedLoanPlayer($buyingClub, $position);
 
@@ -125,8 +125,8 @@ class TransferSearchRepositoryTest extends TestCase
             ]
         );
 
-        $transferSearchRepository = new TransferSearchRepository();
-        $transferSearchRepository->setInstanceId(1);
+        $transferSearchRepository = app(TransferSearchRepository::class);
+        app(GameContext::class)->setInstanceId(1);
         $clubBudget = $buyingClub->account->transfer_budget;
 
         $player = $transferSearchRepository->findLuxuryPlayerForPosition($buyingClub, $position, $clubBudget);
@@ -153,10 +153,9 @@ class TransferSearchRepositoryTest extends TestCase
             ]
         );
         PlayerContract::factory()->create(['id' => 1, 'contract_end' => '2024-01-20']);
-        Instance::factory()->create(['id' =>'1', 'instance_date' => '2023-08-20']);
-
-        $transferSearchRepository = new TransferSearchRepository();
-        $transferSearchRepository->setInstanceId(1);
+        Instance::factory()->create(['id' => 1, 'instance_date' => '2023-08-20']);
+        $transferSearchRepository = app(TransferSearchRepository::class);
+        app(GameContext::class)->set(1, null, '2023-08-20');
         $clubBudget = $buyingClub->account->transfer_budget;
 
         $player = $transferSearchRepository->findPlayerWithUnprotectedContract($buyingClub, $position, $clubBudget);
@@ -350,6 +349,6 @@ class TransferSearchRepositoryTest extends TestCase
     {
         app(GameContext::class)->set(1, null, $instanceDate);
 
-        return new TransferSearchRepository;
+        return app(TransferSearchRepository::class);
     }
 }

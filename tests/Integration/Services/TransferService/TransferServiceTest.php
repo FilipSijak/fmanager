@@ -226,8 +226,6 @@ class TransferServiceTest extends TestCase
 
         $transferRepository->setSeasonId(1);
         $transferRepository->setInstanceId(1);
-        $transferSearchRepository->setInstanceId(1);
-        $transferSearchRepository->setSeasonId(1);
 
         $transferServiceHandler = new TransferServiceHandler(
             $transferSearchRepository,
@@ -345,7 +343,7 @@ class TransferServiceTest extends TestCase
             'value' => 40000000,
         ]);
 
-        app(GameContext::class)->set(1, 1);
+        app(GameContext::class)->set(1, 1, '2024-01-01');
         app(TransferServiceHandler::class)->luxuryTransferAttempt(
             $buyingClub,
             68000000,
