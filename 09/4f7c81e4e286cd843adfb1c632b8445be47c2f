@@ -1,0 +1,27 @@
+app/Repositories/TransferSearchRepository.php
+  s_e39b540334aad8::t_89715f56362a10 18,22,31-32,47,61-62,65,76-77,91,101,109-110,113,120,123,126-127,130,141,145,155,158,161,171,176,186,189,202,213-214,217
+  s_e39b540334aad8::t_41b11d714eb8ac 16,90,154,172,185
+  s_e39b540334aad8::t_64280bc9bccd65 68,133,192
+app/Services/SearchService/SearchService.php
+  s_e39b540334aad8::t_64280bc9bccd65 29
+app/Services/TransferService/TransferServiceHandler.php
+  s_e39b540334aad8::t_64280bc9bccd65 75,100,118
+tests/Integration/Services/TransferService/TransferSearchRepositoryTest.php
+  s_e39b540334aad8::t_64280bc9bccd65 93,130,160
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "094f7c81e4e286cd843adfb1c632b8445be47c2f",
+  "prompts": {},
+  "sessions": {
+    "s_e39b540334aad8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0343f-f34d-7e01-bf6b-ad8f00ac60b4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
