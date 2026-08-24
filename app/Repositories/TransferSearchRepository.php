@@ -4,9 +4,9 @@ namespace App\Repositories;
 
 use App\Models\Club;
 use App\Models\Player;
+use App\Services\TransferService\TransferSearchPolicies\TransferSearchCriteria;
 use App\Services\TransferService\TransferType;
 use App\Support\GameContext;
-use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -14,6 +14,7 @@ class TransferSearchRepository
 {
     public function __construct(
         private readonly GameContext $gameContext,
+        private readonly TransferSearchCriteria $criteria,
     ) {}
 
     private const SEARCH_COLUMNS = [
@@ -63,7 +64,7 @@ class TransferSearchRepository
     {
         $instanceId = $this->gameContext->instanceId();
         $searchableAttributes = $this->qualifiedSearchableAttributes($searchableAttributes);
-        $recentOfferCutoff = Carbon::parse($this->gameContext->instanceDate())->subYears(2);
+        $recentOfferCutoff = $this->criteria->recentOfferCutoff($this->gameContext->instanceDate());
 
         return $this->activePlayerSearchQuery()
             ->leftJoin('transfers AS t', function ($query) use ($instanceId, $club, $recentOfferCutoff) {
@@ -86,7 +87,7 @@ class TransferSearchRepository
     public function findTransferTargetsByPosition(Club $club, string $position): Collection
     {
         $instanceId = $this->gameContext->instanceId();
-        $recentOfferCutoff = Carbon::parse($this->gameContext->instanceDate())->subYears(2);
+        $recentOfferCutoff = $this->criteria->recentOfferCutoff($this->gameContext->instanceDate());
 
         $collection = $this->activePlayerSearchQuery()
             ->leftJoin('transfers AS t', function ($query) use ($instanceId, $club, $recentOfferCutoff) {
@@ -98,7 +99,7 @@ class TransferSearchRepository
             ->whereNull('t.player_id')
             ->where('p.club_id', '<>', $club->id)
             ->where('p.position', '=', $position)
-            ->where('p.potential', '>=', $club->rank * 10 - 20)
+            ->where('p.potential', '>=', $this->criteria->minimumPotentialFor($club))
             ->orderByDesc('p.potential')
             ->orderBy('p.id')
             ->get();
@@ -119,7 +120,7 @@ class TransferSearchRepository
 
         return $this->activePlayers()
             ->where('position', $position)
-            ->where('potential', '>', $highestPotential)
+            ->where('potential', '>=', $this->criteria->minimumUpgradePotential((int) $highestPotential))
             ->where('club_id', '<>', $buyingClub->id)
             ->where('value', '<=', $clubBudget)
             ->orderByDesc('potential')
@@ -143,10 +144,14 @@ class TransferSearchRepository
             ->where('p.club_id', '<>', $buyingClub->id)
             ->where('p.position', $position)
             ->where('tl.transfer_type', $transferType->value)
-            ->when($transferType === TransferType::PERMANENT_TRANSFER, function ($query) use ($highestPotential) {
-                return $query->where('p.potential', '>', $highestPotential);
+            ->when($this->criteria->requiresUpgrade($transferType), function ($query) use ($highestPotential) {
+                return $query->where(
+                    'p.potential',
+                    '>=',
+                    $this->criteria->minimumUpgradePotential($highestPotential)
+                );
             })
-            ->when($transferType === TransferType::PERMANENT_TRANSFER, function ($query) use ($clubBudget) {
+            ->when($this->criteria->requiresUpgrade($transferType), function ($query) use ($clubBudget) {
                 return $query->where('p.value', '<=', $clubBudget);
             })
             ->orderByDesc('p.potential')
@@ -161,13 +166,16 @@ class TransferSearchRepository
         $averagePlayerPotentialForClub = $this->activePlayers()
             ->where('club_id', $club->id)
             ->avg('potential');
+        $minimumPotential = $this->criteria->minimumLoanPotential(
+            $averagePlayerPotentialForClub === null ? null : (float) $averagePlayerPotentialForClub
+        );
 
         return $this->activePlayerSearchQuery()
             ->join('transfer_list AS tl', 'tl.player_id', '=', 'p.id')
             ->where('tl.transfer_type', '=', TransferType::LOAN_TRANSFER->value)
             ->where('p.club_id', '<>', $club->id)
             ->where('p.position', '=', $position)
-            ->where('p.potential', '>=', $averagePlayerPotentialForClub)
+            ->where('p.potential', '>=', $minimumPotential)
             ->orderByDesc('p.potential')
             ->orderBy('p.id')
             ->first();
@@ -190,9 +198,13 @@ class TransferSearchRepository
             ->whereNull('p.contract_id')
             ->whereNull('p.club_id')
             ->where('p.position', $position)
-            ->where('p.potential', '>=', $club->rank * 10 - 20)
+            ->where('p.potential', '>=', $this->criteria->minimumPotentialFor($club))
             ->when($luxury && $highestPotentialPlayer, function ($query) use ($highestPotentialPlayer) {
-                $query->where('p.potential', '>', $highestPotentialPlayer->potential);
+                $query->where(
+                    'p.potential',
+                    '>=',
+                    $this->criteria->minimumUpgradePotential($highestPotentialPlayer->potential)
+                );
             })
             ->orderByDesc('p.potential')
             ->orderBy('p.id')
@@ -204,9 +216,8 @@ class TransferSearchRepository
         string $position,
         int $clubBudget
     ): ?Player {
-        $instanceDate = Carbon::parse($this->gameContext->instanceDate());
-        $contractStart = $instanceDate->toDateString();
-        $contractEnd = $instanceDate->copy()->addMonths(6)->toDateString();
+        [$contractStart, $contractEnd] = $this->criteria
+            ->expiringContractWindow($this->gameContext->instanceDate());
 
         return $this->activePlayerSearchQuery()
             ->join('players_contracts AS pc', function ($query) use ($contractStart, $contractEnd) {
@@ -214,7 +225,7 @@ class TransferSearchRepository
                     ->whereBetween('pc.contract_end', [$contractStart, $contractEnd]);
             })
             ->where('p.club_id', '<>', $club->id)
-            ->where('p.potential', '>=', $club->rank * 10 - 20)
+            ->where('p.potential', '>=', $this->criteria->minimumPotentialFor($club))
             ->where('p.position', '=', $position)
             ->where('p.value', '<=', $clubBudget)
             ->orderByDesc('p.potential')
