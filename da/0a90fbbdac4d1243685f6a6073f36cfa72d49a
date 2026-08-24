@@ -1,0 +1,30 @@
+app/Repositories/CoreRepository.php
+  s_e39b540334aad8::t_a93274a94fd180 29-33
+tests/Integration/Services/SeasonService/PlayerRetirementTest.php
+  s_e39b540334aad8::t_6e96d4c254f6e4 20,103
+  s_e39b540334aad8::t_0ce1ee8c83da4c 106
+  s_e39b540334aad8::t_ab842a4abcaed4 104
+tests/Integration/Services/TransferService/TransferSearchRepositoryTest.php
+  s_e39b540334aad8::t_67d141bb96f4dc 156,158
+  s_e39b540334aad8::t_0ce1ee8c83da4c 53-54,92-93,128-129,157,352
+tests/Integration/Services/TransferService/TransferServiceTest.php
+  s_e39b540334aad8::t_ab45deaa09c037 346
+app/Repositories/TransferSearchRepository.php
+  s_e39b540334aad8::t_0ce1ee8c83da4c 13,15-17,21-22,46-47,72,105,140,166,201-202
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "da0a90fbbdac4d1243685f6a6073f36cfa72d49a",
+  "prompts": {},
+  "sessions": {
+    "s_e39b540334aad8": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0343f-f34d-7e01-bf6b-ad8f00ac60b4",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
