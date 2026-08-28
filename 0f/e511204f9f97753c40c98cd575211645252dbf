@@ -1,0 +1,25 @@
+tests/Integration/Club/ClubRepositoryTest.php
+  s_815c6ba917518c::t_7d52b1547d2aaa 23,25
+  s_815c6ba917518c::t_89ca94a00fbfc5 1-22,24,26-151
+app/DataModels/ClubFinancialSummary.php
+  s_815c6ba917518c::t_25e260eb77efaa 1-16
+app/Repositories/ClubRepository.php
+  s_815c6ba917518c::t_25e260eb77efaa 5-10,12,16-27,29-58,61-91,93,95-99,102-124,127-139,141-147,149-157
+  s_815c6ba917518c::t_7d52b1547d2aaa 94,125-126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "0fe511204f9f97753c40c98cd575211645252dbf",
+  "prompts": {},
+  "sessions": {
+    "s_815c6ba917518c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a04a04-c20b-7532-a9fd-98f0ae898bd2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
