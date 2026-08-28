@@ -2,6 +2,7 @@
 
 namespace App\Services\InstanceService;
 
+use App\Events\MonthlyUpdate;
 use App\Events\NextDay;
 use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
@@ -75,6 +76,7 @@ class InstanceService implements IInstanceService
         $instance = $this->getInstance();
         $this->season = Season::findOrFail($instance->season_id);
         $currentGameDate = Carbon::parse($instance->instance_date);
+        $isMonthlyUpdate = $currentGameDate->day === 1;
 
         event(new NextDay($instance));
 
@@ -100,6 +102,10 @@ class InstanceService implements IInstanceService
         $instance->instance_date = $currentGameDate->addDay()->format('Y-m-d');
 
         $instance->save();
+
+        if ($isMonthlyUpdate) {
+            event(new MonthlyUpdate($instance));
+        }
     }
 
     private function simulateGames()
