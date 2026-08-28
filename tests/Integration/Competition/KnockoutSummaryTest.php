@@ -7,29 +7,29 @@ use App\Models\Game;
 use App\Models\Stadium;
 use App\Repositories\GameRepository;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
+use App\Support\GameContext;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use function GuzzleHttp\Promise\all;
 
 class KnockoutSummaryTest extends TestCase
 {
     use RefreshDatabase;
 
     #[Test]
-    public function itChecksGameInfoForTheCurrentRound()
+    public function it_checks_game_info_for_the_current_round()
     {
-        (new DatabaseSeeder())->run();
+        (new DatabaseSeeder)->run();
 
         Club::factory()
             ->count(4)
             ->sequence(function (Sequence $sequence) {
                 return [
                     'id' => $sequence->index + 1,
-                    'name' => 'ClubName' . $sequence->index + 1
+                    'name' => 'ClubName'.$sequence->index + 1,
                 ];
             })
             ->create();
@@ -39,8 +39,8 @@ class KnockoutSummaryTest extends TestCase
             ->sequence(function (Sequence $sequence) {
                 return [
                     'id' => $sequence->index + 1,
-                    'name' => 'StadiumName' . $sequence->index + 1,
-                    'instance_id' => 1
+                    'name' => 'StadiumName'.$sequence->index + 1,
+                    'instance_id' => 1,
                 ];
             })
             ->create();
@@ -57,17 +57,16 @@ class KnockoutSummaryTest extends TestCase
                     'stadium_id' => $sequence->index + 1,
                     'instance_id' => 1,
                     'season_id' => 1,
-                    'competition_id' => 1
+                    'competition_id' => 1,
                 ];
             })
             ->create();
 
-        $gameRepository = new GameRepository();
-        $gameRepository->setSeasonId(1);
-        $gameRepository->setInstanceId(1);
+        app(GameContext::class)->set(1, 1);
+        $gameRepository = app(GameRepository::class);
 
         $knockoutSummaryParser = new KnockoutSummaryRoundsData($gameRepository);
-        $summary = file_get_contents(__DIR__ . '/../../fixtures/knockoutSummaryGameInfoForRound.json');
+        $summary = file_get_contents(__DIR__.'/../../fixtures/knockoutSummaryGameInfoForRound.json');
 
         $actualResult = $knockoutSummaryParser->displayCurrentRound($summary);
         $expectedResult = [
@@ -79,7 +78,7 @@ class KnockoutSummaryTest extends TestCase
                     'away_team_goals' => null,
                     'stadium_name' => 'StadiumName1',
                     'home_team' => 'ClubName1',
-                    'away_team' => 'ClubName2'
+                    'away_team' => 'ClubName2',
                 ],
                 'game2' => [
                     'match_start' => Carbon::now()->format('Y-m-d H:m:00'),
@@ -88,7 +87,7 @@ class KnockoutSummaryTest extends TestCase
                     'away_team_goals' => null,
                     'stadium_name' => 'StadiumName2',
                     'home_team' => 'ClubName2',
-                    'away_team' => 'ClubName1'
+                    'away_team' => 'ClubName1',
                 ],
                 'winner' => null,
             ],
@@ -100,7 +99,7 @@ class KnockoutSummaryTest extends TestCase
                     'away_team_goals' => null,
                     'stadium_name' => 'StadiumName3',
                     'home_team' => 'ClubName3',
-                    'away_team' => 'ClubName4'
+                    'away_team' => 'ClubName4',
                 ],
                 'game2' => [
                     'match_start' => Carbon::now()->format('Y-m-d H:m:00'),
@@ -112,7 +111,7 @@ class KnockoutSummaryTest extends TestCase
                     'away_team' => 'ClubName3',
                 ],
                 'winner' => null,
-            ]
+            ],
         ];
 
         $this->assertEquals($expectedResult, $actualResult);

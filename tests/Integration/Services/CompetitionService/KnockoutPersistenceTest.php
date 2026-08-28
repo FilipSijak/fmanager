@@ -78,7 +78,7 @@ class KnockoutPersistenceTest extends TestCase
         $repository->setInstanceId($instance->id);
         $repository->setSeasonId($season->id);
         $summary = $repository->getCompetitionKnockoutStageSummary($competition->id);
-        $currentRound = (new KnockoutSummaryRoundsData(new GameRepository))->getCurrentRound($summary);
+        $currentRound = (new KnockoutSummaryRoundsData(app(GameRepository::class)))->getCurrentRound($summary);
 
         $this->assertCount(2, $currentRound['first_group']);
         $this->assertCount(2, $currentRound['second_group']);
