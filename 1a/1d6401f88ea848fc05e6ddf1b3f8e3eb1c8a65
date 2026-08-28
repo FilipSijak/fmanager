@@ -1,0 +1,23 @@
+app/Http/Controllers/ClubController.php
+  s_815c6ba917518c::t_8a0e047f24e543 8,13,18,28
+app/Repositories/ClubRepository.php
+  s_815c6ba917518c::t_8a0e047f24e543 9,12,29-39,41,47-48,54-55,67-69,71,73,76,115,120,143,151
+tests/Integration/Club/ClubRepositoryTest.php
+  s_815c6ba917518c::t_8a0e047f24e543 13,36,42-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "1a1d6401f88ea848fc05e6ddf1b3f8e3eb1c8a65",
+  "prompts": {},
+  "sessions": {
+    "s_815c6ba917518c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a04a04-c20b-7532-a9fd-98f0ae898bd2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
