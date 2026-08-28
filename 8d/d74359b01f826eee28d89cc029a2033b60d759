@@ -1,0 +1,26 @@
+.env.example
+  s_2d9f8818ca2b14::t_be74594af86bce 31-32
+docker-compose.yml
+  s_2d9f8818ca2b14::t_f44b841de4c89d 62-81,98-99
+  s_2d9f8818ca2b14::t_d4c2f275de9370 82-94
+composer.json
+  s_2d9f8818ca2b14::t_663bfcd2a59530 9,11
+composer.lock
+  s_2d9f8818ca2b14::t_b8e7a74e9c64ce 7,511-626,2786-3180,5447-5526
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "8dd74359b01f826eee28d89cc029a2033b60d759",
+  "prompts": {},
+  "sessions": {
+    "s_2d9f8818ca2b14": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a047dc-d2f9-76b0-9e7e-30e8d73ed748",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
