@@ -1,0 +1,43 @@
+config/queue.php
+  s_2d9f8818ca2b14::t_30c37bfec83758 18-19
+app/Services/SearchService/ElasticsearchPlayerSearchIndexer.php
+  s_2d9f8818ca2b14::t_f2a17ba011b320 1-17,20-38,41-78,93-106
+  s_2d9f8818ca2b14::t_675ac1f64fd1d6 18-19,39-40,79-92
+.env.example
+  s_2d9f8818ca2b14::t_30c37bfec83758 21-22
+docker-compose.yml
+  s_2d9f8818ca2b14::t_30c37bfec83758 19-39
+tests/Unit/Services/SearchService/LaravelPlayerSearchIndexDispatcherTest.php
+  s_2d9f8818ca2b14::t_cd56db3d97a29a 1-37
+tests/Unit/Jobs/PlayerSearchIndexJobsTest.php
+  s_2d9f8818ca2b14::t_cd56db3d97a29a 1-31
+app/Jobs/SynchronizePlayerSearchDocument.php
+  s_2d9f8818ca2b14::t_f2a17ba011b320 1-29
+app/Services/SearchService/LaravelPlayerSearchIndexDispatcher.php
+  s_2d9f8818ca2b14::t_f2a17ba011b320 1-24
+app/Providers/AppServiceProvider.php
+  s_2d9f8818ca2b14::t_30c37bfec83758 5-8,24-25
+app/Jobs/ReindexInstancePlayers.php
+  s_2d9f8818ca2b14::t_0afafc51970a1e 12
+  s_2d9f8818ca2b14::t_f2a17ba011b320 1-11,13-29
+app/Contracts/Search/PlayerSearchIndexDispatcher.php
+  s_2d9f8818ca2b14::t_f2a17ba011b320 1-10
+app/Contracts/Search/PlayerSearchIndexer.php
+  s_2d9f8818ca2b14::t_f2a17ba011b320 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "0df138962fc57a6e540fd40f505257cc01fdd855",
+  "prompts": {},
+  "sessions": {
+    "s_2d9f8818ca2b14": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a047dc-d2f9-76b0-9e7e-30e8d73ed748",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
