@@ -1,0 +1,33 @@
+app/Repositories/GameRepository.php
+  s_815c6ba917518c::t_7928d972185749 6,9,11-13,15-16,27-33,36-37
+tests/Unit/Competition/KnockoutSummaryTest.php
+  s_815c6ba917518c::t_d85b540b22fb8f 13,15,26,28,37,41,43
+  s_815c6ba917518c::t_7928d972185749 16,29,44
+tests/Integration/Competition/GameRepositoryTest.php
+  s_815c6ba917518c::t_cebc346bf97e0c 1-19,21-42,44-68,70-87,89-96
+  s_815c6ba917518c::t_31e39f04b40d9f 43,69,88
+  s_815c6ba917518c::t_d85b540b22fb8f 20
+tests/Integration/Services/CompetitionService/KnockoutPersistenceTest.php
+  s_815c6ba917518c::t_7928d972185749 81
+app/Repositories/Interfaces/IGameRepository.php
+  s_815c6ba917518c::t_7928d972185749 7-8
+tests/Integration/Competition/KnockoutSummaryTest.php
+  s_815c6ba917518c::t_7928d972185749 10,65-66
+  s_815c6ba917518c::t_d85b540b22fb8f 23,25,32,42-43,60,69,81,90,102,114
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "d9e2e1423fb7146431390f96ce48bdd02dffb1cd",
+  "prompts": {},
+  "sessions": {
+    "s_815c6ba917518c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a04a04-c20b-7532-a9fd-98f0ae898bd2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
