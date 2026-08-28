@@ -10,6 +10,8 @@ use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Services\BaseService;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
+use App\Services\TransferService\Data\FreeTransferOfferData;
+use App\Services\TransferService\Data\TransferOfferData;
 use App\Services\TransferService\TransferEntityAnalysis\ClubTransferAnalysis;
 use App\Services\TransferService\TransferRequest\TransferRequestValidator;
 
@@ -22,20 +24,19 @@ class TransferService extends BaseService
     public function __construct(
         private readonly TransferRequestValidator $transferRequestValidator,
         private readonly ClubTransferAnalysis $clubTransferAnalysis,
-        private readonly  TransferRepository $transferRepository,
+        private readonly TransferRepository $transferRepository,
         private readonly TransferServiceHandler $transferServiceHandler,
-    )
-    {
+    ) {
         $this->forceLuxuryBids = false;
     }
 
     public function processTransferBids()
     {
-        //get all transfers from the table
+        // get all transfers from the table
         $transfers = Transfer::where('season_id', $this->seasonId())
-                             ->where('instance_id', $this->instanceId())
-                             ->where('transfer_status', '!=', TransferStatusTypes::TRANSFER_COMPLETED->value)
-                             ->get();
+            ->where('instance_id', $this->instanceId())
+            ->where('transfer_status', '!=', TransferStatusTypes::TRANSFER_COMPLETED->value)
+            ->get();
 
         foreach ($transfers as $transfer) {
             $this->transferServiceHandler->processTransfer($transfer);
@@ -64,10 +65,10 @@ class TransferService extends BaseService
             $randomChanceForLuxury = rand(1, 10);
             // if the club is covered in all positions, check if there is an opportunity on the transfer market for luxury transfers
             if (
-                !$deficitPositions &&
+                ! $deficitPositions &&
                 (($clubBudget > self::LUXURY_TRANSFER_BALANCE && $randomChanceForLuxury == 1) || $this->forceLuxuryBids)
             ) {
-                $position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1,14)];
+                $position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1, 14)];
 
                 $this->transferServiceHandler->luxuryTransferAttempt($club, $clubBudget, $position);
 
@@ -88,7 +89,7 @@ class TransferService extends BaseService
             case TransferType::FREE_TRANSFER->value:
                 $validationErrors = $this->transferRequestValidator->validateFreeTransferRequest($requestParams);
 
-                if (!empty($validationErrors)) {
+                if (! empty($validationErrors)) {
                     return false;
                 }
 
@@ -96,7 +97,7 @@ class TransferService extends BaseService
             case TransferType::LOAN_TRANSFER->value:
                 $validationErrors = $this->transferRequestValidator->validateLoanTransferRequest($requestParams);
 
-                if (!empty($validationErrors)) {
+                if (! empty($validationErrors)) {
                     return false;
                 }
 
@@ -104,7 +105,7 @@ class TransferService extends BaseService
             case TransferType::PERMANENT_TRANSFER->value:
                 $validationErrors = $this->transferRequestValidator->validatePermanentTransferRequest($requestParams);
 
-                if (!empty($validationErrors)) {
+                if (! empty($validationErrors)) {
                     return false;
                 }
 
@@ -134,12 +135,11 @@ class TransferService extends BaseService
 
     public function startTransferNegotiations(CreateTransferRequest $request): void
     {
-        $this->transferRepository->storeTransfer($request);
+        $this->transferRepository->storeTransfer(TransferOfferData::fromArray($request->validated()));
     }
 
-    public function freeTransferRequest(FreeTransferRequest $request)
+    public function freeTransferRequest(FreeTransferRequest $request): void
     {
-        $this->transferRepository->storeFreeTransfer($request);
+        $this->transferRepository->storeFreeTransfer(FreeTransferOfferData::fromArray($request->validated()));
     }
-
 }

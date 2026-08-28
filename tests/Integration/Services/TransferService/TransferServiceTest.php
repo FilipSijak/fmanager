@@ -225,9 +225,6 @@ class TransferServiceTest extends TestCase
         $transferStatusUpdates = app()->make(TransferStatusUpdates::class);
         $transferWorkflow = app()->make(TransferWorkflow::class);
 
-        $transferRepository->setSeasonId(1);
-        $transferRepository->setInstanceId(1);
-
         $transferServiceHandler = new TransferServiceHandler(
             $transferSearchRepository,
             $transferWorkflow,
@@ -266,9 +263,8 @@ class TransferServiceTest extends TestCase
         Season::factory()->create(['id' => 1, 'instance_id' => 1]);
         $buyingClub = Club::factory()->create(['id' => 1, 'instance_id' => 1]);
         $player = Player::factory()->create(['instance_id' => 1, 'club_id' => 2]);
+        app(GameContext::class)->set(1, 1, '2026-07-01');
         $repository = app(TransferRepository::class);
-        $repository->setInstanceId(1);
-        $repository->setSeasonId(1);
 
         $expectedStatuses = [
             TransferType::FREE_TRANSFER->value => TransferStatusTypes::WAITING_PLAYER,
@@ -294,9 +290,8 @@ class TransferServiceTest extends TestCase
         Instance::factory()->create(['id' => 1, 'season_id' => 1]);
         $buyingClub = Club::factory()->create(['id' => 1, 'instance_id' => 1]);
         $player = Player::factory()->create(['instance_id' => 1]);
+        app(GameContext::class)->set(1, 1);
         $repository = app(TransferRepository::class);
-        $repository->setInstanceId(1);
-        $repository->setSeasonId(1);
 
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('Unsupported transfer type: 999');
