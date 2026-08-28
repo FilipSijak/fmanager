@@ -10,6 +10,7 @@ use App\Models\Person;
 use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Repositories\ClubRepository;
+use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\Test;
@@ -32,13 +33,18 @@ class ClubRepositoryTest extends TestCase
         $this->repository = app(ClubRepository::class);
         $this->instance = Instance::factory()->create(['id' => 1, 'instance_date' => '2026-08-28']);
         $this->club = Club::factory()->create(['id' => 10, 'instance_id' => $this->instance->id]);
+        app(GameContext::class)->set($this->instance->id, null, $this->instance->instance_date);
     }
 
     #[Test]
     public function it_finds_a_club_only_in_the_requested_instance(): void
     {
-        $this->assertSame($this->club->id, $this->repository->findForInstance(10, 1)?->id);
-        $this->assertNull($this->repository->findForInstance(10, 999));
+        $this->assertSame($this->club->id, $this->repository->find(10)?->id);
+
+        $otherInstance = Instance::factory()->create(['id' => 2]);
+        $otherClub = Club::factory()->create(['instance_id' => $otherInstance->id]);
+
+        $this->assertNull($this->repository->find($otherClub->id));
     }
 
     #[Test]

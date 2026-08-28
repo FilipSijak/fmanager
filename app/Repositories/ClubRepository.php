@@ -6,8 +6,10 @@ use App\DataModels\ClubFinancialSummary;
 use App\Models\Club;
 use App\Models\Player;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
+use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -24,22 +26,33 @@ class ClubRepository
         'potential', 'max_potential', 'marketing_rank',
     ];
 
-    public function findForInstance(int $clubId, int $instanceId): ?Club
+    public function __construct(private readonly GameContext $gameContext) {}
+
+    public function find(int $clubId): ?Club
     {
-        return Club::query()->with(['stadium', 'account'])->forInstance($instanceId)->find($clubId);
+        return Club::query()
+            ->with(['stadium', 'account'])
+            ->forInstance($this->gameContext->instanceId())
+            ->find($clubId);
+    }
+
+    public function findOrFail(int $clubId): Club
+    {
+        return $this->find($clubId) ?? throw (new ModelNotFoundException)->setModel(Club::class, [$clubId]);
     }
 
     /** @return Collection<int, Player> */
     public function getSquadByPosition(int $clubId): Collection
     {
-        $club = Club::query()->findOrFail($clubId);
+        $club = $this->findOrFail($clubId);
+        $instanceId = $this->gameContext->instanceId();
 
         return Player::query()
             ->with(['person', 'contract'])
             ->join('people', 'people.id', '=', 'players.person_id')
             ->select('players.*')
-            ->where('players.instance_id', $club->instance_id)
-            ->where('people.instance_id', $club->instance_id)
+            ->where('players.instance_id', $instanceId)
+            ->where('people.instance_id', $instanceId)
             ->where('players.club_id', $club->id)
             ->where('players.is_retired', false)
             ->orderBy('players.position')
@@ -51,21 +64,16 @@ class ClubRepository
     /** @return array{player_count:int, average_age:?float, average_potential:?float, total_value:int, weekly_wages:int, contracts_expiring_within_year:int} */
     public function getSquadSummary(int $clubId): array
     {
-        $club = Club::query()->findOrFail($clubId);
-        $instanceDate = DB::table('instances')->where('id', $club->instance_id)->value('instance_date');
-
-        if ($instanceDate === null) {
-            throw new InvalidArgumentException("Club {$clubId} belongs to an instance without a date.");
-        }
-
-        $asOfDate = CarbonImmutable::parse($instanceDate);
+        $club = $this->findOrFail($clubId);
+        $instanceId = $this->gameContext->instanceId();
+        $asOfDate = CarbonImmutable::parse($this->gameContext->instanceDate());
         $players = DB::table('players AS p')
-            ->leftJoin('people AS person', function ($join) use ($club): void {
+            ->leftJoin('people AS person', function ($join) use ($instanceId): void {
                 $join->on('person.id', '=', 'p.person_id')
-                    ->where('person.instance_id', '=', $club->instance_id);
+                    ->where('person.instance_id', '=', $instanceId);
             })
             ->leftJoin('players_contracts AS pc', 'pc.id', '=', 'p.contract_id')
-            ->where('p.instance_id', $club->instance_id)
+            ->where('p.instance_id', $instanceId)
             ->where('p.club_id', $club->id)
             ->where('p.is_retired', false)
             ->select('p.potential', 'p.value', 'person.dob', 'pc.salary', 'pc.contract_end')
@@ -104,12 +112,12 @@ class ClubRepository
             throw new InvalidArgumentException('Unknown player attributes: '.implode(', ', $unknownAttributes));
         }
 
-        $club = Club::query()->findOrFail($clubId);
+        $club = $this->findOrFail($clubId);
         $columns = collect(array_values(array_unique($attributes)))
             ->map(fn (string $attribute): string => "FLOOR(AVG(`{$attribute}`)) AS `{$attribute}`")
             ->all();
         $averages = DB::table('players')
-            ->where('instance_id', $club->instance_id)
+            ->where('instance_id', $this->gameContext->instanceId())
             ->where('club_id', $club->id)
             ->where('position', $position)
             ->where('is_retired', false)
@@ -132,7 +140,7 @@ class ClubRepository
 
     public function getTransferBudgetAndBalance(int $clubId): ?ClubFinancialSummary
     {
-        $club = Club::query()->findOrFail($clubId);
+        $club = $this->findOrFail($clubId);
         $account = DB::table('accounts')->where('club_id', $club->id)->first();
         if ($account === null) {
             return null;
@@ -140,7 +148,7 @@ class ClubRepository
 
         $weeklyPlayerWages = (int) DB::table('players AS p')
             ->join('players_contracts AS pc', 'pc.id', '=', 'p.contract_id')
-            ->where('p.instance_id', $club->instance_id)
+            ->where('p.instance_id', $this->gameContext->instanceId())
             ->where('p.club_id', $club->id)
             ->where('p.is_retired', false)
             ->sum('pc.salary');
