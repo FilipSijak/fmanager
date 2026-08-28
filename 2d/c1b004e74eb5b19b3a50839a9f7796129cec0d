@@ -1,0 +1,29 @@
+tests/Integration/Instance/MonthlyUpdateTest.php
+  s_2d9f8818ca2b14::t_af2d272563efe3 1-46,49-68
+  s_2d9f8818ca2b14::t_6b7546b30fbcc3 47-48
+app/Services/InstanceService/InstanceService.php
+  s_2d9f8818ca2b14::t_c85dcc5b07319b 5,79,105-108
+app/Listeners/DispatchMonthlyPlayerReindex.php
+  s_2d9f8818ca2b14::t_c85dcc5b07319b 1-18
+app/Events/MonthlyUpdate.php
+  s_2d9f8818ca2b14::t_c85dcc5b07319b 1-14
+app/Providers/EventServiceProvider.php
+  s_2d9f8818ca2b14::t_c85dcc5b07319b 5,11,34-35
+  s_2d9f8818ca2b14::t_c416df5acd6be7 36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "2dc1b004e74eb5b19b3a50839a9f7796129cec0d",
+  "prompts": {},
+  "sessions": {
+    "s_2d9f8818ca2b14": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a047dc-d2f9-76b0-9e7e-30e8d73ed748",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
