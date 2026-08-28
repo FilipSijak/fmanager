@@ -8,6 +8,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
+use App\Http\Controllers\PlayerSearchController;
 use App\Http\Controllers\TestController;
 use App\Http\Controllers\TransferController;
 use App\Http\Middleware\EnsureGameIsValid;
@@ -59,6 +60,7 @@ Route::middleware([EnsureGameIsValid::class])->group(function () {
             'prefix' => 'player',
         ],
         function () {
+            Route::get('/search', PlayerSearchController::class);
             Route::get('/{playerId}', [PlayerController::class, 'show']);
         }
     );
