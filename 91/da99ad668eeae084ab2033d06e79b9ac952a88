@@ -1,0 +1,46 @@
+routes/api.php
+  s_2d9f8818ca2b14::t_7a2e99677df821 11,63
+tests/Integration/Player/PlayerSearchApiTest.php
+  s_2d9f8818ca2b14::t_788a97849f8148 1-92
+tests/Unit/Search/PlayerDocumentTest.php
+  s_2d9f8818ca2b14::t_624801bc73a89d 20
+  s_2d9f8818ca2b14::t_788a97849f8148 1-19,21-41
+app/Console/Commands/IndexPlayersInElasticsearch.php
+  s_2d9f8818ca2b14::t_9336deb77c7daf 1-71
+app/Http/Controllers/PlayerSearchController.php
+  s_2d9f8818ca2b14::t_9336deb77c7daf 1-33
+app/Http/Requests/SearchPlayersRequest.php
+  s_2d9f8818ca2b14::t_9336deb77c7daf 1-22
+config/elasticsearch.php
+  s_2d9f8818ca2b14::t_9336deb77c7daf 1-6
+app/Search/PlayerDocument.php
+  s_2d9f8818ca2b14::t_9336deb77c7daf 1-71
+app/Providers/AppServiceProvider.php
+  s_2d9f8818ca2b14::t_7a2e99677df821 6-7,20-22
+  s_2d9f8818ca2b14::t_624801bc73a89d 19
+app/Services/SearchService/SearchService.php
+  s_2d9f8818ca2b14::t_7a2e99677df821 6,12-15,24-26
+  s_2d9f8818ca2b14::t_788a97849f8148 23
+  s_2d9f8818ca2b14::t_a6a20b5c24494c 27-28
+app/Repositories/ElasticsearchPlayerSearchRepository.php
+  s_2d9f8818ca2b14::t_9336deb77c7daf 1-46,48-61
+  s_2d9f8818ca2b14::t_624801bc73a89d 47
+.env.example
+  s_2d9f8818ca2b14::t_7a2e99677df821 32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "91da99ad668eeae084ab2033d06e79b9ac952a88",
+  "prompts": {},
+  "sessions": {
+    "s_2d9f8818ca2b14": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a047dc-d2f9-76b0-9e7e-30e8d73ed748",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
