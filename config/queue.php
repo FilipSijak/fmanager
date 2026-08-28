@@ -15,6 +15,8 @@ return [
 
     'default' => env('QUEUE_CONNECTION', 'sync'),
 
+    'player_index_queue' => env('PLAYER_INDEX_QUEUE', 'elasticsearch'),
+
     /*
     |--------------------------------------------------------------------------
     | Queue Connections
