@@ -7,7 +7,10 @@ use App\Models\Game;
 use App\Repositories\CompetitionRepository;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
+use App\Services\GameService\GameService;
+use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use LogicException;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -18,7 +21,8 @@ class LeagueUpdaterTest extends TestCase
     #[Test]
     public function it_can_update_table_points()
     {
-        $games       = [];
+        app(GameContext::class)->set(1, 1);
+        $games = [];
         $gameContext = [
             'instance_id' => 1,
             'season_id' => 1,
@@ -34,7 +38,12 @@ class LeagueUpdaterTest extends TestCase
         $competition->seasons()->attach(1, ['club_id' => 1, 'instance_id' => 1]);
         $competition->seasons()->attach(1, ['club_id' => 2, 'instance_id' => 1]);
 
-        (new LeagueUpdater((new CompetitionRepository((new CompetitionDataSource())))))->updatePointsTable($games);
+        $repository = new CompetitionRepository(
+            new CompetitionDataSource,
+            app(GameContext::class),
+            app(GameService::class),
+        );
+        (new LeagueUpdater($repository))->updatePointsTable($games);
 
         $this->assertDatabaseHas(
             'competition_season',
@@ -63,5 +72,38 @@ class LeagueUpdaterTest extends TestCase
                 'goals_against' => 5,
             ]
         );
+    }
+
+    #[Test]
+    public function it_rolls_back_both_standings_updates_when_a_membership_is_missing(): void
+    {
+        app(GameContext::class)->set(1, 1);
+        $competition = Competition::factory()->make(['id' => 1]);
+        $competition->seasons()->attach(1, ['club_id' => 1, 'instance_id' => 1]);
+        $repository = new CompetitionRepository(
+            new CompetitionDataSource,
+            app(GameContext::class),
+            app(GameService::class),
+        );
+
+        try {
+            $repository->updateCompetitionTable(Game::factory()->make([
+                'instance_id' => 1,
+                'season_id' => 1,
+                'competition_id' => 1,
+                'hometeam_id' => 1,
+                'awayteam_id' => 2,
+                'winner' => 1,
+                'home_team_goals' => 2,
+                'away_team_goals' => 0,
+            ])->toArray());
+            $this->fail('Expected a missing standings row to fail.');
+        } catch (LogicException) {
+            $this->assertDatabaseHas('competition_season', [
+                'club_id' => 1,
+                'played' => 0,
+                'points' => 0,
+            ]);
+        }
     }
 }

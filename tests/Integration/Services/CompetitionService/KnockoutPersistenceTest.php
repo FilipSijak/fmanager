@@ -13,6 +13,8 @@ use App\Services\CompetitionService\Competitions\Tournament;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
+use App\Services\GameService\GameService;
+use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
@@ -74,7 +76,11 @@ class KnockoutPersistenceTest extends TestCase
         $this->assertDatabaseCount('tournament_knockout_ties', 7);
         $this->assertSame(8, DB::table('games')->whereNotNull('knockout_tie_id')->count());
 
-        $repository = new CompetitionRepository(new CompetitionDataSource);
+        $repository = new CompetitionRepository(
+            new CompetitionDataSource,
+            app(GameContext::class),
+            app(GameService::class),
+        );
         $repository->setInstanceId($instance->id);
         $repository->setSeasonId($season->id);
         $summary = $repository->getCompetitionKnockoutStageSummary($competition->id);
@@ -105,7 +111,11 @@ class KnockoutPersistenceTest extends TestCase
             ->where('round_id', $firstRound->id)
             ->orderBy('position')
             ->get();
-        $updater = new TournamentUpdater(new CompetitionRepository(new CompetitionDataSource));
+        $updater = new TournamentUpdater(new CompetitionRepository(
+            new CompetitionDataSource,
+            app(GameContext::class),
+            app(GameService::class),
+        ));
         $updater->setInstanceId($instance->id);
         $updater->setSeason($season);
 
