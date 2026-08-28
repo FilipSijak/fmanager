@@ -14,19 +14,17 @@ use App\Services\TransferService\TransferEntityAnalysis\PlayerValuation;
 use App\Services\TransferService\TransferState;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferType;
+use App\Support\GameContext;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
 
-class TransferRepository extends CoreRepository
+class TransferRepository
 {
-    private TransferState $transferState;
-
     public function __construct(
-        TransferState $transferState
-    ) {
-        $this->transferState = $transferState;
-    }
+        private readonly TransferState $transferState,
+        private readonly GameContext $gameContext,
+    ) {}
 
     public function createAutomaticTransfer(
         Player $player,
@@ -43,8 +41,8 @@ class TransferRepository extends CoreRepository
         $this->assertBelongsToCurrentInstance($player, $buyingClub);
 
         return Transfer::query()->create([
-            'instance_id' => $this->instanceId(),
-            'season_id' => $this->seasonId(),
+            'instance_id' => $this->gameContext->instanceId(),
+            'season_id' => $this->gameContext->seasonId(),
             'source_club_id' => $buyingClub->id,
             'player_id' => $player->id,
             'offer_date' => $this->currentInstance()->instance_date,
@@ -82,8 +80,8 @@ class TransferRepository extends CoreRepository
 
         return DB::transaction(function () use ($offer): Transfer {
             $transfer = new Transfer;
-            $transfer->instance_id = $this->instanceId();
-            $transfer->season_id = $this->seasonId();
+            $transfer->instance_id = $this->gameContext->instanceId();
+            $transfer->season_id = $this->gameContext->seasonId();
             $transfer->source_club_id = $offer->sourceClubId;
             $transfer->target_club_id = $offer->targetClubId;
             $transfer->player_id = $offer->playerId;
@@ -108,8 +106,8 @@ class TransferRepository extends CoreRepository
 
         return DB::transaction(function () use ($offer): Transfer {
             $transfer = new Transfer;
-            $transfer->instance_id = $this->instanceId();
-            $transfer->season_id = $this->seasonId();
+            $transfer->instance_id = $this->gameContext->instanceId();
+            $transfer->season_id = $this->gameContext->seasonId();
             $transfer->source_club_id = $offer->sourceClubId;
             $transfer->player_id = $offer->playerId;
             $transfer->transfer_type = TransferType::FREE_TRANSFER->value;
@@ -187,12 +185,12 @@ class TransferRepository extends CoreRepository
 
     private function currentInstance(): Instance
     {
-        return Instance::query()->findOrFail($this->instanceId());
+        return Instance::query()->findOrFail($this->gameContext->instanceId());
     }
 
     private function assertBelongsToCurrentInstance(Player $player, Club $club): void
     {
-        $instanceId = $this->instanceId();
+        $instanceId = $this->gameContext->instanceId();
         if ((int) $player->instance_id !== $instanceId || (int) $club->instance_id !== $instanceId) {
             throw new InvalidArgumentException('The player and buying club must belong to the active instance.');
         }
@@ -201,7 +199,7 @@ class TransferRepository extends CoreRepository
     /** @param list<int> $clubIds */
     private function assertOfferEntitiesBelongToCurrentInstance(array $clubIds, int $playerId): void
     {
-        $instanceId = $this->instanceId();
+        $instanceId = $this->gameContext->instanceId();
         $clubsExist = Club::query()
             ->whereIn('id', $clubIds)
             ->where('instance_id', $instanceId)

@@ -10,6 +10,7 @@ use App\Services\TransferService\Data\FreeTransferOfferData;
 use App\Services\TransferService\Data\TransferOfferData;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferType;
+use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\Test;
@@ -35,9 +36,8 @@ class TransferRepositoryTest extends TestCase
         $this->buyingClub = Club::factory()->create(['id' => 1, 'instance_id' => 1]);
         $this->sellingClub = Club::factory()->create(['id' => 2, 'instance_id' => 1]);
         $this->player = Player::factory()->create(['instance_id' => 1, 'club_id' => 2]);
+        app(GameContext::class)->set(1, 1, '2026-08-28');
         $this->repository = app(TransferRepository::class);
-        $this->repository->setInstanceId(1);
-        $this->repository->setSeasonId(1);
     }
 
     #[Test]
