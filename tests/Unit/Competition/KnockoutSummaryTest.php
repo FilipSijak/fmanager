@@ -10,10 +10,10 @@ use Tests\TestCase;
 class KnockoutSummaryTest extends TestCase
 {
     #[Test]
-    public function itCanGetCurrentRoundData()
+    public function it_can_get_current_round_data()
     {
-        $summary = file_get_contents(__DIR__ . '/../../fixtures/knockoutSummary.json');
-        $repository = $this->getMockBuilder(GameRepository::class)->getMock();
+        $summary = file_get_contents(__DIR__.'/../../fixtures/knockoutSummary.json');
+        $repository = $this->getMockBuilder(GameRepository::class)->disableOriginalConstructor()->getMock();
         $knockoutSummary = new KnockoutSummaryRoundsData($repository);
 
         $currentRoundData = $knockoutSummary->getCurrentRound($summary);
@@ -23,10 +23,10 @@ class KnockoutSummaryTest extends TestCase
     }
 
     #[Test]
-    public function itCanGetCurrentRoundDataFromTwoRounds()
+    public function it_can_get_current_round_data_from_two_rounds()
     {
-        $summary = file_get_contents(__DIR__ . '/../../fixtures/knockoutSummaryTwoRounds.json');
-        $repository = $this->getMockBuilder(GameRepository::class)->getMock();
+        $summary = file_get_contents(__DIR__.'/../../fixtures/knockoutSummaryTwoRounds.json');
+        $repository = $this->getMockBuilder(GameRepository::class)->disableOriginalConstructor()->getMock();
         $knockoutSummary = new KnockoutSummaryRoundsData($repository);
 
         $currentRoundData = $knockoutSummary->getCurrentRound($summary);
@@ -34,14 +34,14 @@ class KnockoutSummaryTest extends TestCase
         $expectedSecondRoundFirsPairWinner = 1;
 
         $this->assertCount(4, $currentRoundData['first_group']);
-        $this->assertEquals($expectedSecondRoundFirsPairWinner,$secondRoundFirsPairWinner);
+        $this->assertEquals($expectedSecondRoundFirsPairWinner, $secondRoundFirsPairWinner);
     }
 
     #[Test]
-    public function itCanGeFinalsGame()
+    public function it_can_ge_finals_game()
     {
-        $summary = file_get_contents(__DIR__ . '/../../fixtures/knockoutSummaryFinals.json');
-        $repository = $this->getMockBuilder(GameRepository::class)->getMock();
+        $summary = file_get_contents(__DIR__.'/../../fixtures/knockoutSummaryFinals.json');
+        $repository = $this->getMockBuilder(GameRepository::class)->disableOriginalConstructor()->getMock();
         $knockoutSummary = new KnockoutSummaryRoundsData($repository);
 
         $currentRoundData = $knockoutSummary->getCurrentRound($summary);
