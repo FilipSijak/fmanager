@@ -59,7 +59,42 @@ services:
             - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
         networks:
             - fmanager
+    elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:9.5.1
+        container_name: fmanager-elasticsearch
+        restart: unless-stopped
+        environment:
+            discovery.type: single-node
+            xpack.security.enabled: "false"
+            ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+        ports:
+            - 9200:9200
+        volumes:
+            - elasticsearch-data:/usr/share/elasticsearch/data
+        networks:
+            - fmanager
+        healthcheck:
+            test: ["CMD-SHELL", "curl --fail --silent http://localhost:9200/_cluster/health || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 12
+            start_period: 30s
+    kibana:
+        image: docker.elastic.co/kibana/kibana:9.5.1
+        container_name: fmanager-kibana
+        restart: unless-stopped
+        environment:
+            ELASTICSEARCH_HOSTS: '["http://elasticsearch:9200"]'
+        ports:
+            - 5601:5601
+        networks:
+            - fmanager
+        depends_on:
+            elasticsearch:
+                condition: service_healthy
 networks:
     fmanager:
         driver: bridge
+volumes:
+    elasticsearch-data:
 
