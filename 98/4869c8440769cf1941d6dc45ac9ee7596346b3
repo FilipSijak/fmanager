@@ -1,0 +1,23 @@
+.env.example
+  s_2d9f8818ca2b14::t_1d00de769e49f7 27
+docker/php/Dockerfile
+  s_2d9f8818ca2b14::t_1d00de769e49f7 22
+docker-compose.yml
+  s_2d9f8818ca2b14::t_1d00de769e49f7 95-110,116
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "984869c8440769cf1941d6dc45ac9ee7596346b3",
+  "prompts": {},
+  "sessions": {
+    "s_2d9f8818ca2b14": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a047dc-d2f9-76b0-9e7e-30e8d73ed748",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
