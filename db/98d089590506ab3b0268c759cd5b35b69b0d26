@@ -1,0 +1,32 @@
+app/Services/TransferService/Data/TransferOfferData.php
+  s_815c6ba917518c::t_1b9b8a74dc0d15 1-30
+tests/Integration/Services/TransferService/TransferRepositoryTest.php
+  s_815c6ba917518c::t_cb059dfd1e8f38 1-22,24,26,28-66,68-101
+  s_815c6ba917518c::t_823c07c9476c50 23,25,27
+  s_815c6ba917518c::t_465b21efd76913 67
+app/Services/TransferService/Data/FreeTransferOfferData.php
+  s_815c6ba917518c::t_1b9b8a74dc0d15 1-11,20-29,38-40
+  s_815c6ba917518c::t_53ff5eedba39b6 12-19,30-37
+app/Services/TransferService/TransferService.php
+  s_815c6ba917518c::t_b5dfe6119d9da9 13-14,27,29,35,37-39,68,71,92,100,108
+  s_815c6ba917518c::t_1b9b8a74dc0d15 138,141,143
+app/Repositories/TransferRepository.php
+  s_815c6ba917518c::t_53ff5eedba39b6 78-82,90,107-108,198-216,218
+  s_815c6ba917518c::t_1b9b8a74dc0d15 11-12,17-19,34,36,38-40,43-45,50-51,65,68,76,83-89,91-102,105,109-135,138,140-143,150-154,177-197,217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "db98d089590506ab3b0268c759cd5b35b69b0d26",
+  "prompts": {},
+  "sessions": {
+    "s_815c6ba917518c": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a04a04-c20b-7532-a9fd-98f0ae898bd2",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
