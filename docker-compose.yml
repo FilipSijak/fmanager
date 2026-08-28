@@ -16,6 +16,27 @@ services:
             - ./:/var/www
         networks:
             - fmanager
+    queue:
+        build:
+            args:
+                user: filip
+                uid: 1000
+            context: ./
+            dockerfile: ./docker/php/Dockerfile
+        container_name: fmanager-queue
+        restart: unless-stopped
+        working_dir: /var/www
+        command: ["php", "artisan", "queue:work", "--queue=elasticsearch,default", "--sleep=1", "--tries=3", "--timeout=300"]
+        stop_grace_period: 30s
+        extra_hosts:
+            - "host.docker.internal:host-gateway"
+        volumes:
+            - ./:/var/www
+        networks:
+            - fmanager
+        depends_on:
+            redis:
+                condition: service_healthy
     composer:
         image: composer:2
         command: [ "install" ]

@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Events\MonthlyUpdate;
 use App\Events\NextDay;
 use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Events\Transfers\TransferEvent;
 use App\Listeners\CompleteSeason;
+use App\Listeners\DispatchMonthlyPlayerReindex;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\ProcessTransfers;
@@ -28,6 +30,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         NextDay::class => [
             ProcessTransfers::class,
+        ],
+        MonthlyUpdate::class => [
+            DispatchMonthlyPlayerReindex::class,
         ],
         SeasonCompleted::class => [
             CompleteSeason::class,
