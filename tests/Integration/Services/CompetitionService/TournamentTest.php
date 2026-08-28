@@ -10,6 +10,9 @@ use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
+use App\Services\GameService\GameService;
+use App\Support\GameContext;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -35,10 +38,14 @@ class TournamentTest extends TestCase
         }
 
         $clubs = Club::all();
-        $competitionRepository = new CompetitionRepository((new CompetitionDataSource()));
-        $tournamentUpdater     = new TournamentUpdater($competitionRepository);
-        $leagueUpdater         = new LeagueUpdater($competitionRepository);
-        $competitionService = new CompetitionService($leagueUpdater, $tournamentUpdater, new CompetitionDataSource());
+        $competitionRepository = new CompetitionRepository(
+            new CompetitionDataSource,
+            app(GameContext::class),
+            app(GameService::class),
+        );
+        $tournamentUpdater = new TournamentUpdater($competitionRepository);
+        $leagueUpdater = new LeagueUpdater($competitionRepository);
+        $competitionService = new CompetitionService($leagueUpdater, $tournamentUpdater, new CompetitionDataSource);
 
         $competitionService->makeTournamentGroupStage($clubs, 1, $season->id, 1);
 
@@ -54,7 +61,7 @@ class TournamentTest extends TestCase
             $this->assertSame(1, $game->instance_id);
             $this->assertSame($season->id, $game->season_id);
             $this->assertSame(1, $game->competition_id);
-            $this->assertContains((int) \Carbon\Carbon::parse($game->match_start)->format('N'), [2, 3]);
+            $this->assertContains((int) Carbon::parse($game->match_start)->format('N'), [2, 3]);
             $this->assertSame($clubGroups[$game->hometeam_id], $clubGroups[$game->awayteam_id]);
         }
     }

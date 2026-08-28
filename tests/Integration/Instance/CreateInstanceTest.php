@@ -18,8 +18,10 @@ use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
+use App\Services\GameService\GameService;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\PersonService;
+use App\Support\GameContext;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -239,7 +241,11 @@ class CreateInstanceTest extends TestCase
     protected function getNewInstance(): CreateInstance
     {
         $this->competitionDataSource = new CompetitionDataSource;
-        $this->competitionRepository = new CompetitionRepository($this->competitionDataSource);
+        $this->competitionRepository = new CompetitionRepository(
+            $this->competitionDataSource,
+            app(GameContext::class),
+            app(GameService::class),
+        );
         $this->competitionService = new CompetitionService(
             (new LeagueUpdater($this->competitionRepository)),
             (new TournamentUpdater($this->competitionRepository)),

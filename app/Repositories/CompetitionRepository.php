@@ -10,17 +10,29 @@ use App\Models\Season;
 use App\Repositories\Interfaces\ICompetitionRepository;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\GameService\GameService;
+use App\Support\GameContext;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use LogicException;
 
-class CompetitionRepository extends CoreRepository implements ICompetitionRepository
+class CompetitionRepository implements ICompetitionRepository
 {
-    private CompetitionDataSource $competitionDataSource;
+    public function __construct(
+        private readonly CompetitionDataSource $competitionDataSource,
+        private readonly GameContext $gameContext,
+        private readonly GameService $gameService,
+    ) {}
 
-    public function __construct(CompetitionDataSource $competitionDataSource)
+    public function setSeasonId(?int $seasonId): void
     {
-        $this->competitionDataSource = $competitionDataSource;
+        $this->gameContext->setSeasonId($seasonId);
+    }
+
+    public function setInstanceId(?int $instanceId): void
+    {
+        $this->gameContext->setInstanceId($instanceId);
     }
 
     public function clubIdsForCompetitionSeason(int $competitionId, int $seasonId, int $instanceId): array
@@ -42,8 +54,9 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
         return DB::table('competition_season AS cs')
             ->select('clubs.id as club_id', 'clubs.name as club_name', 'cs.points', 'cs.goals_for', 'cs.goals_against', 'cs.wins', 'cs.draws', 'cs.losses', 'cs.played')
             ->join('clubs', 'cs.club_id', '=', 'clubs.id')
-            ->where('season_id', $this->seasonId())
-            ->where('cs.instance_id', $this->instanceId())
+            ->where('cs.season_id', $this->gameContext->seasonId())
+            ->where('cs.instance_id', $this->gameContext->instanceId())
+            ->where('clubs.instance_id', $this->gameContext->instanceId())
             ->where('competition_id', $competitionId)
             ->whereNull('cs.group_id')
             ->orderBy('cs.points', 'DESC')
@@ -59,8 +72,9 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->select('tg.group_id', 'clubs.id as club_id', 'clubs.name as club_name', 'tg.points', 'tg.goals_for', 'tg.goals_against', 'tg.wins', 'tg.draws', 'tg.losses', 'tg.played')
             ->join('clubs', 'clubs.id', '=', 'tg.club_id')
             ->where('tg.competition_id', $competitionId)
-            ->where('tg.instance_id', $this->instanceId())
-            ->where('tg.season_id', $this->seasonId())
+            ->where('tg.instance_id', $this->gameContext->instanceId())
+            ->where('tg.season_id', $this->gameContext->seasonId())
+            ->where('clubs.instance_id', $this->gameContext->instanceId())
             ->whereNotNull('tg.group_id')
             ->orderBy('tg.group_id', 'ASC')
             ->orderBy('tg.points', 'DESC')
@@ -73,8 +87,8 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
     public function getCompetitionKnockoutStageSummary(int $competitionId): string
     {
         $knockout = DB::table('tournament_knockout')
-            ->where('instance_id', $this->instanceId())
-            ->where('season_id', $this->seasonId())
+            ->where('instance_id', $this->gameContext->instanceId())
+            ->where('season_id', $this->gameContext->seasonId())
             ->where('competition_id', $competitionId)
             ->first();
 
@@ -86,6 +100,19 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ->where('tournament_knockout_id', $knockout->id)
             ->orderBy('round_number')
             ->get();
+        $roundIds = $rounds->pluck('id');
+        $ties = DB::table('tournament_knockout_ties')
+            ->whereIn('round_id', $roundIds)
+            ->orderBy('position')
+            ->get();
+        $games = DB::table('games')
+            ->where('instance_id', $this->gameContext->instanceId())
+            ->where('season_id', $this->gameContext->seasonId())
+            ->whereIn('knockout_tie_id', $ties->pluck('id'))
+            ->orderBy('leg_number')
+            ->get();
+        $tiesByRound = $ties->groupBy('round_id');
+        $gamesByTie = $games->groupBy('knockout_tie_id');
         $summary = [
             'id' => $knockout->id,
             'instance_id' => $knockout->instance_id,
@@ -108,32 +135,30 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
                     'id' => $round->id,
                     'name' => $round->name,
                     'status' => $round->status,
-                    'pairs' => $this->knockoutRoundPairs((int) $round->id),
+                    'pairs' => $this->knockoutRoundPairs(
+                        $tiesByRound->get($round->id, collect()),
+                        $gamesByTie
+                    ),
                 ];
             }
         }
 
         $finalRound = $rounds->firstWhere('bracket_side', 'final');
         if ($finalRound) {
-            $finalTie = DB::table('tournament_knockout_ties')->where('round_id', $finalRound->id)->first();
+            $finalTie = $tiesByRound->get($finalRound->id, collect())->first();
             if ($finalTie) {
-                $summary['finals_match'] = DB::table('games')
-                    ->where('knockout_tie_id', $finalTie->id)
-                    ->orderBy('leg_number')->value('id');
+                $summary['finals_match'] = $gamesByTie->get($finalTie->id, collect())->first()?->id;
             }
         }
 
         return json_encode($summary, JSON_THROW_ON_ERROR);
     }
 
-    private function knockoutRoundPairs(int $roundId): array
+    private function knockoutRoundPairs(Collection $ties, Collection $gamesByTie): array
     {
-        return DB::table('tournament_knockout_ties')
-            ->where('round_id', $roundId)
-            ->orderBy('position')
-            ->get()
-            ->map(function ($tie): array {
-                $games = DB::table('games')->where('knockout_tie_id', $tie->id)->orderBy('leg_number')->get();
+        return $ties
+            ->map(function ($tie) use ($gamesByTie): array {
+                $games = $gamesByTie->get($tie->id, collect());
                 $firstGame = $games->get(0);
                 $secondGame = $games->get(1);
 
@@ -272,7 +297,8 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
         );
     }
 
-    public function getScheduledGames(Instance $instance)
+    /** @return EloquentCollection<int, Game> */
+    public function getScheduledGames(Instance $instance): EloquentCollection
     {
         return Game::where('instance_id', $instance->id)
             ->whereDate('match_start', $instance->instance_date)
@@ -283,91 +309,60 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
 
     public function updateCompetitionTable(array $game): void
     {
-        $homeTeamPoints = 0;
-        $awayTeamPoints = 0;
-        $homeTeamWins = 0;
-        $awayTeamWins = 0;
-        $homeTeamDraws = 0;
-        $awayTeamDraws = 0;
-        $homeTeamLosses = 0;
-        $awayTeamLosses = 0;
+        $homeResult = $this->standingsResult($game, true);
+        $awayResult = $this->standingsResult($game, false);
 
-        switch ($game['winner']) {
-            case 1:
-                $homeTeamPoints = 3;
-                $homeTeamWins = 1;
-                $awayTeamLosses = 1;
-                break;
-            case 2:
-                $awayTeamPoints = 3;
-                $awayTeamWins = 1;
-                $homeTeamLosses = 1;
-                break;
-            case 3:
-                $homeTeamPoints = 1;
-                $awayTeamPoints = 1;
-                $homeTeamDraws = 1;
-                $awayTeamDraws = 1;
-                break;
+        DB::transaction(function () use ($homeResult, $awayResult): void {
+            $this->applyStandingsResult($homeResult);
+            $this->applyStandingsResult($awayResult);
+        });
+    }
+
+    /** @return array<string, int> */
+    private function standingsResult(array $game, bool $home): array
+    {
+        $winner = (int) $game['winner'];
+        $won = ($home && $winner === 1) || (! $home && $winner === 2);
+        $drawn = $winner === 3;
+
+        return [
+            'points' => $won ? 3 : ($drawn ? 1 : 0),
+            'wins' => $won ? 1 : 0,
+            'draws' => $drawn ? 1 : 0,
+            'losses' => ! $won && ! $drawn ? 1 : 0,
+            'goalsFor' => (int) $game[$home ? 'home_team_goals' : 'away_team_goals'],
+            'goalsAgainst' => (int) $game[$home ? 'away_team_goals' : 'home_team_goals'],
+            'clubId' => (int) $game[$home ? 'hometeam_id' : 'awayteam_id'],
+            'competitionId' => (int) $game['competition_id'],
+            'seasonId' => (int) $game['season_id'],
+            'instanceId' => (int) $game['instance_id'],
+        ];
+    }
+
+    /** @param array<string, int> $result */
+    private function applyStandingsResult(array $result): void
+    {
+        $updated = DB::update(
+            '
+                UPDATE competition_season
+                SET points = coalesce(points, 0) + :points,
+                    played = played + 1,
+                    wins = wins + :wins,
+                    draws = draws + :draws,
+                    losses = losses + :losses,
+                    goals_for = goals_for + :goalsFor,
+                    goals_against = goals_against + :goalsAgainst
+                WHERE club_id = :clubId
+                AND competition_id = :competitionId
+                AND season_id = :seasonId
+                AND instance_id = :instanceId
+            ',
+            $result
+        );
+
+        if ($updated !== 1) {
+            throw new LogicException('Unable to update exactly one competition standings row.');
         }
-
-        DB::update(
-            '
-                UPDATE competition_season
-                SET points = coalesce(points, 0) + :points,
-                    played = played + 1,
-                    wins = wins + :wins,
-                    draws = draws + :draws,
-                    losses = losses + :losses,
-                    goals_for = goals_for + :goalsFor,
-                    goals_against = goals_against + :goalsAgainst
-                WHERE club_id = :clubId
-                AND competition_id = :competitionId
-                AND season_id = :seasonId
-                AND instance_id = :instanceId
-            ',
-            [
-                'points' => $homeTeamPoints,
-                'wins' => $homeTeamWins,
-                'draws' => $homeTeamDraws,
-                'losses' => $homeTeamLosses,
-                'goalsFor' => $game['home_team_goals'],
-                'goalsAgainst' => $game['away_team_goals'],
-                'clubId' => $game['hometeam_id'],
-                'competitionId' => $game['competition_id'],
-                'seasonId' => $game['season_id'],
-                'instanceId' => $game['instance_id'],
-            ]
-        );
-
-        DB::update(
-            '
-                UPDATE competition_season
-                SET points = coalesce(points, 0) + :points,
-                    played = played + 1,
-                    wins = wins + :wins,
-                    draws = draws + :draws,
-                    losses = losses + :losses,
-                    goals_for = goals_for + :goalsFor,
-                    goals_against = goals_against + :goalsAgainst
-                WHERE club_id = :clubId
-                AND competition_id = :competitionId
-                AND season_id = :seasonId
-                AND instance_id = :instanceId
-            ',
-            [
-                'points' => $awayTeamPoints,
-                'wins' => $awayTeamWins,
-                'draws' => $awayTeamDraws,
-                'losses' => $awayTeamLosses,
-                'goalsFor' => $game['away_team_goals'],
-                'goalsAgainst' => $game['home_team_goals'],
-                'clubId' => $game['awayteam_id'],
-                'competitionId' => $game['competition_id'],
-                'seasonId' => $game['season_id'],
-                'instanceId' => $game['instance_id'],
-            ]
-        );
     }
 
     /**
@@ -387,6 +382,7 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
     {
         DB::table('competitions')
             ->where('id', $competitionId)
+            ->where('instance_id', $this->gameContext->instanceId())
             ->update(['groups' => 0]);
     }
 
@@ -420,70 +416,37 @@ class CompetitionRepository extends CoreRepository implements ICompetitionReposi
             ',
             [
                 'competitionId' => $competitionId,
-                'seasonId' => $this->seasonId(),
-                'instanceId' => $this->instanceId(),
+                'seasonId' => $this->gameContext->seasonId(),
+                'instanceId' => $this->gameContext->instanceId(),
             ]
         );
     }
 
-    public function tournamentRoundWinner(int $matchId1, int $matchId2)
+    public function tournamentRoundWinner(int $matchId1, int $matchId2): ?int
     {
-        $match1 = Game::where('id', $matchId1)->first();
-        $match2 = Game::where('id', $matchId2)->where('winner', '>', '0')->first();
+        $games = Game::query()
+            ->where('instance_id', $this->gameContext->instanceId())
+            ->where('season_id', $this->gameContext->seasonId())
+            ->whereIn('id', [$matchId1, $matchId2])
+            ->get()->keyBy('id');
+        $firstLeg = $games->get($matchId1);
+        $secondLeg = $games->get($matchId2);
 
-        if (empty($match2)) {
-            return false;
+        if (! $firstLeg || ! $secondLeg || ! $secondLeg->winner) {
+            return null;
+        }
+        if ((int) $firstLeg->hometeam_id !== (int) $secondLeg->awayteam_id
+            || (int) $firstLeg->awayteam_id !== (int) $secondLeg->hometeam_id) {
+            throw new LogicException('Knockout legs do not contain the same clubs in reverse order.');
         }
 
-        $team1 = new \stdClass;
-        $team2 = new \stdClass;
+        $homeAggregate = (int) $firstLeg->home_team_goals + (int) $secondLeg->away_team_goals;
+        $awayAggregate = (int) $firstLeg->away_team_goals + (int) $secondLeg->home_team_goals;
 
-        $team1->id = $match1->hometeam_id;
-        $team2->id = $match1->awayteam_id;
-        $team1->goals = $match1->home_team_goals;
-        $team2->goals = $match1->away_team_goals;
-        $team1->goals += $match2->away_team_goals;
-        $team2->goals += $match2->home_team_goals;
-        $team1->points = 0;
-        $team2->points = 0;
-
-        switch ($match1->winner) {
-            case 1:
-                $team1->points += 3;
-                break;
-            case 2:
-                $team2->points += 3;
-                break;
-            case 3:
-                $team1->points += 1;
-                $team2->points += 1;
-                break;
-        }
-
-        switch ($match2->winner) {
-            case 1:
-                $team2->points += 3;
-                break;
-            case 2:
-                $team1->points += 3;
-                break;
-            case 3:
-                $team1->points += 1;
-                $team2->points += 1;
-                break;
-        }
-
-        // same amount of points - checking goal difference or simulating extra time
-        if ($team1->points == $team2->points) {
-            if ($team1->goals == $team2->goals) {
-                $matchService = new GameService;
-
-                return $matchService->simulateMatchExtraTime($match2->id);
-            } else {
-                return $team1->goals > $team2->goals ? $team1->id : $team2->id;
-            }
-        }
-
-        return $team1->points > $team2->points ? $team1->id : $team2->id;
+        return match (true) {
+            $homeAggregate > $awayAggregate => (int) $firstLeg->hometeam_id,
+            $awayAggregate > $homeAggregate => (int) $firstLeg->awayteam_id,
+            default => $this->gameService->simulateMatchExtraTime($secondLeg->id),
+        };
     }
 }

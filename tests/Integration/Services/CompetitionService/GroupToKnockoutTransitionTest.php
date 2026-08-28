@@ -12,6 +12,8 @@ use App\Services\CompetitionService\Competitions\CompetitionUpdater;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
+use App\Services\GameService\GameService;
+use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
@@ -142,7 +144,11 @@ class GroupToKnockoutTransitionTest extends TestCase
 
     private function competitionUpdater(): CompetitionUpdater
     {
-        $repository = new CompetitionRepository(new CompetitionDataSource);
+        $repository = new CompetitionRepository(
+            new CompetitionDataSource,
+            app(GameContext::class),
+            app(GameService::class),
+        );
 
         return new CompetitionUpdater(
             new LeagueUpdater($repository),
