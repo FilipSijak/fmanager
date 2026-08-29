@@ -1,0 +1,19 @@
+app/Repositories/PlayerRepository.php
+  s_b9c6591d23d3fa::t_11f2150b6237a4 44-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "49882b0ca68abe6d4dc7f4e6f388d9dca2a41b37",
+  "prompts": {},
+  "sessions": {
+    "s_b9c6591d23d3fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a04da3-8e67-7b70-8138-d5cd24f183b7",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
