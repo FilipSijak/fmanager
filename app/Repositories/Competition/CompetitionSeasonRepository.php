@@ -9,7 +9,7 @@ use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
-final class CompetitionSeasonRepository
+class CompetitionSeasonRepository
 {
     public function __construct(private readonly CompetitionDataSource $dataSource) {}
 

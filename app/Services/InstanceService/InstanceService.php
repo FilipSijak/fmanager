@@ -8,7 +8,7 @@ use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionScheduleRepository;
 use App\Services\GameService\CompleteGameService;
 use App\Services\GameService\MatchSimulationEngine;
 use Carbon\Carbon;
@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 class InstanceService implements IInstanceService
 {
-    private CompetitionRepository $competitionRepository;
+    private CompetitionScheduleRepository $competitionRepository;
 
     private Season $season;
 
@@ -29,7 +29,7 @@ class InstanceService implements IInstanceService
     private ?Instance $instance = null;
 
     public function __construct(
-        CompetitionRepository $competitionRepository,
+        CompetitionScheduleRepository $competitionRepository,
         CreateInstance $createInstance,
         MatchSimulationEngine $matchSimulationEngine,
         CompleteGameService $completeGameService
@@ -111,7 +111,7 @@ class InstanceService implements IInstanceService
     private function simulateGames()
     {
         $instance = $this->getInstance();
-        $games = $this->competitionRepository->getScheduledGames($instance);
+        $games = $this->competitionRepository->scheduledFor($instance);
 
         foreach ($games as $game) {
             $result = $this->matchSimulationEngine->simulate($game);

@@ -6,12 +6,11 @@ use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionStandingsRepository;
+use App\Repositories\Competition\CompetitionTournamentRepository;
 use App\Services\CompetitionService\Competitions\CompetitionUpdater;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
-use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use App\Services\GameService\GameService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use App\Support\GameContext;
 use Database\Seeders\DatabaseSeeder;
@@ -27,12 +26,8 @@ class CompetitionUpdaterTest extends TestCase
     #[Test]
     public function it_can_update_league_and_tournament_group_points()
     {
-        $competitionRepository = new CompetitionRepository(
-            new CompetitionDataSource,
-            app(GameContext::class),
-            app(GameService::class),
-        );
-        $tournamentUpdater = new TournamentUpdater($competitionRepository);
+        $competitionRepository = app(CompetitionStandingsRepository::class);
+        $tournamentUpdater = new TournamentUpdater($competitionRepository, app(CompetitionTournamentRepository::class), app(GameContext::class));
         $leagueUpdater = new LeagueUpdater($competitionRepository);
         $competitionUpdater = new CompetitionUpdater($leagueUpdater, $tournamentUpdater);
         $season = Season::factory()->create();

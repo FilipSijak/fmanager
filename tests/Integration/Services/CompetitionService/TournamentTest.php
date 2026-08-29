@@ -5,12 +5,12 @@ namespace Tests\Integration\Services\CompetitionService;
 use App\Models\Club;
 use App\Models\Game;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionStandingsRepository;
+use App\Repositories\Competition\CompetitionTournamentRepository;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use App\Services\GameService\GameService;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,12 +38,8 @@ class TournamentTest extends TestCase
         }
 
         $clubs = Club::all();
-        $competitionRepository = new CompetitionRepository(
-            new CompetitionDataSource,
-            app(GameContext::class),
-            app(GameService::class),
-        );
-        $tournamentUpdater = new TournamentUpdater($competitionRepository);
+        $competitionRepository = app(CompetitionStandingsRepository::class);
+        $tournamentUpdater = new TournamentUpdater($competitionRepository, app(CompetitionTournamentRepository::class), app(GameContext::class));
         $leagueUpdater = new LeagueUpdater($competitionRepository);
         $competitionService = new CompetitionService($leagueUpdater, $tournamentUpdater, new CompetitionDataSource);
 

@@ -4,10 +4,8 @@ namespace Tests\Integration\Services\CompetitionService;
 
 use App\Models\Competition;
 use App\Models\Game;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionStandingsRepository;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
-use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use App\Services\GameService\GameService;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use LogicException;
@@ -38,11 +36,7 @@ class LeagueUpdaterTest extends TestCase
         $competition->seasons()->attach(1, ['club_id' => 1, 'instance_id' => 1]);
         $competition->seasons()->attach(1, ['club_id' => 2, 'instance_id' => 1]);
 
-        $repository = new CompetitionRepository(
-            new CompetitionDataSource,
-            app(GameContext::class),
-            app(GameService::class),
-        );
+        $repository = app(CompetitionStandingsRepository::class);
         (new LeagueUpdater($repository))->updatePointsTable($games);
 
         $this->assertDatabaseHas(
@@ -80,14 +74,10 @@ class LeagueUpdaterTest extends TestCase
         app(GameContext::class)->set(1, 1);
         $competition = Competition::factory()->make(['id' => 1]);
         $competition->seasons()->attach(1, ['club_id' => 1, 'instance_id' => 1]);
-        $repository = new CompetitionRepository(
-            new CompetitionDataSource,
-            app(GameContext::class),
-            app(GameService::class),
-        );
+        $repository = app(CompetitionStandingsRepository::class);
 
         try {
-            $repository->updateCompetitionTable(Game::factory()->make([
+            $repository->update(Game::factory()->make([
                 'instance_id' => 1,
                 'season_id' => 1,
                 'competition_id' => 1,

@@ -6,7 +6,7 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use App\Services\PersonService\PersonService;
@@ -23,7 +23,7 @@ class CreateInstance
 
     private PersonService $personService;
 
-    private CompetitionRepository $competitionRepository;
+    private CompetitionSeasonRepository $competitionRepository;
 
     const FREE_AGENTS_COUNT = 200;
 
@@ -34,7 +34,7 @@ class CreateInstance
     public function __construct(
         CompetitionService $competitionService,
         PersonService $personService,
-        CompetitionRepository $competitionRepository,
+        CompetitionSeasonRepository $competitionRepository,
     ) {
         $this->competitionService = $competitionService;
         $this->personService = $personService;
@@ -100,7 +100,7 @@ class CreateInstance
 
     public function mapInitialCompetitionsToSeasonsWithClubs()
     {
-        $this->competitionRepository->setCompetitionsSeasons($this->instance->id, $this->season->id);
+        $this->competitionRepository->storeInitial($this->instance->id, $this->season->id);
     }
 
     public function setCompetitionsForTheFirstSeason(): void
@@ -111,7 +111,7 @@ class CreateInstance
             ->get();
 
         foreach ($competitions as $competition) {
-            $clubIds = $this->competitionRepository->clubIdsForCompetitionSeason(
+            $clubIds = $this->competitionRepository->clubIds(
                 $competition->id,
                 $this->season->id,
                 $this->instance->id

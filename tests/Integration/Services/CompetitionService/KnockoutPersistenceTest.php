@@ -6,14 +6,15 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionReadRepository;
+use App\Repositories\Competition\CompetitionStandingsRepository;
+use App\Repositories\Competition\CompetitionTournamentRepository;
 use App\Repositories\GameRepository;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
 use App\Services\CompetitionService\Competitions\Tournament;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use App\Services\GameService\GameService;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -76,14 +77,8 @@ class KnockoutPersistenceTest extends TestCase
         $this->assertDatabaseCount('tournament_knockout_ties', 7);
         $this->assertSame(8, DB::table('games')->whereNotNull('knockout_tie_id')->count());
 
-        $repository = new CompetitionRepository(
-            new CompetitionDataSource,
-            app(GameContext::class),
-            app(GameService::class),
-        );
-        $repository->setInstanceId($instance->id);
-        $repository->setSeasonId($season->id);
-        $summary = $repository->getCompetitionKnockoutStageSummary($competition->id);
+        app(GameContext::class)->set($instance->id, $season->id);
+        $summary = app(CompetitionReadRepository::class)->knockoutSummary($competition->id);
         $currentRound = (new KnockoutSummaryRoundsData(app(GameRepository::class)))->getCurrentRound($summary);
 
         $this->assertCount(2, $currentRound['first_group']);
@@ -111,11 +106,11 @@ class KnockoutPersistenceTest extends TestCase
             ->where('round_id', $firstRound->id)
             ->orderBy('position')
             ->get();
-        $updater = new TournamentUpdater(new CompetitionRepository(
-            new CompetitionDataSource,
+        $updater = new TournamentUpdater(
+            app(CompetitionStandingsRepository::class),
+            app(CompetitionTournamentRepository::class),
             app(GameContext::class),
-            app(GameService::class),
-        ));
+        );
         $updater->setInstanceId($instance->id);
         $updater->setSeason($season);
 

@@ -7,7 +7,7 @@ use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Services\CompetitionService\Progression\CompetitionProgressionCalculator;
 use App\Services\CompetitionService\Progression\SeasonProgressionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -80,11 +80,11 @@ class SeasonProgressionServiceTest extends TestCase
     {
         $data = $this->world();
         app(SeasonProgressionService::class)->finalize($data['season']->id);
-        $repository = app(CompetitionRepository::class);
+        $repository = app(CompetitionSeasonRepository::class);
 
-        $nextSeason = $repository->applyCompetitionProgressions(1, $data['season']->id);
+        $nextSeason = $repository->applyProgressions(1, $data['season']->id);
         app(SeasonProgressionService::class)->finalize($data['season']->id);
-        $sameSeason = $repository->applyCompetitionProgressions(1, $data['season']->id);
+        $sameSeason = $repository->applyProgressions(1, $data['season']->id);
 
         $this->assertTrue($nextSeason->is($sameSeason));
         $this->assertSame('2027-08-15', $nextSeason->start_date);

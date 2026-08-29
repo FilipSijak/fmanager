@@ -7,12 +7,11 @@ use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionStandingsRepository;
+use App\Repositories\Competition\CompetitionTournamentRepository;
 use App\Services\CompetitionService\Competitions\CompetitionUpdater;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
-use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use App\Services\GameService\GameService;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -144,15 +143,11 @@ class GroupToKnockoutTransitionTest extends TestCase
 
     private function competitionUpdater(): CompetitionUpdater
     {
-        $repository = new CompetitionRepository(
-            new CompetitionDataSource,
-            app(GameContext::class),
-            app(GameService::class),
-        );
+        $repository = app(CompetitionStandingsRepository::class);
 
         return new CompetitionUpdater(
             new LeagueUpdater($repository),
-            new TournamentUpdater($repository)
+            new TournamentUpdater($repository, app(CompetitionTournamentRepository::class), app(GameContext::class))
         );
     }
 

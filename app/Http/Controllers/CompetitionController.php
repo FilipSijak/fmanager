@@ -6,7 +6,7 @@ use App\Helpers\ResponseHelper;
 use App\Http\Resources\CompetitionResource;
 use App\Http\Resources\CompetitionTableRowResource;
 use App\Models\Competition;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionReadRepository;
 use App\Repositories\GameRepository;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
 use App\Services\CompetitionService\Progression\CompetitionProgressionCalculator;
@@ -17,7 +17,7 @@ class CompetitionController extends CoreController
 {
     public function __construct(
         private readonly GameContext $gameContext,
-        private readonly CompetitionRepository $competitionRepository,
+        private readonly CompetitionReadRepository $competitionRepository,
         private readonly GameRepository $gameRepository,
         private readonly KnockoutSummaryRoundsData $knockoutSummaryRoundsData,
         private readonly CompetitionProgressionCalculator $progressionCalculator
@@ -55,7 +55,7 @@ class CompetitionController extends CoreController
 
     public function competitionTable(int $competitionId): JsonResponse
     {
-        $competitionTable = $this->competitionRepository->competitionTable($competitionId)
+        $competitionTable = $this->competitionRepository->table($competitionId)
             ->values()
             ->each(function ($row, int $index): void {
                 $row->position = $index + 1;
@@ -69,7 +69,7 @@ class CompetitionController extends CoreController
 
     public function tournamentGroupsTables(int $competitionId): JsonResponse
     {
-        $tournamentGroupsTables = $this->competitionRepository->tournamentGroupsTables($competitionId)
+        $tournamentGroupsTables = $this->competitionRepository->groupTables($competitionId)
             ->groupBy('group_id')
             ->map(function ($groupTable) {
                 $groupTable = $groupTable->values()
@@ -86,7 +86,7 @@ class CompetitionController extends CoreController
 
     public function competitionKnockoutPhaseRoundViewData(int $competitionId): JsonResponse
     {
-        $summary = $this->competitionRepository->getCompetitionKnockoutStageSummary($competitionId);
+        $summary = $this->competitionRepository->knockoutSummary($competitionId);
 
         if ($summary) {
             return ResponseHelper::success(
@@ -104,7 +104,7 @@ class CompetitionController extends CoreController
 
     public function competitionKnockoutPhaseAllRounds($competitionId): JsonResponse
     {
-        $summary = $this->competitionRepository->getCompetitionKnockoutStageSummary($competitionId);
+        $summary = $this->competitionRepository->knockoutSummary($competitionId);
 
         if ($summary) {
             return ResponseHelper::success(
@@ -122,7 +122,7 @@ class CompetitionController extends CoreController
 
     public function competitionKnockoutPhase(int $competitionId): JsonResponse
     {
-        $summary = $this->competitionRepository->getCompetitionKnockoutStageSummary($competitionId);
+        $summary = $this->competitionRepository->knockoutSummary($competitionId);
 
         if ($summary) {
             return ResponseHelper::success(
