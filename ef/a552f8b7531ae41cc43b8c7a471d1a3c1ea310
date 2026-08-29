@@ -1,0 +1,54 @@
+tests/Integration/Instance/CreateInstanceTest.php
+  s_b9c6591d23d3fa::t_58b869b8512232 16-18,245,247-248,257
+tests/Integration/Services/CompetitionService/LeagueUpdaterTest.php
+  s_b9c6591d23d3fa::t_f4a944e0608803 7,39,77,80
+app/Repositories/Competition/CompetitionReadRepository.php
+  s_b9c6591d23d3fa::t_e2d5c805870dbc 1-28
+app/Services/InstanceService/InstanceService.php
+  s_b9c6591d23d3fa::t_1f4b464ffbdaab 11,19,32,114
+tests/Integration/Services/CompetitionService/CompetitionServiceMakeLeagueTest.php
+  s_b9c6591d23d3fa::t_9ba97c376e1ac3 101
+  s_b9c6591d23d3fa::t_f4a944e0608803 7-8,105
+app/Services/CompetitionService/Competitions/LeagueUpdater.php
+  s_b9c6591d23d3fa::t_1f4b464ffbdaab 6,10,18
+tests/Integration/Services/CompetitionService/TournamentTest.php
+  s_b9c6591d23d3fa::t_f4a944e0608803 8-9,41-42
+tests/Integration/Services/CompetitionService/Progression/SeasonProgressionServiceTest.php
+  s_b9c6591d23d3fa::t_9cbcab88e8d8fc 10,83,85,87
+app/Http/Controllers/CompetitionController.php
+  s_b9c6591d23d3fa::t_1f4b464ffbdaab 9,20,58,72,89,107,125
+tests/Integration/Services/CompetitionService/CompetitionUpdaterTest.php
+  s_b9c6591d23d3fa::t_f4a944e0608803 9-10,29-30
+tests/Integration/Instance/SeasonCompletionTest.php
+  s_b9c6591d23d3fa::t_9cbcab88e8d8fc 8,76-77
+app/Services/SeasonService/SeasonCompletion.php
+  s_b9c6591d23d3fa::t_1f4b464ffbdaab 6,14,23
+app/Services/SeasonService/SeasonStart.php
+  s_b9c6591d23d3fa::t_1f4b464ffbdaab 10,21,49
+app/Services/CompetitionService/Competitions/TournamentUpdater.php
+  s_b9c6591d23d3fa::t_939b0d751e43e7 8-9,12,24-26,35,42,49,58,74,141
+app/Services/InstanceService/CreateInstance.php
+  s_b9c6591d23d3fa::t_1f4b464ffbdaab 9,26,37,103,114
+tests/Integration/Services/CompetitionService/GroupToKnockoutTransitionTest.php
+  s_b9c6591d23d3fa::t_f4a944e0608803 10-11,146,150
+tests/Integration/Services/CompetitionService/KnockoutPersistenceTest.php
+  s_b9c6591d23d3fa::t_9cbcab88e8d8fc 9-11,80-81,109-111,113
+app/Repositories/Competition/CompetitionSeasonRepository.php
+  s_b9c6591d23d3fa::t_c3a90be99b37b7 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "efa552f8b7531ae41cc43b8c7a471d1a3c1ea310",
+  "prompts": {},
+  "sessions": {
+    "s_b9c6591d23d3fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a04da3-8e67-7b70-8138-d5cd24f183b7",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
