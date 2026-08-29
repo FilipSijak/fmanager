@@ -1,0 +1,30 @@
+app/Repositories/CompetitionRepository.php
+  s_b9c6591d23d3fa::t_68812e1fa99e73 8-11,19
+  s_b9c6591d23d3fa::t_89e4d56f8bf8f0 22-29,31,33-39
+  s_b9c6591d23d3fa::t_64449e1e1f92d7 41,43,46,48,53,58,63,68,73,78,84,89,94,99,104,109
+app/Repositories/Competition/CompetitionTournamentRepository.php
+  s_b9c6591d23d3fa::t_26daed07bdea5f 1-116
+app/Repositories/Competition/CompetitionScheduleRepository.php
+  s_b9c6591d23d3fa::t_a17350d30478b7 1-18
+app/Repositories/Competition/CompetitionStandingsRepository.php
+  s_b9c6591d23d3fa::t_8cd50dba0ef8d5 1-102
+app/Repositories/Competition/CompetitionSeasonRepository.php
+  s_b9c6591d23d3fa::t_425e550dfc8093 1-43,49-96
+  s_b9c6591d23d3fa::t_4b17f473c33526 44-48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "98c26b1d514db1d399d8d2c6776369adec42331a",
+  "prompts": {},
+  "sessions": {
+    "s_b9c6591d23d3fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a04da3-8e67-7b70-8138-d5cd24f183b7",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
