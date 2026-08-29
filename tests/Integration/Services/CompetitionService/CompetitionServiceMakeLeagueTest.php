@@ -4,12 +4,12 @@ namespace Tests\Integration\Services\CompetitionService;
 
 use App\Models\Club;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionStandingsRepository;
+use App\Repositories\Competition\CompetitionTournamentRepository;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use App\Services\GameService\GameService;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -98,15 +98,11 @@ class CompetitionServiceMakeLeagueTest extends TestCase
     private function makeService(): CompetitionService
     {
         $dataSource = new CompetitionDataSource;
-        $repository = new CompetitionRepository(
-            $dataSource,
-            app(GameContext::class),
-            app(GameService::class),
-        );
+        $repository = app(CompetitionStandingsRepository::class);
 
         return new CompetitionService(
             new LeagueUpdater($repository),
-            new TournamentUpdater($repository),
+            new TournamentUpdater($repository, app(CompetitionTournamentRepository::class), app(GameContext::class)),
             $dataSource
         );
     }

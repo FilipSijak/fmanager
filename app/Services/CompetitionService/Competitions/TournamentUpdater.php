@@ -5,9 +5,11 @@ namespace App\Services\CompetitionService\Competitions;
 use App\Models\Club;
 use App\Models\Game;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionStandingsRepository;
+use App\Repositories\Competition\CompetitionTournamentRepository;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\GameService\GameService;
+use App\Support\GameContext;
 use Illuminate\Support\Facades\DB;
 
 class TournamentUpdater
@@ -19,7 +21,9 @@ class TournamentUpdater
     private TournamentConfig $tournamentConfig;
 
     public function __construct(
-        public CompetitionRepository $competitionRepository,
+        private readonly CompetitionStandingsRepository $standings,
+        private readonly CompetitionTournamentRepository $tournaments,
+        private readonly GameContext $gameContext,
         ?TournamentConfig $tournamentConfig = null
     ) {
         $this->tournamentConfig = $tournamentConfig ?? new TournamentConfig;
@@ -28,21 +32,21 @@ class TournamentUpdater
     public function setInstanceId(int $instanceId): void
     {
         $this->instanceId = $instanceId;
-        $this->competitionRepository->setInstanceId($instanceId);
+        $this->gameContext->setInstanceId($instanceId);
     }
 
     public function setSeason(Season $season): void
     {
         $this->season = $season;
         $this->tournamentConfig = new TournamentConfig($season->start_date);
-        $this->competitionRepository->setSeasonId($season->id);
+        $this->gameContext->setSeasonId($season->id);
     }
 
     public function updatePointsTable(array $games): void
     {
         DB::transaction(function () use ($games): void {
             foreach ($games as $game) {
-                $this->competitionRepository->updateCompetitionTable($game);
+                $this->standings->update($game);
             }
 
             $this->transitionToKnockoutIfFinished($games[0]);
@@ -51,7 +55,7 @@ class TournamentUpdater
 
     public function transitionToKnockoutIfFinished(array $game): void
     {
-        if (! $this->competitionRepository->tournamentGroupsFinished($game)) {
+        if (! $this->tournaments->groupsFinished($game)) {
             return;
         }
 
@@ -67,7 +71,7 @@ class TournamentUpdater
             return;
         }
 
-        $knockoutClubs = collect($this->competitionRepository->topClubsByTournamentGroup($competitionId))
+        $knockoutClubs = collect($this->standings->topClubsByGroup($competitionId))
             ->pluck('club_id')->map(fn ($clubId) => (int) $clubId)->all();
         $tournament = new Tournament($this->tournamentConfig);
         $schedule = $tournament->createTournament($knockoutClubs, $this->instanceId, $this->season->id);
@@ -134,7 +138,7 @@ class TournamentUpdater
                 ? (new GameService)->simulateMatchExtraTime($game->id)
                 : ((int) $game->winner === 1 ? $game->hometeam_id : $game->awayteam_id);
         } else {
-            $winnerClubId = $this->competitionRepository->tournamentRoundWinner(
+            $winnerClubId = $this->tournaments->roundWinner(
                 $games->first()->id,
                 $games->last()->id
             );

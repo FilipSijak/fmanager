@@ -7,7 +7,7 @@ use App\Models\Competition;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Repositories\StaffRepository;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
@@ -18,7 +18,7 @@ use Illuminate\Support\Lottery;
 class SeasonStart
 {
     public function __construct(
-        private readonly CompetitionRepository $competitionRepository,
+        private readonly CompetitionSeasonRepository $competitionRepository,
         private readonly CompetitionService $competitionService,
         private readonly PlayerRetirement $playerRetirement,
         private readonly StaffRetirement $staffRetirement,
@@ -46,7 +46,7 @@ class SeasonStart
                     return;
                 }
 
-                $clubIds = $this->competitionRepository->clubIdsForCompetitionSeason(
+                $clubIds = $this->competitionRepository->clubIds(
                     $competition->id,
                     $season->id,
                     $instance->id

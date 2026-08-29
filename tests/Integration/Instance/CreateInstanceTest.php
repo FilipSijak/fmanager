@@ -13,12 +13,13 @@ use App\Models\StaffCoaching;
 use App\Models\StaffPhysio;
 use App\Models\StaffScout;
 use App\Models\User;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionSeasonRepository;
+use App\Repositories\Competition\CompetitionStandingsRepository;
+use App\Repositories\Competition\CompetitionTournamentRepository;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
-use App\Services\GameService\GameService;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
@@ -241,14 +242,10 @@ class CreateInstanceTest extends TestCase
     protected function getNewInstance(): CreateInstance
     {
         $this->competitionDataSource = new CompetitionDataSource;
-        $this->competitionRepository = new CompetitionRepository(
-            $this->competitionDataSource,
-            app(GameContext::class),
-            app(GameService::class),
-        );
+        $standings = app(CompetitionStandingsRepository::class);
         $this->competitionService = new CompetitionService(
-            (new LeagueUpdater($this->competitionRepository)),
-            (new TournamentUpdater($this->competitionRepository)),
+            (new LeagueUpdater($standings)),
+            (new TournamentUpdater($standings, app(CompetitionTournamentRepository::class), app(GameContext::class))),
             $this->competitionDataSource
         );
         $this->personService = app()->make(PersonService::class);
@@ -257,7 +254,7 @@ class CreateInstanceTest extends TestCase
             new CreateInstance(
                 app()->make(CompetitionService::class),
                 app()->make(PersonService::class),
-                app()->make(CompetitionRepository::class)
+                app()->make(CompetitionSeasonRepository::class)
             );
     }
 }

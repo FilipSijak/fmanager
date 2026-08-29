@@ -5,7 +5,7 @@ namespace Tests\Integration\Instance;
 use App\Events\SeasonCompleted;
 use App\Models\Instance;
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Services\CompetitionService\Progression\SeasonProgressionService;
 use App\Services\InstanceService\InstanceService;
 use App\Services\SeasonService\SeasonCompletion;
@@ -73,8 +73,8 @@ class SeasonCompletionTest extends TestCase
         $progression = $this->mock(SeasonProgressionService::class);
         $progression->shouldReceive('finalize')->once()->with(1);
 
-        $repository = $this->mock(CompetitionRepository::class);
-        $repository->shouldReceive('applyCompetitionProgressions')
+        $repository = $this->mock(CompetitionSeasonRepository::class);
+        $repository->shouldReceive('applyProgressions')
             ->once()
             ->with(1, 1)
             ->andReturn($nextSeason);

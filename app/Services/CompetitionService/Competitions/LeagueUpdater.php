@@ -3,11 +3,11 @@
 namespace App\Services\CompetitionService\Competitions;
 
 use App\Models\Season;
-use App\Repositories\CompetitionRepository;
+use App\Repositories\Competition\CompetitionStandingsRepository;
 
 class LeagueUpdater
 {
-    public function __construct(CompetitionRepository $competitionRepository)
+    public function __construct(CompetitionStandingsRepository $competitionRepository)
     {
         $this->competitionRepository = $competitionRepository;
     }
@@ -15,7 +15,7 @@ class LeagueUpdater
     public function updatePointsTable(array $games)
     {
         foreach ($games as $game) {
-            $this->competitionRepository->updateCompetitionTable($game);
+            $this->competitionRepository->update($game);
         }
     }
 
