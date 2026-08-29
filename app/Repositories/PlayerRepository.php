@@ -41,47 +41,49 @@ class PlayerRepository implements IPlayerRepository
         ?Club $club,
         array $generatedPlayers
     ): EloquentCollection {
-        $instanceDate = DB::table('instances')->where('id', $instanceId)->value('instance_date');
+        return DB::transaction(function () use ($instanceId, $club, $generatedPlayers): EloquentCollection {
+            $instanceDate = DB::table('instances')->where('id', $instanceId)->value('instance_date');
 
-        if ($instanceDate === null) {
-            throw new RuntimeException("Instance {$instanceId} does not exist.");
-        }
+            if ($instanceDate === null) {
+                throw new RuntimeException("Instance {$instanceId} does not exist.");
+            }
 
-        $personIds = [];
-        $playerRows = [];
+            $personIds = [];
+            $playerRows = [];
 
-        foreach ($generatedPlayers as $player) {
-            [$marketingRank, $playerValue] = $this->marketingRankAndValue($player, $club);
-            $player->marketing_rank = $marketingRank;
+            foreach ($generatedPlayers as $player) {
+                [$marketingRank, $playerValue] = $this->marketingRankAndValue($player, $club);
+                $player->marketing_rank = $marketingRank;
 
-            $personId = DB::table('people')->insertGetId([
-                'instance_id' => $instanceId,
-                'first_name' => $player->first_name,
-                'last_name' => $player->last_name,
-                'country_code' => $player->country_code,
-                'dob' => $player->dob,
-            ]);
+                $personId = DB::table('people')->insertGetId([
+                    'instance_id' => $instanceId,
+                    'first_name' => $player->first_name,
+                    'last_name' => $player->last_name,
+                    'country_code' => $player->country_code,
+                    'dob' => $player->dob,
+                ]);
 
-            $contractId = DB::table('players_contracts')->insertGetId(
-                $this->playerDataSource->generatedContractData($player, (string) $instanceDate)
-            );
+                $contractId = DB::table('players_contracts')->insertGetId(
+                    $this->playerDataSource->generatedContractData($player, (string) $instanceDate)
+                );
 
-            $personIds[] = $personId;
-            $playerRows[] = $this->playerInsertRow(
-                $player,
-                $instanceId,
-                $personId,
-                $contractId,
-                $club?->id,
-                $playerValue
-            );
-        }
+                $personIds[] = $personId;
+                $playerRows[] = $this->playerInsertRow(
+                    $player,
+                    $instanceId,
+                    $personId,
+                    $contractId,
+                    $club?->id,
+                    $playerValue
+                );
+            }
 
-        foreach (array_chunk($playerRows, self::INSERT_CHUNK_SIZE) as $chunk) {
-            DB::table('players')->insert($chunk);
-        }
+            foreach (array_chunk($playerRows, self::INSERT_CHUNK_SIZE) as $chunk) {
+                DB::table('players')->insert($chunk);
+            }
 
-        return Player::query()->whereIn('person_id', $personIds)->get();
+            return Player::query()->whereIn('person_id', $personIds)->get();
+        });
     }
 
     public function bulkAssignmentPlayersPositions($players): void
