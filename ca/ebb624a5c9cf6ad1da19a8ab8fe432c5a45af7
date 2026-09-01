@@ -1,0 +1,25 @@
+database/migrations/2026_09_01_000004_create_training_player_schedule_table.php
+  s_b4e58b88a32020::t_f241e902430cb4 1-41
+database/migrations/2026_09_01_000003_create_training_intensities_table.php
+  s_b4e58b88a32020::t_1ad66351bd7f8d 1-33
+app/Services/TrainingService/TrainingIntensity.php
+  s_b4e58b88a32020::t_f241e902430cb4 10
+app/Models/Player.php
+  s_b4e58b88a32020::t_f241e902430cb4 50
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "caebb624a5c9cf6ad1da19a8ab8fe432c5a45af7",
+  "prompts": {},
+  "sessions": {
+    "s_b4e58b88a32020": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05d84-381a-73c2-b5c9-68a5300d8d17",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
