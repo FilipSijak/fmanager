@@ -1,0 +1,20 @@
+app/Services/TrainingService/TrainingService.php
+  s_b4e58b88a32020::t_90143410244365 23-32,61,111-120,123,192-226,228
+  s_b4e58b88a32020::t_05a45a01f9864c 227,229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "6932c473547fe2d9dbe0fa728c4087b16d343540",
+  "prompts": {},
+  "sessions": {
+    "s_b4e58b88a32020": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05d84-381a-73c2-b5c9-68a5300d8d17",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
