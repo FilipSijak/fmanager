@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -28,29 +29,26 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('player_id');
             $table->integer('instance_id');
-            $table->unsignedBigInteger('person_id');
-            $table->string('position');
-            $table->integer('potential');
-            $table->integer('max_potential');
-
             foreach (array_merge(
                 self::TECHNICAL_FIELDS,
                 self::MENTAL_FIELDS,
                 self::PHYSICAL_FIELDS
             ) as $field) {
-                $table->integer($field)->default(50);
+                $table->unsignedSmallInteger($field)->default(50);
             }
 
-            $table->integer('condition')->default(100);
-            $table->integer('morale')->default(100);
+            $table->unsignedTinyInteger('condition')->default(100);
+            $table->unsignedTinyInteger('morale')->default(100);
+            $table->timestamp('last_progressed_at')->nullable();
             $table->timestamps();
 
             $table->unique('player_id');
             $table->index('instance_id');
             $table->foreign('player_id')->references('id')->on('players')->cascadeOnDelete();
-            $table->foreign('person_id')->references('id')->on('people')->restrictOnDelete();
         });
 
+        DB::statement('ALTER TABLE players_progress ADD CONSTRAINT players_progress_condition_check CHECK (`condition` BETWEEN 0 AND 100)');
+        DB::statement('ALTER TABLE players_progress ADD CONSTRAINT players_progress_morale_check CHECK (`morale` BETWEEN 0 AND 100)');
     }
 
     public function down(): void

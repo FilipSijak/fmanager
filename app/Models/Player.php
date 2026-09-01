@@ -4,14 +4,12 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToGameInstance;
 use App\Services\PersonService\Data\PersonInfo;
-use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Schema\Grammars\MySqlGrammar;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class Player extends Model
@@ -33,23 +31,12 @@ class Player extends Model
 
     public function initializeProgress(): void
     {
-        $playerColumns = array_merge(
-            ['instance_id', 'person_id', 'position', 'potential', 'max_potential'],
-            PlayerFields::TECHNICAL_FIELDS,
-            PlayerFields::MENTAL_FIELDS,
-            PlayerFields::PHYSICAL_FIELDS
-        );
-
-        DB::table('players_progress')->insert(array_merge(
-            [
-                'player_id' => $this->id,
-                'condition' => 100,
-                'morale' => 100,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            Arr::only($this->getAttributes(), $playerColumns)
-        ));
+        DB::table('players_progress')->insert([
+            'player_id' => $this->id,
+            'instance_id' => $this->instance_id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     public function person(): BelongsTo
