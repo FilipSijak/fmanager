@@ -1,0 +1,21 @@
+database/migrations/2026_09_01_000001_create_players_progress_table.php
+  s_b4e58b88a32020::t_fd384fc7b5ce7d 5,37,40-42,50-51
+app/Models/Player.php
+  s_b4e58b88a32020::t_fd384fc7b5ce7d 34-39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "2ab922474cdcb38b011a047433bb98f2c00c3c0a",
+  "prompts": {},
+  "sessions": {
+    "s_b4e58b88a32020": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05d84-381a-73c2-b5c9-68a5300d8d17",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
