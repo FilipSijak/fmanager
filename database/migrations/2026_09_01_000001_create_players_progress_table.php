@@ -50,6 +50,7 @@ return new class extends Migration
             $table->foreign('player_id')->references('id')->on('players')->cascadeOnDelete();
             $table->foreign('person_id')->references('id')->on('people')->restrictOnDelete();
         });
+
     }
 
     public function down(): void

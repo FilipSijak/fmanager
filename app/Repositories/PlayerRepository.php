@@ -82,7 +82,10 @@ class PlayerRepository implements IPlayerRepository
                 DB::table('players')->insert($chunk);
             }
 
-            return Player::query()->whereIn('person_id', $personIds)->get();
+            $players = Player::query()->whereIn('person_id', $personIds)->get();
+            $players->each->initializeProgress();
+
+            return $players;
         });
     }
 
