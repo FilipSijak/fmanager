@@ -51,6 +51,7 @@ class TrainingService
                     'players.id',
                     'players.potential',
                     'players.max_potential',
+                    'players.physical',
                     ...$trainingFields,
                 ])
                 ->lockForUpdate()
@@ -107,6 +108,7 @@ class TrainingService
                 $playerUpdates = [];
                 $progressUpdates = ['last_progressed_at' => now(), 'updated_at' => now()];
                 $gap = (int) $player->max_potential - (int) $player->potential;
+                $atFullPotential = $gap <= 0;
                 $hasProgressChange = false;
                 $playerSchedules = $schedulesByPlayer->get($player->id);
                 $conditionCost = $this->conditionCost($playerSchedules);
@@ -139,8 +141,20 @@ class TrainingService
 
                     foreach ($categoryFields as $field) {
                         $totalProgress = max(0, (int) $progress->{$field} + $points);
-                        $attributeIncrease = intdiv($totalProgress, self::PROGRESS_THRESHOLD);
-                        $progressUpdates[$field] = $totalProgress % self::PROGRESS_THRESHOLD;
+                        $requestedIncrease = intdiv($totalProgress, self::PROGRESS_THRESHOLD);
+                        $attributeIncrease = $this->allowedAttributeIncrease(
+                            $categoryId,
+                            $player,
+                            $field,
+                            $requestedIncrease,
+                            $atFullPotential
+                        );
+                        $remainingProgress = $totalProgress
+                            - ($attributeIncrease * self::PROGRESS_THRESHOLD);
+                        $progressUpdates[$field] = min(
+                            self::PROGRESS_THRESHOLD - 1,
+                            $remainingProgress
+                        );
 
                         if ($attributeIncrease > 0) {
                             $playerUpdates[$field] = (int) $player->{$field} + $attributeIncrease;
@@ -225,6 +239,27 @@ class TrainingService
             TrainingIntensity::Medium => 5,
             TrainingIntensity::Hard => 8,
         };
+    }
+
+    private function allowedAttributeIncrease(
+        int $categoryId,
+        object $player,
+        string $field,
+        int $requestedIncrease,
+        bool $atFullPotential
+    ): int {
+        if (! $atFullPotential || $requestedIncrease === 0) {
+            return $requestedIncrease;
+        }
+
+        if ($categoryId !== TrainingCategory::Physical->value) {
+            return 0;
+        }
+
+        $physicalAttributeCeiling = (int) round((int) $player->physical / 10);
+        $remainingGrowth = max(0, $physicalAttributeCeiling - (int) $player->{$field});
+
+        return min($requestedIncrease, $remainingGrowth);
     }
 
     /**  array<int, array<int, string>> */
