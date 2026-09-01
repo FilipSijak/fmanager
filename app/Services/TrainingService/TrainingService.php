@@ -16,6 +16,8 @@ class TrainingService
 
     private const PROGRESS_THRESHOLD = 100;
 
+    private const MISSED_SESSION_PENALTY = 2;
+
     public function executeTrainingSession(Club $club): int
     {
         $trainingFields = array_merge(
@@ -33,13 +35,6 @@ class TrainingService
                 ->where('players.instance_id', $club->instance_id)
                 ->where('players.club_id', $club->id)
                 ->where('players.is_retired', false)
-                ->whereNotExists(function ($query) use ($trainingDate): void {
-                    $query->selectRaw('1')
-                        ->from('player_injuries')
-                        ->whereColumn('player_injuries.player_id', 'players.id')
-                        ->whereDate('player_injuries.injury_start_date', '<=', $trainingDate)
-                        ->whereDate('player_injuries.injury_end_date', '>=', $trainingDate);
-                })
                 ->select([
                     'players.id',
                     'players.potential',
@@ -56,12 +51,36 @@ class TrainingService
                 ->get()
                 ->keyBy('player_id');
 
+            $injuredPlayerIds = DB::table('player_injuries')
+                ->whereIn('player_id', $players->pluck('id'))
+                ->whereDate('injury_start_date', '<=', $trainingDate)
+                ->whereDate('injury_end_date', '>=', $trainingDate)
+                ->pluck('player_id')
+                ->mapWithKeys(fn ($playerId): array => [(int) $playerId => true]);
+
             $trainedPlayers = 0;
 
             foreach ($players as $player) {
                 $progress = $progressByPlayer->get($player->id);
 
                 if ($progress === null) {
+                    continue;
+                }
+
+                if ($injuredPlayerIds->has($player->id)) {
+                    $missedSessionUpdates = ['last_progressed_at' => now(), 'updated_at' => now()];
+
+                    foreach ($trainingFields as $field) {
+                        $missedSessionUpdates[$field] = max(
+                            0,
+                            (int) $progress->{$field} - self::MISSED_SESSION_PENALTY
+                        );
+                    }
+
+                    DB::table('players_progress')
+                        ->where('player_id', $player->id)
+                        ->update($missedSessionUpdates);
+
                     continue;
                 }
 
