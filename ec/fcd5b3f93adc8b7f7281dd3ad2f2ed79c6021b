@@ -1,0 +1,21 @@
+app/Providers/EventServiceProvider.php
+  s_b4e58b88a32020::t_b578ecc72078b0 15,34
+app/Listeners/RunDailyTraining.php
+  s_b4e58b88a32020::t_f1418333006653 1-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "ecfcd5b3f93adc8b7f7281dd3ad2f2ed79c6021b",
+  "prompts": {},
+  "sessions": {
+    "s_b4e58b88a32020": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05d84-381a-73c2-b5c9-68a5300d8d17",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
