@@ -12,6 +12,7 @@ use App\Listeners\DispatchMonthlyPlayerReindex;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\ProcessTransfers;
+use App\Listeners\RunDailyTraining;
 use App\Listeners\StartSeason;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -30,6 +31,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         NextDay::class => [
             ProcessTransfers::class,
+            RunDailyTraining::class,
         ],
         MonthlyUpdate::class => [
             DispatchMonthlyPlayerReindex::class,
