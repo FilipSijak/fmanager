@@ -25,16 +25,30 @@ class RunDailyTraining
                 $query->whereDate('match_start', $trainingDate)
                     ->orWhereDate('match_start', $previousDate);
             })
-            ->get(['hometeam_id', 'awayteam_id']);
+            ->get(['hometeam_id', 'awayteam_id', 'match_start']);
 
-        $restingClubIds = $games
+        $clubIds = static fn ($scheduledGames) => $scheduledGames
             ->flatMap(fn ($game): array => [$game->hometeam_id, $game->awayteam_id])
             ->unique()
             ->values();
+        $gamesToday = $games->filter(
+            fn ($game): bool => CarbonImmutable::parse($game->match_start)->isSameDay($trainingDate)
+        );
+        $gamesYesterday = $games->filter(
+            fn ($game): bool => CarbonImmutable::parse($game->match_start)->isSameDay($previousDate)
+        );
+        $playingTodayIds = $clubIds($gamesToday);
+        $postMatchRestIds = $clubIds($gamesYesterday)->diff($playingTodayIds)->values();
+        $clubsWithoutTraining = $playingTodayIds->merge($postMatchRestIds)->unique();
 
         Club::query()
             ->forInstance($event->instance->id)
-            ->whereNotIn('id', $restingClubIds)
+            ->whereIn('id', $postMatchRestIds)
+            ->each(fn (Club $club) => $this->trainingService->recoverCondition($club));
+
+        Club::query()
+            ->forInstance($event->instance->id)
+            ->whereNotIn('id', $clubsWithoutTraining)
             ->each(fn (Club $club) => $this->trainingService->executeTrainingSession($club));
     }
 }

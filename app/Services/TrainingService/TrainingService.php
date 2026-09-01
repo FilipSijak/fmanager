@@ -19,6 +19,8 @@ class TrainingService
 
     private const PROGRESS_THRESHOLD = 100;
 
+    private const TACTICAL_PROGRESS_THRESHOLD = 200;
+
     private const MAX_ATTRIBUTE_VALUE = 20;
 
     private const MISSED_SESSION_PENALTY = 2;
@@ -32,6 +34,10 @@ class TrainingService
     private const VERY_HARD_CONDITION_COST = 5;
 
     private const MINIMUM_TRAINING_CONDITION = 70;
+
+    private const TRAINING_CONDITION_RECOVERY = 3;
+
+    private const REST_DAY_CONDITION_RECOVERY = 10;
 
     public function executeTrainingSession(Club $club): int
     {
@@ -122,8 +128,13 @@ class TrainingService
                         self::MINIMUM_TRAINING_CONDITION,
                         (int) $progress->condition - $conditionCost
                     );
-                    $hasProgressChange = true;
+                } else {
+                    $progressUpdates['condition'] = min(
+                        100,
+                        (int) $progress->condition + self::TRAINING_CONDITION_RECOVERY
+                    );
                 }
+                $hasProgressChange = true;
 
                 foreach ($this->fieldsByCategory() as $categoryId => $categoryFields) {
                     $schedule = $playerSchedules?->get($categoryId);
@@ -151,7 +162,8 @@ class TrainingService
                             $player->position
                         );
                         $totalProgress = max(0, (int) $progress->{$field} + $fieldPoints);
-                        $requestedIncrease = intdiv($totalProgress, self::PROGRESS_THRESHOLD);
+                        $progressThreshold = $this->progressThreshold($categoryId);
+                        $requestedIncrease = intdiv($totalProgress, $progressThreshold);
                         $attributeIncrease = $this->allowedAttributeIncrease(
                             $categoryId,
                             $player,
@@ -160,9 +172,9 @@ class TrainingService
                             $atFullPotential
                         );
                         $remainingProgress = $totalProgress
-                            - ($attributeIncrease * self::PROGRESS_THRESHOLD);
+                            - ($attributeIncrease * $progressThreshold);
                         $progressUpdates[$field] = min(
-                            self::PROGRESS_THRESHOLD - 1,
+                            $progressThreshold - 1,
                             $remainingProgress
                         );
 
@@ -188,6 +200,42 @@ class TrainingService
             }
 
             return $trainedPlayers;
+        });
+    }
+
+    public function recoverCondition(Club $club): int
+    {
+        return DB::transaction(function () use ($club): int {
+            $playerIds = DB::table('players')
+                ->where('instance_id', $club->instance_id)
+                ->where('club_id', $club->id)
+                ->where('is_retired', false)
+                ->lockForUpdate()
+                ->pluck('id');
+
+            $progressRows = DB::table('players_progress')
+                ->whereIn('player_id', $playerIds)
+                ->lockForUpdate()
+                ->get(['player_id', 'condition']);
+            $recoveredPlayers = 0;
+
+            foreach ($progressRows as $progress) {
+                $condition = min(
+                    100,
+                    (int) $progress->condition + self::REST_DAY_CONDITION_RECOVERY
+                );
+
+                if ($condition === (int) $progress->condition) {
+                    continue;
+                }
+
+                DB::table('players_progress')
+                    ->where('player_id', $progress->player_id)
+                    ->update(['condition' => $condition, 'updated_at' => now()]);
+                $recoveredPlayers++;
+            }
+
+            return $recoveredPlayers;
         });
     }
 
@@ -249,6 +297,13 @@ class TrainingService
             TrainingIntensity::Medium => 5,
             TrainingIntensity::Hard => 8,
         };
+    }
+
+    private function progressThreshold(int $categoryId): int
+    {
+        return $categoryId === TrainingCategory::Tactical->value
+            ? self::TACTICAL_PROGRESS_THRESHOLD
+            : self::PROGRESS_THRESHOLD;
     }
 
     private function allowedAttributeIncrease(
