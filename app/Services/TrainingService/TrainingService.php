@@ -4,6 +4,7 @@ namespace App\Services\TrainingService;
 
 use App\Models\Club;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
+use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use Illuminate\Support\Facades\DB;
 
 class TrainingService
@@ -52,6 +53,7 @@ class TrainingService
                     'players.potential',
                     'players.max_potential',
                     'players.physical',
+                    'players.position',
                     ...$trainingFields,
                 ])
                 ->lockForUpdate()
@@ -140,7 +142,13 @@ class TrainingService
                     $hasProgressChange = true;
 
                     foreach ($categoryFields as $field) {
-                        $totalProgress = max(0, (int) $progress->{$field} + $points);
+                        $fieldPoints = $this->pointsForPositionPriority(
+                            $categoryId,
+                            $field,
+                            $points,
+                            $player->position
+                        );
+                        $totalProgress = max(0, (int) $progress->{$field} + $fieldPoints);
                         $requestedIncrease = intdiv($totalProgress, self::PROGRESS_THRESHOLD);
                         $attributeIncrease = $this->allowedAttributeIncrease(
                             $categoryId,
@@ -260,6 +268,40 @@ class TrainingService
         $remainingGrowth = max(0, $physicalAttributeCeiling - (int) $player->{$field});
 
         return min($requestedIncrease, $remainingGrowth);
+    }
+
+    private function pointsForPositionPriority(
+        int $categoryId,
+        string $field,
+        int $points,
+        string $position
+    ): int {
+        if ($points <= 0) {
+            return $points;
+        }
+
+        $positionCategory = match ($categoryId) {
+            TrainingCategory::Physical->value => 'physical',
+            TrainingCategory::Tactical->value => 'mental',
+            TrainingCategory::Technical->value => 'technical',
+            default => null,
+        };
+
+        if ($positionCategory === null) {
+            return 0;
+        }
+
+        $priorities = PlayerPositionConfig::getPositionMainAttributes($position)[$positionCategory];
+
+        if (in_array($field, $priorities['primary'], true)) {
+            return $points;
+        }
+
+        if (in_array($field, $priorities['secondary'], true)) {
+            return max(1, $points - 1);
+        }
+
+        return 1;
     }
 
     /**  array<int, array<int, string>> */
