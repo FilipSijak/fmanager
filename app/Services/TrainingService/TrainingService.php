@@ -19,6 +19,8 @@ class TrainingService
 
     private const PROGRESS_THRESHOLD = 100;
 
+    private const MAX_ATTRIBUTE_VALUE = 20;
+
     private const MISSED_SESSION_PENALTY = 2;
 
     private const HARD_EFFORT_THRESHOLD = 15;
@@ -256,8 +258,18 @@ class TrainingService
         int $requestedIncrease,
         bool $atFullPotential
     ): int {
-        if (! $atFullPotential || $requestedIncrease === 0) {
-            return $requestedIncrease;
+        if ($requestedIncrease === 0) {
+            return 0;
+        }
+
+        $remainingToAbsoluteMaximum = max(
+            0,
+            self::MAX_ATTRIBUTE_VALUE - (int) $player->{$field}
+        );
+        $allowedIncrease = min($requestedIncrease, $remainingToAbsoluteMaximum);
+
+        if (! $atFullPotential) {
+            return $allowedIncrease;
         }
 
         if ($categoryId !== TrainingCategory::Physical->value) {
@@ -267,7 +279,7 @@ class TrainingService
         $physicalAttributeCeiling = (int) round((int) $player->physical / 10);
         $remainingGrowth = max(0, $physicalAttributeCeiling - (int) $player->{$field});
 
-        return min($requestedIncrease, $remainingGrowth);
+        return min($allowedIncrease, $remainingGrowth);
     }
 
     private function pointsForPositionPriority(
