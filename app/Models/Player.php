@@ -47,7 +47,7 @@ class Player extends Model
                 fn (TrainingCategory $category): array => [
                     'player_id' => $this->id,
                     'training_category_id' => $category->value,
-                    'intensity' => TrainingIntensity::Medium->value,
+                    'training_intensity_id' => TrainingIntensity::Medium->value,
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],

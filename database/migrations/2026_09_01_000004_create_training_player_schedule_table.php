@@ -1,9 +1,7 @@
 <?php
 
-use App\Services\TrainingService\TrainingIntensity;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -14,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('player_id');
             $table->unsignedTinyInteger('training_category_id');
-            $table->unsignedTinyInteger('intensity')->default(TrainingIntensity::Medium->value);
+            $table->unsignedTinyInteger('training_intensity_id');
             $table->timestamps();
 
             $table->unique(
@@ -29,9 +27,11 @@ return new class extends Migration
                 ->references('id')
                 ->on('training_categories')
                 ->restrictOnDelete();
+            $table->foreign('training_intensity_id')
+                ->references('id')
+                ->on('training_intensities')
+                ->restrictOnDelete();
         });
-
-        DB::statement('ALTER TABLE training_player_schedule ADD CONSTRAINT training_player_intensity_check CHECK (`intensity` BETWEEN 0 AND 3)');
     }
 
     public function down(): void
