@@ -20,6 +20,16 @@ class TrainingService
 
     private const MISSED_SESSION_PENALTY = 2;
 
+    private const HARD_EFFORT_THRESHOLD = 15;
+
+    private const VERY_HARD_EFFORT_THRESHOLD = 18;
+
+    private const HARD_CONDITION_COST = 3;
+
+    private const VERY_HARD_CONDITION_COST = 5;
+
+    private const MINIMUM_TRAINING_CONDITION = 70;
+
     public function executeTrainingSession(Club $club): int
     {
         $trainingFields = array_merge(
@@ -48,7 +58,7 @@ class TrainingService
 
             $progressByPlayer = DB::table('players_progress')
                 ->whereIn('player_id', $players->pluck('id'))
-                ->select(['player_id', ...$trainingFields])
+                ->select(['player_id', 'condition', ...$trainingFields])
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('player_id');
@@ -98,9 +108,19 @@ class TrainingService
                 $progressUpdates = ['last_progressed_at' => now(), 'updated_at' => now()];
                 $gap = (int) $player->max_potential - (int) $player->potential;
                 $hasProgressChange = false;
+                $playerSchedules = $schedulesByPlayer->get($player->id);
+                $conditionCost = $this->conditionCost($playerSchedules);
+
+                if ($conditionCost > 0) {
+                    $progressUpdates['condition'] = max(
+                        self::MINIMUM_TRAINING_CONDITION,
+                        (int) $progress->condition - $conditionCost
+                    );
+                    $hasProgressChange = true;
+                }
 
                 foreach ($this->fieldsByCategory() as $categoryId => $categoryFields) {
-                    $schedule = $schedulesByPlayer->get($player->id)?->get($categoryId);
+                    $schedule = $playerSchedules?->get($categoryId);
 
                     if ($schedule === null || $categoryFields === []) {
                         continue;
@@ -166,6 +186,44 @@ class TrainingService
                 $this->pointsForPotentialGap($gap) + 2
             ),
             TrainingIntensity::None => -self::MISSED_SESSION_PENALTY,
+        };
+    }
+
+    private function conditionCost($playerSchedules): int
+    {
+        if ($playerSchedules === null) {
+            return 0;
+        }
+
+        $onFieldCategoryIds = [
+            TrainingCategory::Physical->value,
+            TrainingCategory::Tactical->value,
+            TrainingCategory::Technical->value,
+        ];
+        $effort = $playerSchedules
+            ->whereIn('training_category_id', $onFieldCategoryIds)
+            ->sum(fn ($schedule): int => $this->effortForIntensity(
+                TrainingIntensity::from((int) $schedule->training_intensity_id)
+            ));
+
+        if ($effort > self::VERY_HARD_EFFORT_THRESHOLD) {
+            return self::VERY_HARD_CONDITION_COST;
+        }
+
+        if ($effort > self::HARD_EFFORT_THRESHOLD) {
+            return self::HARD_CONDITION_COST;
+        }
+
+        return 0;
+    }
+
+    private function effortForIntensity(TrainingIntensity $intensity): int
+    {
+        return match ($intensity) {
+            TrainingIntensity::None => 0,
+            TrainingIntensity::Light => 3,
+            TrainingIntensity::Medium => 5,
+            TrainingIntensity::Hard => 8,
         };
     }
 
