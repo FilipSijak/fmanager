@@ -98,6 +98,9 @@ class PlayerRetirementTest extends TestCase
             $this->assertDatabaseMissing('players_contracts', [
                 'id' => $retiredPlayer->contract_id,
             ]);
+            $this->assertDatabaseMissing('players_progress', [
+                'player_id' => $retiredPlayer->id,
+            ]);
         }
 
         app(GameContext::class)->setInstanceId($instance->id);
@@ -127,6 +130,9 @@ class PlayerRetirementTest extends TestCase
             ]);
             $this->assertDatabaseHas('players_contracts', [
                 'id' => $activePlayer->contract_id,
+            ]);
+            $this->assertDatabaseHas('players_progress', [
+                'player_id' => $activePlayer->id,
             ]);
         }
 

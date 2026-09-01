@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Schema\Grammars\MySqlGrammar;
+use Illuminate\Support\Facades\DB;
 
 class Player extends Model
 {
@@ -20,6 +21,23 @@ class Player extends Model
     ];
 
     use BelongsToGameInstance, HasFactory;
+
+    protected static function booted(): void
+    {
+        static::created(function (Player $player): void {
+            $player->initializeProgress();
+        });
+    }
+
+    public function initializeProgress(): void
+    {
+        DB::table('players_progress')->insert([
+            'player_id' => $this->id,
+            'instance_id' => $this->instance_id,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
 
     public function person(): BelongsTo
     {
