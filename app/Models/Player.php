@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToGameInstance;
 use App\Services\PersonService\Data\PersonInfo;
+use App\Services\TrainingService\TrainingCategory;
+use App\Services\TrainingService\TrainingIntensity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,12 +33,27 @@ class Player extends Model
 
     public function initializeProgress(): void
     {
+        $now = now();
+
         DB::table('players_progress')->insert([
             'player_id' => $this->id,
             'instance_id' => $this->instance_id,
-            'created_at' => now(),
-            'updated_at' => now(),
+            'created_at' => $now,
+            'updated_at' => $now,
         ]);
+
+        DB::table('training_player_schedule')->insert(
+            array_map(
+                fn (TrainingCategory $category): array => [
+                    'player_id' => $this->id,
+                    'training_category_id' => $category->value,
+                    'training_intensity_id' => TrainingIntensity::Medium->value,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+                TrainingCategory::cases()
+            )
+        );
     }
 
     public function person(): BelongsTo
