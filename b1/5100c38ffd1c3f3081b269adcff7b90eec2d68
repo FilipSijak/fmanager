@@ -1,0 +1,23 @@
+database/migrations/2026_09_01_000003_create_training_player_schedule_table.php
+  s_b4e58b88a32020::t_71a497e5038dee 1-41
+app/Services/TrainingService/TrainingIntensity.php
+  s_b4e58b88a32020::t_23ab62b8529414 1-11
+app/Models/Player.php
+  s_b4e58b88a32020::t_4a23c3fcb454f7 7-8,36-37,41-42,44-56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "b15100c38ffd1c3f3081b269adcff7b90eec2d68",
+  "prompts": {},
+  "sessions": {
+    "s_b4e58b88a32020": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05d84-381a-73c2-b5c9-68a5300d8d17",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
