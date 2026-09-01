@@ -230,6 +230,7 @@ class PlayerRepository implements IPlayerRepository
                 DB::table('players_contracts')->where('id', $contractId)->delete();
             }
 
+            DB::table('players_progress')->where('player_id', $player->id)->delete();
             DB::table('transfer_list')->where('player_id', $player->id)->delete();
             $this->voidOngoingTransfersForPlayer($player->id);
 
