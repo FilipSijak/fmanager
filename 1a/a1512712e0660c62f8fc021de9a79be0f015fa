@@ -1,0 +1,21 @@
+app/Repositories/PlayerRepository.php
+  s_b4e58b88a32020::t_395c21ed60e1cc 233
+tests/Integration/Services/SeasonService/PlayerRetirementTest.php
+  s_b4e58b88a32020::t_395c21ed60e1cc 101-103,134-136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "1aa1512712e0660c62f8fc021de9a79be0f015fa",
+  "prompts": {},
+  "sessions": {
+    "s_b4e58b88a32020": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05d84-381a-73c2-b5c9-68a5300d8d17",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
