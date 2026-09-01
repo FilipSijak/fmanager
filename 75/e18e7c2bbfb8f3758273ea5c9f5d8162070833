@@ -1,0 +1,23 @@
+app/Listeners/RunDailyTraining.php
+  s_b4e58b88a32020::t_5ce23f1d99323d 28,30,34-42,46-51
+app/Services/TrainingService/TrainingService.php
+  s_b4e58b88a32020::t_70b8bf9ee4eea0 22-23,165-166,175,177,302-306
+  s_b4e58b88a32020::t_c4b6d8ebff4e28 38-41,131-135,137,206-238
+  s_b4e58b88a32020::t_d9b4b13ff3d555 239-241,307-308
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "75e18e7c2bbfb8f3758273ea5c9f5d8162070833",
+  "prompts": {},
+  "sessions": {
+    "s_b4e58b88a32020": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a05d84-381a-73c2-b5c9-68a5300d8d17",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
