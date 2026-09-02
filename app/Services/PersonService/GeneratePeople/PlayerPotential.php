@@ -5,9 +5,24 @@ namespace App\Services\PersonService\GeneratePeople;
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
+use Carbon\CarbonInterface;
 
 class PlayerPotential extends PersonPotential
 {
+    private const AGE_POTENTIAL_BRACKETS = [
+        16 => 0.85,
+        18 => 0.90,
+        21 => 0.95,
+        24 => 1.00,
+        29 => 0.98,
+        30 => 0.95,
+        32 => 0.92,
+        33 => 0.89,
+        35 => 0.83,
+        38 => 0.75,
+        41 => 0.67,
+    ];
+
     /** @return list<GeneratedPlayerProfile> */
     public function createForClubRank(int $academyRank): array
     {
@@ -51,5 +66,28 @@ class PlayerPotential extends PersonPotential
             position: $this->randomizer->shuffleArray(array_values(PlayerPositionConfig::PLAYER_POSITIONS))[0],
             potentialByCategory: $this->calculatePotentialByCategory($potential),
         );
+    }
+
+    private function forAge(int $maxPotential, int $age): float
+    {
+        $multiplier = self::AGE_POTENTIAL_BRACKETS[16];
+
+        foreach (self::AGE_POTENTIAL_BRACKETS as $minimumAge => $ageMultiplier) {
+            if ($age < $minimumAge) {
+                break;
+            }
+
+            $multiplier = $ageMultiplier;
+        }
+
+        return $maxPotential * $multiplier;
+    }
+
+    public function onDate(
+        int $maxPotential,
+        CarbonInterface $dateOfBirth,
+        CarbonInterface $asOfDate
+    ): float {
+        return $this->forAge($maxPotential, (int) $dateOfBirth->diffInYears($asOfDate));
     }
 }

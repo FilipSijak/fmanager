@@ -3,6 +3,7 @@
 namespace App\Services\PersonService;
 
 use App\Models\Club;
+use App\Models\Instance;
 use App\Models\Player;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
@@ -11,6 +12,8 @@ use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
 use App\Support\GameContext;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
 class PersonService
@@ -34,6 +37,29 @@ class PersonService
             $playerPotential,
             $this->gameContext->instanceId()
         );
+    }
+
+    public function updatePlayerPotentials(Instance $instance): void
+    {
+        $asOfDate = CarbonImmutable::parse($instance->instance_date)->startOfDay();
+
+        foreach ($this->playerRepository->activePlayers((int) $instance->id) as $player) {
+            $this->updatePlayerPotential($player, $asOfDate);
+        }
+    }
+
+    private function updatePlayerPotential(Player $player, CarbonInterface $asOfDate): void
+    {
+        if ($player->person === null) {
+            return;
+        }
+
+        $player->potential = $this->playerPotential->onDate(
+            (int) $player->max_potential,
+            CarbonImmutable::parse($player->person->dob),
+            $asOfDate
+        );
+        $player->save();
     }
 
     public function createPlayersForClub(Club $club): void
