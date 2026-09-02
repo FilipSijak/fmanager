@@ -7,6 +7,5 @@ readonly class PlayerProgressUpdate
     public function __construct(
         public array $progress,
         public array $player,
-        public bool $countsAsTrained,
     ) {}
 }

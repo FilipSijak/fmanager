@@ -13,7 +13,7 @@ class TrainingService
         private readonly PlayerProgress $playerProgress
     ) {}
 
-    public function executeTrainingSession(Club $club): int
+    public function executeTrainingSession(Club $club): void
     {
         $trainingFields = array_merge(
             PlayerFields::TECHNICAL_FIELDS,
@@ -21,14 +21,12 @@ class TrainingService
             PlayerFields::PHYSICAL_FIELDS
         );
 
-        return $this->trainingRepository->transaction(function () use ($club, $trainingFields): int {
+        $this->trainingRepository->transaction(function () use ($club, $trainingFields): void {
             $trainingDate = $this->trainingRepository->trainingDate((int) $club->instance_id);
             $players = $this->trainingRepository->playersForTraining($club, $trainingFields, $trainingDate);
             $playerIds = $players->pluck('id');
             $progressByPlayer = $this->trainingRepository->progressForPlayers($playerIds, $trainingFields);
             $schedulesByPlayer = $this->trainingRepository->schedulesForPlayers($playerIds);
-
-            $trainedPlayers = 0;
 
             foreach ($players as $player) {
                 $progress = $progressByPlayer->get($player->id);
@@ -49,22 +47,16 @@ class TrainingService
                     $this->trainingRepository->updatePlayer((int) $player->id, $updates->player);
                 }
 
-                if ($updates->countsAsTrained) {
-                    $trainedPlayers++;
-                }
             }
 
-            return $trainedPlayers;
         });
     }
 
-    public function recoverCondition(Club $club): int
+    public function recoverCondition(Club $club): void
     {
-        return $this->trainingRepository->transaction(function () use ($club): int {
+        $this->trainingRepository->transaction(function () use ($club): void {
             $playerIds = $this->trainingRepository->activePlayerIds($club);
             $progressRows = $this->trainingRepository->conditionProgressForPlayers($playerIds);
-            $recoveredPlayers = 0;
-
             foreach ($progressRows as $progress) {
                 $condition = $this->playerProgress->recoveredCondition((int) $progress->condition);
 
@@ -76,10 +68,8 @@ class TrainingService
                     'condition' => $condition,
                     'updated_at' => now(),
                 ]);
-                $recoveredPlayers++;
             }
 
-            return $recoveredPlayers;
         });
     }
 }

@@ -10,7 +10,7 @@ use Tests\TestCase;
 class PlayerProgressTest extends TestCase
 {
     #[Test]
-    public function an_injured_player_loses_accumulated_progress_and_is_not_counted_as_trained(): void
+    public function an_injured_player_loses_accumulated_progress_without_player_updates(): void
     {
         $player = (object) ['is_injured' => true];
         $progress = (object) ['pace' => 1];
@@ -24,7 +24,6 @@ class PlayerProgressTest extends TestCase
 
         $this->assertSame(0, $updates->progress['pace']);
         $this->assertSame([], $updates->player);
-        $this->assertFalse($updates->countsAsTrained);
     }
 
     #[Test]
@@ -40,7 +39,6 @@ class PlayerProgressTest extends TestCase
         $updates = (new PlayerProgress)->forTrainingSession($player, $progress, null, []);
 
         $this->assertSame(98, $updates->progress['condition']);
-        $this->assertTrue($updates->countsAsTrained);
     }
 
     #[Test]

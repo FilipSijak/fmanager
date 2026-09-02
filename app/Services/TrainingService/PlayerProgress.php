@@ -48,7 +48,6 @@ class PlayerProgress
             return new PlayerProgressUpdate(
                 progress: $this->missedSessionProgress($progress, $trainingFields),
                 player: [],
-                countsAsTrained: false,
             );
         }
 
@@ -103,7 +102,7 @@ class PlayerProgress
             }
         }
 
-        return new PlayerProgressUpdate($progressUpdates, $playerUpdates, true);
+        return new PlayerProgressUpdate($progressUpdates, $playerUpdates);
     }
 
     public function recoveredCondition(int $condition): int
