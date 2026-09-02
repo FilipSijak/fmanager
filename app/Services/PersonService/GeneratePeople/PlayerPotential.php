@@ -68,7 +68,7 @@ class PlayerPotential extends PersonPotential
         );
     }
 
-    public function forAge(int $maxPotential, int $age): float
+    private function forAge(int $maxPotential, int $age): float
     {
         $multiplier = self::AGE_POTENTIAL_BRACKETS[16];
 
@@ -88,6 +88,6 @@ class PlayerPotential extends PersonPotential
         CarbonInterface $dateOfBirth,
         CarbonInterface $asOfDate
     ): float {
-        return $this->forAge($maxPotential, $dateOfBirth->diffInYears($asOfDate));
+        return $this->forAge($maxPotential, (int) $dateOfBirth->diffInYears($asOfDate));
     }
 }

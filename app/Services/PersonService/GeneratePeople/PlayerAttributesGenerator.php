@@ -48,8 +48,10 @@ class PlayerAttributesGenerator
 
     private function currentPotential(): float
     {
-        $currentAge = Carbon::parse($this->personDetails->dateOfBirth)->age;
-
-        return $this->playerPotential->forAge($this->playerProfile->potential, $currentAge);
+        return $this->playerPotential->onDate(
+            $this->playerProfile->potential,
+            Carbon::parse($this->personDetails->dateOfBirth),
+            Carbon::now()
+        );
     }
 }

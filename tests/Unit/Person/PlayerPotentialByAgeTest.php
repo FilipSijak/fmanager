@@ -3,6 +3,7 @@
 namespace Tests\Unit\Person;
 
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
+use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -13,7 +14,12 @@ class PlayerPotentialByAgeTest extends TestCase
     #[DataProvider('potentialByAgeProvider')]
     public function it_calculates_potential_from_max_potential_and_age(int $age, int $expected): void
     {
-        $this->assertSame((float) $expected, (new PlayerPotential)->forAge(200, $age));
+        $asOfDate = CarbonImmutable::parse('2026-06-16');
+
+        $this->assertSame(
+            (float) $expected,
+            (new PlayerPotential)->onDate(200, $asOfDate->subYears($age), $asOfDate)
+        );
     }
 
     public static function potentialByAgeProvider(): array
