@@ -10,20 +10,6 @@ use Carbon\Carbon;
 
 class PlayerAttributesGenerator
 {
-    private const AGE_POTENTIAL_BRACKETS = [
-        16 => 0.85,
-        18 => 0.9,
-        21 => 0.95,
-        24 => 1,
-        29 => 0.98,
-        30 => 0.95,
-        32 => 0.92,
-        33 => 0.89,
-        35 => 0.83,
-        38 => 0.75,
-        41 => 0.67,
-    ];
-
     private GeneratedPlayerProfile $playerProfile;
 
     private PersonInfo $personDetails;
@@ -31,6 +17,7 @@ class PlayerAttributesGenerator
     public function __construct(
         private readonly PlayerInitialAttributes $playerInitialAttributes,
         private readonly PersonDetailsGenerator $personDetailsGenerator,
+        private readonly PlayerPotentialByAge $playerPotentialByAge = new PlayerPotentialByAge,
     ) {}
 
     public function setPlayerDetails(GeneratedPlayerProfile $playerProfile): self
@@ -62,16 +49,7 @@ class PlayerAttributesGenerator
     private function currentPotential(): float
     {
         $currentAge = Carbon::parse($this->personDetails->dateOfBirth)->age;
-        $ages = array_keys(self::AGE_POTENTIAL_BRACKETS);
 
-        for ($index = 0; $index < count($ages) - 1; $index++) {
-            if ($currentAge >= $ages[$index] && $currentAge < $ages[$index + 1]) {
-                return $this->playerProfile->potential * self::AGE_POTENTIAL_BRACKETS[$ages[$index]];
-            }
-        }
-
-        $oldestAge = end($ages);
-
-        return $this->playerProfile->potential * self::AGE_POTENTIAL_BRACKETS[$oldestAge];
+        return $this->playerPotentialByAge->calculate($this->playerProfile->potential, $currentAge);
     }
 }
