@@ -17,7 +17,7 @@ class PlayerAttributesGenerator
     public function __construct(
         private readonly PlayerInitialAttributes $playerInitialAttributes,
         private readonly PersonDetailsGenerator $personDetailsGenerator,
-        private readonly PlayerPotentialByAge $playerPotentialByAge = new PlayerPotentialByAge,
+        private readonly PlayerPotential $playerPotential = new PlayerPotential,
     ) {}
 
     public function setPlayerDetails(GeneratedPlayerProfile $playerProfile): self
@@ -50,6 +50,6 @@ class PlayerAttributesGenerator
     {
         $currentAge = Carbon::parse($this->personDetails->dateOfBirth)->age;
 
-        return $this->playerPotentialByAge->calculate($this->playerProfile->potential, $currentAge);
+        return $this->playerPotential->forAge($this->playerProfile->potential, $currentAge);
     }
 }

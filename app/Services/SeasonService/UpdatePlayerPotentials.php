@@ -4,13 +4,13 @@ namespace App\Services\SeasonService;
 
 use App\Models\Instance;
 use App\Models\Player;
-use App\Services\PersonService\GeneratePeople\PlayerPotentialByAge;
+use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use Carbon\CarbonImmutable;
 
 class UpdatePlayerPotentials
 {
     public function __construct(
-        private readonly PlayerPotentialByAge $playerPotentialByAge
+        private readonly PlayerPotential $playerPotential
     ) {}
 
     public function process(Instance $instance): void
@@ -26,7 +26,7 @@ class UpdatePlayerPotentials
                     return;
                 }
 
-                $player->potential = $this->playerPotentialByAge->calculateOnDate(
+                $player->potential = $this->playerPotential->onDate(
                     (int) $player->max_potential,
                     CarbonImmutable::parse($player->person->dob),
                     $asOfDate

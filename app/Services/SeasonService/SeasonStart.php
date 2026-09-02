@@ -25,6 +25,7 @@ class SeasonStart
         private readonly StaffCountValidator $staffCountValidator,
         private readonly StaffCreator $staffCreator,
         private readonly StaffRepository $staffRepository,
+        private readonly UpdatePlayerPotentials $updatePlayerPotentials,
     ) {}
 
     public function process(Instance $instance): void
@@ -34,6 +35,7 @@ class SeasonStart
             ->findOrFail($instance->season_id);
 
         $retiredPlayers = $this->playerRetirement->retireEligiblePlayers($instance);
+        $this->updatePlayerPotentials->process($instance);
         $this->retiredPlayerTransitionToStaff($retiredPlayers);
         $this->staffRetirement->retireEligibleStaff($instance);
         $this->generateMissingStaff($instance);

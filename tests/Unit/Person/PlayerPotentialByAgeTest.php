@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Person;
 
-use App\Services\PersonService\GeneratePeople\PlayerPotentialByAge;
+use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -13,7 +13,7 @@ class PlayerPotentialByAgeTest extends TestCase
     #[DataProvider('potentialByAgeProvider')]
     public function it_calculates_potential_from_max_potential_and_age(int $age, int $expected): void
     {
-        $this->assertSame((float) $expected, (new PlayerPotentialByAge)->calculate(200, $age));
+        $this->assertSame((float) $expected, (new PlayerPotential)->forAge(200, $age));
     }
 
     public static function potentialByAgeProvider(): array

@@ -14,7 +14,6 @@ use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\ProcessTransfers;
 use App\Listeners\RunDailyTraining;
 use App\Listeners\StartSeason;
-use App\Listeners\UpdatePlayerPotentialsOnSeasonStart;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -42,7 +41,6 @@ class EventServiceProvider extends ServiceProvider
         ],
         SeasonStarted::class => [
             StartSeason::class,
-            UpdatePlayerPotentialsOnSeasonStart::class,
         ],
         TransferEvent::class => [
             CreateTransferNews::class,
