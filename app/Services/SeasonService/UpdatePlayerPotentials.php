@@ -4,13 +4,13 @@ namespace App\Services\SeasonService;
 
 use App\Models\Instance;
 use App\Models\Player;
-use App\Services\PersonService\GeneratePeople\PlayerPotential;
+use App\Services\PersonService\PersonService;
 use Carbon\CarbonImmutable;
 
 class UpdatePlayerPotentials
 {
     public function __construct(
-        private readonly PlayerPotential $playerPotential
+        private readonly PersonService $personService
     ) {}
 
     public function process(Instance $instance): void
@@ -22,16 +22,7 @@ class UpdatePlayerPotentials
             ->active()
             ->with('person:id,dob')
             ->eachById(function (Player $player) use ($asOfDate): void {
-                if ($player->person === null) {
-                    return;
-                }
-
-                $player->potential = $this->playerPotential->onDate(
-                    (int) $player->max_potential,
-                    CarbonImmutable::parse($player->person->dob),
-                    $asOfDate
-                );
-                $player->save();
+                $this->personService->updatePlayerPotential($player, $asOfDate);
             });
     }
 }
