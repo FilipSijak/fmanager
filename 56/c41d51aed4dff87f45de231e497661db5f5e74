@@ -1,0 +1,27 @@
+app/Services/SeasonService/SeasonStart.php
+  s_2c96b4dad9a4c2::t_e6da05769a7d4a 14,29,39
+app/Repositories/Interfaces/IPlayerRepository.php
+  s_2c96b4dad9a4c2::t_bd41500a46a2ec 9-10
+app/Repositories/PlayerRepository.php
+  s_2c96b4dad9a4c2::t_bd41500a46a2ec 197-205
+tests/Integration/Services/PersonService/UpdatePlayerPotentialsTest.php
+  s_2c96b4dad9a4c2::t_60d758eac6e866 1-56
+app/Services/PersonService/PersonService.php
+  s_2c96b4dad9a4c2::t_e6da05769a7d4a 6,42-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "56c41d51aed4dff87f45de231e497661db5f5e74",
+  "prompts": {},
+  "sessions": {
+    "s_2c96b4dad9a4c2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06324-7d04-77b1-9a60-94363bcef108",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
