@@ -1,0 +1,29 @@
+app/Services/SeasonService/UpdatePlayerPotentials.php
+  s_2c96b4dad9a4c2::t_c15ee192749232 7,13
+  s_2c96b4dad9a4c2::t_a6680958e589eb 29
+app/Services/PersonService/GeneratePeople/PlayerPotential.php
+  s_2c96b4dad9a4c2::t_a6680958e589eb 70-92
+  s_2c96b4dad9a4c2::t_c15ee192749232 8,12-25
+app/Services/SeasonService/SeasonStart.php
+  s_2c96b4dad9a4c2::t_68173204773ed4 28,38
+tests/Unit/Person/PlayerPotentialByAgeTest.php
+  s_2c96b4dad9a4c2::t_c15ee192749232 5,16
+app/Services/PersonService/GeneratePeople/PlayerAttributesGenerator.php
+  s_2c96b4dad9a4c2::t_c15ee192749232 20,53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "13232901cd092596e18d421cf471c03804084dd3",
+  "prompts": {},
+  "sessions": {
+    "s_2c96b4dad9a4c2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06324-7d04-77b1-9a60-94363bcef108",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
