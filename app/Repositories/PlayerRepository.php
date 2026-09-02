@@ -194,6 +194,15 @@ class PlayerRepository implements IPlayerRepository
         return $value;
     }
 
+    public function activePlayers(int $instanceId): LazyCollection
+    {
+        return Player::query()
+            ->forInstance($instanceId)
+            ->active()
+            ->with('person:id,dob')
+            ->lazyById(200);
+    }
+
     public function playersEligibleForRetirement(int $instanceId, string $date): LazyCollection
     {
         return Player::query()

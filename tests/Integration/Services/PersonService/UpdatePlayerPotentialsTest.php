@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Integration\Services\SeasonService;
+namespace Tests\Integration\Services\PersonService;
 
 use App\Models\Instance;
 use App\Models\Person;
 use App\Models\Player;
-use App\Services\SeasonService\UpdatePlayerPotentials;
+use App\Services\PersonService\PersonService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -25,7 +25,7 @@ class UpdatePlayerPotentialsTest extends TestCase
         $retiredPlayer = $this->player($instance, '2006-06-16', 180, 120, true);
         $otherPlayer = $this->player($otherInstance, '2006-06-16', 180, 120);
 
-        app(UpdatePlayerPotentials::class)->process($instance);
+        app(PersonService::class)->updatePlayerPotentials($instance);
 
         $this->assertSame(171, (int) $developingPlayer->fresh()->potential);
         $this->assertSame(176, (int) $decliningPlayer->fresh()->potential);

@@ -3,6 +3,7 @@
 namespace App\Services\PersonService;
 
 use App\Models\Club;
+use App\Models\Instance;
 use App\Models\Player;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
@@ -38,7 +39,16 @@ class PersonService
         );
     }
 
-    public function updatePlayerPotential(Player $player, CarbonInterface $asOfDate): void
+    public function updatePlayerPotentials(Instance $instance): void
+    {
+        $asOfDate = CarbonImmutable::parse($instance->instance_date)->startOfDay();
+
+        foreach ($this->playerRepository->activePlayers((int) $instance->id) as $player) {
+            $this->updatePlayerPotential($player, $asOfDate);
+        }
+    }
+
+    private function updatePlayerPotential(Player $player, CarbonInterface $asOfDate): void
     {
         if ($player->person === null) {
             return;
