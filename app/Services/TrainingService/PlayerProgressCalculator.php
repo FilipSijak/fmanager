@@ -4,9 +4,10 @@ namespace App\Services\TrainingService;
 
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
-use Illuminate\Support\Collection;
+use App\Services\TrainingService\Data\TrainingPlayerData;
+use Carbon\CarbonInterface;
 
-class PlayerProgress
+class PlayerProgressCalculator
 {
     private const MINIMUM_DEVELOPMENT_GAP = 10;
 
@@ -39,36 +40,36 @@ class PlayerProgress
     private const REST_DAY_CONDITION_RECOVERY = 10;
 
     public function forTrainingSession(
-        object $player,
-        object $progress,
-        ?Collection $schedules,
-        array $trainingFields
+        TrainingPlayerData $player,
+        array $schedules,
+        array $trainingFields,
+        CarbonInterface $timestamp
     ): PlayerProgressUpdate {
-        if ((bool) $player->is_injured) {
+        if ($player->injured) {
             return new PlayerProgressUpdate(
-                progress: $this->missedSessionProgress($progress, $trainingFields),
+                progress: $this->missedSessionProgress($player, $trainingFields, $timestamp),
                 player: [],
             );
         }
 
         $playerUpdates = [];
-        $progressUpdates = ['last_progressed_at' => now(), 'updated_at' => now()];
-        $gap = (int) $player->max_potential - (int) $player->potential;
+        $progressUpdates = ['last_progressed_at' => $timestamp, 'updated_at' => $timestamp];
+        $gap = (int) $player->maxPotential - (int) $player->potential;
         $atFullPotential = $gap <= 0;
         $conditionCost = $this->conditionCost($schedules);
         $progressUpdates['condition'] = $conditionCost > 0
-            ? max(self::MINIMUM_TRAINING_CONDITION, (int) $progress->condition - $conditionCost)
-            : min(100, (int) $progress->condition + self::TRAINING_CONDITION_RECOVERY);
+            ? max(self::MINIMUM_TRAINING_CONDITION, (int) $player->condition - $conditionCost)
+            : min(100, (int) $player->condition + self::TRAINING_CONDITION_RECOVERY);
 
         foreach ($this->fieldsByCategory() as $categoryId => $categoryFields) {
-            $schedule = $schedules?->get($categoryId);
+            $schedule = $schedules[$categoryId] ?? null;
 
             if ($schedule === null || $categoryFields === []) {
                 continue;
             }
 
             $points = $this->pointsForIntensity(
-                TrainingIntensity::from((int) $schedule->training_intensity_id),
+                $schedule->intensity,
                 $gap
             );
 
@@ -83,7 +84,7 @@ class PlayerProgress
                     $points,
                     $player->position
                 );
-                $totalProgress = max(0, (int) $progress->{$field} + $fieldPoints);
+                $totalProgress = max(0, $player->accumulatedProgress($field) + $fieldPoints);
                 $progressThreshold = $this->progressThreshold($categoryId);
                 $requestedIncrease = intdiv($totalProgress, $progressThreshold);
                 $attributeIncrease = $this->allowedAttributeIncrease(
@@ -97,7 +98,7 @@ class PlayerProgress
                 $progressUpdates[$field] = min($progressThreshold - 1, $remainingProgress);
 
                 if ($attributeIncrease > 0) {
-                    $playerUpdates[$field] = (int) $player->{$field} + $attributeIncrease;
+                    $playerUpdates[$field] = $player->attribute($field) + $attributeIncrease;
                 }
             }
         }
@@ -110,12 +111,15 @@ class PlayerProgress
         return min(100, $condition + self::REST_DAY_CONDITION_RECOVERY);
     }
 
-    private function missedSessionProgress(object $progress, array $trainingFields): array
-    {
-        $updates = ['last_progressed_at' => now(), 'updated_at' => now()];
+    private function missedSessionProgress(
+        TrainingPlayerData $player,
+        array $trainingFields,
+        CarbonInterface $timestamp
+    ): array {
+        $updates = ['last_progressed_at' => $timestamp, 'updated_at' => $timestamp];
 
         foreach ($trainingFields as $field) {
-            $updates[$field] = max(0, (int) $progress->{$field} - self::MISSED_SESSION_PENALTY);
+            $updates[$field] = max(0, $player->accumulatedProgress($field) - self::MISSED_SESSION_PENALTY);
         }
 
         return $updates;
@@ -141,20 +145,20 @@ class PlayerProgress
         };
     }
 
-    private function conditionCost(?Collection $schedules): int
+    private function conditionCost(array $schedules): int
     {
-        if ($schedules === null) {
+        if ($schedules === []) {
             return 0;
         }
 
-        $effort = $schedules
-            ->whereIn('training_category_id', [
+        $effort = collect($schedules)
+            ->whereIn('category.value', [
                 TrainingCategory::Physical->value,
                 TrainingCategory::Tactical->value,
                 TrainingCategory::Technical->value,
             ])
             ->sum(fn ($schedule): int => $this->effortForIntensity(
-                TrainingIntensity::from((int) $schedule->training_intensity_id)
+                $schedule->intensity
             ));
 
         if ($effort > self::VERY_HARD_EFFORT_THRESHOLD) {
@@ -183,7 +187,7 @@ class PlayerProgress
 
     private function allowedAttributeIncrease(
         int $categoryId,
-        object $player,
+        TrainingPlayerData $player,
         string $field,
         int $requestedIncrease,
         bool $atFullPotential
@@ -194,7 +198,7 @@ class PlayerProgress
 
         $allowedIncrease = min(
             $requestedIncrease,
-            max(0, self::MAX_ATTRIBUTE_VALUE - (int) $player->{$field})
+            max(0, self::MAX_ATTRIBUTE_VALUE - $player->attribute($field))
         );
 
         if (! $atFullPotential) {
@@ -209,7 +213,7 @@ class PlayerProgress
 
         return min(
             $allowedIncrease,
-            max(0, $physicalAttributeCeiling - (int) $player->{$field})
+            max(0, $physicalAttributeCeiling - $player->attribute($field))
         );
     }
 

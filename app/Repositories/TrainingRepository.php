@@ -3,10 +3,17 @@
 namespace App\Repositories;
 
 use App\Models\Club;
+use App\Models\Game;
+use App\Services\TrainingService\Data\ScheduledGameData;
+use App\Services\TrainingService\Data\TrainingPlayerData;
+use App\Services\TrainingService\Data\TrainingScheduleData;
+use App\Services\TrainingService\TrainingCategory;
+use App\Services\TrainingService\TrainingIntensity;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Closure;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 class TrainingRepository
 {
@@ -15,21 +22,10 @@ class TrainingRepository
         return DB::transaction($callback);
     }
 
-    public function trainingDate(int $instanceId): string
-    {
-        $trainingDate = DB::table('instances')->where('id', $instanceId)->value('instance_date');
-
-        if ($trainingDate === null) {
-            throw new RuntimeException("Instance {$instanceId} does not exist.");
-        }
-
-        return (string) $trainingDate;
-    }
-
     public function playersForTraining(
         Club $club,
         array $trainingFields,
-        string $trainingDate
+        CarbonInterface $trainingDate
     ): Collection {
         $activeInjuries = DB::table('player_injuries')
             ->select('player_id')
@@ -38,6 +34,7 @@ class TrainingRepository
             ->distinct();
 
         return DB::table('players')
+            ->join('players_progress', 'players_progress.player_id', '=', 'players.id')
             ->leftJoinSub($activeInjuries, 'active_injuries', function ($join): void {
                 $join->on('active_injuries.player_id', '=', 'players.id');
             })
@@ -50,21 +47,28 @@ class TrainingRepository
                 'players.max_potential',
                 'players.physical',
                 'players.position',
+                'players_progress.condition',
                 DB::raw('active_injuries.player_id IS NOT NULL AS is_injured'),
-                ...$trainingFields,
+                ...array_map(fn (string $field): string => "players.{$field} as player_{$field}", $trainingFields),
+                ...array_map(fn (string $field): string => "players_progress.{$field} as progress_{$field}", $trainingFields),
             ])
             ->lockForUpdate()
-            ->get();
-    }
-
-    public function progressForPlayers(Collection $playerIds, array $trainingFields): Collection
-    {
-        return DB::table('players_progress')
-            ->whereIn('player_id', $playerIds)
-            ->select(['player_id', 'condition', ...$trainingFields])
-            ->lockForUpdate()
             ->get()
-            ->keyBy('player_id');
+            ->map(fn (object $row): TrainingPlayerData => new TrainingPlayerData(
+                id: (int) $row->id,
+                potential: (int) $row->potential,
+                maxPotential: (int) $row->max_potential,
+                physical: (int) $row->physical,
+                position: $row->position,
+                injured: (bool) $row->is_injured,
+                condition: (int) $row->condition,
+                attributes: collect($trainingFields)->mapWithKeys(
+                    fn (string $field): array => [$field => (int) $row->{"player_{$field}"}]
+                )->all(),
+                progress: collect($trainingFields)->mapWithKeys(
+                    fn (string $field): array => [$field => (int) $row->{"progress_{$field}"}]
+                )->all(),
+            ));
     }
 
     public function schedulesForPlayers(Collection $playerIds): Collection
@@ -75,7 +79,39 @@ class TrainingRepository
             ->lockForUpdate()
             ->get()
             ->groupBy('player_id')
-            ->map(fn ($schedules) => $schedules->keyBy('training_category_id'));
+            ->map(fn (Collection $schedules): array => $schedules
+                ->mapWithKeys(fn (object $schedule): array => [
+                    (int) $schedule->training_category_id => new TrainingScheduleData(
+                        TrainingCategory::from((int) $schedule->training_category_id),
+                        TrainingIntensity::from((int) $schedule->training_intensity_id),
+                    ),
+                ])
+                ->all());
+    }
+
+    public function scheduledGames(int $instanceId, CarbonImmutable $from, CarbonImmutable $to): Collection
+    {
+        return DB::table('games')
+            ->where('instance_id', $instanceId)
+            ->where('status', '!=', Game::STATUS_CANCELLED)
+            ->whereDate('match_start', '>=', $from)
+            ->whereDate('match_start', '<=', $to)
+            ->get(['hometeam_id', 'awayteam_id', 'match_start'])
+            ->map(fn (object $game): ScheduledGameData => new ScheduledGameData(
+                (int) $game->hometeam_id,
+                (int) $game->awayteam_id,
+                CarbonImmutable::parse($game->match_start),
+            ));
+    }
+
+    public function clubsByIds(int $instanceId, Collection $clubIds): Collection
+    {
+        return Club::query()->forInstance($instanceId)->whereIn('id', $clubIds)->get();
+    }
+
+    public function clubsExceptIds(int $instanceId, Collection $clubIds): Collection
+    {
+        return Club::query()->forInstance($instanceId)->whereNotIn('id', $clubIds)->get();
     }
 
     public function updateProgress(int $playerId, array $updates): void
