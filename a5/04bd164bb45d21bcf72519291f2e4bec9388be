@@ -1,0 +1,23 @@
+app/Services/TrainingService/TrainingService.php
+  s_2c96b4dad9a4c2::t_491ef0515e3b12 16,24,55,57
+app/Services/TrainingService/PlayerProgress.php
+  s_2c96b4dad9a4c2::t_491ef0515e3b12 105
+tests/Unit/Services/TrainingService/PlayerProgressTest.php
+  s_2c96b4dad9a4c2::t_54689ea2e3bf0c 13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "a504bd164bb45d21bcf72519291f2e4bec9388be",
+  "prompts": {},
+  "sessions": {
+    "s_2c96b4dad9a4c2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06324-7d04-77b1-9a60-94363bcef108",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
