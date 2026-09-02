@@ -1,0 +1,32 @@
+app/Listeners/UpdatePlayerPotentialsOnSeasonStart.php
+  s_2c96b4dad9a4c2::t_6d7c7f1258bef6 1-18
+tests/Unit/Person/PlayerPotentialByAgeTest.php
+  s_2c96b4dad9a4c2::t_073a5633b73198 1-35
+app/Services/SeasonService/UpdatePlayerPotentials.php
+  s_2c96b4dad9a4c2::t_6d7c7f1258bef6 1-37
+app/Providers/EventServiceProvider.php
+  s_2c96b4dad9a4c2::t_6f6efc5c44b2d4 17,45
+tests/Integration/Services/SeasonService/UpdatePlayerPotentialsTest.php
+  s_2c96b4dad9a4c2::t_073a5633b73198 1-56
+app/Services/PersonService/GeneratePeople/PlayerAttributesGenerator.php
+  s_2c96b4dad9a4c2::t_fd627b73e4fcc9 20,53
+app/Services/PersonService/GeneratePeople/PlayerPotentialByAge.php
+  s_2c96b4dad9a4c2::t_0a08d25cb6ab6b 1-24,26-45
+  s_2c96b4dad9a4c2::t_00d2453b3de4ce 25
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "e8b448ad257c5cb94e26fa590a3fc7a959922084",
+  "prompts": {},
+  "sessions": {
+    "s_2c96b4dad9a4c2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a06324-7d04-77b1-9a60-94363bcef108",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
