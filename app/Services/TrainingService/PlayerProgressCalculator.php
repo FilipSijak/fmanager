@@ -45,7 +45,7 @@ class PlayerProgressCalculator
         array $trainingFields,
         CarbonInterface $timestamp
     ): PlayerProgressUpdate {
-        if ($player->injured) {
+        if ($player->injured || $player->condition < self::MINIMUM_TRAINING_CONDITION) {
             return new PlayerProgressUpdate(
                 progress: $this->missedSessionProgress($player, $trainingFields, $timestamp),
                 player: [],

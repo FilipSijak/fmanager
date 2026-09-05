@@ -40,6 +40,24 @@ class PlayerProgressCalculatorTest extends TestCase
     }
 
     #[Test]
+    public function a_player_below_the_minimum_condition_misses_training(): void
+    {
+        $timestamp = CarbonImmutable::parse('2027-06-10');
+        $player = new TrainingPlayerData(1, 100, 150, 100, 'CB', false, 69, ['pace' => 12], ['pace' => 50]);
+
+        $updates = (new PlayerProgressCalculator)->forTrainingSession(
+            $player,
+            [],
+            ['pace'],
+            $timestamp
+        );
+
+        $this->assertSame(48, $updates->progress['pace']);
+        $this->assertArrayNotHasKey('condition', $updates->progress);
+        $this->assertSame([], $updates->player);
+    }
+
+    #[Test]
     public function rest_recovery_is_capped_at_full_condition(): void
     {
         $this->assertSame(100, (new PlayerProgressCalculator)->recoveredCondition(95));

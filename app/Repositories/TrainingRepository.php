@@ -27,17 +27,10 @@ class TrainingRepository
         array $trainingFields,
         CarbonInterface $trainingDate
     ): Collection {
-        $activeInjuries = DB::table('player_injuries')
-            ->select('player_id')
-            ->whereDate('injury_start_date', '<=', $trainingDate)
-            ->whereDate('injury_end_date', '>=', $trainingDate)
-            ->distinct();
+        $trainingDay = $trainingDate->toDateString();
 
         return DB::table('players')
             ->join('players_progress', 'players_progress.player_id', '=', 'players.id')
-            ->leftJoinSub($activeInjuries, 'active_injuries', function ($join): void {
-                $join->on('active_injuries.player_id', '=', 'players.id');
-            })
             ->where('players.instance_id', $club->instance_id)
             ->where('players.club_id', $club->id)
             ->where('players.is_retired', false)
@@ -48,10 +41,16 @@ class TrainingRepository
                 'players.physical',
                 'players.position',
                 'players_progress.condition',
-                DB::raw('active_injuries.player_id IS NOT NULL AS is_injured'),
                 ...array_map(fn (string $field): string => "players.{$field} as player_{$field}", $trainingFields),
                 ...array_map(fn (string $field): string => "players_progress.{$field} as progress_{$field}", $trainingFields),
             ])
+            ->selectRaw(
+                'EXISTS (SELECT 1 FROM player_injuries'
+                .' WHERE player_injuries.player_id = players.id'
+                .' AND player_injuries.injury_start_date <= ?'
+                .' AND player_injuries.injury_end_date >= ?) AS is_injured',
+                [$trainingDay, $trainingDay]
+            )
             ->lockForUpdate()
             ->get()
             ->map(fn (object $row): TrainingPlayerData => new TrainingPlayerData(
@@ -94,8 +93,8 @@ class TrainingRepository
         return DB::table('games')
             ->where('instance_id', $instanceId)
             ->where('status', '!=', Game::STATUS_CANCELLED)
-            ->whereDate('match_start', '>=', $from)
-            ->whereDate('match_start', '<=', $to)
+            ->where('match_start', '>=', $from->startOfDay())
+            ->where('match_start', '<', $to->addDay()->startOfDay())
             ->get(['hometeam_id', 'awayteam_id', 'match_start'])
             ->map(fn (object $game): ScheduledGameData => new ScheduledGameData(
                 (int) $game->hometeam_id,
