@@ -10,6 +10,8 @@ use Carbon\CarbonImmutable;
 
 class TrainingService
 {
+    private const REST_DAY_CONDITION_RECOVERY = 10;
+
     public function __construct(
         private readonly TrainingRepository $trainingRepository,
         private readonly PlayerProgressCalculator $playerProgressCalculator
@@ -79,25 +81,10 @@ class TrainingService
 
     private function recoverCondition(Club $club, CarbonImmutable $trainingDate): void
     {
-        $this->trainingRepository->transaction(function () use ($club, $trainingDate): void {
-            $playerIds = $this->trainingRepository->activePlayerIds($club);
-            $progressRows = $this->trainingRepository->conditionProgressForPlayers($playerIds);
-            $progressUpdates = [];
-
-            foreach ($progressRows as $progress) {
-                $condition = $this->playerProgressCalculator->recoveredCondition((int) $progress->condition);
-
-                if ($condition === (int) $progress->condition) {
-                    continue;
-                }
-
-                $progressUpdates[(int) $progress->player_id] = [
-                    'condition' => $condition,
-                    'updated_at' => $trainingDate,
-                ];
-            }
-
-            $this->trainingRepository->bulkUpdateProgress($progressUpdates);
-        });
+        $this->trainingRepository->recoverClubCondition(
+            $club,
+            $trainingDate,
+            self::REST_DAY_CONDITION_RECOVERY
+        );
     }
 }

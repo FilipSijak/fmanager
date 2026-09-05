@@ -24,6 +24,7 @@ class TrainingServiceTest extends TestCase
             'id' => 1,
             'instance_date' => '2027-06-10',
         ]);
+        $club = (new Club)->forceFill(['id' => 3, 'instance_id' => 1]);
         $repository = $this->createMock(TrainingRepository::class);
         $calculator = $this->createMock(PlayerProgressCalculator::class);
         $repository->expects($this->once())
@@ -35,7 +36,10 @@ class TrainingServiceTest extends TestCase
         $repository->expects($this->once())
             ->method('clubsByIds')
             ->with(1, $this->callback(fn (Collection $ids): bool => $ids->all() === [3]))
-            ->willReturn(new Collection);
+            ->willReturn(new Collection([$club]));
+        $repository->expects($this->once())
+            ->method('recoverClubCondition')
+            ->with($club, CarbonImmutable::parse('2027-06-10'), 10);
         $repository->expects($this->once())
             ->method('clubsExceptIds')
             ->with(1, $this->callback(fn (Collection $ids): bool => $ids->sort()->values()->all() === [1, 2, 3]))

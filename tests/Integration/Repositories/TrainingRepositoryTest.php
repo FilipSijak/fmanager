@@ -83,5 +83,16 @@ class TrainingRepositoryTest extends TestCase
             'id' => $player->id,
             'pace' => 13,
         ]);
+
+        $repository->recoverClubCondition(
+            $club,
+            CarbonImmutable::parse('2027-06-10'),
+            10
+        );
+
+        $this->assertDatabaseHas('players_progress', [
+            'player_id' => $player->id,
+            'condition' => 100,
+        ]);
     }
 }

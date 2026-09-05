@@ -223,12 +223,6 @@ class PlayerProgressCalculatorTest extends TestCase
         $this->assertSame(93, $updates->progress['condition']);
     }
 
-    #[Test]
-    public function rest_recovery_is_capped_at_full_condition(): void
-    {
-        $this->assertSame(100, (new PlayerProgressCalculator)->recoveredCondition(95));
-    }
-
     private function player(
         int $potential = 100,
         int $maxPotential = 150,

@@ -127,22 +127,25 @@ class TrainingRepository
         $this->bulkUpdateByKey('players', 'id', $updatesByPlayerId);
     }
 
-    public function activePlayerIds(Club $club): Collection
-    {
-        return DB::table('players')
-            ->where('instance_id', $club->instance_id)
-            ->where('club_id', $club->id)
-            ->where('is_retired', false)
-            ->lockForUpdate()
-            ->pluck('id');
-    }
+    public function recoverClubCondition(
+        Club $club,
+        CarbonInterface $trainingDate,
+        int $recoveryAmount
+    ): void {
+        $recoveryAmount = max(0, $recoveryAmount);
 
-    public function conditionProgressForPlayers(Collection $playerIds): Collection
-    {
-        return DB::table('players_progress')
-            ->whereIn('player_id', $playerIds)
-            ->lockForUpdate()
-            ->get(['player_id', 'condition']);
+        DB::table('players_progress as progress')
+            ->join('players', 'players.id', '=', 'progress.player_id')
+            ->where('players.instance_id', $club->instance_id)
+            ->where('players.club_id', $club->id)
+            ->where('players.is_retired', false)
+            ->where('progress.condition', '<', 100)
+            ->update([
+                'progress.condition' => DB::raw(
+                    'LEAST(100, progress.condition + '.(int) $recoveryAmount.')'
+                ),
+                'progress.updated_at' => $trainingDate,
+            ]);
     }
 
     private function bulkUpdateByKey(string $table, string $key, array $updatesById): void

@@ -37,8 +37,6 @@ class PlayerProgressCalculator
 
     private const TRAINING_CONDITION_RECOVERY = 3;
 
-    private const REST_DAY_CONDITION_RECOVERY = 10;
-
     public function forTrainingSession(
         TrainingPlayerData $player,
         array $schedules,
@@ -103,11 +101,6 @@ class PlayerProgressCalculator
         }
 
         return new PlayerProgressUpdate($progressUpdates, $playerUpdates);
-    }
-
-    public function recoveredCondition(int $condition): int
-    {
-        return min(100, $condition + self::REST_DAY_CONDITION_RECOVERY);
     }
 
     private function missedSessionProgress(
