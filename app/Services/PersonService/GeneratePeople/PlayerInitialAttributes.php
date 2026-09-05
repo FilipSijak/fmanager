@@ -46,8 +46,9 @@ class PlayerInitialAttributes
         foreach ($mainAttributes as $attributesCategory => $importanceList) {
             $this->setPrimaryAttributes($importanceList['primary'], $attributesCategory);
             $this->setSecondaryAttributes($importanceList['secondary'], $attributesCategory);
-            $this->setOtherAttributes();
         }
+
+        $this->setOtherAttributes();
 
         return $this->playerAllAttributes;
     }
@@ -143,23 +144,21 @@ class PlayerInitialAttributes
      */
     protected function setOtherAttributes(): void
     {
-        $attributeCategories = ['technical', 'mental', 'physical'];
+        $fieldsByCategory = [
+            'technical' => PlayerFields::TECHNICAL_FIELDS,
+            'mental' => PlayerFields::MENTAL_FIELDS,
+            'physical' => PlayerFields::PHYSICAL_FIELDS,
+        ];
 
-        $allAbilityAttributes = array_merge(
-            PlayerFields::TECHNICAL_FIELDS,
-            PlayerFields::MENTAL_FIELDS,
-            PlayerFields::PHYSICAL_FIELDS
-        );
-
-        foreach ($allAbilityAttributes as $field) {
-            foreach ($attributeCategories as $category) {
+        foreach ($fieldsByCategory as $category => $fields) {
+            foreach ($fields as $field) {
                 // checks the object if the attribute was already set for primary or secondary value
                 if (! isset($this->playerAllAttributes[$field])) {
                     $potentialForCategory = $this->playerPotentialByCategory[$category];
                     $reducedPotential = $this->potentialReduction($potentialForCategory, self::OTHER_ATTRIBTUES);
                     $minimumAttributeValue = $this->setMinimumAttributeValue($potentialForCategory);
 
-                    if (isset($this->commonAttributes[$field])) {
+                    if (in_array($field, $this->commonAttributes, true)) {
                         $minimumAttributeValue = $minimumAttributeValue + 3;
                     }
 

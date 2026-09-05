@@ -49,4 +49,23 @@ class PlayerRandomnessTest extends TestCase
 
         $this->assertNotEmpty($lowPotentialAttributes);
     }
+
+    public function test_other_attributes_use_their_category_potential_with_larger_reduction(): void
+    {
+        $attributes = (new PlayerInitialAttributes(new Randomizer(new Xoshiro256StarStar(9876))))
+            ->setPlayerPosition('CB')
+            ->setPlayerPotentialByCategory([
+                'technical' => 50,
+                'mental' => 200,
+                'physical' => 50,
+            ])
+            ->initAllAttributes();
+
+        $this->assertGreaterThanOrEqual(3, $attributes['corners']);
+        $this->assertLessThanOrEqual(4, $attributes['corners']);
+        $this->assertGreaterThanOrEqual(9, $attributes['aggression']);
+        $this->assertLessThanOrEqual(14, $attributes['aggression']);
+        $this->assertGreaterThan($attributes['aggression'], $attributes['positioning']);
+        $this->assertSame(6, $attributes['acceleration']);
+    }
 }
