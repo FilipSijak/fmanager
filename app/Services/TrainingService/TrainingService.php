@@ -12,6 +12,8 @@ class TrainingService
 {
     private const REST_DAY_CONDITION_RECOVERY = 10;
 
+    private const PLAYER_BATCH_SIZE = 50;
+
     public function __construct(
         private readonly TrainingRepository $trainingRepository,
         private readonly PlayerProgressCalculator $playerProgressCalculator
@@ -70,13 +72,30 @@ class TrainingService
             PlayerFields::MENTAL_FIELDS,
             PlayerFields::PHYSICAL_FIELDS
         );
+        $playerIds = $this->trainingRepository->playerIdsForTraining($instanceId, $clubIds);
+
+        foreach ($playerIds->chunk(self::PLAYER_BATCH_SIZE) as $batchPlayerIds) {
+            $this->executeTrainingBatch(
+                $instanceId,
+                $batchPlayerIds,
+                $trainingFields,
+                $trainingDate
+            );
+        }
+    }
+
+    private function executeTrainingBatch(
+        int $instanceId,
+        Collection $playerIds,
+        array $trainingFields,
+        CarbonImmutable $trainingDate
+    ): void {
         $players = $this->trainingRepository->playersForTraining(
             $instanceId,
-            $clubIds,
+            $playerIds,
             $trainingFields,
             $trainingDate
         );
-        $playerIds = $players->pluck('id');
         $schedulesByPlayer = $this->trainingRepository->schedulesForPlayers($playerIds);
         $progressUpdates = [];
         $playerUpdates = [];

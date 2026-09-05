@@ -77,6 +77,10 @@ class TrainingServiceTest extends TestCase
             ->method('transaction')
             ->willReturnCallback(fn (\Closure $callback) => $callback());
         $repository->expects($this->once())
+            ->method('playerIdsForTraining')
+            ->with(1, $this->callback(fn (Collection $ids): bool => $ids->all() === [10]))
+            ->willReturn(new Collection([7]));
+        $repository->expects($this->once())
             ->method('playersForTraining')
             ->willReturn(new Collection([$player]));
         $repository->expects($this->once())
@@ -97,5 +101,43 @@ class TrainingServiceTest extends TestCase
             ->with([7 => ['pace' => 11]]);
 
         (new TrainingService($repository, $calculator))->processDay($instance);
+    }
+
+    #[Test]
+    public function it_processes_players_in_batches_of_fifty(): void
+    {
+        $instance = (new Instance)->forceFill(['id' => 1, 'instance_date' => '2027-06-10']);
+        $club = (new Club)->forceFill(['id' => 10, 'instance_id' => 1]);
+        $playerIds = new Collection(range(1, 51));
+        $batchSizes = [];
+        $repository = $this->createMock(TrainingRepository::class);
+        $calculator = $this->createMock(PlayerProgressCalculator::class);
+
+        $repository->method('scheduledGames')->willReturn(new Collection);
+        $repository->method('clubsByIds')->willReturn(new Collection);
+        $repository->method('clubsExceptIds')->willReturn(new Collection([$club]));
+        $repository->method('transaction')->willReturnCallback(fn (\Closure $callback) => $callback());
+        $repository->method('playerIdsForTraining')->willReturn($playerIds);
+        $repository->expects($this->exactly(2))
+            ->method('playersForTraining')
+            ->willReturnCallback(function (int $instanceId, Collection $ids) use (&$batchSizes): Collection {
+                $batchSizes[] = $ids->count();
+
+                return $ids->map(fn (int $id): TrainingPlayerData => new TrainingPlayerData(
+                    $id, 100, 150, 150, 150, 150, 'CB', false, 90, [], []
+                ));
+            });
+        $repository->expects($this->exactly(2))
+            ->method('schedulesForPlayers')
+            ->willReturn(new Collection);
+        $repository->expects($this->exactly(2))->method('bulkUpdateProgress');
+        $repository->expects($this->exactly(2))->method('bulkUpdatePlayers');
+        $calculator->expects($this->exactly(51))
+            ->method('forTrainingSession')
+            ->willReturn(new PlayerProgressUpdate(['condition' => 93], []));
+
+        (new TrainingService($repository, $calculator))->processDay($instance);
+
+        $this->assertSame([50, 1], $batchSizes);
     }
 }

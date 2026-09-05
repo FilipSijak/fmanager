@@ -2,6 +2,7 @@
 
 namespace App\Services\TrainingService;
 
+use App\Services\PersonService\GeneratePeople\PlayerInitialAttributes;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TrainingService\Data\TrainingPlayerData;
@@ -130,16 +131,31 @@ class PlayerProgressCalculator
             return 0;
         }
 
-        $categoryMaximum = match ($categoryId) {
+        $categoryMaximum = $this->categoryMaximum($categoryId, $player);
+        $currentCategoryPotential = $this->currentCategoryPotential($categoryId, $player);
+
+        return max(0, $categoryMaximum - $currentCategoryPotential);
+    }
+
+    private function categoryMaximum(int $categoryId, TrainingPlayerData $player): int
+    {
+        return match ($categoryId) {
             TrainingCategory::Technical->value => $player->technical,
             TrainingCategory::Tactical->value => $player->mental,
             TrainingCategory::Physical->value => $player->physical,
             default => 0,
         };
-        $developmentRatio = min(1, max(0, $player->potential / $player->maxPotential));
-        $currentCategoryPotential = (int) round($categoryMaximum * $developmentRatio);
+    }
 
-        return max(0, $categoryMaximum - $currentCategoryPotential);
+    private function currentCategoryPotential(int $categoryId, TrainingPlayerData $player): int
+    {
+        if ($player->maxPotential <= 0) {
+            return 0;
+        }
+
+        $developmentRatio = min(1, max(0, $player->potential / $player->maxPotential));
+
+        return (int) round($this->categoryMaximum($categoryId, $player) * $developmentRatio);
     }
 
     private function pointsForIntensity(TrainingIntensity $intensity, int $gap): int
@@ -206,9 +222,10 @@ class PlayerProgressCalculator
             return 0;
         }
 
+        $attributeCeiling = $this->attributeCeiling($categoryId, $field, $player);
         $allowedIncrease = min(
             $requestedIncrease,
-            max(0, self::MAX_ATTRIBUTE_VALUE - $player->attribute($field))
+            max(0, $attributeCeiling - $player->attribute($field))
         );
 
         if (! $atFullPotential) {
@@ -219,12 +236,36 @@ class PlayerProgressCalculator
             return 0;
         }
 
-        $physicalAttributeCeiling = (int) round((int) $player->physical / 10);
+        return $allowedIncrease;
+    }
 
-        return min(
-            $allowedIncrease,
-            max(0, $physicalAttributeCeiling - $player->attribute($field))
-        );
+    private function attributeCeiling(
+        int $categoryId,
+        string $field,
+        TrainingPlayerData $player
+    ): int {
+        $categoryPotential = $this->currentCategoryPotential($categoryId, $player);
+        $positionCategory = $this->positionCategory($categoryId);
+
+        if ($positionCategory === null) {
+            return 0;
+        }
+
+        $priorities = PlayerPositionConfig::getPositionMainAttributes($player->position)[$positionCategory];
+        $importance = in_array($field, $priorities['primary'], true)
+            ? PlayerInitialAttributes::PRIMARY_ATTRIBUTES
+            : (in_array($field, $priorities['secondary'], true)
+                ? PlayerInitialAttributes::SECONDARY_ATTRIBUTES
+                : PlayerInitialAttributes::OTHER_ATTRIBTUES);
+
+        if ($importance !== PlayerInitialAttributes::PRIMARY_ATTRIBUTES) {
+            $categoryPotential -= PlayerInitialAttributes::potentialReduction(
+                $categoryPotential,
+                $importance
+            );
+        }
+
+        return min(self::MAX_ATTRIBUTE_VALUE, max(0, (int) round($categoryPotential / 10)));
     }
 
     private function pointsForPositionPriority(
@@ -237,12 +278,7 @@ class PlayerProgressCalculator
             return $points;
         }
 
-        $positionCategory = match ($categoryId) {
-            TrainingCategory::Physical->value => 'physical',
-            TrainingCategory::Tactical->value => 'mental',
-            TrainingCategory::Technical->value => 'technical',
-            default => null,
-        };
+        $positionCategory = $this->positionCategory($categoryId);
 
         if ($positionCategory === null) {
             return 0;
@@ -255,6 +291,16 @@ class PlayerProgressCalculator
         }
 
         return in_array($field, $priorities['secondary'], true) ? max(1, $points - 1) : 1;
+    }
+
+    private function positionCategory(int $categoryId): ?string
+    {
+        return match ($categoryId) {
+            TrainingCategory::Physical->value => 'physical',
+            TrainingCategory::Tactical->value => 'mental',
+            TrainingCategory::Technical->value => 'technical',
+            default => null,
+        };
     }
 
     private function fieldsByCategory(): array

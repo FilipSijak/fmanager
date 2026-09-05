@@ -205,6 +205,39 @@ class PlayerProgressCalculatorTest extends TestCase
     }
 
     #[Test]
+    public function development_is_capped_by_current_category_and_position_importance(): void
+    {
+        $fields = PlayerFields::TECHNICAL_FIELDS;
+        $attributes = array_fill_keys($fields, 10);
+        $attributes['marking'] = 9;
+        $attributes['heading'] = 8;
+        $attributes['finishing'] = 7;
+        $progress = array_fill_keys($fields, 0);
+        $progress['marking'] = 199;
+        $progress['heading'] = 199;
+        $progress['finishing'] = 199;
+        $updates = (new PlayerProgressCalculator)->forTrainingSession(
+            $this->player(
+                potential: 100,
+                maxPotential: 150,
+                technical: 150,
+                attributes: $attributes,
+                progress: $progress,
+            ),
+            $this->schedules([TrainingCategory::Technical->value => TrainingIntensity::Hard]),
+            $fields,
+            CarbonImmutable::parse('2027-06-10'),
+        );
+
+        $this->assertSame(10, $updates->player['marking']);
+        $this->assertSame(9, $updates->player['heading']);
+        $this->assertSame(8, $updates->player['finishing']);
+        $this->assertSame(99, $updates->progress['marking']);
+        $this->assertSame(99, $updates->progress['heading']);
+        $this->assertSame(99, $updates->progress['finishing']);
+    }
+
+    #[Test]
     public function none_intensity_reduces_progress_and_recovers_condition(): void
     {
         $fields = PlayerFields::TECHNICAL_FIELDS;

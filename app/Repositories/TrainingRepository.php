@@ -22,9 +22,19 @@ class TrainingRepository
         return DB::transaction($callback);
     }
 
+    public function playerIdsForTraining(int $instanceId, Collection $clubIds): Collection
+    {
+        return DB::table('players')
+            ->where('instance_id', $instanceId)
+            ->whereIn('club_id', $clubIds)
+            ->where('is_retired', false)
+            ->orderBy('id')
+            ->pluck('id');
+    }
+
     public function playersForTraining(
         int $instanceId,
-        Collection $clubIds,
+        Collection $playerIds,
         array $trainingFields,
         CarbonInterface $trainingDate
     ): Collection {
@@ -33,7 +43,7 @@ class TrainingRepository
         return DB::table('players')
             ->join('players_progress', 'players_progress.player_id', '=', 'players.id')
             ->where('players.instance_id', $instanceId)
-            ->whereIn('players.club_id', $clubIds)
+            ->whereIn('players.id', $playerIds)
             ->where('players.is_retired', false)
             ->select([
                 'players.id',
@@ -170,7 +180,9 @@ class TrainingRepository
         }
 
         foreach ($groups as $group) {
-            DB::table($table)->upsert($group['rows'], [$key], $group['columns']);
+            foreach (array_chunk($group['rows'], 50) as $rows) {
+                DB::table($table)->upsert($rows, [$key], $group['columns']);
+            }
         }
     }
 }

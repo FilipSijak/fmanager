@@ -60,7 +60,7 @@ class PlayerInitialAttributes
     protected function setPrimaryAttributes(array $primaryAttributes, string $attributesCategory): void
     {
         $potentialByCategory = $this->playerPotentialByCategory[$attributesCategory];
-        $reducedPotential = $this->potentialReduction($potentialByCategory, self::PRIMARY_ATTRIBUTES);
+        $reducedPotential = self::potentialReduction($potentialByCategory, self::PRIMARY_ATTRIBUTES);
 
         foreach ($primaryAttributes as $attribute) {
             $this->playerAllAttributes[$attribute] = (int) round(
@@ -69,7 +69,7 @@ class PlayerInitialAttributes
         }
     }
 
-    private function potentialReduction(int $playerPotential, string $type): int
+    public static function potentialReduction(int $playerPotential, string $type): int
     {
         $potentialDescription = PersonPotential::personPotentialLabel($playerPotential);
 
@@ -130,7 +130,7 @@ class PlayerInitialAttributes
     protected function setSecondaryAttributes(array $attributes, string $attributesCategory): void
     {
         $potentialByCategory = $this->playerPotentialByCategory[$attributesCategory];
-        $reducedPotential = $this->potentialReduction($potentialByCategory, self::SECONDARY_ATTRIBUTES);
+        $reducedPotential = self::potentialReduction($potentialByCategory, self::SECONDARY_ATTRIBUTES);
 
         foreach ($attributes as $attribute) {
             $this->playerAllAttributes[$attribute] = (int) round(
@@ -155,7 +155,7 @@ class PlayerInitialAttributes
                 // checks the object if the attribute was already set for primary or secondary value
                 if (! isset($this->playerAllAttributes[$field])) {
                     $potentialForCategory = $this->playerPotentialByCategory[$category];
-                    $reducedPotential = $this->potentialReduction($potentialForCategory, self::OTHER_ATTRIBTUES);
+                    $reducedPotential = self::potentialReduction($potentialForCategory, self::OTHER_ATTRIBTUES);
                     $minimumAttributeValue = $this->setMinimumAttributeValue($potentialForCategory);
 
                     if (in_array($field, $this->commonAttributes, true)) {
