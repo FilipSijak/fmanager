@@ -18,7 +18,7 @@ class PlayerInitialAttributes
 
     protected array $playerAllAttributes = [];
 
-    protected array $commonAttributes = ['stamina', 'acceleration', 'strength'];
+    public const COMMON_ATTRIBUTES = ['stamina', 'acceleration', 'strength'];
 
     protected array $playerPotentialByCategory;
 
@@ -131,10 +131,12 @@ class PlayerInitialAttributes
     {
         $potentialByCategory = $this->playerPotentialByCategory[$attributesCategory];
         $reducedPotential = self::potentialReduction($potentialByCategory, self::SECONDARY_ATTRIBUTES);
+        $ceilingPotential = max(0, $potentialByCategory - $reducedPotential);
+        $minimumPotential = max(0, $ceilingPotential - $reducedPotential);
 
         foreach ($attributes as $attribute) {
             $this->playerAllAttributes[$attribute] = (int) round(
-                $this->randomizer->getInt($potentialByCategory - $reducedPotential, $potentialByCategory) / 10
+                $this->randomizer->getInt($minimumPotential, $ceilingPotential) / 10
             );
         }
     }
@@ -155,12 +157,14 @@ class PlayerInitialAttributes
                 // checks the object if the attribute was already set for primary or secondary value
                 if (! isset($this->playerAllAttributes[$field])) {
                     $potentialForCategory = $this->playerPotentialByCategory[$category];
-                    $reducedPotential = self::potentialReduction($potentialForCategory, self::OTHER_ATTRIBTUES);
-                    $minimumAttributeValue = $this->setMinimumAttributeValue($potentialForCategory);
-
-                    if (in_array($field, $this->commonAttributes, true)) {
-                        $minimumAttributeValue = $minimumAttributeValue + 3;
-                    }
+                    $commonAttribute = in_array($field, self::COMMON_ATTRIBUTES, true);
+                    $minimumAttributeValue = self::minimumAttributeValue($potentialForCategory)
+                        + ($commonAttribute ? 3 : 0);
+                    $attributeCeiling = self::attributeCeiling(
+                        $potentialForCategory,
+                        self::OTHER_ATTRIBTUES,
+                        $commonAttribute
+                    );
 
                     /*
                      * After getting a minimal value for an attribute, the value is used as a starting point for rand
@@ -171,7 +175,7 @@ class PlayerInitialAttributes
                     $this->playerAllAttributes[$field] = (int) round(
                         $this->randomizer->getInt(
                             $minimumAttributeValue,
-                            max($minimumAttributeValue, (int) (($potentialForCategory - $reducedPotential) / 10)),
+                            $attributeCeiling,
                         )
                     );
                 }
@@ -179,7 +183,30 @@ class PlayerInitialAttributes
         }
     }
 
-    private function setMinimumAttributeValue(int $playerPotential): int
+    public static function attributeCeiling(
+        int $categoryPotential,
+        string $importance,
+        bool $commonAttribute = false
+    ): int {
+        if ($importance === self::PRIMARY_ATTRIBUTES) {
+            return min(20, max(0, (int) round($categoryPotential / 10)));
+        }
+
+        $reducedPotential = max(
+            0,
+            $categoryPotential - self::potentialReduction($categoryPotential, $importance)
+        );
+
+        if ($importance === self::SECONDARY_ATTRIBUTES) {
+            return min(20, (int) round($reducedPotential / 10));
+        }
+
+        $minimum = self::minimumAttributeValue($categoryPotential) + ($commonAttribute ? 3 : 0);
+
+        return min(20, max($minimum, (int) ($reducedPotential / 10)));
+    }
+
+    private static function minimumAttributeValue(int $playerPotential): int
     {
         $potentialDescription = PersonPotential::personPotentialLabel($playerPotential);
 

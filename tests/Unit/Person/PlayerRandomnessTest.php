@@ -67,5 +67,20 @@ class PlayerRandomnessTest extends TestCase
         $this->assertLessThanOrEqual(14, $attributes['aggression']);
         $this->assertGreaterThan($attributes['aggression'], $attributes['positioning']);
         $this->assertSame(6, $attributes['acceleration']);
+        $this->assertLessThanOrEqual(
+            PlayerInitialAttributes::attributeCeiling(
+                50,
+                PlayerInitialAttributes::SECONDARY_ATTRIBUTES
+            ),
+            $attributes['heading']
+        );
+        $this->assertLessThanOrEqual(
+            PlayerInitialAttributes::attributeCeiling(
+                50,
+                PlayerInitialAttributes::OTHER_ATTRIBTUES,
+                true
+            ),
+            $attributes['acceleration']
+        );
     }
 }

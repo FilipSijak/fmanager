@@ -258,14 +258,11 @@ class PlayerProgressCalculator
                 ? PlayerInitialAttributes::SECONDARY_ATTRIBUTES
                 : PlayerInitialAttributes::OTHER_ATTRIBTUES);
 
-        if ($importance !== PlayerInitialAttributes::PRIMARY_ATTRIBUTES) {
-            $categoryPotential -= PlayerInitialAttributes::potentialReduction(
-                $categoryPotential,
-                $importance
-            );
-        }
-
-        return min(self::MAX_ATTRIBUTE_VALUE, max(0, (int) round($categoryPotential / 10)));
+        return PlayerInitialAttributes::attributeCeiling(
+            $categoryPotential,
+            $importance,
+            in_array($field, PlayerInitialAttributes::COMMON_ATTRIBUTES, true)
+        );
     }
 
     private function pointsForPositionPriority(
