@@ -30,9 +30,17 @@ class PlayerAttributesGenerator
 
     public function generateAttributes(): GeneratedPlayerData
     {
+        $currentPotential = $this->currentPotential();
+        $developmentRatio = $this->playerProfile->potential > 0
+            ? min(1, max(0, $currentPotential / $this->playerProfile->potential))
+            : 0;
+        $currentPotentialByCategory = array_map(
+            fn (int $categoryPotential): int => (int) round($categoryPotential * $developmentRatio),
+            (array) $this->playerProfile->potentialByCategory
+        );
         $attributes = $this->playerInitialAttributes
             ->setPlayerPosition($this->playerProfile->position)
-            ->setPlayerPotentialByCategory((array) $this->playerProfile->potentialByCategory)
+            ->setPlayerPotentialByCategory($currentPotentialByCategory)
             ->initAllAttributes();
 
         return new GeneratedPlayerData(
@@ -40,7 +48,7 @@ class PlayerAttributesGenerator
             position: $this->playerProfile->position,
             potentialByCategory: $this->playerProfile->potentialByCategory,
             maxPotential: $this->playerProfile->potential,
-            potential: $this->currentPotential(),
+            potential: $currentPotential,
             positions: [$this->playerProfile->position],
             attributes: $attributes,
         );

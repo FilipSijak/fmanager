@@ -50,6 +50,43 @@ class PlayerAttributesGeneratorTest extends TestCase
         $this->assertObjectHasProperty('potential', $result);
     }
 
+    public function test_initial_attribute_potentials_are_scaled_to_current_development(): void
+    {
+        $profile = new GeneratedPlayerProfile(
+            potential: 100,
+            position: 'CB',
+            potentialByCategory: new PotentialByCategoryData(80, 120, 160),
+        );
+        $initialAttributes = $this->createMock(PlayerInitialAttributes::class);
+        $initialAttributes->expects($this->once())
+            ->method('setPlayerPosition')
+            ->with('CB')
+            ->willReturn($initialAttributes);
+        $initialAttributes->expects($this->once())
+            ->method('setPlayerPotentialByCategory')
+            ->with([
+                'technical' => 68,
+                'mental' => 102,
+                'physical' => 136,
+            ])
+            ->willReturn($initialAttributes);
+        $initialAttributes->method('initAllAttributes')->willReturn([]);
+        $personDetailsGenerator = $this->createMock(PersonDetailsGenerator::class);
+        $personDetailsGenerator->method('generate')->willReturn(new PersonInfo(
+            'Test',
+            'Player',
+            'GB',
+            Carbon::now()->subYears(16)->format('Y-m-d'),
+        ));
+
+        $result = (new PlayerAttributesGenerator($initialAttributes, $personDetailsGenerator))
+            ->setPlayerDetails($profile)
+            ->generateAttributes();
+
+        $this->assertSame(85.0, $result->potential);
+        $this->assertSame($profile->potentialByCategory, $result->potentialByCategory);
+    }
+
     #[DataProvider('ageMaxPotentialProvider')]
     public function test_current_potential_for_different_ages(int $age, float $expectedMultiplier)
     {
@@ -123,7 +160,6 @@ class PlayerAttributesGeneratorTest extends TestCase
 
         $initialAttributesMock->expects($this->any())
             ->method('setPlayerPotentialByCategory')
-            ->with((array) $playerDetails->potentialByCategory)
             ->willReturn($initialAttributesMock);
 
         return $initialAttributesMock;
