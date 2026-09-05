@@ -1,0 +1,19 @@
+database/migrations/2024_09_16_202514_create_player_injuries_table.php
+  s_c510396488bb7b::t_2b4352e9b3b05f 20-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "19f0e62c3a97768d12fabfc93c132ee19839b028",
+  "prompts": {},
+  "sessions": {
+    "s_c510396488bb7b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a070bc-9ae9-71c1-811d-b14d4aa67dfe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
