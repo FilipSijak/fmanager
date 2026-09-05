@@ -1,0 +1,20 @@
+database/migrations/2020_02_10_195043_create_games_table.php
+  s_c510396488bb7b::t_e7f3106fbcae29 32-36
+  s_c510396488bb7b::t_123980615778eb 4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "237ef6b719af961f8e432a2bf73df23e1b77c3ed",
+  "prompts": {},
+  "sessions": {
+    "s_c510396488bb7b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a070bc-9ae9-71c1-811d-b14d4aa67dfe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
