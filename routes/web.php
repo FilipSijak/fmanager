@@ -6,3 +6,7 @@ use Inertia\Inertia;
 Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('start');
+
+Route::get('/league-table', function () {
+    return Inertia::render('LeagueTable');
+})->name('league-table');
