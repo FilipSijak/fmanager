@@ -23,7 +23,8 @@ class TrainingRepository
     }
 
     public function playersForTraining(
-        Club $club,
+        int $instanceId,
+        Collection $clubIds,
         array $trainingFields,
         CarbonInterface $trainingDate
     ): Collection {
@@ -31,8 +32,8 @@ class TrainingRepository
 
         return DB::table('players')
             ->join('players_progress', 'players_progress.player_id', '=', 'players.id')
-            ->where('players.instance_id', $club->instance_id)
-            ->where('players.club_id', $club->id)
+            ->where('players.instance_id', $instanceId)
+            ->whereIn('players.club_id', $clubIds)
             ->where('players.is_retired', false)
             ->select([
                 'players.id',
@@ -53,6 +54,7 @@ class TrainingRepository
                 .' AND player_injuries.injury_end_date >= ?) AS is_injured',
                 [$trainingDay, $trainingDay]
             )
+            ->orderBy('players.id')
             ->lockForUpdate()
             ->get()
             ->map(fn (object $row): TrainingPlayerData => new TrainingPlayerData(
@@ -79,6 +81,8 @@ class TrainingRepository
         return DB::table('training_player_schedule')
             ->whereIn('player_id', $playerIds)
             ->select(['player_id', 'training_category_id', 'training_intensity_id'])
+            ->orderBy('player_id')
+            ->orderBy('training_category_id')
             ->lockForUpdate()
             ->get()
             ->groupBy('player_id')
@@ -127,8 +131,9 @@ class TrainingRepository
         $this->bulkUpdateByKey('players', 'id', $updatesByPlayerId);
     }
 
-    public function recoverClubCondition(
-        Club $club,
+    public function recoverClubsCondition(
+        int $instanceId,
+        Collection $clubIds,
         CarbonInterface $trainingDate,
         int $recoveryAmount
     ): void {
@@ -136,8 +141,8 @@ class TrainingRepository
 
         DB::table('players_progress as progress')
             ->join('players', 'players.id', '=', 'progress.player_id')
-            ->where('players.instance_id', $club->instance_id)
-            ->where('players.club_id', $club->id)
+            ->where('players.instance_id', $instanceId)
+            ->whereIn('players.club_id', $clubIds)
             ->where('players.is_retired', false)
             ->where('progress.condition', '<', 100)
             ->update([

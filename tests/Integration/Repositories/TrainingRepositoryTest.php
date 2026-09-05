@@ -10,6 +10,7 @@ use App\Repositories\TrainingRepository;
 use App\Services\TrainingService\Data\TrainingPlayerData;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -54,7 +55,8 @@ class TrainingRepositoryTest extends TestCase
 
         $players = $repository->transaction(
             fn () => $repository->playersForTraining(
-                $club,
+                (int) $instance->id,
+                new Collection([$club->id]),
                 ['pace'],
                 CarbonImmutable::parse('2027-06-10')
             )
@@ -84,8 +86,9 @@ class TrainingRepositoryTest extends TestCase
             'pace' => 13,
         ]);
 
-        $repository->recoverClubCondition(
-            $club,
+        $repository->recoverClubsCondition(
+            (int) $instance->id,
+            new Collection([$club->id]),
             CarbonImmutable::parse('2027-06-10'),
             10
         );

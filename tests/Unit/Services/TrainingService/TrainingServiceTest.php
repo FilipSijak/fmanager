@@ -38,8 +38,16 @@ class TrainingServiceTest extends TestCase
             ->with(1, $this->callback(fn (Collection $ids): bool => $ids->all() === [3]))
             ->willReturn(new Collection([$club]));
         $repository->expects($this->once())
-            ->method('recoverClubCondition')
-            ->with($club, CarbonImmutable::parse('2027-06-10'), 10);
+            ->method('transaction')
+            ->willReturnCallback(fn (\Closure $callback) => $callback());
+        $repository->expects($this->once())
+            ->method('recoverClubsCondition')
+            ->with(
+                1,
+                $this->callback(fn (Collection $ids): bool => $ids->all() === [3]),
+                CarbonImmutable::parse('2027-06-10'),
+                10
+            );
         $repository->expects($this->once())
             ->method('clubsExceptIds')
             ->with(1, $this->callback(fn (Collection $ids): bool => $ids->sort()->values()->all() === [1, 2, 3]))

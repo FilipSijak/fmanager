@@ -2,11 +2,11 @@
 
 namespace App\Services\TrainingService;
 
-use App\Models\Club;
 use App\Models\Instance;
 use App\Repositories\TrainingRepository;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 
 class TrainingService
 {
@@ -38,51 +38,79 @@ class TrainingService
         ))->diff($playingTodayIds)->values();
         $clubsWithoutTraining = $playingTodayIds->merge($postMatchRestIds)->unique();
 
-        $this->trainingRepository->clubsByIds((int) $instance->id, $postMatchRestIds)
-            ->each(fn (Club $club) => $this->recoverCondition($club, $trainingDate));
-        $this->trainingRepository->clubsExceptIds((int) $instance->id, $clubsWithoutTraining)
-            ->each(fn (Club $club) => $this->executeTrainingSession($club, $trainingDate));
+        $recoveryClubIds = $this->trainingRepository
+            ->clubsByIds((int) $instance->id, $postMatchRestIds)
+            ->pluck('id');
+        $trainingClubIds = $this->trainingRepository
+            ->clubsExceptIds((int) $instance->id, $clubsWithoutTraining)
+            ->pluck('id');
+
+        $this->trainingRepository->transaction(function () use (
+            $instance,
+            $recoveryClubIds,
+            $trainingClubIds,
+            $trainingDate
+        ): void {
+            $this->recoverCondition((int) $instance->id, $recoveryClubIds, $trainingDate);
+            $this->executeTrainingSession((int) $instance->id, $trainingClubIds, $trainingDate);
+        });
     }
 
-    private function executeTrainingSession(Club $club, CarbonImmutable $trainingDate): void
-    {
+    private function executeTrainingSession(
+        int $instanceId,
+        Collection $clubIds,
+        CarbonImmutable $trainingDate
+    ): void {
+        if ($clubIds->isEmpty()) {
+            return;
+        }
+
         $trainingFields = array_merge(
             PlayerFields::TECHNICAL_FIELDS,
             PlayerFields::MENTAL_FIELDS,
             PlayerFields::PHYSICAL_FIELDS
         );
+        $players = $this->trainingRepository->playersForTraining(
+            $instanceId,
+            $clubIds,
+            $trainingFields,
+            $trainingDate
+        );
+        $playerIds = $players->pluck('id');
+        $schedulesByPlayer = $this->trainingRepository->schedulesForPlayers($playerIds);
+        $progressUpdates = [];
+        $playerUpdates = [];
 
-        $this->trainingRepository->transaction(function () use ($club, $trainingDate, $trainingFields): void {
-            $players = $this->trainingRepository->playersForTraining($club, $trainingFields, $trainingDate);
-            $playerIds = $players->pluck('id');
-            $schedulesByPlayer = $this->trainingRepository->schedulesForPlayers($playerIds);
-            $progressUpdates = [];
-            $playerUpdates = [];
+        foreach ($players as $player) {
+            $updates = $this->playerProgressCalculator->forTrainingSession(
+                $player,
+                $schedulesByPlayer->get($player->id, []),
+                $trainingFields,
+                $trainingDate
+            );
+            $progressUpdates[(int) $player->id] = $updates->progress;
 
-            foreach ($players as $player) {
-                $updates = $this->playerProgressCalculator->forTrainingSession(
-                    $player,
-                    $schedulesByPlayer->get($player->id, []),
-                    $trainingFields,
-                    $trainingDate
-                );
-                $progressUpdates[(int) $player->id] = $updates->progress;
-
-                if ($updates->player !== []) {
-                    $playerUpdates[(int) $player->id] = $updates->player;
-                }
-
+            if ($updates->player !== []) {
+                $playerUpdates[(int) $player->id] = $updates->player;
             }
+        }
 
-            $this->trainingRepository->bulkUpdateProgress($progressUpdates);
-            $this->trainingRepository->bulkUpdatePlayers($playerUpdates);
-        });
+        $this->trainingRepository->bulkUpdateProgress($progressUpdates);
+        $this->trainingRepository->bulkUpdatePlayers($playerUpdates);
     }
 
-    private function recoverCondition(Club $club, CarbonImmutable $trainingDate): void
-    {
-        $this->trainingRepository->recoverClubCondition(
-            $club,
+    private function recoverCondition(
+        int $instanceId,
+        Collection $clubIds,
+        CarbonImmutable $trainingDate
+    ): void {
+        if ($clubIds->isEmpty()) {
+            return;
+        }
+
+        $this->trainingRepository->recoverClubsCondition(
+            $instanceId,
+            $clubIds,
             $trainingDate,
             self::REST_DAY_CONDITION_RECOVERY
         );
