@@ -8,6 +8,8 @@ readonly class TrainingPlayerData
         public int $id,
         public int $potential,
         public int $maxPotential,
+        public int $technical,
+        public int $mental,
         public int $physical,
         public string $position,
         public bool $injured,

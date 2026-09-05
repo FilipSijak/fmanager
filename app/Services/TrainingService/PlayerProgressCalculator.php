@@ -54,8 +54,7 @@ class PlayerProgressCalculator
 
         $playerUpdates = [];
         $progressUpdates = ['last_progressed_at' => $timestamp, 'updated_at' => $timestamp];
-        $gap = (int) $player->maxPotential - (int) $player->potential;
-        $atFullPotential = $gap <= 0;
+        $atFullPotential = $player->potential >= $player->maxPotential;
         $conditionCost = $this->conditionCost($schedules);
         $progressUpdates['condition'] = $conditionCost > 0
             ? max(self::MINIMUM_TRAINING_CONDITION, (int) $player->condition - $conditionCost)
@@ -70,7 +69,7 @@ class PlayerProgressCalculator
 
             $points = $this->pointsForIntensity(
                 $schedule->intensity,
-                $gap
+                $this->categoryPotentialGap($categoryId, $player)
             );
 
             if ($points === 0) {
@@ -130,6 +129,24 @@ class PlayerProgressCalculator
         return $gap < self::MINIMUM_DEVELOPMENT_GAP
             ? 0
             : min(self::MAX_POINTS_PER_SESSION, intdiv($gap, self::GAP_PER_POINT));
+    }
+
+    private function categoryPotentialGap(int $categoryId, TrainingPlayerData $player): int
+    {
+        if ($player->maxPotential <= 0) {
+            return 0;
+        }
+
+        $categoryMaximum = match ($categoryId) {
+            TrainingCategory::Technical->value => $player->technical,
+            TrainingCategory::Tactical->value => $player->mental,
+            TrainingCategory::Physical->value => $player->physical,
+            default => 0,
+        };
+        $developmentRatio = min(1, max(0, $player->potential / $player->maxPotential));
+        $currentCategoryPotential = (int) round($categoryMaximum * $developmentRatio);
+
+        return max(0, $categoryMaximum - $currentCategoryPotential);
     }
 
     private function pointsForIntensity(TrainingIntensity $intensity, int $gap): int
