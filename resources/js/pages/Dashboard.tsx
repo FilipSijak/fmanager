@@ -35,7 +35,7 @@ const stats = [
     { label: 'Transfer budget', value: '£18.4m', note: '£124k wage room' },
 ];
 
-export default function Welcome() {
+export default function Dashboard() {
     return (
         <GameLayout active="Continue Game">
             <Head title="Manager Dashboard" />
