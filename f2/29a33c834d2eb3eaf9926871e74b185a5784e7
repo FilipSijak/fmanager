@@ -1,0 +1,23 @@
+tests/Unit/Person/PlayerRandomnessTest.php
+  s_c510396488bb7b::t_174ae3110d76a6 70-84
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_c510396488bb7b::t_d8a05de9367487 261-265
+app/Services/PersonService/GeneratePeople/PlayerInitialAttributes.php
+  s_c510396488bb7b::t_d8a05de9367487 21,134-135,139,160-167,178,186-209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "f229a33c834d2eb3eaf9926871e74b185a5784e7",
+  "prompts": {},
+  "sessions": {
+    "s_c510396488bb7b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a070bc-9ae9-71c1-811d-b14d4aa67dfe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
