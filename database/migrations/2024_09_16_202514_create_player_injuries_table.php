@@ -17,6 +17,11 @@ return new class extends Migration
             $table->date('injury_start_date');
             $table->date('injury_end_date');
 
+            $table->index(
+                ['player_id', 'injury_start_date', 'injury_end_date'],
+                'player_injuries_active_lookup_idx'
+            );
+
             $table->foreign('player_id')->references('id')->on('players')->onDelete('cascade');
             $table->foreign('injury_id')->references('id')->on('injuries')->onDelete('cascade');
             $table->foreign('instance_id')->references('id')->on('instances')->onDelete('cascade');
