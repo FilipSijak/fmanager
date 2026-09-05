@@ -66,5 +66,22 @@ class TrainingRepositoryTest extends TestCase
         $this->assertSame(12, $players->first()->attribute('pace'));
         $this->assertSame(45, $players->first()->accumulatedProgress('pace'));
         $this->assertSame(90, $players->first()->condition);
+
+        $repository->bulkUpdateProgress([
+            $player->id => ['pace' => 70, 'condition' => 91],
+        ]);
+        $repository->bulkUpdatePlayers([
+            $player->id => ['pace' => 13],
+        ]);
+
+        $this->assertDatabaseHas('players_progress', [
+            'player_id' => $player->id,
+            'pace' => 70,
+            'condition' => 91,
+        ]);
+        $this->assertDatabaseHas('players', [
+            'id' => $player->id,
+            'pace' => 13,
+        ]);
     }
 }

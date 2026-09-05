@@ -54,6 +54,8 @@ class TrainingService
             $players = $this->trainingRepository->playersForTraining($club, $trainingFields, $trainingDate);
             $playerIds = $players->pluck('id');
             $schedulesByPlayer = $this->trainingRepository->schedulesForPlayers($playerIds);
+            $progressUpdates = [];
+            $playerUpdates = [];
 
             foreach ($players as $player) {
                 $updates = $this->playerProgressCalculator->forTrainingSession(
@@ -62,14 +64,16 @@ class TrainingService
                     $trainingFields,
                     $trainingDate
                 );
-                $this->trainingRepository->updateProgress((int) $player->id, $updates->progress);
+                $progressUpdates[(int) $player->id] = $updates->progress;
 
                 if ($updates->player !== []) {
-                    $this->trainingRepository->updatePlayer((int) $player->id, $updates->player);
+                    $playerUpdates[(int) $player->id] = $updates->player;
                 }
 
             }
 
+            $this->trainingRepository->bulkUpdateProgress($progressUpdates);
+            $this->trainingRepository->bulkUpdatePlayers($playerUpdates);
         });
     }
 
@@ -78,6 +82,8 @@ class TrainingService
         $this->trainingRepository->transaction(function () use ($club, $trainingDate): void {
             $playerIds = $this->trainingRepository->activePlayerIds($club);
             $progressRows = $this->trainingRepository->conditionProgressForPlayers($playerIds);
+            $progressUpdates = [];
+
             foreach ($progressRows as $progress) {
                 $condition = $this->playerProgressCalculator->recoveredCondition((int) $progress->condition);
 
@@ -85,12 +91,13 @@ class TrainingService
                     continue;
                 }
 
-                $this->trainingRepository->updateProgress((int) $progress->player_id, [
+                $progressUpdates[(int) $progress->player_id] = [
                     'condition' => $condition,
                     'updated_at' => $trainingDate,
-                ]);
+                ];
             }
 
+            $this->trainingRepository->bulkUpdateProgress($progressUpdates);
         });
     }
 }

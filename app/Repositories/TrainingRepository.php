@@ -114,14 +114,14 @@ class TrainingRepository
         return Club::query()->forInstance($instanceId)->whereNotIn('id', $clubIds)->get();
     }
 
-    public function updateProgress(int $playerId, array $updates): void
+    public function bulkUpdateProgress(array $updatesByPlayerId): void
     {
-        DB::table('players_progress')->where('player_id', $playerId)->update($updates);
+        $this->bulkUpdateByKey('players_progress', 'player_id', $updatesByPlayerId);
     }
 
-    public function updatePlayer(int $playerId, array $updates): void
+    public function bulkUpdatePlayers(array $updatesByPlayerId): void
     {
-        DB::table('players')->where('id', $playerId)->update($updates);
+        $this->bulkUpdateByKey('players', 'id', $updatesByPlayerId);
     }
 
     public function activePlayerIds(Club $club): Collection
@@ -140,5 +140,26 @@ class TrainingRepository
             ->whereIn('player_id', $playerIds)
             ->lockForUpdate()
             ->get(['player_id', 'condition']);
+    }
+
+    private function bulkUpdateByKey(string $table, string $key, array $updatesById): void
+    {
+        $groups = [];
+
+        foreach ($updatesById as $id => $updates) {
+            if ($updates === []) {
+                continue;
+            }
+
+            $columns = array_keys($updates);
+            sort($columns);
+            $signature = implode('|', $columns);
+            $groups[$signature]['columns'] = $columns;
+            $groups[$signature]['rows'][] = [$key => (int) $id] + $updates;
+        }
+
+        foreach ($groups as $group) {
+            DB::table($table)->upsert($group['rows'], [$key], $group['columns']);
+        }
     }
 }
