@@ -1,0 +1,34 @@
+app/Repositories/TrainingRepository.php
+  s_c510396488bb7b::t_0b1a160bc9db09 25-34,37,46,183-185
+tests/Unit/Services/TrainingService/PlayerProgressCalculatorTest.php
+  s_c510396488bb7b::t_9208cff0720d76 208-239
+  s_c510396488bb7b::t_f1b7d9fe3ac8a0 207
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_c510396488bb7b::t_ef0ce5c75fd5b4 5,134-142,148-152,154-155,158,225,228,239-240,242-268,281,296-304
+  s_c510396488bb7b::t_239872d0df06bb 153
+  s_c510396488bb7b::t_d8ad8529340afc 305
+tests/Unit/Services/TrainingService/TrainingServiceTest.php
+  s_c510396488bb7b::t_a0cc26c757df80 105-142
+  s_c510396488bb7b::t_75ccd3fd195b36 80-82
+  s_c510396488bb7b::t_a2880094642ea4 79
+app/Services/PersonService/GeneratePeople/PlayerInitialAttributes.php
+  s_c510396488bb7b::t_ef0ce5c75fd5b4 63,72,133,158
+app/Services/TrainingService/TrainingService.php
+  s_c510396488bb7b::t_28eae4d796665f 15-16,75-92,95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "cf7bc306706c2a0b9a81692b45f15a572b5f05fb",
+  "prompts": {},
+  "sessions": {
+    "s_c510396488bb7b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a070bc-9ae9-71c1-811d-b14d4aa67dfe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
