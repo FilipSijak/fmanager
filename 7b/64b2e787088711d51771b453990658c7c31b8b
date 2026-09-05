@@ -1,0 +1,24 @@
+tests/Unit/Services/TrainingService/PlayerProgressCalculatorTest.php
+  s_c510396488bb7b::t_b6d4434440b827 43-59
+  s_c510396488bb7b::t_7265c6789bc60d 42
+app/Repositories/TrainingRepository.php
+  s_c510396488bb7b::t_96b29f8868bfac 30,47-53,96-97
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_c510396488bb7b::t_b6d4434440b827 48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "7b64b2e787088711d51771b453990658c7c31b8b",
+  "prompts": {},
+  "sessions": {
+    "s_c510396488bb7b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a070bc-9ae9-71c1-811d-b14d4aa67dfe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
