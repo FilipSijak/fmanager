@@ -1,0 +1,26 @@
+app/Repositories/TrainingRepository.php
+  s_c510396488bb7b::t_1d692e8343d7a2 26-27,35-36,57,84-85,134-136,144-145
+tests/Integration/Repositories/TrainingRepositoryTest.php
+  s_c510396488bb7b::t_039f6b22149a4d 13,59,91
+  s_c510396488bb7b::t_9b770e6fee6cd8 58,89-90
+tests/Unit/Services/TrainingService/TrainingServiceTest.php
+  s_c510396488bb7b::t_9b770e6fee6cd8 41-50
+app/Services/TrainingService/TrainingService.php
+  s_c510396488bb7b::t_a02e1f2f946bf0 9,41-56,59-67,73-82,84-91,93-94,96,98-99,102-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "9eb8c45cde32000638585b0c7d1261934a9a7c2d",
+  "prompts": {},
+  "sessions": {
+    "s_c510396488bb7b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a070bc-9ae9-71c1-811d-b14d4aa67dfe",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
