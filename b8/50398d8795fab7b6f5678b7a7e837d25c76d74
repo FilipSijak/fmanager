@@ -1,0 +1,19 @@
+resources/js/pages/GameStart.tsx
+  s_38a5568a8261a2::t_37eb956ad12e1a 46,76-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "b850398d8795fab7b6f5678b7a7e837d25c76d74",
+  "prompts": {},
+  "sessions": {
+    "s_38a5568a8261a2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07d12-d705-74e2-a89b-e6f8aed1d096",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
