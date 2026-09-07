@@ -47,6 +47,7 @@ class ClubApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/club/{$club->id}");
 
@@ -136,6 +137,7 @@ class ClubApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/club/{$club->id}/squad");
 
@@ -174,6 +176,7 @@ class ClubApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/club/{$otherClub->id}/squad");
 
@@ -197,6 +200,7 @@ class ClubApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/club/{$otherClub->id}");
 

@@ -6,7 +6,6 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
-use App\Models\Manager;
 use App\Models\Player;
 use App\Models\Season;
 use App\Models\StaffCoaching;
@@ -39,8 +38,10 @@ class CreateInstanceTest extends TestCase
         parent::setUp();
 
         $this->clubId = Club::factory()->make(['id' => 1])->id;
-        $this->managerId = Manager::factory()->make(['id' => 1])->id;
-        $this->userId = User::factory()->make(['id' => 1])->id;
+        $this->managerId = null;
+        $user = User::factory()->create(['id' => 99]);
+        $this->userId = $user->id;
+        $this->actingAs($user);
     }
 
     #[Test]
@@ -48,9 +49,11 @@ class CreateInstanceTest extends TestCase
     {
         $createInstance = $this->getNewInstance();
         (new DatabaseSeeder)->run();
-        Instance::factory()->create(['id' => 1]);
+        Instance::factory()->create(['id' => 1, 'user_id' => $this->userId]);
         Season::factory()->create(['id' => 1, 'instance_id' => 1]);
-        $response = $this->postJson('/api/startNewGame')->assertCreated();
+        $response = $this->withHeader('Origin', 'http://localhost')->postJson('/api/startNewGame', ['user_id' => 1])->assertCreated();
+        $response->assertSessionHas('active_instance_hash', $response->json('data.instance_hash'));
+        $this->assertSame(2, User::findOrFail($this->userId)->instances()->count());
         $instance = Instance::findOrFail($response->json('data.id'));
         $this->assertNotSame(1, $instance->id);
         $this->assertSame($instance->instance_hash, $response->json('data.instance_hash'));

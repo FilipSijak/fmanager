@@ -1,6 +1,9 @@
 import { Head, router } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
-import { startNewGame } from '@/actions/App/Http/Controllers/InstanceController';
+import {
+    select,
+    startNewGame,
+} from '@/actions/App/Http/Controllers/InstanceController';
 import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
 import { start } from '@/routes';
@@ -12,7 +15,10 @@ const menuRows: [string, string][] = [
     ['Hall Of Fame', 'Game Credits'],
 ];
 
-export default function GameStart() {
+type SavedGame = { id: number; club_name: string | null; date: string };
+
+export default function GameStart({ instances }: { instances: SavedGame[] }) {
+    const [selecting, setSelecting] = useState<number | null>(null);
     const [processing, setProcessing] = useState(false);
     const [created, setCreated] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -35,13 +41,7 @@ export default function GameStart() {
         setCreated(false);
 
         try {
-            const response = await api.post<{
-                data: { instance_hash: string };
-            }>(startNewGame.url());
-            window.localStorage.setItem(
-                'instanceHash',
-                response.data.data.instance_hash,
-            );
+            await api.post(startNewGame.url());
             setCreated(true);
             router.visit(start.url());
         } catch {
@@ -96,12 +96,24 @@ export default function GameStart() {
                                 key={label}
                                 type="button"
                                 disabled={
-                                    processing || label !== 'Start New Game'
+                                    processing ||
+                                    selecting !== null ||
+                                    ![
+                                        'Start New Game',
+                                        'Restore Saved Game',
+                                    ].includes(label)
                                 }
                                 onClick={
                                     label === 'Start New Game'
                                         ? createGame
-                                        : undefined
+                                        : label === 'Restore Saved Game'
+                                          ? () =>
+                                                document
+                                                    .getElementById('my-games')
+                                                    ?.scrollIntoView({
+                                                        behavior: 'smooth',
+                                                    })
+                                          : undefined
                                 }
                                 className="border border-[#3355dd]/60 bg-black/30 px-6 py-5 text-base font-semibold text-white hover:bg-white/10"
                             >
@@ -110,6 +122,59 @@ export default function GameStart() {
                         )),
                     )}
                 </div>
+
+                <section
+                    id="my-games"
+                    className="flex w-full max-w-2xl flex-col gap-3"
+                    aria-labelledby="my-games-title"
+                >
+                    <h2
+                        id="my-games-title"
+                        className="text-xl font-bold text-[#f5f000]"
+                    >
+                        My Games
+                    </h2>
+                    {instances.length === 0 && (
+                        <p className="text-white">
+                            You have no saved games yet. Start a new game above.
+                        </p>
+                    )}
+                    {instances.map((instance) => (
+                        <div
+                            key={instance.id}
+                            className="flex items-center justify-between gap-4 rounded border border-[#3355dd] bg-black/30 p-4 text-white"
+                        >
+                            <p>
+                                {instance.club_name ?? 'Game'} — {instance.date}{' '}
+                                (#{instance.id})
+                            </p>
+                            <button
+                                type="button"
+                                disabled={processing || selecting !== null}
+                                onClick={() => {
+                                    setSelecting(instance.id);
+                                    setError(null);
+                                    router.post(
+                                        select.url(instance.id),
+                                        {},
+                                        {
+                                            onError: () =>
+                                                setError(
+                                                    'Unable to open this game. Please try again.',
+                                                ),
+                                            onFinish: () => setSelecting(null),
+                                        },
+                                    );
+                                }}
+                                className="rounded border border-[#3355dd] px-4 py-2 font-semibold text-[#f5f000] hover:bg-white/10 disabled:opacity-50"
+                            >
+                                {selecting === instance.id
+                                    ? 'Opening…'
+                                    : 'Resume'}
+                            </button>
+                        </div>
+                    ))}
+                </section>
 
                 <button
                     type="button"

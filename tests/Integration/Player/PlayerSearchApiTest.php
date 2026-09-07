@@ -48,7 +48,8 @@ final class PlayerSearchApiTest extends TestCase
             ->andReturn(new Collection([$player]));
         $this->app->instance(SearchService::class, $searchService);
 
-        $this->withHeaders(['instanceHash' => 'current-instance'])
+        $this->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
+            ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson('/api/player/search?q=Alpha&limit=10')
             ->assertOk()
             ->assertJsonPath('data.0.id', $player->id)
@@ -64,7 +65,8 @@ final class PlayerSearchApiTest extends TestCase
             'instance_hash' => 'current-instance',
         ]);
 
-        $this->withHeaders(['instanceHash' => 'current-instance'])
+        $this->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
+            ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson('/api/player/search?q=a&limit=51')
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['q', 'limit']);
@@ -84,7 +86,8 @@ final class PlayerSearchApiTest extends TestCase
             ->andThrow(new RuntimeException('Connection failed'));
         $this->app->instance(SearchService::class, $searchService);
 
-        $this->withHeaders(['instanceHash' => 'current-instance'])
+        $this->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
+            ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson('/api/player/search?q=Alpha')
             ->assertStatus(503)
             ->assertJsonPath('error', 'Player search is temporarily unavailable.');

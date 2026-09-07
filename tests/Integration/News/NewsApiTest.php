@@ -45,6 +45,7 @@ class NewsApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson('/api/news');
 
@@ -88,6 +89,7 @@ class NewsApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson('/api/news?all=true');
 
@@ -117,6 +119,7 @@ class NewsApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->postJson("/api/news/{$news->id}/read");
 
@@ -151,6 +154,7 @@ class NewsApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->postJson("/api/news/{$otherInstanceNews->id}/read");
 

@@ -8,6 +8,7 @@ use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Models\Instance;
 use App\Models\Season;
+use App\Models\User;
 use App\Repositories\Competition\CompetitionScheduleRepository;
 use App\Services\GameService\CompleteGameService;
 use App\Services\GameService\MatchSimulationEngine;
@@ -46,9 +47,9 @@ class InstanceService implements IInstanceService
         return Instance::findOrFail($this->gameContext->instanceId());
     }
 
-    public function createNewInstance(): Instance
+    public function createNewInstance(User $user): Instance
     {
-        return DB::transaction(fn (): Instance => $this->createInstance->instanceInit());
+        return DB::transaction(fn (): Instance => $this->createInstance->instanceInit($user));
     }
 
     public function nextDay()

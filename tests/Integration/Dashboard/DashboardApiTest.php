@@ -79,6 +79,7 @@ class DashboardApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'dashboard-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'dashboard-instance'])
             ->getJson('/api/dashboard');
 
@@ -183,6 +184,7 @@ class DashboardApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'dashboard-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'dashboard-instance'])
             ->getJson('/api/dashboard');
 
@@ -219,6 +221,7 @@ class DashboardApiTest extends TestCase
         }
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'dashboard-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'dashboard-instance'])
             ->getJson('/api/dashboard');
 

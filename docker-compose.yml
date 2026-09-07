@@ -58,6 +58,7 @@ services:
         entrypoint: [ "/entrypoint.sh" ]
         environment:
             VITE_WAYFINDER_ENABLED: 1
+            VITE_WAYFINDER_COMMAND: docker exec fmanager-container php artisan wayfinder:generate
         ports:
             - 5173:3000
         profiles:

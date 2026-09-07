@@ -1,4 +1,7 @@
+import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { logout } from '@/actions/App/Http/Controllers/AuthController';
+import { setupGame } from '@/routes';
 
 type NavItem = {
     label: string;
@@ -68,6 +71,20 @@ export default function Sidebar({ active }: { active?: string }) {
             </nav>
 
             <div className="flex-1" />
+            <Link
+                href={setupGame.url()}
+                className={`${cellBorder} px-3 py-4 text-center font-bold text-[#f5f000] hover:bg-white/10`}
+            >
+                My Games
+            </Link>
+            <Link
+                href={logout.url()}
+                method="post"
+                as="button"
+                className={`${cellBorder} px-3 py-4 text-center font-bold hover:bg-white/10`}
+            >
+                Log out
+            </Link>
         </aside>
     );
 }

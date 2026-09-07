@@ -152,10 +152,10 @@ class SeasonProgressionServiceTest extends TestCase
     {
         $data = $this->world();
 
-        $this->withHeaders(['instanceHash' => $data['instance']->instance_hash])
+        $this->actingAs($data['instance']->user)->withHeaders(['instanceHash' => $data['instance']->instance_hash])
             ->getJson("/api/competition/{$data['upper']->id}/movement-preview")
             ->assertOk()->assertJsonCount(4, 'data');
-        $this->withHeaders(['instanceHash' => $data['instance']->instance_hash])
+        $this->actingAs($data['instance']->user)->withHeaders(['instanceHash' => $data['instance']->instance_hash])
             ->getJson("/api/competition/{$data['upper']->id}/qualification-preview")
             ->assertOk()->assertJsonCount(4, 'data')
             ->assertJsonPath('data.0.target_competition_id', $data['champions']->id);

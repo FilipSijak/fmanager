@@ -26,7 +26,7 @@ export default defineConfig(({mode}) => {
             wayfinderEnabled ? wayfinder({
                 formVariants: true,
                 patterns: ['routes/web.php', 'routes/api.php'],
-                command: 'php artisan wayfinder:generate'
+                command: env.VITE_WAYFINDER_COMMAND || 'php artisan wayfinder:generate'
             }) : '',
             biome({
                 mode: 'check',

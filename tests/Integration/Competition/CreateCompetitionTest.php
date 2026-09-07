@@ -6,8 +6,8 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
 use App\Models\Season;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -32,6 +32,7 @@ class CreateCompetitionTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/competition/{$competition->id}");
 
@@ -61,6 +62,7 @@ class CreateCompetitionTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/competition/{$otherCompetition->id}");
 
@@ -183,6 +185,7 @@ class CreateCompetitionTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/competition/{$competition->id}/table");
 
@@ -308,6 +311,7 @@ class CreateCompetitionTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/competition/{$competition->id}/tournament-groups-tables");
 
@@ -383,6 +387,7 @@ class CreateCompetitionTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/competition/{$competition->id}/knockout-phase");
 
