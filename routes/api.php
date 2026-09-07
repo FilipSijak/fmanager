@@ -33,7 +33,7 @@ Route::middleware('auth:sanctum')->get('/test', function (Request $request) {
 });
 
 Route::get('/test', [TestController::class, 'transferStatus']);
-Route::get('/startNewGame', [InstanceController::class, 'startNewGame']);
+Route::post('/startNewGame', [InstanceController::class, 'startNewGame']);
 
 Route::middleware([EnsureGameIsValid::class])->group(function () {
     Route::get('/news', [NewsController::class, 'index']);

@@ -48,11 +48,17 @@ class CreateInstanceTest extends TestCase
     {
         $createInstance = $this->getNewInstance();
         (new DatabaseSeeder)->run();
-        $createInstance->instanceInit();
-        $instance = Instance::all()->first();
+        Instance::factory()->create(['id' => 1]);
+        Season::factory()->create(['id' => 1, 'instance_id' => 1]);
+        $response = $this->postJson('/api/startNewGame')->assertCreated();
+        $instance = Instance::findOrFail($response->json('data.id'));
+        $this->assertNotSame(1, $instance->id);
+        $this->assertSame($instance->instance_hash, $response->json('data.instance_hash'));
         $tournament = Competition::where('type', 'tournament')->where('groups', 0)->first();
         $tournamentGroup = Competition::where('type', 'tournament')->where('groups', 1)->first();
         $season = Season::where('instance_id', $instance->id)->firstOrFail();
+
+        $this->assertSame($season->id, $instance->season_id);
 
         $this->assertSame(
             Carbon::create((int) date('Y'), 7, 1)->toDateString(),

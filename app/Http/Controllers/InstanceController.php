@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
-use App\Models\Instance;
 use App\Services\InstanceService\InstanceService;
 use Illuminate\Http\JsonResponse;
 
@@ -13,8 +12,7 @@ class InstanceController extends Controller
 
     public function __construct(
         InstanceService $instanceService
-    )
-    {
+    ) {
         $this->instanceService = $instanceService;
     }
 
@@ -30,13 +28,15 @@ class InstanceController extends Controller
             $instance = $this->instanceService->createNewInstance();
 
             return ResponseHelper::success(
-                Instance::find($instance->id)->toArray(),
-                ResponseHelper::RESPONSE_SUCCESS_CODE
+                $instance->toArray(),
+                201
             );
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
+            report($exception);
+
             return ResponseHelper::error(
                 'Failed to create new instance',
-                $exception->getMessage(),
+                '',
                 ResponseHelper::RESPONSE_ERROR_CODE
             );
         }
