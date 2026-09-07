@@ -1,0 +1,86 @@
+routes/web.php
+  s_38a5568a8261a2::t_1512b7587fc789 3-6,10-15,17-20,22-28
+docker-compose.yml
+  s_38a5568a8261a2::t_cda4fc9ffa2047 61
+vite.config.js
+  s_38a5568a8261a2::t_cda4fc9ffa2047 29
+app/Http/Middleware/HandleInertiaRequests.php
+  s_38a5568a8261a2::t_1512b7587fc789 6,8,10,12-15
+  s_38a5568a8261a2::t_3a9a23d77cfe4b 1-5,7,9,11,16-17
+app/Models/Instance.php
+  s_38a5568a8261a2::t_1512b7587fc789 7,14-23
+app/Services/InstanceService/CreateInstance.php
+  s_38a5568a8261a2::t_1512b7587fc789 9,16,46,49-50,68,77
+app/Providers/RouteServiceProvider.php
+  s_38a5568a8261a2::t_1512b7587fc789 20,48-50
+app/Http/Kernel.php
+  s_38a5568a8261a2::t_1512b7587fc789 63,67
+  s_38a5568a8261a2::t_fd8af75e4a8160 5-18,20-29,42-47,57-62,69,81-90
+app/Services/InstanceService/InstanceService.php
+  s_38a5568a8261a2::t_1512b7587fc789 11,50,52
+app/Http/Middleware/EnsureGameIsValid.php
+  s_38a5568a8261a2::t_1512b7587fc789 19-21
+  s_38a5568a8261a2::t_cda4fc9ffa2047 8,16
+  s_38a5568a8261a2::t_f21af3fd7da13a 18
+routes/api.php
+  s_38a5568a8261a2::t_1512b7587fc789 13,16-17,19-20
+  s_38a5568a8261a2::t_c0942916f8a182 22-23,25,27-29,31-39,41-49,51-73,75-84
+app/Models/User.php
+  s_38a5568a8261a2::t_1512b7587fc789 7,45-49
+app/Http/Middleware/SetGameContext.php
+  s_38a5568a8261a2::t_1512b7587fc789 8,12,14,16-18,21-24
+app/Http/Controllers/InstanceController.php
+  s_38a5568a8261a2::t_1512b7587fc789 8-11,28,32-36,52-74
+app/Http/Controllers/AuthController.php
+  s_38a5568a8261a2::t_1512b7587fc789 6,8-11,15,17-20,24-26,29-33,36,38-40,43-46,49-50,52-61
+config/inertia.php
+  s_38a5568a8261a2::t_85e805009e53b4 1-11
+config/sanctum.php
+  s_38a5568a8261a2::t_0ef39e0291d5fb 3-4,21,23-24,66-67
+resources/js/api.ts
+  s_38a5568a8261a2::t_252351a1e58449 2,4-7,10-22
+resources/js/components/game/Sidebar.tsx
+  s_38a5568a8261a2::t_624ce95daca25b 1,3-4,74-87
+resources/js/pages/Auth.tsx
+  s_38a5568a8261a2::t_21577cab827670 1-130
+resources/js/pages/GameStart.tsx
+  s_38a5568a8261a2::t_3f523bfa30f1a1 3-6,18-21,44,99-104,109-116,126-178
+tests/Integration/AuthenticationTest.php
+  s_38a5568a8261a2::t_3ac747666f9571 1-107
+tests/Integration/Club/ClubApiTest.php
+  s_38a5568a8261a2::t_6e6e81370c674b 50,140,179,203
+tests/Integration/Competition/CreateCompetitionTest.php
+  s_38a5568a8261a2::t_36560149b6fa75 10,35,65,188,314,390
+tests/Integration/Dashboard/DashboardApiTest.php
+  s_38a5568a8261a2::t_b63aebfba6c850 82,187,224
+tests/Integration/Instance/CreateInstanceTest.php
+  s_38a5568a8261a2::t_4ae5498476fd64 41-44,52,54-56
+tests/Integration/Instance/InstanceAccessTest.php
+  s_38a5568a8261a2::t_9fb32f71c5ec2f 1-103
+tests/Integration/Instance/InstanceServiceTest.php
+  s_38a5568a8261a2::t_e8ff7c2ca4c222 8,59
+tests/Integration/News/NewsApiTest.php
+  s_38a5568a8261a2::t_6ff2607c23e779 48,92,122,157
+tests/Integration/Player/PlayerApiTest.php
+  s_38a5568a8261a2::t_c8aedcdb8596cf 58,89,118
+tests/Integration/Player/PlayerSearchApiTest.php
+  s_38a5568a8261a2::t_b746afbd3c6199 51-52,68-69,89-90
+tests/Integration/Services/CompetitionService/Progression/SeasonProgressionServiceTest.php
+  s_38a5568a8261a2::t_b523ae81db01db 155,158
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "9dfc0fbe3e04e9d2bdccd1f0906a326ffb6c0861",
+  "prompts": {},
+  "sessions": {
+    "s_38a5568a8261a2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07d12-d705-74e2-a89b-e6f8aed1d096",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
