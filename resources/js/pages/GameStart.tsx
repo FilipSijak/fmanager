@@ -43,6 +43,7 @@ export default function GameStart() {
                 response.data.data.instance_hash,
             );
             setCreated(true);
+            router.visit(start.url());
         } catch {
             setError('Unable to start a new game. Please try again.');
             starting.current = false;
@@ -72,18 +73,9 @@ export default function GameStart() {
                     </h2>
                     <p id="setup-dialog-description" role="status">
                         {created
-                            ? 'Your game has been set up successfully. You can now start playing.'
-                            : 'Your game is currently being set up. You will be notified here when it is finished. Please keep this page open.'}
+                            ? 'Your game has been set up successfully. Opening Dashboard…'
+                            : 'Your game is currently being set up. You will be taken to Dashboard when it is finished. Please keep this page open.'}
                     </p>
-                    {created && (
-                        <button
-                            type="button"
-                            onClick={() => router.visit(start.url())}
-                            className="rounded border border-[#3355dd] bg-black/30 px-4 py-3 font-semibold text-[#f5f000] hover:bg-white/10"
-                        >
-                            Open Dashboard
-                        </button>
-                    )}
                 </div>
             </dialog>
 
