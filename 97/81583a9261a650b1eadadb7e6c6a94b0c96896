@@ -1,0 +1,22 @@
+tests/Integration/AuthenticationTest.php
+  s_38a5568a8261a2::t_2a12842c53bb50 40,45,49-58
+  s_38a5568a8261a2::t_f0aec3793587aa 59-60
+app/Http/Controllers/AuthController.php
+  s_38a5568a8261a2::t_2a12842c53bb50 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "9781583a9261a650b1eadadb7e6c6a94b0c96896",
+  "prompts": {},
+  "sessions": {
+    "s_38a5568a8261a2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07d12-d705-74e2-a89b-e6f8aed1d096",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
