@@ -48,6 +48,13 @@ class CreateInstance
         $this->storeInstance(1, 1, 1, 1);
         $init->seedFromBaseTables($this->instance->id);
         $this->startFirstSeason();
+        $this->instance->season_id = $this->season->id;
+        $this->instance->club_id = Club::query()
+            ->forInstance($this->instance->id)
+            ->where('base_club_id', 1)
+            ->firstOrFail()->id;
+        $this->instance->save();
+        app(GameContext::class)->set($this->instance->id, $this->season->id, (string) $this->instance->instance_date);
         $this->mapInitialCompetitionsToSeasonsWithClubs();
         $this->setCompetitionsForTheFirstSeason();
         $this->assignPeopleToClubs();

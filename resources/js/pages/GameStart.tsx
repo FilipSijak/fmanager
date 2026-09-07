@@ -1,5 +1,9 @@
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { useRef, useState } from 'react';
+import { startNewGame } from '@/actions/App/Http/Controllers/InstanceController';
+import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
+import { start } from '@/routes';
 
 const menuRows: [string, string][] = [
     ['Start New Game', 'Quick Start Game'],
@@ -9,6 +13,33 @@ const menuRows: [string, string][] = [
 ];
 
 export default function GameStart() {
+    const [processing, setProcessing] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const starting = useRef(false);
+
+    async function createGame() {
+        if (starting.current) return;
+        starting.current = true;
+        setProcessing(true);
+        setError(null);
+
+        try {
+            const response = await api.post<{
+                data: { instance_hash: string };
+            }>(startNewGame.url());
+            window.localStorage.setItem(
+                'instanceHash',
+                response.data.data.instance_hash,
+            );
+            router.visit(start.url());
+        } catch {
+            setError('Unable to start a new game. Please try again.');
+        } finally {
+            starting.current = false;
+            setProcessing(false);
+        }
+    }
+
     return (
         <GameLayout active="Game Options">
             <Head title="Setup Game" />
@@ -22,12 +53,23 @@ export default function GameStart() {
             <div className="flex flex-1 flex-col items-center gap-6 bg-gradient-to-b from-[#1a2233] to-[#05070c] px-10 py-8">
                 <h2 className="text-xl font-bold text-[#f5f000]">Setup Game</h2>
 
+                {error && <p role="alert">{error}</p>}
+                {processing && <p role="status">Creating your game…</p>}
+
                 <div className="grid w-full max-w-2xl grid-cols-2 gap-0 overflow-hidden rounded border border-[#3355dd]">
                     {menuRows.map((row) =>
                         row.map((label) => (
                             <button
                                 key={label}
                                 type="button"
+                                disabled={
+                                    processing || label !== 'Start New Game'
+                                }
+                                onClick={
+                                    label === 'Start New Game'
+                                        ? createGame
+                                        : undefined
+                                }
                                 className="border border-[#3355dd]/60 bg-black/30 px-6 py-5 text-base font-semibold text-white hover:bg-white/10"
                             >
                                 {label}

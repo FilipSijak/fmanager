@@ -8,7 +8,7 @@ import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 export default defineConfig(({mode}) => {
     // eslint-disable-next-line no-undef
     const env = loadEnv(mode, process.cwd());
-    const wayfinderEnabled = env.VITE_WAYFINDER_ENABLED === '1' || false;
+    const wayfinderEnabled = env.VITE_WAYFINDER_ENABLED !== '0';
 
     return {
         plugins: [
@@ -25,8 +25,8 @@ export default defineConfig(({mode}) => {
             tailwindcss(),
             wayfinderEnabled ? wayfinder({
                 formVariants: true,
-                patterns: ['routes/web.php'],
-                command: 'docker exec fmanager-container php artisan wayfinder:generate'
+                patterns: ['routes/web.php', 'routes/api.php'],
+                command: 'php artisan wayfinder:generate'
             }) : '',
             biome({
                 mode: 'check',

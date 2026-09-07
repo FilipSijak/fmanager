@@ -11,6 +11,7 @@ use App\Models\Season;
 use App\Repositories\Competition\CompetitionScheduleRepository;
 use App\Services\GameService\CompleteGameService;
 use App\Services\GameService\MatchSimulationEngine;
+use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -26,13 +27,12 @@ class InstanceService implements IInstanceService
 
     private CreateInstance $createInstance;
 
-    private ?Instance $instance = null;
-
     public function __construct(
         CompetitionScheduleRepository $competitionRepository,
         CreateInstance $createInstance,
         MatchSimulationEngine $matchSimulationEngine,
-        CompleteGameService $completeGameService
+        CompleteGameService $completeGameService,
+        private readonly GameContext $gameContext
 
     ) {
         $this->competitionRepository = $competitionRepository;
@@ -43,32 +43,12 @@ class InstanceService implements IInstanceService
 
     private function getInstance(): Instance
     {
-        if ($this->instance === null) {
-            $this->instance = Instance::find(1);
-        }
-
-        return $this->instance;
+        return Instance::findOrFail($this->gameContext->instanceId());
     }
 
-    public function createNewInstance(): bool|Instance
+    public function createNewInstance(): Instance
     {
-        DB::beginTransaction();
-
-        try {
-            $instance = $this->createInstance->instanceInit();
-
-            if ($instance) {
-                DB::commit();
-            }
-
-            return $instance;
-        } catch (\Exception $exception) {
-            echo $exception->getMessage();
-
-            DB::rollBack();
-
-            return false;
-        }
+        return DB::transaction(fn (): Instance => $this->createInstance->instanceInit());
     }
 
     public function nextDay()

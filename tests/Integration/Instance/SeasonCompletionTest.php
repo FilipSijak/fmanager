@@ -10,6 +10,7 @@ use App\Services\CompetitionService\Progression\SeasonProgressionService;
 use App\Services\InstanceService\InstanceService;
 use App\Services\SeasonService\SeasonCompletion;
 use App\Services\SeasonService\SeasonService;
+use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\Test;
@@ -90,6 +91,8 @@ class SeasonCompletionTest extends TestCase
             'id' => 1,
             'instance_id' => 1,
         ]);
+
+        app(GameContext::class)->set(1, 1, $date);
 
         return Instance::factory()->create([
             'id' => 1,
