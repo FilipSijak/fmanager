@@ -55,6 +55,7 @@ class PlayerApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/player/{$player->id}");
 
@@ -85,6 +86,7 @@ class PlayerApiTest extends TestCase
         ])->save();
 
         $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/player/{$player->id}")
             ->assertOk()
@@ -113,6 +115,7 @@ class PlayerApiTest extends TestCase
         ]);
 
         $response = $this
+            ->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
             ->withHeaders(['instanceHash' => 'current-instance'])
             ->getJson("/api/player/{$otherPlayer->id}");
 

@@ -6,12 +6,14 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
 use App\Models\Season;
+use App\Models\User;
 use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class CreateInstance
 {
@@ -41,11 +43,11 @@ class CreateInstance
         $this->competitionRepository = $competitionRepository;
     }
 
-    public function instanceInit(): Instance
+    public function instanceInit(User $user): Instance
     {
         $init = new InitialSeed;
-        // @todo create user and select club
-        $this->storeInstance(1, 1, 1, 1);
+        // @todo select a club and manager
+        $this->storeInstance($user->id, null, null, null);
         $init->seedFromBaseTables($this->instance->id);
         $this->startFirstSeason();
         $this->instance->season_id = $this->season->id;
@@ -63,7 +65,7 @@ class CreateInstance
         return $this->instance;
     }
 
-    protected function storeInstance(int $userId, int $managerId, int $seasonId, int $clubId): Instance
+    protected function storeInstance(int $userId, ?int $managerId, ?int $seasonId, ?int $clubId): Instance
     {
         $this->instance = new Instance;
 
@@ -72,7 +74,7 @@ class CreateInstance
         $this->instance->season_id = $seasonId;
         $this->instance->club_id = $clubId;
         $this->instance->instance_date = $this->initialInstanceDate();
-        $this->instance->instance_hash = uniqid();
+        $this->instance->instance_hash = (string) Str::uuid();
 
         $this->instance->save();
         app(GameContext::class)->setInstanceId($this->instance->id);

@@ -3,55 +3,61 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    const UNPROCESSABLE = 422;
-
-    public function register(Request $request): JsonResponse
+    public function register(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name'     => 'required',
-            'email'    => 'required|email',
-            'password' => 'required|min:6',
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'confirmed', Password::min(5)],
         ]);
 
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => bcrypt($request->password),
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => Hash::make($data['password']),
         ]);
 
-        return response()->json($user);
+        Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+        $request->session()->forget('active_instance_hash');
+
+        return redirect()->route('setup-game');
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(Request $request): RedirectResponse
     {
-        $request->validate([
-            'email'    => 'email|required',
-            'password' => 'required',
+        $credentials = $request->validate([
+            'email' => ['required', 'string', 'email'],
+            'password' => ['required', 'string'],
         ]);
 
-        $credentials = request(['email', 'password']);
-
-        if (!auth()->attempt($credentials)) {
-            return response()->json([
-                'message' => 'The given data was invalid.',
-                'errors'  => [
-                    'password' => [
-                        'Invalid credentials',
-                    ],
-                ],
-            ], self::UNPROCESSABLE);
+        if (! Auth::guard('web')->attempt($credentials)) {
+            throw ValidationException::withMessages([
+                'email' => 'The provided credentials do not match our records.',
+            ]);
         }
 
-        $user      = User::where('email', $request->email)->first();
-        $authToken = $user->createToken('auth-token')->plainTextToken;
+        $request->session()->regenerate();
+        $request->session()->forget('active_instance_hash');
 
-        return response()->json([
-            'access_token' => $authToken,
-        ]);
+        return redirect()->route('setup-game');
+    }
+
+    public function logout(Request $request): RedirectResponse
+    {
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
     }
 }

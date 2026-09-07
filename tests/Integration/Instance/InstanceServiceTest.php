@@ -5,6 +5,7 @@ namespace Tests\Integration\Instance;
 use App\Events\NextDay;
 use App\Models\Instance;
 use App\Models\Season;
+use App\Models\User;
 use App\Services\InstanceService\InstanceService;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -55,7 +56,7 @@ class InstanceServiceTest extends TestCase
     #[Test]
     public function failed_creation_rolls_back_the_instance(): void
     {
-        $this->postJson('/api/startNewGame')
+        $this->actingAs(User::factory()->create())->postJson('/api/startNewGame')
             ->assertStatus(500)
             ->assertJsonPath('error', 'Failed to create new instance');
         $this->assertDatabaseCount('instances', 0);
