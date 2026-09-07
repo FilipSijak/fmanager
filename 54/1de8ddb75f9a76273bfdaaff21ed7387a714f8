@@ -1,0 +1,47 @@
+tests/Integration/Instance/SeasonCompletionTest.php
+  s_38a5568a8261a2::t_b4c61d0ae0f957 13,95
+  s_38a5568a8261a2::t_1fa84fba01b810 96
+app/Http/Controllers/InstanceController.php
+  s_38a5568a8261a2::t_b4c61d0ae0f957 15,31
+  s_38a5568a8261a2::t_cf0c018ee08f36 32,34-36,39
+vite.config.js
+  s_38a5568a8261a2::t_c56c7caf36be9d 11,28-29
+tests/Integration/Instance/SeasonStartTest.php
+  s_38a5568a8261a2::t_b4c61d0ae0f957 10,67
+  s_38a5568a8261a2::t_dcdc802a0dfde2 68
+tests/Integration/Instance/MonthlyUpdateTest.php
+  s_38a5568a8261a2::t_b4c61d0ae0f957 10,63
+  s_38a5568a8261a2::t_761a33e8dad3c3 64
+tests/Integration/Instance/InstanceServiceTest.php
+  s_38a5568a8261a2::t_b4c61d0ae0f957 9,28,30,32,35
+  s_38a5568a8261a2::t_c56c7caf36be9d 46-70
+  s_38a5568a8261a2::t_78db9f0ef22790 38-40
+app/Services/InstanceService/CreateInstance.php
+  s_38a5568a8261a2::t_829733a88c47fc 51-57
+app/Services/InstanceService/InstanceService.php
+  s_38a5568a8261a2::t_4288464aab0755 14,34-35,46,49,51
+resources/js/api.ts
+  s_38a5568a8261a2::t_5f4a5d7b4ce36c 1-11
+resources/js/pages/GameStart.tsx
+  s_38a5568a8261a2::t_05054fd9745349 1-4,6,16-42,56-58,65-72
+routes/api.php
+  s_38a5568a8261a2::t_09480b67aa300b 36
+tests/Integration/Instance/CreateInstanceTest.php
+  s_38a5568a8261a2::t_257ce509e421a6 51-56,61-62
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "541de8ddb75f9a76273bfdaaff21ed7387a714f8",
+  "prompts": {},
+  "sessions": {
+    "s_38a5568a8261a2": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a07d12-d705-74e2-a89b-e6f8aed1d096",
+        "model": "gpt-6-astra"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
