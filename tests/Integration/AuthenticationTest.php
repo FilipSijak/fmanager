@@ -37,13 +37,25 @@ class AuthenticationTest extends TestCase
     {
         $this->post('/register', [
             'name' => 'New Manager', 'email' => 'manager@example.com',
-            'password' => 'secure-password', 'password_confirmation' => 'secure-password',
+            'password' => 'abcde', 'password_confirmation' => 'abcde',
         ])->assertRedirect('/setup-game');
 
         $user = User::where('email', 'manager@example.com')->firstOrFail();
         $this->assertAuthenticatedAs($user, 'web');
-        $this->assertTrue(Hash::check('secure-password', $user->password));
+        $this->assertTrue(Hash::check('abcde', $user->password));
         $this->assertDatabaseCount('personal_access_tokens', 0);
+    }
+
+    #[Test]
+    public function registration_rejects_passwords_shorter_than_five_characters(): void
+    {
+        $this->postJson('/register', [
+            'name' => 'New Manager', 'email' => 'manager@example.com',
+            'password' => 'abcd', 'password_confirmation' => 'abcd',
+        ])->assertUnprocessable()->assertJsonValidationErrors('password');
+
+        $this->assertDatabaseCount('users', 0);
+        $this->assertGuest();
     }
 
     #[Test]
