@@ -1,0 +1,30 @@
+app/Domain/PlayerDevelopment/AgePotentialCurve.php
+  s_1544079d5d8172::t_40b4a74dd971a6 1-4,7-9,11,13,59-60
+  s_1544079d5d8172::t_511c3f36681ef0 5-6,10,12,14-42,44-49,51-53,55-58
+  s_1544079d5d8172::t_7c94294fd3513e 43,50,54
+app/Services/PersonService/GeneratePeople/PlayerPotential.php
+  s_1544079d5d8172::t_3779aa77947917 29
+  s_1544079d5d8172::t_d3333d18b56d67 5,14-28,91,150-152
+tests/Unit/Person/PlayerPotentialByAgeTest.php
+  s_1544079d5d8172::t_f6f11417214e92 68-77,86
+  s_1544079d5d8172::t_81fa5b1e249960 78,80-81,83-84
+tests/Unit/Domain/PlayerDevelopment/AgePotentialCurveTest.php
+  s_1544079d5d8172::t_bd26b32a38171f 1-4,8-10,59-60
+  s_1544079d5d8172::t_dad0e6f5ecdd9e 5-7,11-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "5c24c46fbd006b90b021f1713d22e9867b388fcc",
+  "prompts": {},
+  "sessions": {
+    "s_1544079d5d8172": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08298-484a-7a23-9a78-56c630cd9828",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
