@@ -2,6 +2,7 @@
 
 namespace App\Services\PersonService;
 
+use App\Domain\PlayerDevelopment\PlayerAttributeCeiling;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
@@ -31,6 +32,7 @@ class PersonService
         private readonly StaffCreator $staffCreator,
         private readonly PlayerPotential $playerPotential,
         private readonly GameContext $gameContext,
+        private readonly PlayerAttributeCeiling $playerAttributeCeiling,
     ) {}
 
     public function createPlayer(GeneratedPlayerProfile $playerPotential): Player
@@ -87,7 +89,7 @@ class PersonService
             'mental' => [PlayerFields::MENTAL_FIELDS, $currentCategoryPotentials->mental],
             'physical' => [PlayerFields::PHYSICAL_FIELDS, $currentCategoryPotentials->physical],
         ] as [$category, [$fields, $categoryPotential]]) {
-            $categoryCeiling = min(20, intdiv($categoryPotential, 10));
+            $categoryCeiling = $this->playerAttributeCeiling->forPotential($categoryPotential);
 
             foreach ($fields as $field) {
                 $player->{$field} = min((int) $player->{$field}, $categoryCeiling);

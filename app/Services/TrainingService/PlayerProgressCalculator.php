@@ -2,6 +2,7 @@
 
 namespace App\Services\TrainingService;
 
+use App\Domain\PlayerDevelopment\PlayerAttributeCeiling;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TrainingService\Data\TrainingPlayerData;
@@ -9,6 +10,8 @@ use Carbon\CarbonInterface;
 
 class PlayerProgressCalculator
 {
+    public function __construct(private readonly PlayerAttributeCeiling $playerAttributeCeiling = new PlayerAttributeCeiling) {}
+
     private const MINIMUM_DEVELOPMENT_GAP = 10;
 
     private const GAP_PER_POINT = 10;
@@ -20,8 +23,6 @@ class PlayerProgressCalculator
     private const PROGRESS_THRESHOLD = 100;
 
     private const TACTICAL_PROGRESS_THRESHOLD = 200;
-
-    private const MAX_ATTRIBUTE_VALUE = 20;
 
     private const MISSED_SESSION_PENALTY = 2;
 
@@ -232,14 +233,11 @@ class PlayerProgressCalculator
 
     private function categoryAttributeCeiling(int $categoryId, TrainingPlayerData $player): int
     {
-        return min(
-            self::MAX_ATTRIBUTE_VALUE,
-            intdiv($this->currentCategoryPotential(
-                $categoryId,
-                $this->categoryPotential($categoryId, $player),
-                $player
-            ), 10)
-        );
+        return $this->playerAttributeCeiling->forPotential($this->currentCategoryPotential(
+            $categoryId,
+            $this->categoryPotential($categoryId, $player),
+            $player
+        ));
     }
 
     private function allowedAttributeIncrease(
