@@ -98,7 +98,19 @@ class PlayerPotential extends PersonPotential
         41 => 0.85,
     ];
 
-    private const MENTAL_AGE_POTENTIAL_BRACKETS = self::AGE_POTENTIAL_BRACKETS;
+    private const MENTAL_AGE_POTENTIAL_BRACKETS = [
+        16 => 0.85,
+        18 => 0.90,
+        21 => 0.95,
+        24 => 1.00,
+        29 => 0.99,
+        30 => 0.98,
+        32 => 0.96,
+        33 => 0.94,
+        35 => 0.91,
+        38 => 0.88,
+        41 => 0.82,
+    ];
 
     private const PHYSICAL_AGE_POTENTIAL_BRACKETS = [
         16 => 0.85,

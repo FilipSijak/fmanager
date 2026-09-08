@@ -36,7 +36,7 @@ class PlayerPotentialByAgeTest extends TestCase
         );
 
         $this->assertSame(90, $currentPotentials->technical);
-        $this->assertSame(113, $currentPotentials->mental);
+        $this->assertSame(132, $currentPotentials->mental);
         $this->assertSame(124, $currentPotentials->physical);
     }
 
