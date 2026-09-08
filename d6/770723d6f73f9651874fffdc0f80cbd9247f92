@@ -1,0 +1,24 @@
+tests/Integration/Services/PersonService/UpdatePlayerPotentialsTest.php
+  s_1544079d5d8172::t_c40f4a9427869f 36-38,41,48-58
+  s_1544079d5d8172::t_2ebc81ca38a3da 39-40,42-47
+app/Services/PersonService/PersonService.php
+  s_1544079d5d8172::t_a0f75c5b3940f8 63,67-73,77-83
+  s_1544079d5d8172::t_2ebc81ca38a3da 14,74-76
+  s_1544079d5d8172::t_5351f0a195336e 84-85
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "d6770723d6f73f9651874fffdc0f80cbd9247f92",
+  "prompts": {},
+  "sessions": {
+    "s_1544079d5d8172": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08298-484a-7a23-9a78-56c630cd9828",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
