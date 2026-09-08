@@ -1,0 +1,23 @@
+app/Services/PersonService/PersonService.php
+  s_1544079d5d8172::t_c1b759347f91df 90
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_1544079d5d8172::t_c1b759347f91df 237,241
+app/Services/PersonService/GeneratePeople/PlayerInitialAttributes.php
+  s_1544079d5d8172::t_c1b759347f91df 65,133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "8d0c2f2e3fd54f12a05383d244181e167dedd294",
+  "prompts": {},
+  "sessions": {
+    "s_1544079d5d8172": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08298-484a-7a23-9a78-56c630cd9828",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
