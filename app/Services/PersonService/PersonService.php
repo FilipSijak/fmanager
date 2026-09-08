@@ -39,7 +39,8 @@ class PersonService
     {
         return $this->playerCreator->create(
             $playerPotential,
-            $this->gameContext->instanceId()
+            $this->gameContext->instanceId(),
+            CarbonImmutable::parse($this->gameContext->instanceDate())->startOfDay()
         );
     }
 
