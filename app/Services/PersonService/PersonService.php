@@ -3,6 +3,7 @@
 namespace App\Services\PersonService;
 
 use App\Domain\PlayerDevelopment\PlayerAttributeCeiling;
+use App\Domain\PlayerDevelopment\PlayerDevelopmentCategory;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
@@ -13,7 +14,6 @@ use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
-use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -85,11 +85,9 @@ class PersonService
         Player $player,
         PotentialByCategoryData $currentCategoryPotentials
     ): void {
-        foreach ([
-            'technical' => [PlayerFields::TECHNICAL_FIELDS, $currentCategoryPotentials->technical],
-            'mental' => [PlayerFields::MENTAL_FIELDS, $currentCategoryPotentials->mental],
-            'physical' => [PlayerFields::PHYSICAL_FIELDS, $currentCategoryPotentials->physical],
-        ] as [$category, [$fields, $categoryPotential]]) {
+        foreach (PlayerDevelopmentCategory::cases() as $category) {
+            $fields = $category->fields();
+            $categoryPotential = $currentCategoryPotentials->{$category->value};
             $categoryCeiling = $this->playerAttributeCeiling->forPotential($categoryPotential);
 
             foreach ($fields as $field) {
