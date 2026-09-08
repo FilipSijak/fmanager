@@ -40,6 +40,37 @@ class PlayerPotentialByAgeTest extends TestCase
         $this->assertSame(124, $currentPotentials->physical);
     }
 
+    #[Test]
+    #[DataProvider('categoryPotentialByAgeProvider')]
+    public function it_calculates_each_category_curve_at_key_ages(
+        int $age,
+        int $technical,
+        int $mental,
+        int $physical
+    ): void {
+        $asOfDate = CarbonImmutable::parse('2026-06-16');
+        $maxPotentials = new PotentialByCategoryData(100, 100, 100);
+
+        $currentPotentials = (new PlayerPotential)->potentialByCategoryOnDate(
+            $maxPotentials,
+            $asOfDate->subYears($age),
+            $asOfDate
+        );
+
+        $this->assertSame($technical, $currentPotentials->technical);
+        $this->assertSame($mental, $currentPotentials->mental);
+        $this->assertSame($physical, $currentPotentials->physical);
+    }
+
+    public static function categoryPotentialByAgeProvider(): array
+    {
+        return [
+            '35 years old' => [35, 93, 91, 75],
+            '38 years old' => [38, 90, 88, 62],
+            '41 years old' => [41, 85, 82, 50],
+        ];
+    }
+
     public static function potentialByAgeProvider(): array
     {
         return [
