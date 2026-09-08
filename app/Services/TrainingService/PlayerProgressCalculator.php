@@ -4,6 +4,7 @@ namespace App\Services\TrainingService;
 
 use App\Domain\PlayerDevelopment\PlayerAttributeCeiling;
 use App\Domain\PlayerDevelopment\PlayerDevelopmentCategory;
+use App\Domain\PlayerDevelopment\TrainingCategory;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TrainingService\Data\TrainingPlayerData;
 use Carbon\CarbonInterface;

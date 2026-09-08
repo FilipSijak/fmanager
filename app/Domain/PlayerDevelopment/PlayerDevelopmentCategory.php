@@ -12,10 +12,10 @@ enum PlayerDevelopmentCategory: string
 
     public static function fromTrainingCategoryId(int $trainingCategoryId): ?self
     {
-        return match ($trainingCategoryId) {
-            1 => self::Physical,
-            2 => self::Mental,
-            3 => self::Technical,
+        return match (TrainingCategory::tryFrom($trainingCategoryId)) {
+            TrainingCategory::Physical => self::Physical,
+            TrainingCategory::Tactical => self::Mental,
+            TrainingCategory::Technical => self::Technical,
             default => null,
         };
     }
@@ -32,9 +32,9 @@ enum PlayerDevelopmentCategory: string
     public function trainingCategoryId(): int
     {
         return match ($this) {
-            self::Physical => 1,
-            self::Mental => 2,
-            self::Technical => 3,
+            self::Physical => TrainingCategory::Physical->value,
+            self::Mental => TrainingCategory::Tactical->value,
+            self::Technical => TrainingCategory::Technical->value,
         };
     }
 

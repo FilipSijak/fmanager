@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Domain\PlayerDevelopment\TrainingCategory;
 use App\Models\Concerns\BelongsToGameInstance;
 use App\Services\PersonService\Data\PersonInfo;
-use App\Services\TrainingService\TrainingCategory;
 use App\Services\TrainingService\TrainingIntensity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;

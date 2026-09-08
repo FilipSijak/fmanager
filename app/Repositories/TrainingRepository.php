@@ -2,12 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Domain\PlayerDevelopment\TrainingCategory;
 use App\Models\Club;
 use App\Models\Game;
 use App\Services\TrainingService\Data\ScheduledGameData;
 use App\Services\TrainingService\Data\TrainingPlayerData;
 use App\Services\TrainingService\Data\TrainingScheduleData;
-use App\Services\TrainingService\TrainingCategory;
 use App\Services\TrainingService\TrainingIntensity;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;

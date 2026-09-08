@@ -2,11 +2,11 @@
 
 namespace Tests\Unit\Services\TrainingService;
 
+use App\Domain\PlayerDevelopment\TrainingCategory;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\TrainingService\Data\TrainingPlayerData;
 use App\Services\TrainingService\Data\TrainingScheduleData;
 use App\Services\TrainingService\PlayerProgressCalculator;
-use App\Services\TrainingService\TrainingCategory;
 use App\Services\TrainingService\TrainingIntensity;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\Test;

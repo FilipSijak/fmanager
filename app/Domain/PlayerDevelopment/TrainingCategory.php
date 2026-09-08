@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\TrainingService;
+namespace App\Domain\PlayerDevelopment;
 
 enum TrainingCategory: int
 {

@@ -2,7 +2,7 @@
 
 namespace App\Services\TrainingService\Data;
 
-use App\Services\TrainingService\TrainingCategory;
+use App\Domain\PlayerDevelopment\TrainingCategory;
 use App\Services\TrainingService\TrainingIntensity;
 
 readonly class TrainingScheduleData
