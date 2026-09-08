@@ -1,0 +1,24 @@
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_1544079d5d8172::t_d4ffa15b0aa5ea 134-138,140-142,148-155,158,224-229,233-234
+  s_1544079d5d8172::t_8a442d1be6c683 92,218
+tests/Unit/Services/TrainingService/PlayerProgressCalculatorTest.php
+  s_1544079d5d8172::t_102e3adcfd435d 201-202,213,225,228-229,238,250,253-254
+  s_1544079d5d8172::t_66839e6a651c96 207-212,214-224,226-227,230-237,239-249,251-252,255-256
+  s_1544079d5d8172::t_45c2a06bc584f7 175
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "8ff1b23be66a0199fbf7cc3dc3587a0f936a20e2",
+  "prompts": {},
+  "sessions": {
+    "s_1544079d5d8172": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08298-484a-7a23-9a78-56c630cd9828",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
