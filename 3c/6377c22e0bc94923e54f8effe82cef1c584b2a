@@ -1,0 +1,21 @@
+tests/Unit/Person/PlayerPotentialByAgeTest.php
+  s_1544079d5d8172::t_de497793ba9614 39
+app/Services/PersonService/GeneratePeople/PlayerPotential.php
+  s_1544079d5d8172::t_de497793ba9614 101-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "3c6377c22e0bc94923e54f8effe82cef1c584b2a",
+  "prompts": {},
+  "sessions": {
+    "s_1544079d5d8172": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08298-484a-7a23-9a78-56c630cd9828",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
