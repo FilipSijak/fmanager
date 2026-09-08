@@ -1,0 +1,19 @@
+resources/js/pages/Dashboard.tsx
+  s_2c1467cf302d8a::t_5a9b6b1c8e311f 53
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "e7fb59c38677a8f328af2868576c9b2b993572a9",
+  "prompts": {},
+  "sessions": {
+    "s_2c1467cf302d8a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08285-874e-75a1-a937-1a195057faee",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
