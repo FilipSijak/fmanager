@@ -1,0 +1,30 @@
+resources/js/pages/Dashboard.tsx
+  s_2c1467cf302d8a::t_7a75ffa1b54826 138
+  s_2c1467cf302d8a::t_871d5c5076c27f 6-8,14-24,38,44-54,58,66,89-93,141
+  s_2c1467cf302d8a::t_866ccd6f906555 39-43
+routes/web.php
+  s_2c1467cf302d8a::t_e6cc00fecf1664 4,24
+app/Http/Controllers/DashboardController.php
+  s_2c1467cf302d8a::t_e6cc00fecf1664 8-10,16,18,27-29,31-33,35
+  s_2c1467cf302d8a::t_0e7b9b3fdebcd6 30,34
+  s_2c1467cf302d8a::t_e5206754c6842b 36
+tests/Feature/DashboardPageTest.php
+  s_2c1467cf302d8a::t_30128129b094fe 1
+  s_2c1467cf302d8a::t_5632231248c4ce 2-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "03c1e916e7ec6c618e1bfadddb5f78737913baab",
+  "prompts": {},
+  "sessions": {
+    "s_2c1467cf302d8a": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08285-874e-75a1-a937-1a195057faee",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
