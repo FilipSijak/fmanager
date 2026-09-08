@@ -1,0 +1,49 @@
+app/Services/PersonService/GeneratePeople/PlayerAttributesGenerator.php
+  s_1544079d5d8172::t_419ebe09528edc 33-37,40,49
+database/migrations/2026_09_08_210739_add_current_category_potentials_to_players_table.php
+  s_1544079d5d8172::t_dc7007220799f8 1-4,7-14,19,26-32,39-41
+  s_1544079d5d8172::t_d091abebddc430 5,15-18,20-25,33-38
+  s_1544079d5d8172::t_64c73a15402b3c 6
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_1544079d5d8172::t_b84918ddfffd18 135,150-165,241
+app/Services/TrainingService/Data/TrainingPlayerData.php
+  s_1544079d5d8172::t_e7662fb6bbd175 19-21
+app/Services/PersonService/GeneratePeople/PlayerPotential.php
+  s_1544079d5d8172::t_fd6efa90f2426c 7,88,90,92-111,120
+  s_1544079d5d8172::t_1fb9a0233f3d58 87,89,91
+  s_1544079d5d8172::t_50dd26bb944d53 112-119,121
+app/Repositories/TrainingRepository.php
+  s_1544079d5d8172::t_e7662fb6bbd175 68-70
+  s_1544079d5d8172::t_64c73a15402b3c 50
+  s_1544079d5d8172::t_6c4c487e5cb7f3 51
+  s_1544079d5d8172::t_11105438d5c012 49
+app/Repositories/PlayerRepository.php
+  s_1544079d5d8172::t_1fb9a0233f3d58 157-159
+app/Services/PersonService/PersonService.php
+  s_1544079d5d8172::t_64c73a15402b3c 84,86-88
+  s_1544079d5d8172::t_f84fd248c081e0 81-83,89-90
+  s_1544079d5d8172::t_17d7081c7bbe3c 11,59,62,65-77
+tests/Unit/Person/PlayerPotentialByAgeTest.php
+  s_1544079d5d8172::t_64c73a15402b3c 5,26-40
+  s_1544079d5d8172::t_85646c4b83c97e 41-42
+app/Services/PersonService/GeneratePeople/PlayerType.php
+  s_1544079d5d8172::t_419ebe09528edc 16-18
+app/Services/PersonService/Data/GeneratedPlayerData.php
+  s_1544079d5d8172::t_419ebe09528edc 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "3c25175cbd3c6041e47a3a4b892f4e5513fa5a0d",
+  "prompts": {},
+  "sessions": {
+    "s_1544079d5d8172": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08298-484a-7a23-9a78-56c630cd9828",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
