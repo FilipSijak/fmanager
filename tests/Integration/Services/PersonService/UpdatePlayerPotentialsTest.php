@@ -51,9 +51,40 @@ class UpdatePlayerPotentialsTest extends TestCase
 
         $updatedPlayer = $player->fresh();
         $this->assertSame(176, (int) $updatedPlayer->potential);
-        $this->assertSame(10, (int) $updatedPlayer->marking);
+        $this->assertSame(9, (int) $updatedPlayer->marking);
         $this->assertSame(7, (int) $updatedPlayer->positioning);
-        $this->assertSame(10, (int) $updatedPlayer->strength);
+        $this->assertSame(9, (int) $updatedPlayer->strength);
+    }
+
+    #[Test]
+    public function aging_never_increases_potential_category_potential_or_attributes(): void
+    {
+        $instance = Instance::factory()->create(['id' => 1, 'instance_date' => '2030-06-16']);
+        $player = $this->player($instance, '2006-06-16', 180, 180);
+        $player->forceFill([
+            'technical' => 180,
+            'mental' => 180,
+            'physical' => 180,
+            'marking' => 20,
+            'positioning' => 20,
+            'strength' => 20,
+        ])->save();
+
+        $personService = app(PersonService::class);
+        $personService->updatePlayerPotentials($instance);
+        $atPeak = $player->fresh();
+
+        $instance->forceFill(['instance_date' => '2044-06-16'])->save();
+        $personService->updatePlayerPotentials($instance->fresh());
+        $atAge38 = $player->fresh();
+
+        $this->assertLessThanOrEqual((float) $atPeak->potential, (float) $atAge38->potential);
+        $this->assertLessThanOrEqual((int) $atPeak->current_technical_potential, (int) $atAge38->current_technical_potential);
+        $this->assertLessThanOrEqual((int) $atPeak->current_mental_potential, (int) $atAge38->current_mental_potential);
+        $this->assertLessThanOrEqual((int) $atPeak->current_physical_potential, (int) $atAge38->current_physical_potential);
+        $this->assertLessThanOrEqual((int) $atPeak->marking, (int) $atAge38->marking);
+        $this->assertLessThanOrEqual((int) $atPeak->positioning, (int) $atAge38->positioning);
+        $this->assertLessThanOrEqual((int) $atPeak->strength, (int) $atAge38->strength);
     }
 
     private function player(
