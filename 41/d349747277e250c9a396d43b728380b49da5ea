@@ -1,0 +1,31 @@
+tests/Unit/Domain/PlayerDevelopment/PlayerAttributeCeilingTest.php
+  s_1544079d5d8172::t_a4a22f9938cac0 1-4,7-9,11,17-18
+  s_1544079d5d8172::t_bbeb0eeae664ee 5-6,12
+  s_1544079d5d8172::t_3a1ab6e9dd6a10 10,13-16
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_1544079d5d8172::t_42d392270bbe3c 14
+  s_1544079d5d8172::t_748081bac2b9af 13
+  s_1544079d5d8172::t_77b388abde5dff 5,236-240
+app/Domain/PlayerDevelopment/PlayerAttributeCeiling.php
+  s_1544079d5d8172::t_77b388abde5dff 7,9
+  s_1544079d5d8172::t_17ecb5a6ef4860 1-6,8,10-11
+app/Services/PersonService/PersonService.php
+  s_1544079d5d8172::t_bbeb0eeae664ee 5
+  s_1544079d5d8172::t_77b388abde5dff 35,92
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "41d349747277e250c9a396d43b728380b49da5ea",
+  "prompts": {},
+  "sessions": {
+    "s_1544079d5d8172": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08298-484a-7a23-9a78-56c630cd9828",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
