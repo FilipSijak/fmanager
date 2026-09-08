@@ -234,11 +234,11 @@ class PlayerProgressCalculator
     {
         return min(
             self::MAX_ATTRIBUTE_VALUE,
-            (int) round($this->currentCategoryPotential(
+            intdiv($this->currentCategoryPotential(
                 $categoryId,
                 $this->categoryPotential($categoryId, $player),
                 $player
-            ) / 10)
+            ), 10)
         );
     }
 

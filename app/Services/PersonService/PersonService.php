@@ -87,7 +87,7 @@ class PersonService
             'mental' => [PlayerFields::MENTAL_FIELDS, $currentCategoryPotentials->mental],
             'physical' => [PlayerFields::PHYSICAL_FIELDS, $currentCategoryPotentials->physical],
         ] as [$category, [$fields, $categoryPotential]]) {
-            $categoryCeiling = min(20, (int) round($categoryPotential / 10));
+            $categoryCeiling = min(20, intdiv($categoryPotential, 10));
 
             foreach ($fields as $field) {
                 $player->{$field} = min((int) $player->{$field}, $categoryCeiling);

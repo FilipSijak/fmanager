@@ -62,9 +62,7 @@ class PlayerInitialAttributes
         $reducedPotential = $this->potentialReduction($potentialByCategory, self::PRIMARY_ATTRIBUTES);
 
         foreach ($primaryAttributes as $attribute) {
-            $this->playerAllAttributes[$attribute] = (int) round(
-                $this->randomizer->getInt($potentialByCategory - $reducedPotential, $potentialByCategory) / 10
-            );
+            $this->playerAllAttributes[$attribute] = intdiv($this->randomizer->getInt($potentialByCategory - $reducedPotential, $potentialByCategory), 10);
         }
     }
 
@@ -132,9 +130,7 @@ class PlayerInitialAttributes
         $reducedPotential = $this->potentialReduction($potentialByCategory, self::SECONDARY_ATTRIBUTES);
 
         foreach ($attributes as $attribute) {
-            $this->playerAllAttributes[$attribute] = (int) round(
-                $this->randomizer->getInt($potentialByCategory - $reducedPotential, $potentialByCategory) / 10
-            );
+            $this->playerAllAttributes[$attribute] = intdiv($this->randomizer->getInt($potentialByCategory - $reducedPotential, $potentialByCategory), 10);
         }
     }
 
