@@ -11,6 +11,7 @@ use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -59,7 +60,27 @@ class PersonService
             CarbonImmutable::parse($player->person->dob),
             $asOfDate
         );
+        $this->reduceAttributesToCurrentPotential($player);
         $player->save();
+    }
+
+    private function reduceAttributesToCurrentPotential(Player $player): void
+    {
+        $developmentRatio = $player->max_potential > 0
+            ? min(1, max(0, $player->potential / $player->max_potential))
+            : 0;
+
+        foreach ([
+            'technical' => PlayerFields::TECHNICAL_FIELDS,
+            'mental' => PlayerFields::MENTAL_FIELDS,
+            'physical' => PlayerFields::PHYSICAL_FIELDS,
+        ] as $category => $fields) {
+            $categoryCeiling = min(20, (int) round($player->{$category} * $developmentRatio / 10));
+
+            foreach ($fields as $field) {
+                $player->{$field} = min((int) $player->{$field}, $categoryCeiling);
+            }
+        }
     }
 
     public function createPlayersForClub(Club $club): void
