@@ -71,17 +71,7 @@ class PlayerPotential extends PersonPotential
 
     private function forAge(int $maxPotential, int $age): float
     {
-        $multiplier = self::AGE_POTENTIAL_BRACKETS[16];
-
-        foreach (self::AGE_POTENTIAL_BRACKETS as $minimumAge => $ageMultiplier) {
-            if ($age < $minimumAge) {
-                break;
-            }
-
-            $multiplier = $ageMultiplier;
-        }
-
-        return $maxPotential * $multiplier;
+        return $maxPotential * $this->ageMultiplierFor($age, self::AGE_POTENTIAL_BRACKETS);
     }
 
     private const TECHNICAL_AGE_POTENTIAL_BRACKETS = [
@@ -148,6 +138,11 @@ class PlayerPotential extends PersonPotential
 
     private function potentialForAge(int $maxPotential, int $age, array $agePotentialBrackets): float
     {
+        return $maxPotential * $this->ageMultiplierFor($age, $agePotentialBrackets);
+    }
+
+    private function ageMultiplierFor(int $age, array $agePotentialBrackets): float
+    {
         $multiplier = $agePotentialBrackets[16];
 
         foreach ($agePotentialBrackets as $minimumAge => $ageMultiplier) {
@@ -158,7 +153,7 @@ class PlayerPotential extends PersonPotential
             $multiplier = $ageMultiplier;
         }
 
-        return $maxPotential * $multiplier;
+        return $multiplier;
     }
 
     public function onDate(
