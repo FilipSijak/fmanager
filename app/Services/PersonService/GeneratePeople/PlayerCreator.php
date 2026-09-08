@@ -4,6 +4,7 @@ namespace App\Services\PersonService\GeneratePeople;
 
 use App\Models\Player;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
+use Carbon\CarbonInterface;
 
 class PlayerCreator
 {
@@ -12,9 +13,9 @@ class PlayerCreator
         private readonly PersonFactory $personFactory,
     ) {}
 
-    public function create(GeneratedPlayerProfile $playerPotential, int $instanceId): Player
+    public function create(GeneratedPlayerProfile $playerPotential, int $instanceId, CarbonInterface $asOfDate): Player
     {
-        $generatedAttributes = $this->attributesGenerator->setPlayerDetails($playerPotential)->generateAttributes();
+        $generatedAttributes = $this->attributesGenerator->setPlayerDetails($playerPotential)->generateAttributes($asOfDate);
 
         return $this->personFactory->createPlayer($generatedAttributes, $instanceId);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Services\PersonService\GeneratePeople;
 
+use App\Domain\PlayerDevelopment\AgePotentialCurve;
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\Data\PotentialByCategoryData;
@@ -10,6 +11,22 @@ use Carbon\CarbonInterface;
 
 class PlayerPotential extends PersonPotential
 {
+    private readonly AgePotentialCurve $agePotentialCurve;
+
+    private readonly AgePotentialCurve $technicalAgePotentialCurve;
+
+    private readonly AgePotentialCurve $mentalAgePotentialCurve;
+
+    private readonly AgePotentialCurve $physicalAgePotentialCurve;
+
+    public function __construct()
+    {
+        $this->agePotentialCurve = new AgePotentialCurve(self::AGE_POTENTIAL_BRACKETS);
+        $this->technicalAgePotentialCurve = new AgePotentialCurve(self::TECHNICAL_AGE_POTENTIAL_BRACKETS);
+        $this->mentalAgePotentialCurve = new AgePotentialCurve(self::MENTAL_AGE_POTENTIAL_BRACKETS);
+        $this->physicalAgePotentialCurve = new AgePotentialCurve(self::PHYSICAL_AGE_POTENTIAL_BRACKETS);
+    }
+
     private const AGE_POTENTIAL_BRACKETS = [
         16 => 0.85,
         18 => 0.90,
@@ -71,17 +88,7 @@ class PlayerPotential extends PersonPotential
 
     private function forAge(int $maxPotential, int $age): float
     {
-        $multiplier = self::AGE_POTENTIAL_BRACKETS[16];
-
-        foreach (self::AGE_POTENTIAL_BRACKETS as $minimumAge => $ageMultiplier) {
-            if ($age < $minimumAge) {
-                break;
-            }
-
-            $multiplier = $ageMultiplier;
-        }
-
-        return $maxPotential * $multiplier;
+        return $this->agePotentialCurve->potentialFor($maxPotential, $age);
     }
 
     private const TECHNICAL_AGE_POTENTIAL_BRACKETS = [
@@ -140,25 +147,10 @@ class PlayerPotential extends PersonPotential
         $age = (int) $dateOfBirth->diffInYears($asOfDate);
 
         return new PotentialByCategoryData(
-            technical: (int) round($this->potentialForAge($maxPotential->technical, $age, self::TECHNICAL_AGE_POTENTIAL_BRACKETS)),
-            mental: (int) round($this->potentialForAge($maxPotential->mental, $age, self::MENTAL_AGE_POTENTIAL_BRACKETS)),
-            physical: (int) round($this->potentialForAge($maxPotential->physical, $age, self::PHYSICAL_AGE_POTENTIAL_BRACKETS)),
+            technical: (int) round($this->technicalAgePotentialCurve->potentialFor($maxPotential->technical, $age)),
+            mental: (int) round($this->mentalAgePotentialCurve->potentialFor($maxPotential->mental, $age)),
+            physical: (int) round($this->physicalAgePotentialCurve->potentialFor($maxPotential->physical, $age)),
         );
-    }
-
-    private function potentialForAge(int $maxPotential, int $age, array $agePotentialBrackets): float
-    {
-        $multiplier = $agePotentialBrackets[16];
-
-        foreach ($agePotentialBrackets as $minimumAge => $ageMultiplier) {
-            if ($age < $minimumAge) {
-                break;
-            }
-
-            $multiplier = $ageMultiplier;
-        }
-
-        return $maxPotential * $multiplier;
     }
 
     public function onDate(

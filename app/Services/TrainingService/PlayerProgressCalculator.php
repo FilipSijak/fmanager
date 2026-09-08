@@ -3,7 +3,8 @@
 namespace App\Services\TrainingService;
 
 use App\Domain\PlayerDevelopment\PlayerAttributeCeiling;
-use App\Services\PersonService\PersonConfig\Player\PlayerFields;
+use App\Domain\PlayerDevelopment\PlayerDevelopmentCategory;
+use App\Domain\PlayerDevelopment\TrainingCategory;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TrainingService\Data\TrainingPlayerData;
 use Carbon\CarbonInterface;
@@ -145,12 +146,9 @@ class PlayerProgressCalculator
 
     private function categoryPotential(int $categoryId, TrainingPlayerData $player): int
     {
-        return match ($categoryId) {
-            TrainingCategory::Technical->value => $player->technical,
-            TrainingCategory::Tactical->value => $player->mental,
-            TrainingCategory::Physical->value => $player->physical,
-            default => 0,
-        };
+        $category = PlayerDevelopmentCategory::fromTrainingCategoryId($categoryId);
+
+        return $category === null ? 0 : $player->{$category->value};
     }
 
     private function currentCategoryPotential(
@@ -158,12 +156,10 @@ class PlayerProgressCalculator
         int $categoryPotential,
         TrainingPlayerData $player
     ): int {
-        $persistedPotential = match ($categoryId) {
-            TrainingCategory::Technical->value => $player->currentTechnical,
-            TrainingCategory::Tactical->value => $player->currentMental,
-            TrainingCategory::Physical->value => $player->currentPhysical,
-            default => null,
-        };
+        $category = PlayerDevelopmentCategory::fromTrainingCategoryId($categoryId);
+        $persistedPotential = $category === null
+            ? null
+            : $player->{$category->currentPotentialProperty()};
 
         if ($persistedPotential !== null) {
             return $persistedPotential;
@@ -268,12 +264,7 @@ class PlayerProgressCalculator
             return $points;
         }
 
-        $positionCategory = match ($categoryId) {
-            TrainingCategory::Physical->value => 'physical',
-            TrainingCategory::Tactical->value => 'mental',
-            TrainingCategory::Technical->value => 'technical',
-            default => null,
-        };
+        $positionCategory = PlayerDevelopmentCategory::fromTrainingCategoryId($categoryId)?->value;
 
         if ($positionCategory === null) {
             return 0;
@@ -291,9 +282,9 @@ class PlayerProgressCalculator
     private function fieldsByCategory(): array
     {
         return [
-            TrainingCategory::Physical->value => PlayerFields::PHYSICAL_FIELDS,
-            TrainingCategory::Tactical->value => PlayerFields::MENTAL_FIELDS,
-            TrainingCategory::Technical->value => PlayerFields::TECHNICAL_FIELDS,
+            PlayerDevelopmentCategory::Physical->trainingCategoryId() => PlayerDevelopmentCategory::Physical->fields(),
+            PlayerDevelopmentCategory::Mental->trainingCategoryId() => PlayerDevelopmentCategory::Mental->fields(),
+            PlayerDevelopmentCategory::Technical->trainingCategoryId() => PlayerDevelopmentCategory::Technical->fields(),
             TrainingCategory::Goalkeeping->value => [],
         ];
     }

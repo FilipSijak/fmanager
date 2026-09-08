@@ -7,6 +7,7 @@ use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\Data\PersonInfo;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
+use Carbon\CarbonInterface;
 
 class PlayerAttributesGenerator
 {
@@ -28,12 +29,13 @@ class PlayerAttributesGenerator
         return $this;
     }
 
-    public function generateAttributes(): GeneratedPlayerData
+    public function generateAttributes(?CarbonInterface $asOfDate = null): GeneratedPlayerData
     {
+        $asOfDate ??= Carbon::now();
         $currentPotentialByCategory = $this->playerPotential->potentialByCategoryOnDate(
             $this->playerProfile->potentialByCategory,
             Carbon::parse($this->personDetails->dateOfBirth),
-            Carbon::now()
+            $asOfDate
         );
         $attributes = $this->playerInitialAttributes
             ->setPlayerPosition($this->playerProfile->position)
@@ -45,19 +47,19 @@ class PlayerAttributesGenerator
             position: $this->playerProfile->position,
             potentialByCategory: $this->playerProfile->potentialByCategory,
             maxPotential: $this->playerProfile->potential,
-            potential: $this->currentPotential(),
+            potential: $this->currentPotential($asOfDate),
             currentPotentialByCategory: $currentPotentialByCategory,
             positions: [$this->playerProfile->position],
             attributes: $attributes,
         );
     }
 
-    private function currentPotential(): float
+    private function currentPotential(CarbonInterface $asOfDate): float
     {
         return $this->playerPotential->onDate(
             $this->playerProfile->potential,
             Carbon::parse($this->personDetails->dateOfBirth),
-            Carbon::now()
+            $asOfDate
         );
     }
 }

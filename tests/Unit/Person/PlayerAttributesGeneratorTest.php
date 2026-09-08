@@ -9,6 +9,7 @@ use App\Services\PersonService\GeneratePeople\PersonDetailsGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerInitialAttributes;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -73,6 +74,25 @@ class PlayerAttributesGeneratorTest extends TestCase
 
         $message = "Age $age should have potential of ".($generatedPlayer->maxPotential * $expectedMultiplier);
         $this->assertEquals($generatedPlayer->maxPotential * $expectedMultiplier, $generatedPlayer->potential, $message);
+    }
+
+    public function test_generation_uses_the_supplied_simulation_date(): void
+    {
+        $player = new GeneratedPlayerProfile(
+            potential: 100,
+            position: 'CB',
+            potentialByCategory: new PotentialByCategoryData(100, 100, 100),
+        );
+        $playerInitialAttributesMock = $this->createPlayerInitialAttributesMock($player);
+        $personDetailsGenerator = $this->createMock(PersonDetailsGenerator::class);
+        $personDetailsGenerator->method('generate')
+            ->willReturn(new PersonInfo('Test', 'Player', 'GB', '2006-06-16'));
+        $generator = new PlayerAttributesGenerator($playerInitialAttributesMock, $personDetailsGenerator);
+
+        $generator->setPlayerDetails($player);
+        $generatedPlayer = $generator->generateAttributes(CarbonImmutable::parse('2027-06-16'));
+
+        $this->assertSame(95.0, $generatedPlayer->potential);
     }
 
     public static function ageMaxPotentialProvider(): array

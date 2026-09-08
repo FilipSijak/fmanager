@@ -65,9 +65,25 @@ class PlayerPotentialByAgeTest extends TestCase
     public static function categoryPotentialByAgeProvider(): array
     {
         return [
+            'before first bracket' => [15, 85, 85, 85],
+            '16 years old' => [16, 85, 85, 85],
+            '18 years old' => [18, 90, 90, 90],
+            '21 years old' => [21, 95, 95, 95],
+            '24 years old' => [24, 100, 100, 100],
+            '29 years old' => [29, 99, 99, 98],
+            '30 years old' => [30, 98, 98, 95],
+            '31 years old' => [31, 98, 98, 92],
+            '32 years old' => [32, 97, 96, 88],
+            '33 years old' => [33, 95, 94, 84],
+            '34 years old' => [34, 95, 94, 80],
             '35 years old' => [35, 93, 91, 75],
+            '36 years old' => [36, 93, 91, 71],
+            '37 years old' => [37, 93, 91, 67],
             '38 years old' => [38, 90, 88, 62],
+            '39 years old' => [39, 90, 88, 58],
+            '40 years old' => [40, 90, 88, 54],
             '41 years old' => [41, 85, 82, 50],
+            '42 years old' => [42, 85, 82, 50],
         ];
     }
 
