@@ -50,7 +50,7 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
         type: item.type,
         date: formatNewsDate(item.published_at),
         headline: item.title,
-        body: item.content.split(/\r?\n+/).filter(Boolean),
+        body: [item.content],
     }));
     const [activeTab, setActiveTab] =
         useState<(typeof newsTabs)[number]>('All');
