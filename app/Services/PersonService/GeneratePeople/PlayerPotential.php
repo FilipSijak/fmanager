@@ -88,7 +88,25 @@ class PlayerPotential extends PersonPotential
 
     private const MENTAL_AGE_POTENTIAL_BRACKETS = self::AGE_POTENTIAL_BRACKETS;
 
-    private const PHYSICAL_AGE_POTENTIAL_BRACKETS = self::AGE_POTENTIAL_BRACKETS;
+    private const PHYSICAL_AGE_POTENTIAL_BRACKETS = [
+        16 => 0.85,
+        18 => 0.90,
+        21 => 0.95,
+        24 => 1.00,
+        29 => 0.98,
+        30 => 0.95,
+        31 => 0.92,
+        32 => 0.88,
+        33 => 0.84,
+        34 => 0.80,
+        35 => 0.75,
+        36 => 0.71,
+        37 => 0.67,
+        38 => 0.62,
+        39 => 0.58,
+        40 => 0.54,
+        41 => 0.50,
+    ];
 
     public function potentialByCategoryOnDate(
         PotentialByCategoryData $maxPotential,
