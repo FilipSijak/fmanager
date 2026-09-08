@@ -84,7 +84,19 @@ class PlayerPotential extends PersonPotential
         return $maxPotential * $multiplier;
     }
 
-    private const TECHNICAL_AGE_POTENTIAL_BRACKETS = self::AGE_POTENTIAL_BRACKETS;
+    private const TECHNICAL_AGE_POTENTIAL_BRACKETS = [
+        16 => 0.85,
+        18 => 0.90,
+        21 => 0.95,
+        24 => 1.00,
+        29 => 0.99,
+        30 => 0.98,
+        32 => 0.97,
+        33 => 0.95,
+        35 => 0.93,
+        38 => 0.90,
+        41 => 0.85,
+    ];
 
     private const MENTAL_AGE_POTENTIAL_BRACKETS = self::AGE_POTENTIAL_BRACKETS;
 
