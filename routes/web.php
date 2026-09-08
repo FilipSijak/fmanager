@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Middleware\EnsureGameIsValid;
 use App\Http\Middleware\SetGameContext;
@@ -20,7 +21,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/instances/{instanceId}/select', [InstanceController::class, 'select'])->name('instances.select');
 
     Route::middleware([SetGameContext::class, EnsureGameIsValid::class])->group(function () {
-        Route::get('/', fn () => Inertia::render('Dashboard'))->name('start');
+        Route::get('/', [DashboardController::class, 'show'])->name('start');
         Route::get('/league-table', fn () => Inertia::render('LeagueTable'))->name('league-table');
         Route::get('/squad', fn () => Inertia::render('Squad'))->name('squad');
         Route::get('/player-profile', fn () => Inertia::render('PlayerProfile'))->name('player-profile');

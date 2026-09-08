@@ -3,55 +3,25 @@ import { useState } from 'react';
 import GameLayout from '@/layouts/GameLayout';
 
 type NewsItem = {
+    id: number;
+    is_read: boolean;
+    type: string;
     date: string;
     headline: string;
     body: string[];
 };
 
-const newsItems: NewsItem[] = [
-    {
-        date: 'Tue 31st Jul EVE',
-        headline: 'Riverside scouting completed',
-        body: [
-            'Alex Morgan normally prefers Bristol City to play a possession-based 4-3-3 formation.',
-            'Bristol City have a well-balanced squad.',
-            'Marcus Bell is a solid defender who marshals the back line with composure.',
-        ],
-    },
-    {
-        date: 'Tue 31st Jul EVE',
-        headline: 'Bristol seal Reyes deal',
-        body: [
-            'Bristol City have completed the signing of winger Diego Reyes on a three-year contract.',
-            'The move is reported to be worth an initial £2.1m, rising to £2.8m with add-ons.',
-        ],
-    },
-    {
-        date: 'Sun 29th Jul EVE',
-        headline: 'Riverside accepts friendly proposal',
-        body: [
-            'Riverside FC have accepted a proposal to play a pre-season friendly against Bristol City.',
-            'The match is expected to take place at Riverside Park two weeks before the season starts.',
-        ],
-    },
-    {
-        date: 'Sun 29th Jul PM',
-        headline: 'Martin Silva selected for Brazil match',
-        body: [
-            'Martin Silva has been called up to the Brazil squad for their upcoming friendly fixture.',
-            'The midfielder will link up with the national team after Riverside’s next league game.',
-        ],
-    },
-    {
-        date: 'Sun 29th Jul PM',
-        headline: 'Diaz selected for Colombia match',
-        body: [
-            'Diaz has been named in the Colombia squad ahead of their upcoming qualifier.',
-            'Riverside will be without the defender for one league fixture as a result.',
-        ],
-    },
-];
-
+type DashboardData = {
+    club: { name: string };
+    news: Array<{
+        id: number;
+        title: string;
+        content: string;
+        type: string;
+        is_read: boolean;
+        published_at: string;
+    }>;
+};
 const newsTabs = [
     'All',
     'Messages',
@@ -65,11 +35,27 @@ const bottomTabs = [
     'Records',
 ] as const;
 
-export default function Dashboard() {
+function formatNewsDate(date: string): string {
+    return new Intl.DateTimeFormat('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+    }).format(new Date(date));
+}
+
+export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
+    const newsItems: NewsItem[] = dashboard.news.map((item) => ({
+        id: item.id,
+        is_read: item.is_read,
+        type: item.type,
+        date: formatNewsDate(item.published_at),
+        headline: item.title,
+        body: [item.content],
+    }));
     const [activeTab, setActiveTab] =
         useState<(typeof newsTabs)[number]>('All');
     const [selectedIndex, setSelectedIndex] = useState(0);
-    const selected = newsItems[selectedIndex];
+    const selected = newsItems[selectedIndex] ?? newsItems[0];
 
     return (
         <GameLayout active="Continue Game">
@@ -77,7 +63,7 @@ export default function Dashboard() {
 
             <header className="flex h-[92px] items-center justify-center border-b border-black bg-black px-6">
                 <h1 className="text-3xl font-black tracking-tight text-[#3355dd]">
-                    Alex Morgan News
+                    {dashboard.club.name} News
                 </h1>
             </header>
 
@@ -100,6 +86,11 @@ export default function Dashboard() {
 
             <div className="flex flex-1 flex-col overflow-hidden bg-[#0c0c14]">
                 <div className="overflow-y-auto">
+                    {newsItems.length === 0 && (
+                        <p className="bg-white px-4 py-6 text-center text-sm font-semibold text-slate-900">
+                            There is no news to display.
+                        </p>
+                    )}
                     {newsItems.map((item, index) => (
                         <button
                             key={`${item.date}-${item.headline}`}
@@ -144,10 +135,10 @@ export default function Dashboard() {
 
                 <div className="flex flex-1 flex-col items-center overflow-y-auto bg-gradient-to-b from-[#1a1420] to-[#0c0c14] px-8 py-6">
                     <h2 className="mb-4 text-center text-xl font-bold text-[#f5f000]">
-                        {selected.headline}
+                        {selected?.headline ?? 'No news selected'}
                     </h2>
                     <div className="max-w-2xl space-y-4">
-                        {selected.body.map((paragraph) => (
+                        {selected?.body.map((paragraph) => (
                             <p
                                 key={paragraph}
                                 className="text-center text-base leading-relaxed font-semibold text-white"
