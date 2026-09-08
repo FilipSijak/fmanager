@@ -47,6 +47,9 @@ class TrainingRepository
                 ...array_map(fn (string $field): string => "players_progress.{$field} as progress_{$field}", $trainingFields),
             ])
             ->selectRaw(
+                'COALESCE(NULLIF(players.current_technical_potential, 0), players.technical) AS current_technical_potential, COALESCE(NULLIF(players.current_mental_potential, 0), players.mental) AS current_mental_potential, COALESCE(NULLIF(players.current_physical_potential, 0), players.physical) AS current_physical_potential'
+            )
+            ->selectRaw(
                 'EXISTS (SELECT 1 FROM player_injuries'
                 .' WHERE player_injuries.player_id = players.id'
                 .' AND player_injuries.injury_start_date <= ?'
@@ -62,6 +65,9 @@ class TrainingRepository
                 technical: (int) $row->technical,
                 mental: (int) $row->mental,
                 physical: (int) $row->physical,
+                currentTechnical: (int) $row->current_technical_potential,
+                currentMental: (int) $row->current_mental_potential,
+                currentPhysical: (int) $row->current_physical_potential,
                 position: $row->position,
                 injured: (bool) $row->is_injured,
                 condition: (int) $row->condition,

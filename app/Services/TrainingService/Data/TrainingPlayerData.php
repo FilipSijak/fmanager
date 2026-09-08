@@ -16,6 +16,9 @@ readonly class TrainingPlayerData
         public int $condition,
         public array $attributes,
         public array $progress,
+        public ?int $currentTechnical = null,
+        public ?int $currentMental = null,
+        public ?int $currentPhysical = null,
     ) {}
 
     public function attribute(string $field): int

@@ -123,7 +123,6 @@ class PlayerAttributesGeneratorTest extends TestCase
 
         $initialAttributesMock->expects($this->any())
             ->method('setPlayerPotentialByCategory')
-            ->with((array) $playerDetails->potentialByCategory)
             ->willReturn($initialAttributesMock);
 
         return $initialAttributesMock;

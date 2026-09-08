@@ -30,9 +30,14 @@ class PlayerAttributesGenerator
 
     public function generateAttributes(): GeneratedPlayerData
     {
+        $currentPotentialByCategory = $this->playerPotential->potentialByCategoryOnDate(
+            $this->playerProfile->potentialByCategory,
+            Carbon::parse($this->personDetails->dateOfBirth),
+            Carbon::now()
+        );
         $attributes = $this->playerInitialAttributes
             ->setPlayerPosition($this->playerProfile->position)
-            ->setPlayerPotentialByCategory((array) $this->playerProfile->potentialByCategory)
+            ->setPlayerPotentialByCategory((array) $currentPotentialByCategory)
             ->initAllAttributes();
 
         return new GeneratedPlayerData(
@@ -41,6 +46,7 @@ class PlayerAttributesGenerator
             potentialByCategory: $this->playerProfile->potentialByCategory,
             maxPotential: $this->playerProfile->potential,
             potential: $this->currentPotential(),
+            currentPotentialByCategory: $currentPotentialByCategory,
             positions: [$this->playerProfile->position],
             attributes: $attributes,
         );

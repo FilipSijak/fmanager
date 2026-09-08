@@ -4,6 +4,7 @@ namespace App\Services\PersonService\GeneratePeople;
 
 use App\Services\ClubService\SquadAnalysis\SquadPlayersConfig;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
+use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use Carbon\CarbonInterface;
 
@@ -73,6 +74,41 @@ class PlayerPotential extends PersonPotential
         $multiplier = self::AGE_POTENTIAL_BRACKETS[16];
 
         foreach (self::AGE_POTENTIAL_BRACKETS as $minimumAge => $ageMultiplier) {
+            if ($age < $minimumAge) {
+                break;
+            }
+
+            $multiplier = $ageMultiplier;
+        }
+
+        return $maxPotential * $multiplier;
+    }
+
+    private const TECHNICAL_AGE_POTENTIAL_BRACKETS = self::AGE_POTENTIAL_BRACKETS;
+
+    private const MENTAL_AGE_POTENTIAL_BRACKETS = self::AGE_POTENTIAL_BRACKETS;
+
+    private const PHYSICAL_AGE_POTENTIAL_BRACKETS = self::AGE_POTENTIAL_BRACKETS;
+
+    public function potentialByCategoryOnDate(
+        PotentialByCategoryData $maxPotential,
+        CarbonInterface $dateOfBirth,
+        CarbonInterface $asOfDate
+    ): PotentialByCategoryData {
+        $age = (int) $dateOfBirth->diffInYears($asOfDate);
+
+        return new PotentialByCategoryData(
+            technical: (int) round($this->potentialForAge($maxPotential->technical, $age, self::TECHNICAL_AGE_POTENTIAL_BRACKETS)),
+            mental: (int) round($this->potentialForAge($maxPotential->mental, $age, self::MENTAL_AGE_POTENTIAL_BRACKETS)),
+            physical: (int) round($this->potentialForAge($maxPotential->physical, $age, self::PHYSICAL_AGE_POTENTIAL_BRACKETS)),
+        );
+    }
+
+    private function potentialForAge(int $maxPotential, int $age, array $agePotentialBrackets): float
+    {
+        $multiplier = $agePotentialBrackets[16];
+
+        foreach ($agePotentialBrackets as $minimumAge => $ageMultiplier) {
             if ($age < $minimumAge) {
                 break;
             }

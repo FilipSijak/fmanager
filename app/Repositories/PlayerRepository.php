@@ -154,6 +154,9 @@ class PlayerRepository implements IPlayerRepository
             'technical' => $attributesCategories->technical,
             'mental' => $attributesCategories->mental,
             'physical' => $attributesCategories->physical,
+            'current_technical_potential' => $player->current_technical_potential,
+            'current_mental_potential' => $player->current_mental_potential,
+            'current_physical_potential' => $player->current_physical_potential,
         ];
 
         foreach (self::PLAYER_ATTRIBUTE_COLUMNS as $column) {

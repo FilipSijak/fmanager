@@ -132,7 +132,7 @@ class PlayerProgressCalculator
     private function categoryPotentialGap(int $categoryId, TrainingPlayerData $player): int
     {
         $categoryMaximum = $this->categoryPotential($categoryId, $player);
-        $currentCategoryPotential = $this->currentCategoryPotential($categoryMaximum, $player);
+        $currentCategoryPotential = $this->currentCategoryPotential($categoryId, $categoryMaximum, $player);
 
         return max(0, $categoryMaximum - $currentCategoryPotential);
     }
@@ -147,8 +147,22 @@ class PlayerProgressCalculator
         };
     }
 
-    private function currentCategoryPotential(int $categoryPotential, TrainingPlayerData $player): int
-    {
+    private function currentCategoryPotential(
+        int $categoryId,
+        int $categoryPotential,
+        TrainingPlayerData $player
+    ): int {
+        $persistedPotential = match ($categoryId) {
+            TrainingCategory::Technical->value => $player->currentTechnical,
+            TrainingCategory::Tactical->value => $player->currentMental,
+            TrainingCategory::Physical->value => $player->currentPhysical,
+            default => null,
+        };
+
+        if ($persistedPotential !== null) {
+            return $persistedPotential;
+        }
+
         if ($player->maxPotential <= 0) {
             return 0;
         }
@@ -224,6 +238,7 @@ class PlayerProgressCalculator
         $categoryAttributeCeiling = min(
             self::MAX_ATTRIBUTE_VALUE,
             (int) round($this->currentCategoryPotential(
+                $categoryId,
                 $this->categoryPotential($categoryId, $player),
                 $player
             ) / 10)
