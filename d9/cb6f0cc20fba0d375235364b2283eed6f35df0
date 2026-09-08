@@ -1,0 +1,19 @@
+tests/Unit/Person/PlayerPotentialByAgeTest.php
+  s_1544079d5d8172::t_5c26b004a6ca94 43-73
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.2",
+  "base_commit_sha": "d9cb6f0cc20fba0d375235364b2283eed6f35df0",
+  "prompts": {},
+  "sessions": {
+    "s_1544079d5d8172": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a08298-484a-7a23-9a78-56c630cd9828",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
