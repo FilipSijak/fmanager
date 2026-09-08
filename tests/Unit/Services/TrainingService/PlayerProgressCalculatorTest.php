@@ -172,7 +172,7 @@ class PlayerProgressCalculatorTest extends TestCase
     }
 
     #[Test]
-    public function full_potential_blocks_technical_growth_but_allows_physical_restoration(): void
+    public function full_potential_attributes_stop_at_category_ceiling(): void
     {
         $fields = [...PlayerFields::TECHNICAL_FIELDS, ...PlayerFields::PHYSICAL_FIELDS];
         $attributes = array_fill_keys($fields, 10);
@@ -198,10 +198,60 @@ class PlayerProgressCalculatorTest extends TestCase
             CarbonImmutable::parse('2027-06-10'),
         );
 
-        $this->assertArrayNotHasKey('marking', $updates->player);
-        $this->assertSame(99, $updates->progress['marking']);
+        $this->assertSame(15, $updates->player['marking']);
+        $this->assertSame(1, $updates->progress['marking']);
         $this->assertSame(15, $updates->player['strength']);
         $this->assertSame(1, $updates->progress['strength']);
+    }
+
+    #[Test]
+    public function attributes_stop_at_the_age_adjusted_category_potential(): void
+    {
+        $fields = PlayerFields::TECHNICAL_FIELDS;
+        $attributes = array_fill_keys($fields, 8);
+        $progress = array_fill_keys($fields, 0);
+        $progress['marking'] = 99;
+
+        $updates = (new PlayerProgressCalculator)->forTrainingSession(
+            $this->player(
+                potential: 80,
+                maxPotential: 100,
+                technical: 100,
+                attributes: $attributes,
+                progress: $progress,
+            ),
+            $this->schedules([TrainingCategory::Technical->value => TrainingIntensity::Hard]),
+            $fields,
+            CarbonImmutable::parse('2027-06-10'),
+        );
+
+        $this->assertArrayNotHasKey('marking', $updates->player);
+        $this->assertSame(99, $updates->progress['marking']);
+    }
+
+    #[Test]
+    public function category_attribute_ceiling_increases_with_current_potential(): void
+    {
+        $fields = PlayerFields::TECHNICAL_FIELDS;
+        $attributes = array_fill_keys($fields, 8);
+        $progress = array_fill_keys($fields, 0);
+        $progress['marking'] = 99;
+
+        $updates = (new PlayerProgressCalculator)->forTrainingSession(
+            $this->player(
+                potential: 90,
+                maxPotential: 100,
+                technical: 100,
+                attributes: $attributes,
+                progress: $progress,
+            ),
+            $this->schedules([TrainingCategory::Technical->value => TrainingIntensity::Hard]),
+            $fields,
+            CarbonImmutable::parse('2027-06-10'),
+        );
+
+        $this->assertSame(9, $updates->player['marking']);
+        $this->assertSame(2, $updates->progress['marking']);
     }
 
     #[Test]

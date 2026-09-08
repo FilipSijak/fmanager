@@ -54,7 +54,6 @@ class PlayerProgressCalculator
 
         $playerUpdates = [];
         $progressUpdates = ['last_progressed_at' => $timestamp, 'updated_at' => $timestamp];
-        $atFullPotential = $player->potential >= $player->maxPotential;
         $conditionCost = $this->conditionCost($schedules);
         $progressUpdates['condition'] = $conditionCost > 0
             ? max(self::MINIMUM_TRAINING_CONDITION, (int) $player->condition - $conditionCost)
@@ -90,8 +89,7 @@ class PlayerProgressCalculator
                     $categoryId,
                     $player,
                     $field,
-                    $requestedIncrease,
-                    $atFullPotential
+                    $requestedIncrease
                 );
                 $remainingProgress = $totalProgress - ($attributeIncrease * $progressThreshold);
                 $progressUpdates[$field] = min($progressThreshold - 1, $remainingProgress);
@@ -133,20 +131,31 @@ class PlayerProgressCalculator
 
     private function categoryPotentialGap(int $categoryId, TrainingPlayerData $player): int
     {
-        if ($player->maxPotential <= 0) {
-            return 0;
-        }
+        $categoryMaximum = $this->categoryPotential($categoryId, $player);
+        $currentCategoryPotential = $this->currentCategoryPotential($categoryMaximum, $player);
 
-        $categoryMaximum = match ($categoryId) {
+        return max(0, $categoryMaximum - $currentCategoryPotential);
+    }
+
+    private function categoryPotential(int $categoryId, TrainingPlayerData $player): int
+    {
+        return match ($categoryId) {
             TrainingCategory::Technical->value => $player->technical,
             TrainingCategory::Tactical->value => $player->mental,
             TrainingCategory::Physical->value => $player->physical,
             default => 0,
         };
-        $developmentRatio = min(1, max(0, $player->potential / $player->maxPotential));
-        $currentCategoryPotential = (int) round($categoryMaximum * $developmentRatio);
+    }
 
-        return max(0, $categoryMaximum - $currentCategoryPotential);
+    private function currentCategoryPotential(int $categoryPotential, TrainingPlayerData $player): int
+    {
+        if ($player->maxPotential <= 0) {
+            return 0;
+        }
+
+        $developmentRatio = min(1, max(0, $player->potential / $player->maxPotential));
+
+        return (int) round($categoryPotential * $developmentRatio);
     }
 
     private function pointsForIntensity(TrainingIntensity $intensity, int $gap): int
@@ -206,31 +215,23 @@ class PlayerProgressCalculator
         int $categoryId,
         TrainingPlayerData $player,
         string $field,
-        int $requestedIncrease,
-        bool $atFullPotential
+        int $requestedIncrease
     ): int {
         if ($requestedIncrease === 0) {
             return 0;
         }
 
-        $allowedIncrease = min(
-            $requestedIncrease,
-            max(0, self::MAX_ATTRIBUTE_VALUE - $player->attribute($field))
+        $categoryAttributeCeiling = min(
+            self::MAX_ATTRIBUTE_VALUE,
+            (int) round($this->currentCategoryPotential(
+                $this->categoryPotential($categoryId, $player),
+                $player
+            ) / 10)
         );
 
-        if (! $atFullPotential) {
-            return $allowedIncrease;
-        }
-
-        if ($categoryId !== TrainingCategory::Physical->value) {
-            return 0;
-        }
-
-        $physicalAttributeCeiling = (int) round((int) $player->physical / 10);
-
         return min(
-            $allowedIncrease,
-            max(0, $physicalAttributeCeiling - $player->attribute($field))
+            $requestedIncrease,
+            max(0, $categoryAttributeCeiling - $player->attribute($field))
         );
     }
 
