@@ -97,7 +97,7 @@ class PlayerProgressCalculatorTest extends TestCase
             $timestamp
         );
 
-        $this->assertSame(2, $updates->progress['marking']);
+        $this->assertArrayNotHasKey('marking', $updates->progress);
         $this->assertSame(3, $updates->progress['strength']);
     }
 
@@ -226,7 +226,7 @@ class PlayerProgressCalculatorTest extends TestCase
         );
 
         $this->assertArrayNotHasKey('marking', $updates->player);
-        $this->assertSame(99, $updates->progress['marking']);
+        $this->assertArrayNotHasKey('marking', $updates->progress);
     }
 
     #[Test]
@@ -252,6 +252,30 @@ class PlayerProgressCalculatorTest extends TestCase
 
         $this->assertSame(9, $updates->player['marking']);
         $this->assertSame(2, $updates->progress['marking']);
+    }
+
+    #[Test]
+    public function capped_attributes_do_not_accumulate_positive_training_progress(): void
+    {
+        $fields = PlayerFields::TECHNICAL_FIELDS;
+        $progress = array_fill_keys($fields, 10);
+        $attributes = array_fill_keys($fields, 10);
+
+        $updates = (new PlayerProgressCalculator)->forTrainingSession(
+            $this->player(
+                potential: 100,
+                maxPotential: 100,
+                technical: 100,
+                attributes: $attributes,
+                progress: $progress,
+            ),
+            $this->schedules([TrainingCategory::Technical->value => TrainingIntensity::Hard]),
+            $fields,
+            CarbonImmutable::parse('2027-06-10'),
+        );
+
+        $this->assertArrayNotHasKey('marking', $updates->progress);
+        $this->assertArrayNotHasKey('marking', $updates->player);
     }
 
     #[Test]

@@ -82,6 +82,11 @@ class PlayerProgressCalculator
                     $points,
                     $player->position
                 );
+
+                if ($fieldPoints > 0 && $player->attribute($field) >= $this->categoryAttributeCeiling($categoryId, $player)) {
+                    continue;
+                }
+
                 $totalProgress = max(0, $player->accumulatedProgress($field) + $fieldPoints);
                 $progressThreshold = $this->progressThreshold($categoryId);
                 $requestedIncrease = intdiv($totalProgress, $progressThreshold);
@@ -225,6 +230,18 @@ class PlayerProgressCalculator
             : self::PROGRESS_THRESHOLD;
     }
 
+    private function categoryAttributeCeiling(int $categoryId, TrainingPlayerData $player): int
+    {
+        return min(
+            self::MAX_ATTRIBUTE_VALUE,
+            (int) round($this->currentCategoryPotential(
+                $categoryId,
+                $this->categoryPotential($categoryId, $player),
+                $player
+            ) / 10)
+        );
+    }
+
     private function allowedAttributeIncrease(
         int $categoryId,
         TrainingPlayerData $player,
@@ -235,14 +252,7 @@ class PlayerProgressCalculator
             return 0;
         }
 
-        $categoryAttributeCeiling = min(
-            self::MAX_ATTRIBUTE_VALUE,
-            (int) round($this->currentCategoryPotential(
-                $categoryId,
-                $this->categoryPotential($categoryId, $player),
-                $player
-            ) / 10)
-        );
+        $categoryAttributeCeiling = $this->categoryAttributeCeiling($categoryId, $player);
 
         return min(
             $requestedIncrease,
