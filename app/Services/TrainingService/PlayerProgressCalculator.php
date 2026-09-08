@@ -2,6 +2,7 @@
 
 namespace App\Services\TrainingService;
 
+use App\Domain\PlayerDevelopment\PlayerAttributeCeiling;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TrainingService\Data\TrainingPlayerData;
@@ -9,6 +10,8 @@ use Carbon\CarbonInterface;
 
 class PlayerProgressCalculator
 {
+    public function __construct(private readonly PlayerAttributeCeiling $playerAttributeCeiling = new PlayerAttributeCeiling) {}
+
     private const MINIMUM_DEVELOPMENT_GAP = 10;
 
     private const GAP_PER_POINT = 10;
@@ -20,8 +23,6 @@ class PlayerProgressCalculator
     private const PROGRESS_THRESHOLD = 100;
 
     private const TACTICAL_PROGRESS_THRESHOLD = 200;
-
-    private const MAX_ATTRIBUTE_VALUE = 20;
 
     private const MISSED_SESSION_PENALTY = 2;
 
@@ -82,6 +83,11 @@ class PlayerProgressCalculator
                     $points,
                     $player->position
                 );
+
+                if ($fieldPoints > 0 && $player->attribute($field) >= $this->categoryAttributeCeiling($categoryId, $player)) {
+                    continue;
+                }
+
                 $totalProgress = max(0, $player->accumulatedProgress($field) + $fieldPoints);
                 $progressThreshold = $this->progressThreshold($categoryId);
                 $requestedIncrease = intdiv($totalProgress, $progressThreshold);
@@ -132,7 +138,7 @@ class PlayerProgressCalculator
     private function categoryPotentialGap(int $categoryId, TrainingPlayerData $player): int
     {
         $categoryMaximum = $this->categoryPotential($categoryId, $player);
-        $currentCategoryPotential = $this->currentCategoryPotential($categoryMaximum, $player);
+        $currentCategoryPotential = $this->currentCategoryPotential($categoryId, $categoryMaximum, $player);
 
         return max(0, $categoryMaximum - $currentCategoryPotential);
     }
@@ -147,8 +153,22 @@ class PlayerProgressCalculator
         };
     }
 
-    private function currentCategoryPotential(int $categoryPotential, TrainingPlayerData $player): int
-    {
+    private function currentCategoryPotential(
+        int $categoryId,
+        int $categoryPotential,
+        TrainingPlayerData $player
+    ): int {
+        $persistedPotential = match ($categoryId) {
+            TrainingCategory::Technical->value => $player->currentTechnical,
+            TrainingCategory::Tactical->value => $player->currentMental,
+            TrainingCategory::Physical->value => $player->currentPhysical,
+            default => null,
+        };
+
+        if ($persistedPotential !== null) {
+            return $persistedPotential;
+        }
+
         if ($player->maxPotential <= 0) {
             return 0;
         }
@@ -211,6 +231,15 @@ class PlayerProgressCalculator
             : self::PROGRESS_THRESHOLD;
     }
 
+    private function categoryAttributeCeiling(int $categoryId, TrainingPlayerData $player): int
+    {
+        return $this->playerAttributeCeiling->forPotential($this->currentCategoryPotential(
+            $categoryId,
+            $this->categoryPotential($categoryId, $player),
+            $player
+        ));
+    }
+
     private function allowedAttributeIncrease(
         int $categoryId,
         TrainingPlayerData $player,
@@ -221,13 +250,7 @@ class PlayerProgressCalculator
             return 0;
         }
 
-        $categoryAttributeCeiling = min(
-            self::MAX_ATTRIBUTE_VALUE,
-            (int) round($this->currentCategoryPotential(
-                $this->categoryPotential($categoryId, $player),
-                $player
-            ) / 10)
-        );
+        $categoryAttributeCeiling = $this->categoryAttributeCeiling($categoryId, $player);
 
         return min(
             $requestedIncrease,

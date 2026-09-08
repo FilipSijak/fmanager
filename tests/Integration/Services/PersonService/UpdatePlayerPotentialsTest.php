@@ -33,6 +33,29 @@ class UpdatePlayerPotentialsTest extends TestCase
         $this->assertSame(120, (int) $otherPlayer->fresh()->potential);
     }
 
+    #[Test]
+    public function it_reduces_attributes_above_the_new_age_adjusted_ceiling(): void
+    {
+        $instance = Instance::factory()->create(['id' => 1, 'instance_date' => '2027-06-16']);
+        $player = $this->player($instance, '1998-06-16', 180, 180);
+        $player->forceFill([
+            'technical' => 100,
+            'mental' => 100,
+            'physical' => 100,
+            'marking' => 12,
+            'positioning' => 7,
+            'strength' => 11,
+        ])->save();
+
+        app(PersonService::class)->updatePlayerPotentials($instance);
+
+        $updatedPlayer = $player->fresh();
+        $this->assertSame(176, (int) $updatedPlayer->potential);
+        $this->assertSame(10, (int) $updatedPlayer->marking);
+        $this->assertSame(7, (int) $updatedPlayer->positioning);
+        $this->assertSame(10, (int) $updatedPlayer->strength);
+    }
+
     private function player(
         Instance $instance,
         string $dateOfBirth,

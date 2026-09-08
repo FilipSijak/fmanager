@@ -14,6 +14,7 @@ readonly class GeneratedPlayerData
         public PotentialByCategoryData $potentialByCategory,
         public int $maxPotential,
         public float $potential,
+        public PotentialByCategoryData $currentPotentialByCategory,
         public array $positions,
         public array $attributes,
     ) {}

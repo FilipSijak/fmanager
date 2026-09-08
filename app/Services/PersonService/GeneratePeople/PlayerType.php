@@ -13,6 +13,9 @@ class PlayerType
         $player->position = $generatedPlayer->position;
         $player->max_potential = $generatedPlayer->maxPotential;
         $player->potential = $generatedPlayer->potential;
+        $player->current_technical_potential = $generatedPlayer->currentPotentialByCategory->technical;
+        $player->current_mental_potential = $generatedPlayer->currentPotentialByCategory->mental;
+        $player->current_physical_potential = $generatedPlayer->currentPotentialByCategory->physical;
 
         foreach ($generatedPlayer->attributes as $attribute => $value) {
             $player->{$attribute} = $value;

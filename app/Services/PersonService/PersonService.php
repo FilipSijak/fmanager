@@ -2,15 +2,18 @@
 
 namespace App\Services\PersonService;
 
+use App\Domain\PlayerDevelopment\PlayerAttributeCeiling;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
+use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -29,6 +32,7 @@ class PersonService
         private readonly StaffCreator $staffCreator,
         private readonly PlayerPotential $playerPotential,
         private readonly GameContext $gameContext,
+        private readonly PlayerAttributeCeiling $playerAttributeCeiling,
     ) {}
 
     public function createPlayer(GeneratedPlayerProfile $playerPotential): Player
@@ -54,12 +58,43 @@ class PersonService
             return;
         }
 
+        $dateOfBirth = CarbonImmutable::parse($player->person->dob);
         $player->potential = $this->playerPotential->onDate(
             (int) $player->max_potential,
-            CarbonImmutable::parse($player->person->dob),
+            $dateOfBirth,
             $asOfDate
         );
+        $currentCategoryPotentials = $this->playerPotential->potentialByCategoryOnDate(
+            new PotentialByCategoryData(
+                technical: (int) $player->technical,
+                mental: (int) $player->mental,
+                physical: (int) $player->physical,
+            ),
+            $dateOfBirth,
+            $asOfDate
+        );
+        $player->current_technical_potential = $currentCategoryPotentials->technical;
+        $player->current_mental_potential = $currentCategoryPotentials->mental;
+        $player->current_physical_potential = $currentCategoryPotentials->physical;
+        $this->reduceAttributesToCurrentPotential($player, $currentCategoryPotentials);
         $player->save();
+    }
+
+    private function reduceAttributesToCurrentPotential(
+        Player $player,
+        PotentialByCategoryData $currentCategoryPotentials
+    ): void {
+        foreach ([
+            'technical' => [PlayerFields::TECHNICAL_FIELDS, $currentCategoryPotentials->technical],
+            'mental' => [PlayerFields::MENTAL_FIELDS, $currentCategoryPotentials->mental],
+            'physical' => [PlayerFields::PHYSICAL_FIELDS, $currentCategoryPotentials->physical],
+        ] as [$category, [$fields, $categoryPotential]]) {
+            $categoryCeiling = $this->playerAttributeCeiling->forPotential($categoryPotential);
+
+            foreach ($fields as $field) {
+                $player->{$field} = min((int) $player->{$field}, $categoryCeiling);
+            }
+        }
     }
 
     public function createPlayersForClub(Club $club): void
