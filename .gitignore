@@ -27,3 +27,4 @@ integration-tests.sh
 season-test.md
 full-test.md
 /screenshots
+*.deb
