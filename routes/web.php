@@ -22,8 +22,19 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware([SetGameContext::class, EnsureGameIsValid::class])->group(function () {
         Route::get('/', [DashboardController::class, 'show'])->name('start');
-        Route::get('/league-table', fn () => Inertia::render('LeagueTable'))->name('league-table');
-        Route::get('/squad', fn () => Inertia::render('Squad'))->name('squad');
-        Route::get('/player-profile', fn () => Inertia::render('PlayerProfile'))->name('player-profile');
     });
 });
+
+$templateRoutes = function () {
+    Route::get('/league-table', fn () => Inertia::render('LeagueTable'))->name('league-table');
+    Route::get('/squad', fn () => Inertia::render('Squad'))->name('squad');
+    Route::get('/player-profile', fn () => Inertia::render('PlayerProfile'))->name('player-profile');
+    Route::get('/tactics', fn () => Inertia::render('Tactics'))->name('tactics');
+};
+
+if (env('ENVIRONMENT') === 'dev') {
+    // Static-mock template pages, login-free so they can be previewed without a game account.
+    $templateRoutes();
+} else {
+    Route::middleware(['auth', SetGameContext::class, EnsureGameIsValid::class])->group($templateRoutes);
+}
