@@ -30,6 +30,7 @@ $templateRoutes = function () {
     Route::get('/squad', fn () => Inertia::render('Squad'))->name('squad');
     Route::get('/player-profile', fn () => Inertia::render('PlayerProfile'))->name('player-profile');
     Route::get('/tactics', fn () => Inertia::render('Tactics'))->name('tactics');
+    Route::get('/office', fn () => Inertia::render('Office'))->name('office');
 };
 
 if (env('ENVIRONMENT') === 'dev') {
