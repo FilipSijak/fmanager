@@ -359,6 +359,41 @@ class TransferServiceTest extends TestCase
         ]);
     }
 
+    #[Test]
+    public function automatic_transfer_creation_rolls_back_when_financial_details_cannot_be_created(): void
+    {
+        Instance::factory()->create([
+            'id' => 1,
+            'season_id' => 1,
+            'instance_date' => '2026-07-01',
+        ]);
+        $buyingClub = Club::factory()->create(['id' => 1, 'instance_id' => 1]);
+        Account::factory()->create(['club_id' => $buyingClub->id, 'transfer_budget' => 0]);
+        $player = Player::factory()->create([
+            'id' => 1,
+            'instance_id' => 1,
+            'club_id' => 2,
+            'value' => 10_000,
+        ]);
+        app(GameContext::class)->set(1, 1, '2026-07-01');
+
+        try {
+            app(TransferWorkflow::class)->makeAutomaticTransferWithFinancialDetails(
+                $player,
+                $buyingClub,
+                TransferType::PERMANENT_TRANSFER->value,
+            );
+
+            $this->fail('Expected the transfer to be rejected when the club cannot afford it.');
+        } catch (\LogicException) {
+            $this->assertDatabaseCount('transfers', 0);
+            $this->assertDatabaseCount('transfer_financial_details', 0);
+        }
+
+        $this->assertDatabaseCount('transfers', 0);
+        $this->assertDatabaseCount('transfer_financial_details', 0);
+    }
+
     private function setupTransferBetweenTwoClubs(int $buyingClubId, int $sellingClubId, int $playerId, int $transferType)
     {
         Club::factory()->create(

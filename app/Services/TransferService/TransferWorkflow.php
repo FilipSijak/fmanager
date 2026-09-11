@@ -21,8 +21,11 @@ use Illuminate\Support\Facades\DB;
 class TransferWorkflow
 {
     private TransferRepository $transferRepository;
+
     private PlayerRepository $playerRepository;
+
     private TransferFinancialSettlement $transferFinancialSettlement;
+
     private TransferConsiderations $transferConsiderations;
 
     public function __construct(
@@ -30,8 +33,7 @@ class TransferWorkflow
         PlayerRepository $playerRepository,
         TransferFinancialSettlement $transferFinancialSettlement,
         TransferConsiderations $transferConsiderations
-    )
-    {
+    ) {
         $this->transferRepository = $transferRepository;
         $this->playerRepository = $playerRepository;
         $this->transferFinancialSettlement = $transferFinancialSettlement;
@@ -42,7 +44,7 @@ class TransferWorkflow
     {
         $instance = Instance::findOrFail($transfer->instance_id);
 
-        if (!TransferWindowAvailability::isTransferWindowOpen($instance->instance_date)) {
+        if (! TransferWindowAvailability::isTransferWindowOpen($instance->instance_date)) {
             $transfer->transfer_date = TransferWindowAvailability::nextAvailableTransferWindow($instance->instance_date);
 
             $transfer->save();
@@ -56,7 +58,7 @@ class TransferWorkflow
         $transferContractOffer = $transfer->transferContractOffer()->firstOrFail();
 
         if ($transfer->transfer_type != TransferType::LOAN_TRANSFER->value &&
-            !$this->checkTransferAffordabilityBeforeCompletion($transfer, $transferContractOffer)) {
+            ! $this->checkTransferAffordabilityBeforeCompletion($transfer, $transferContractOffer)) {
             return;
         }
 
@@ -90,19 +92,19 @@ class TransferWorkflow
         $valuationComparison = $buyingClubValuation >= $transferAmount;
 
         if ($valuationComparison && $this->canClubAffordTransfer($transfer, $buyingClub)) {
-            $this->transferRepository->updateTransferStatus($transfer,TransferStatusTypes::COUNTEROFFER_ACCEPTED->value);
+            $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::COUNTEROFFER_ACCEPTED->value);
 
             event(new TransferEvent(TransferEventType::CounterofferAccepted, $transfer->fresh()));
 
             return;
         }
 
-        $this->transferRepository->updateTransferStatus($transfer,TransferStatusTypes::TRANSFER_FAILED->value);
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
 
         event(new TransferEvent(TransferEventType::CounterofferRejected, $transfer->fresh()));
     }
 
-    public function sellingClubDecision(Transfer $transfer):void
+    public function sellingClubDecision(Transfer $transfer): void
     {
         if ($this->transferConsiderations->sellingClubDecision($transfer)) {
             $this->makePlayerContractOffer($transfer);
@@ -118,7 +120,7 @@ class TransferWorkflow
 
     public function waitingPaperwork(Transfer $transfer): void
     {
-        if (!$this->processMedical($transfer)) {
+        if (! $this->processMedical($transfer)) {
             $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::TRANSFER_FAILED->value);
 
             event(new TransferEvent(TransferEventType::MedicalFailed, $transfer->fresh()));
@@ -164,7 +166,6 @@ class TransferWorkflow
         event(new TransferEvent(TransferEventType::PlayerDeclined, $transfer->fresh()));
     }
 
-
     public function processMedical(Transfer $transfer): bool
     {
         $instance = Instance::findOrFail($transfer->instance_id);
@@ -190,24 +191,26 @@ class TransferWorkflow
         Club $buyingClub,
         int $transferType = TransferType::PERMANENT_TRANSFER->value,
         bool $urgentTransfer = false,
-    ): Transfer|null {
-        $transfer = $this->transferRepository->createAutomaticTransfer(
-            $player,
-            $buyingClub,
-            $transferType,
-        );
+    ): ?Transfer {
+        return DB::transaction(function () use ($player, $buyingClub, $transferType, $urgentTransfer): Transfer {
+            $transfer = $this->transferRepository->createAutomaticTransfer(
+                $player,
+                $buyingClub,
+                $transferType,
+            );
 
-        if ($transferType != TransferType::FREE_TRANSFER->value) {
-            $transfer->target_club_id = $player->club_id;
-        }
+            if ($transferType != TransferType::FREE_TRANSFER->value) {
+                $transfer->target_club_id = $player->club_id;
+            }
 
-        $transfer->save();
+            $transfer->save();
 
-        if ($transferType != TransferType::FREE_TRANSFER->value) {
-            $this->transferRepository->createTransferFinancialDetails($transfer, $player, $buyingClub, $urgentTransfer);
-        }
+            if ($transferType != TransferType::FREE_TRANSFER->value) {
+                $this->transferRepository->createTransferFinancialDetails($transfer, $player, $buyingClub, $urgentTransfer);
+            }
 
-        return $transfer;
+            return $transfer;
+        });
     }
 
     public function makePlayerContractOffer(Transfer $transfer)
@@ -232,11 +235,11 @@ class TransferWorkflow
                 'cl' => $contractOffer['cl'],
                 'pc_promotion_salary_raise' => $contractOffer['salary_raise'],
                 'pc_demotion_salary_cut' => $contractOffer['demotion'],
-                'counter_offered' => 0
+                'counter_offered' => 0,
             ]
         );
 
-        $this->transferRepository->updateTransferStatus($transfer,TransferStatusTypes::WAITING_PLAYER->value);
+        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_PLAYER->value);
     }
 
     private function canClubAffordTransfer(Transfer $transfer, Club $club): bool
