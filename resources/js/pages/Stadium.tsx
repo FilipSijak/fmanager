@@ -3,19 +3,19 @@ import { useEffect, useRef, useState } from 'react';
 import GameLayout from '@/layouts/GameLayout';
 import stadiumRoutes from '@/routes/stadium';
 
-const CANVAS_W = 1448;
-const CANVAS_H = 1086;
+const CANVAS_W = 1536;
+const CANVAS_H = 1024;
 
 type Hotspot = {
     label: string;
     /** Shown in the hover tooltip, e.g. "Bar Management". */
     destination: string;
     href: string;
-    /** [x0, y0, x1, y1] in stadium-complete.png's own 1448x1086 pixel space. */
+    /** [x0, y0, x1, y1] in stadium-3-2.png's own 1536x1024 pixel space. */
     box: [number, number, number, number];
 };
 
-// Boxes were read off stadium-complete.png by eye (grid overlay at 50px spacing), so
+// Boxes were read off stadium-3-2.png by eye (grid overlay at 50px spacing), so
 // they're approximate rectangles over each isometric building rather than exact outlines.
 // Stadium is listed first and the shops after so overlapping edges resolve to the shop.
 const hotspots: Hotspot[] = [
@@ -23,67 +23,67 @@ const hotspots: Hotspot[] = [
         label: 'Stadium',
         destination: 'Stadium Construction',
         href: stadiumRoutes.construction().url,
-        box: [100, 15, 1410, 560],
+        box: [105, 10, 1480, 535],
     },
     {
         label: 'The Tavern (Bar)',
         destination: 'Bar Management',
         href: stadiumRoutes.bars().url,
-        box: [60, 460, 300, 705],
+        box: [90, 495, 345, 705],
     },
     {
         label: 'King Wok Chinese Food',
         destination: 'Restaurant Management',
         href: stadiumRoutes.restaurants().url,
-        box: [300, 480, 545, 705],
+        box: [350, 515, 605, 705],
     },
     {
         label: "Mario's Pizza",
         destination: 'Restaurant Management',
         href: stadiumRoutes.restaurants().url,
-        box: [545, 555, 790, 725],
+        box: [610, 545, 880, 755],
     },
     {
         label: 'Vinyl Records',
         destination: 'Shop Management',
         href: stadiumRoutes.shops().url,
-        box: [895, 565, 1075, 715],
+        box: [945, 550, 1160, 705],
     },
     {
         label: 'Neon Nights (Bar)',
         destination: 'Bar Management',
         href: stadiumRoutes.bars().url,
-        box: [1160, 540, 1410, 715],
+        box: [1200, 525, 1520, 710],
     },
     {
         label: 'Sports Gear',
         destination: 'Shop Management',
         href: stadiumRoutes.shops().url,
-        box: [85, 770, 330, 975],
+        box: [85, 770, 345, 1020],
     },
     {
         label: 'Green Grocer',
         destination: 'Shop Management',
         href: stadiumRoutes.shops().url,
-        box: [330, 775, 590, 980],
+        box: [350, 775, 605, 1020],
     },
     {
         label: 'Good Thai Restaurant',
         destination: 'Restaurant Management',
         href: stadiumRoutes.restaurants().url,
-        box: [590, 770, 855, 1015],
+        box: [610, 760, 885, 1020],
     },
     {
         label: 'City Cuts Barbershop',
         destination: 'Shop Management',
         href: stadiumRoutes.shops().url,
-        box: [895, 775, 1140, 980],
+        box: [950, 775, 1195, 1020],
     },
     {
         label: 'Books',
         destination: 'Shop Management',
         href: stadiumRoutes.shops().url,
-        box: [1140, 770, 1400, 975],
+        box: [1210, 775, 1480, 1020],
     },
 ];
 
@@ -140,7 +140,7 @@ export default function Stadium() {
                         }}
                     >
                         <img
-                            src="/game-assets/stadium/stadium-complete.png"
+                            src="/game-assets/stadium/stadium-3-2.png"
                             alt="Stadium and surrounding shops"
                             className="absolute inset-0 h-full w-full"
                         />
