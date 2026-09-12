@@ -1,4 +1,5 @@
 import { Head } from '@inertiajs/react';
+import StadiumSubPageHeader from '@/components/game/StadiumSubPageHeader';
 import GameLayout from '@/layouts/GameLayout';
 
 export default function StadiumBars() {
@@ -6,12 +7,7 @@ export default function StadiumBars() {
         <GameLayout active="Nations & Clubs">
             <Head title="AC Milan - Bars" />
             <main className="flex min-h-screen flex-1 flex-col bg-[#10151c] text-white">
-                <header className="border-b border-black bg-[#202831] px-5 py-3">
-                    <p className="text-xs font-bold tracking-[0.25em] text-[#f5f000] uppercase">
-                        Stadium
-                    </p>
-                    <h1 className="text-2xl font-black">Bars</h1>
-                </header>
+                <StadiumSubPageHeader title="Bars" />
                 <section className="flex flex-1 items-center justify-center p-8 text-[#aab4bd]">
                     <p>Bar management will go here.</p>
                 </section>
