@@ -77,8 +77,16 @@ export default function Stadium() {
     return (
         <GameLayout active="Nations & Clubs">
             <Head title="AC Milan - Stadium" />
-            <main className="flex min-h-screen flex-1 flex-col bg-black text-white">
-                <section className="flex min-h-[560px] flex-1 items-center justify-center overflow-hidden bg-black p-4">
+            <main className="flex min-h-screen flex-1 flex-col bg-[#10151c] text-white">
+                {/* dark overlay filling the whole content area, fading in from the scene's edges out
+                    to the sidebar, rather than a flat background color swap */}
+                <section
+                    className="flex min-h-[560px] flex-1 items-center justify-center overflow-hidden p-4"
+                    style={{
+                        background:
+                            'radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.92) 75%)',
+                    }}
+                >
                     <div
                         className="relative w-full max-w-[1200px] overflow-hidden shadow-2xl"
                         style={{ aspectRatio: `${CANVAS_W} / ${CANVAS_H}` }}
