@@ -90,12 +90,14 @@ function fitToSlot(file: string, label: string): Placement {
 
 const NATIVE_WIDTH: Record<string, number> = {
     'base-no-tiles.png': 1448,
+    'tavern.png': 1304,
     ...Object.fromEntries(
         Object.keys(STADIUM_IMAGES).map((file) => [file, STADIUM_NATIVE_WIDTH]),
     ),
 };
 const NATIVE_HEIGHT: Record<string, number> = {
     'base-no-tiles.png': 1086,
+    'tavern.png': 1206,
     ...Object.fromEntries(
         Object.keys(STADIUM_IMAGES).map((file) => [
             file,
@@ -119,6 +121,18 @@ const placements: Placement[] = [
         rotateOrigin: [0, 0],
     },
     fitToSlot(activeStadiumFile, STADIUM_IMAGES[activeStadiumFile]),
+    {
+        // Fit by matching its own roof corners (left, top) - the two calibration points -
+        // against the same corners tracked in scene-positions.png.
+        file: 'tavern.png',
+        x: 33.35,
+        y: 412.42,
+        w: 315.34,
+        z: 2,
+        label: 'The Tavern',
+        rotate: 1.45,
+        rotateOrigin: [88, 484],
+    },
 ];
 
 export default function Stadium() {
