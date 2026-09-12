@@ -78,12 +78,6 @@ export default function Stadium() {
         <GameLayout active="Nations & Clubs">
             <Head title="AC Milan - Stadium" />
             <main className="flex min-h-screen flex-1 flex-col bg-[#10151c] text-white">
-                <header className="border-b border-black bg-[#202831] px-5 py-3">
-                    <p className="text-xs font-bold tracking-[0.25em] text-[#f5f000] uppercase">
-                        Fixed isometric scene
-                    </p>
-                    <h1 className="text-2xl font-black">Stadium</h1>
-                </header>
                 <section className="flex min-h-[560px] flex-1 items-center justify-center overflow-hidden bg-[#111820] p-4">
                     <div
                         className="relative w-full max-w-[1200px] overflow-hidden border border-[#5c6670] bg-[#4c4c48] shadow-2xl"
