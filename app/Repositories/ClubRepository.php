@@ -31,7 +31,7 @@ class ClubRepository
     public function find(int $clubId): ?Club
     {
         return Club::query()
-            ->with(['stadium', 'account'])
+            ->with(['stadium.stands', 'account'])
             ->forInstance($this->gameContext->instanceId())
             ->find($clubId);
     }

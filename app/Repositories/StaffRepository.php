@@ -13,6 +13,7 @@ use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
+use InvalidArgumentException;
 
 class StaffRepository
 {
@@ -30,6 +31,10 @@ class StaffRepository
     public function bulkStaffInsert(int $instanceId, ?Club $club, array $staffMembers): void
     {
         DB::transaction(function () use ($instanceId, $club, $staffMembers): void {
+            foreach ($staffMembers as $staffMember) {
+                $this->assertSupportedRole($staffMember->role);
+            }
+
             $contractStart = $club ? Instance::query()->findOrFail($instanceId)->instance_date : null;
             foreach ($staffMembers as $staffMember) {
                 $contractId = $contractStart
@@ -74,6 +79,11 @@ class StaffRepository
         GeneratedStaffData $staffMember
     ): void {
         DB::transaction(function () use ($instanceId, $personId, $staffMember): void {
+            $this->assertSupportedRole($staffMember->role);
+            if (! in_array($staffMember->role, PersonTypes::COACHING_ROLES, true)) {
+                throw new InvalidArgumentException("Existing staff careers must use a coaching role: {$staffMember->role}");
+            }
+
             $this->insertCoachingStaff(
                 $instanceId,
                 null,
@@ -144,6 +154,16 @@ class StaffRepository
 
             return true;
         });
+    }
+
+    private function assertSupportedRole(string $role): void
+    {
+        if (in_array($role, PersonTypes::COACHING_ROLES, true)
+            || in_array($role, [PersonTypes::SCOUT, PersonTypes::PHYSIO, PersonTypes::YOUTH_PHYSIO], true)) {
+            return;
+        }
+
+        throw new InvalidArgumentException("Unsupported staff role: {$role}");
     }
 
     private function insertCoachingStaff(int $instanceId, ?int $clubId, ?int $contractId, int $personId, GeneratedStaffData $staff): void

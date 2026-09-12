@@ -75,6 +75,26 @@ class StaffRepositoryTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_unsupported_staff_roles_without_persisting_them(): void
+    {
+        $instance = Instance::factory()->create(['id' => 1]);
+        $generatedStaff = app(StaffCreator::class)->createStaffMember('NOT_A_ROLE', 10);
+
+        try {
+            app(StaffRepository::class)->bulkStaffInsert($instance->id, null, [$generatedStaff]);
+
+            $this->fail('Expected unsupported staff roles to be rejected.');
+        } catch (\InvalidArgumentException $exception) {
+            $this->assertSame('Unsupported staff role: NOT_A_ROLE', $exception->getMessage());
+        }
+
+        $this->assertDatabaseCount('people', 0);
+        $this->assertDatabaseCount('staff_coaching', 0);
+        $this->assertDatabaseCount('staff_scouts', 0);
+        $this->assertDatabaseCount('staff_physio', 0);
+    }
+
+    #[Test]
     public function it_creates_a_free_coaching_career_for_an_existing_person(): void
     {
         $instance = Instance::factory()->create(['id' => 1]);
