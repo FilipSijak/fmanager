@@ -77,10 +77,10 @@ export default function Stadium() {
     return (
         <GameLayout active="Nations & Clubs">
             <Head title="AC Milan - Stadium" />
-            <main className="flex min-h-screen flex-1 flex-col bg-[#10151c] text-white">
-                <section className="flex min-h-[560px] flex-1 items-center justify-center overflow-hidden bg-[#111820] p-4">
+            <main className="flex min-h-screen flex-1 flex-col bg-black text-white">
+                <section className="flex min-h-[560px] flex-1 items-center justify-center overflow-hidden bg-black p-4">
                     <div
-                        className="relative w-full max-w-[1200px] overflow-hidden border border-[#5c6670] bg-[#4c4c48] shadow-2xl"
+                        className="relative w-full max-w-[1200px] overflow-hidden shadow-2xl"
                         style={{ aspectRatio: `${CANVAS_W} / ${CANVAS_H}` }}
                     >
                         <img
