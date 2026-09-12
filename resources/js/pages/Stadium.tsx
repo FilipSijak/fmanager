@@ -104,7 +104,7 @@ export default function Stadium() {
                                     href={h.href}
                                     title={h.label}
                                     aria-label={h.label}
-                                    className="absolute cursor-pointer bg-transparent transition-colors hover:bg-[#f5f000]/20"
+                                    className="absolute cursor-pointer"
                                     style={{
                                         left: `${(x0 / CANVAS_W) * 100}%`,
                                         top: `${(y0 / CANVAS_H) * 100}%`,
