@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import GameLayout from '@/layouts/GameLayout';
 import stadiumRoutes from '@/routes/stadium';
 
@@ -91,22 +91,53 @@ export default function Stadium() {
     const [hovered, setHovered] = useState<string | null>(null);
     const hoveredHotspot = hotspots.find((h) => h.label === hovered);
 
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [sceneSize, setSceneSize] = useState({
+        width: CANVAS_W,
+        height: CANVAS_H,
+    });
+
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) {
+            return;
+        }
+
+        const fitToContainer = () => {
+            const { clientWidth, clientHeight } = container;
+            const scale = Math.min(
+                clientWidth / CANVAS_W,
+                clientHeight / CANVAS_H,
+            );
+            setSceneSize({ width: CANVAS_W * scale, height: CANVAS_H * scale });
+        };
+
+        fitToContainer();
+        const observer = new ResizeObserver(fitToContainer);
+        observer.observe(container);
+        return () => observer.disconnect();
+    }, []);
+
     return (
         <GameLayout active="Nations & Clubs">
             <Head title="AC Milan - Stadium" />
-            <main className="flex min-h-screen flex-1 flex-col bg-[#10151c] text-white">
+            <main className="flex h-screen flex-col overflow-hidden bg-[#10151c] text-white">
                 {/* dark overlay filling the whole content area, fading in from the scene's edges out
                     to the sidebar, rather than a flat background color swap */}
                 <section
-                    className="flex min-h-[560px] flex-1 items-center justify-center overflow-hidden p-4"
+                    ref={containerRef}
+                    className="flex flex-1 items-center justify-center overflow-hidden p-4"
                     style={{
                         background:
                             'radial-gradient(ellipse at center, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.92) 75%)',
                     }}
                 >
                     <div
-                        className="relative w-full max-w-[1200px] overflow-hidden shadow-2xl"
-                        style={{ aspectRatio: `${CANVAS_W} / ${CANVAS_H}` }}
+                        className="relative overflow-hidden shadow-2xl"
+                        style={{
+                            width: sceneSize.width,
+                            height: sceneSize.height,
+                        }}
                     >
                         <img
                             src="/game-assets/stadium/stadium-complete.png"
