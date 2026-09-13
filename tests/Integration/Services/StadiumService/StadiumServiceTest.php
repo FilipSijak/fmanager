@@ -113,6 +113,56 @@ class StadiumServiceTest extends TestCase
         app(StadiumService::class)->buildCommercialVenue($stadium, $category->id, CommercialVenueSize::LARGE);
     }
 
+    #[Test]
+    public function it_lists_built_venues_with_their_categories(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::LOCAL]);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
+        StadiumCommercialVenue::query()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'category_id' => $category->id, 'size' => CommercialVenueSize::MEDIUM]);
+
+        $venues = app(StadiumService::class)->commercialVenuesForStadium($stadium);
+
+        $this->assertCount(1, $venues);
+        $this->assertSame($category->id, $venues->first()->category->id);
+        $this->assertSame(CommercialVenueSize::MEDIUM, $venues->first()->size);
+    }
+
+    #[Test]
+    public function it_lists_only_active_and_unbuilt_categories_available_to_the_stadium(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::LOCAL, 'commercial_limit' => 3]);
+        $built = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $available = BaseCommercialCategory::query()->forceCreate(['slug' => 'cafe', 'name' => 'Cafe']);
+        $inactive = BaseCommercialCategory::query()->forceCreate(['slug' => 'shop', 'name' => 'Shop', 'is_active' => false]);
+        $unavailable = BaseCommercialCategory::query()->forceCreate(['slug' => 'casino', 'name' => 'Casino']);
+        foreach ([$built, $available, $inactive] as $category) {
+            $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
+        }
+        $this->mapCategoryToStadiumType($unavailable->id, StadiumType::GLOBAL);
+        StadiumCommercialVenue::query()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'category_id' => $built->id, 'size' => CommercialVenueSize::SMALL]);
+
+        $categories = app(StadiumService::class)->buildableCommercialCategoriesForStadium($stadium);
+
+        $this->assertSame(['Cafe'], $categories->pluck('name')->all());
+    }
+
+    #[Test]
+    public function it_lists_no_buildable_categories_when_the_stadium_limit_is_reached(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::LOCAL, 'commercial_limit' => 1]);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
+        StadiumCommercialVenue::query()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'category_id' => $category->id, 'size' => CommercialVenueSize::SMALL]);
+
+        $categories = app(StadiumService::class)->buildableCommercialCategoriesForStadium($stadium);
+
+        $this->assertCount(0, $categories);
+    }
+
     private function mapCategoryToStadiumType(int $categoryId, StadiumType $stadiumType): void
     {
         DB::table('base_commercial_category_stadium_type')->insert([

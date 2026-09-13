@@ -2,12 +2,15 @@
 
 namespace App\Services\StadiumService;
 
+use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\StadiumStandStatus;
 use DomainException;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 class StadiumService
@@ -20,6 +23,41 @@ class StadiumService
     public function commercialLimitForType(StadiumType $type): int
     {
         return $type->commercialLimit();
+    }
+
+    /**
+     * @return Collection<int, StadiumCommercialVenue>
+     */
+    public function commercialVenuesForStadium(Stadium $stadium): Collection
+    {
+        return StadiumCommercialVenue::query()
+            ->with('category')
+            ->whereBelongsTo($stadium)
+            ->get();
+    }
+
+    /**
+     * @return Collection<int, BaseCommercialCategory>
+     */
+    public function buildableCommercialCategoriesForStadium(Stadium $stadium): Collection
+    {
+        if ($stadium->commercialVenues()->count() >= $stadium->commercial_limit) {
+            return new Collection;
+        }
+
+        $builtCategoryIds = $stadium->commercialVenues()->select('category_id');
+
+        return BaseCommercialCategory::query()
+            ->where('is_active', true)
+            ->whereNotIn('id', $builtCategoryIds)
+            ->whereExists(function (Builder $query) use ($stadium): void {
+                $query->selectRaw('1')
+                    ->from('base_commercial_category_stadium_type')
+                    ->whereColumn('base_commercial_category_stadium_type.category_id', 'base_commercial_categories.id')
+                    ->where('base_commercial_category_stadium_type.stadium_type', $stadium->type->value);
+            })
+            ->orderBy('name')
+            ->get();
     }
 
     public function buildCommercialVenue(Stadium $stadium, int $categoryId, CommercialVenueSize $size): StadiumCommercialVenue
