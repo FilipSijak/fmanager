@@ -16,7 +16,6 @@ return new class extends Migration
             $table->unsignedBigInteger('instance_id');
             $table->unsignedInteger('stadium_id');
             $table->unsignedInteger('base_product_id');
-            $table->string('category', 32);
             $table->unsignedInteger('base_price');
             $table->decimal('price_change_coef', 8, 4)->default(1);
             $table->boolean('is_available')->default(true);

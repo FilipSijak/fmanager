@@ -17,7 +17,7 @@ class StadiumCommercialProduct extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['instance_id', 'stadium_id', 'base_product_id', 'category', 'base_price', 'price_change_coef', 'is_available'];
+    protected $fillable = ['instance_id', 'stadium_id', 'base_product_id', 'base_price', 'price_change_coef', 'is_available'];
 
     protected function casts(): array
     {
