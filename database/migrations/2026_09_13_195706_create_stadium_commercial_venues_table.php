@@ -11,19 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('stadium_commercial_products', function (Blueprint $table) {
+        Schema::create('stadium_commercial_venues', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('instance_id');
             $table->unsignedInteger('stadium_id');
-            $table->unsignedInteger('base_product_id');
-            $table->unsignedInteger('base_price');
-            $table->decimal('price_change_coef', 8, 4)->default(1);
-            $table->boolean('is_available')->default(true);
+            $table->unsignedInteger('category_id');
+            $table->unsignedTinyInteger('size');
 
             $table->foreign('instance_id')->references('id')->on('instances')->cascadeOnDelete();
             $table->foreign('stadium_id')->references('id')->on('stadiums')->cascadeOnDelete();
-            $table->foreign('base_product_id')->references('id')->on('base_commercial_products')->restrictOnDelete();
-            $table->unique(['instance_id', 'stadium_id', 'base_product_id'], 'scp_instance_stadium_product_unique');
+            $table->foreign('category_id')->references('id')->on('base_commercial_categories')->restrictOnDelete();
+            $table->unique(['instance_id', 'stadium_id', 'category_id'], 'scv_instance_stadium_category_unique');
         });
     }
 
@@ -32,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('stadium_commercial_products');
+        Schema::dropIfExists('stadium_commercial_venues');
     }
 };

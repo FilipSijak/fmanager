@@ -65,6 +65,7 @@ class InitialSeed
     public function seedStadiumsFromBaseTable(int $instanceId): void
     {
         $baseStadiums = BaseStadiums::all();
+        $baseClubs = BaseClubs::all();
         $stadiums = [];
 
         foreach ($baseStadiums as $baseStadium) {
@@ -75,7 +76,10 @@ class InitialSeed
             $stadium->country_code = $baseStadium->countryCode;
             $stadium->city_id = $baseStadium->cityId;
             $stadium->capacity = $baseStadium->capacity;
-            $stadiumType = StadiumType::fromCapacity($baseStadium->capacity);
+            $baseClub = $baseClubs->firstWhere('stadium_id', $baseStadium->id);
+            $stadiumType = $baseClub === null
+                ? StadiumType::fromCapacity($baseStadium->capacity)
+                : StadiumType::fromClubRank((int) $baseClub->rank);
             $stadium->type = $stadiumType;
             $stadium->commercial_limit = $stadiumType->commercialLimit();
 

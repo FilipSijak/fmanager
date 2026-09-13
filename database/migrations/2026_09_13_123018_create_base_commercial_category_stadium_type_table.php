@@ -11,14 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('base_commercial_products', function (Blueprint $table) {
+        Schema::create('base_commercial_category_stadium_type', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('slug')->unique();
             $table->unsignedInteger('category_id');
-            $table->foreign('category_id')->references('id')->on('base_commercial_categories')->restrictOnDelete();
-            $table->string('name');
-            $table->text('description')->nullable();
-            $table->unsignedInteger('base_price');
+            $table->string('stadium_type', 20);
+            $table->foreign('category_id')->references('id')->on('base_commercial_categories')->cascadeOnDelete();
+            $table->unique(['category_id', 'stadium_type'], 'bccst_category_type_unique');
         });
     }
 
@@ -27,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('base_commercial_products');
+        Schema::dropIfExists('base_commercial_category_stadium_type');
     }
 };

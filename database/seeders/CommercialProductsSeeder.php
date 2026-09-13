@@ -12,7 +12,48 @@ class CommercialProductsSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('base_commercial_products')->insert([
+        $categories = [
+            ['slug' => 'shop', 'name' => 'Shop', 'description' => 'Retail products and club merchandise'],
+            ['slug' => 'bar', 'name' => 'Bar', 'description' => 'Drinks and refreshments'],
+            ['slug' => 'cafe', 'name' => 'Cafe', 'description' => 'Coffee, tea, and light refreshments'],
+            ['slug' => 'food_kiosk', 'name' => 'Food Kiosk', 'description' => 'Quick matchday food'],
+            ['slug' => 'restaurant', 'name' => 'Restaurant', 'description' => 'Casual dining'],
+            ['slug' => 'casino', 'name' => 'Casino', 'description' => 'Casino entertainment'],
+            ['slug' => 'hotel', 'name' => 'Hotel', 'description' => 'Stadium hotel accommodation'],
+            ['slug' => 'vip_hospitality', 'name' => 'VIP Hospitality', 'description' => 'Premium hospitality experiences'],
+            ['slug' => 'fine_dining', 'name' => 'Fine Dining', 'description' => 'High-end dining experiences'],
+            ['slug' => 'events_venue', 'name' => 'Events Venue', 'description' => 'Concerts, conferences, and private events'],
+        ];
+
+        DB::table('base_commercial_categories')->insert($categories);
+
+        $categoryIds = DB::table('base_commercial_categories')->pluck('id', 'slug');
+        $availableStadiumTypes = [
+            'shop' => ['local', 'regional', 'global'],
+            'bar' => ['village', 'local', 'regional', 'global'],
+            'cafe' => ['village', 'local', 'regional', 'global'],
+            'food_kiosk' => ['village', 'local'],
+            'restaurant' => ['local', 'regional', 'global'],
+            'casino' => ['global'],
+            'hotel' => ['global'],
+            'vip_hospitality' => ['global'],
+            'fine_dining' => ['regional', 'global'],
+            'events_venue' => ['global'],
+        ];
+        $availability = [];
+
+        foreach ($availableStadiumTypes as $categorySlug => $stadiumTypes) {
+            foreach ($stadiumTypes as $stadiumType) {
+                $availability[] = [
+                    'category_id' => $categoryIds[$categorySlug],
+                    'stadium_type' => $stadiumType,
+                ];
+            }
+        }
+
+        DB::table('base_commercial_category_stadium_type')->insert($availability);
+
+        $products = [
             ['slug' => 'draft-lager', 'category' => 'bar', 'name' => 'Draft Lager', 'description' => 'Cold one, on tap', 'base_price' => 450],
             ['slug' => 'craft-ipa', 'category' => 'bar', 'name' => 'Craft IPA', 'description' => 'Hoppy and bitter', 'base_price' => 550],
             ['slug' => 'house-wine', 'category' => 'bar', 'name' => 'House Wine', 'description' => 'Red or white', 'base_price' => 600],
@@ -31,6 +72,16 @@ class CommercialProductsSeeder extends Seeder
             ['slug' => 'kung-pao-beef', 'category' => 'restaurant', 'name' => 'Kung Pao Beef', 'description' => 'Wok-fried with peanuts and chilli', 'base_price' => 950],
             ['slug' => 'pad-thai', 'category' => 'restaurant', 'name' => 'Pad Thai', 'description' => 'Good Thai noodles with prawns', 'base_price' => 800],
             ['slug' => 'green-curry', 'category' => 'restaurant', 'name' => 'Green Curry', 'description' => 'Good Thai coconut curry, medium spice', 'base_price' => 900],
-        ]);
+        ];
+
+        DB::table('base_commercial_products')->insert(array_map(
+            function (array $product) use ($categoryIds): array {
+                $product['category_id'] = $categoryIds[$product['category']];
+                unset($product['category']);
+
+                return $product;
+            },
+            $products
+        ));
     }
 }

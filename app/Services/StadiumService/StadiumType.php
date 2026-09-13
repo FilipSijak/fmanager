@@ -19,6 +19,16 @@ enum StadiumType: string
         };
     }
 
+    public static function fromClubRank(int $rank): self
+    {
+        return match (true) {
+            $rank <= 3 => self::VILLAGE,
+            $rank <= 11 => self::LOCAL,
+            $rank <= 16 => self::REGIONAL,
+            default => self::GLOBAL,
+        };
+    }
+
     public function maximumCapacity(): int
     {
         return match ($this) {
@@ -31,11 +41,6 @@ enum StadiumType: string
 
     public function commercialLimit(): int
     {
-        return match ($this) {
-            self::VILLAGE => 1,
-            self::LOCAL => 3,
-            self::REGIONAL => 6,
-            self::GLOBAL => 10,
-        };
+        return StadiumConfig::COMMERCIAL_LIMITS[$this->value];
     }
 }

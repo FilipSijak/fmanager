@@ -1,8 +1,10 @@
 import { Head } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import StadiumSubPageHeader from '@/components/game/StadiumSubPageHeader';
 import GameLayout from '@/layouts/GameLayout';
+
+const monoFont = { fontFamily: "'Courier New', ui-monospace, monospace" };
 
 type StandPlan = {
     id: string;
@@ -112,6 +114,66 @@ const COST_PER_SEAT = 50;
 const WEEKS_PER_1000_SEATS = 2;
 const CAPACITY_STEP = 500;
 
+type CommercialVenue = {
+    id: string;
+    name: string;
+    description: string;
+    built: boolean;
+    buildCost: number;
+    weeklyRevenue: number;
+};
+
+const initialVenues: CommercialVenue[] = [
+    {
+        id: 'bar',
+        name: 'Bar',
+        description: 'Matchday drinks and hospitality',
+        built: true,
+        buildCost: 350_000,
+        weeklyRevenue: 8_000,
+    },
+    {
+        id: 'restaurant',
+        name: 'Restaurant',
+        description: 'Sit-down dining for hospitality guests',
+        built: true,
+        buildCost: 500_000,
+        weeklyRevenue: 6_500,
+    },
+    {
+        id: 'shop',
+        name: 'Shop',
+        description: 'Merchandise and club store',
+        built: true,
+        buildCost: 250_000,
+        weeklyRevenue: 4_200,
+    },
+    {
+        id: 'casino',
+        name: 'Casino',
+        description: 'High-roller matchday gaming lounge',
+        built: false,
+        buildCost: 2_500_000,
+        weeklyRevenue: 45_000,
+    },
+    {
+        id: 'hotel',
+        name: 'Hotel',
+        description: 'On-site stay for visiting fans and staff',
+        built: false,
+        buildCost: 4_000_000,
+        weeklyRevenue: 60_000,
+    },
+    {
+        id: 'nightclub',
+        name: 'Nightclub',
+        description: 'Post-match entertainment venue',
+        built: false,
+        buildCost: 1_200_000,
+        weeklyRevenue: 22_000,
+    },
+];
+
 function formatMoney(value: number): string {
     return `£${Math.round(value).toLocaleString('en-US')}`;
 }
@@ -133,10 +195,10 @@ function ToggleButton({
         <button
             type="button"
             onClick={onClick}
-            className={`w-full cursor-pointer rounded-full border px-4 py-1.5 text-sm font-bold tracking-wide uppercase transition-colors ${
+            className={`w-full cursor-pointer border px-4 py-1.5 text-sm font-bold tracking-wide uppercase transition-colors ${
                 active
-                    ? 'border-[#f5f000] bg-[#3a3410] text-[#f5f000]'
-                    : 'border-[#4a5662] bg-[#182029] text-[#6b7784] hover:border-[#6b7784]'
+                    ? 'border-[#39ff14]/60 bg-[#0f2a0f] text-[#39ff14] [text-shadow:0_0_5px_rgba(57,255,20,0.6)]'
+                    : 'border-[#1f3a1f] bg-[#020a05] text-[#5fae5f] hover:border-[#39ff14]/40'
             }`}
         >
             {label}
@@ -161,18 +223,18 @@ function StepperRow({
                 type="button"
                 aria-label={`Decrease ${label}`}
                 onClick={onDecrease}
-                className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#4a5662] bg-[#182029] text-[#f5f000] hover:bg-[#232d38]"
+                className="flex size-7 shrink-0 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#39ff14] hover:bg-[#0f2a0f]"
             >
                 <Minus size={14} />
             </button>
-            <span className="min-w-[120px] flex-1 text-center text-sm font-bold text-[#e6ecf1]">
+            <span className="min-w-[120px] flex-1 text-center text-sm font-bold text-[#c8ffb0]">
                 {value}
             </span>
             <button
                 type="button"
                 aria-label={`Increase ${label}`}
                 onClick={onIncrease}
-                className="flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full border border-[#4a5662] bg-[#182029] text-[#f5f000] hover:bg-[#232d38]"
+                className="flex size-7 shrink-0 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#39ff14] hover:bg-[#0f2a0f]"
             >
                 <Plus size={14} />
             </button>
@@ -180,9 +242,159 @@ function StepperRow({
     );
 }
 
+function BuiltVenueRow({ venue }: { venue: CommercialVenue }) {
+    return (
+        <div className="flex items-center justify-between gap-4 border-b border-[#132a13] px-2 py-2 text-xs last:border-b-0">
+            <div className="min-w-0">
+                <p className="truncate font-bold tracking-wide text-[#c8ffb0] uppercase">
+                    {venue.name}
+                </p>
+                <p className="truncate text-[#5fae5f]">{venue.description}</p>
+            </div>
+            <span className="shrink-0 font-bold text-[#f5f000]">
+                {formatMoney(venue.weeklyRevenue)}/wk
+            </span>
+        </div>
+    );
+}
+
+function BuildVenueModal({
+    venues,
+    index,
+    onNavigate,
+    onBuild,
+    onClose,
+}: {
+    venues: CommercialVenue[];
+    index: number;
+    onNavigate: (direction: -1 | 1) => void;
+    onBuild: (id: string) => void;
+    onClose: () => void;
+}) {
+    const venue = venues[index];
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-6">
+            <div
+                className="relative w-full max-w-sm border-2 border-[#39ff14]/50 bg-[#04120a] shadow-[0_0_30px_rgba(57,255,20,0.2)]"
+                style={monoFont}
+            >
+                <div className="flex items-center justify-between border-b border-[#1f3a1f] bg-[#08210f] px-5 py-3">
+                    <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
+                        Build New Venue
+                    </span>
+                    <button
+                        type="button"
+                        aria-label="Close"
+                        onClick={onClose}
+                        className="flex size-7 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#c8ffb0] hover:bg-[#0f2a0f]"
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
+
+                {venue ? (
+                    <div className="flex flex-col gap-4 p-6">
+                        <div className="flex items-center justify-center gap-4">
+                            <button
+                                type="button"
+                                aria-label="Previous venue"
+                                onClick={() => onNavigate(-1)}
+                                className="flex size-8 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#39ff14] hover:bg-[#0f2a0f]"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <p className="min-w-[160px] text-center text-lg font-bold tracking-wide text-[#39ff14] uppercase [text-shadow:0_0_6px_rgba(57,255,20,0.6)]">
+                                {venue.name}
+                            </p>
+                            <button
+                                type="button"
+                                aria-label="Next venue"
+                                onClick={() => onNavigate(1)}
+                                className="flex size-8 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#39ff14] hover:bg-[#0f2a0f]"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+
+                        <p className="text-center text-xs text-[#5fae5f]">
+                            {venue.description}
+                        </p>
+
+                        <div className="flex flex-col gap-1 border-t border-[#1f3a1f] pt-4 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-[#5fae5f]">
+                                    Build Cost
+                                </span>
+                                <span className="font-bold text-[#c8ffb0]">
+                                    {formatMoney(venue.buildCost)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-[#5fae5f]">
+                                    Weekly Revenue
+                                </span>
+                                <span className="font-bold text-[#f5f000]">
+                                    {formatMoney(venue.weeklyRevenue)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => onBuild(venue.id)}
+                            className="w-full cursor-pointer border border-[#39ff14]/60 bg-[#0f2a0f] py-2 text-sm font-bold tracking-wide text-[#39ff14] uppercase hover:bg-[#153a15] [text-shadow:0_0_5px_rgba(57,255,20,0.6)]"
+                        >
+                            Build {venue.name}
+                        </button>
+                    </div>
+                ) : (
+                    <p className="p-6 text-center text-xs text-[#5fae5f]">
+                        All available venues have been built.
+                    </p>
+                )}
+            </div>
+        </div>
+    );
+}
+
 export default function StadiumConstruction() {
     const [stands, setStands] = useState<StandPlan[]>(initialStands);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [venues, setVenues] = useState<CommercialVenue[]>(initialVenues);
+    const [isBuildModalOpen, setIsBuildModalOpen] = useState(false);
+    const [buildModalIndex, setBuildModalIndex] = useState(0);
+
+    const buildVenue = (id: string) => {
+        setVenues((current) =>
+            current.map((v) => (v.id === id ? { ...v, built: true } : v)),
+        );
+    };
+
+    const builtVenues = venues.filter((v) => v.built);
+    const buildableVenues = venues.filter((v) => !v.built);
+
+    const openBuildModal = () => {
+        setBuildModalIndex(0);
+        setIsBuildModalOpen(true);
+    };
+
+    const navigateBuildModal = (direction: -1 | 1) => {
+        setBuildModalIndex((current) => {
+            const length = buildableVenues.length;
+            if (length === 0) {
+                return 0;
+            }
+            return (current + direction + length) % length;
+        });
+    };
+
+    const buildFromModal = (id: string) => {
+        buildVenue(id);
+        setBuildModalIndex((current) =>
+            Math.max(0, Math.min(current, buildableVenues.length - 2)),
+        );
+    };
 
     const stand = stands[activeIndex];
     const totalCapacity = stands.reduce((sum, s) => sum + s.capacity, 0);
@@ -213,38 +425,60 @@ export default function StadiumConstruction() {
     return (
         <GameLayout active="Nations & Clubs">
             <Head title="AC Milan - Stadium Construction" />
-            <main className="relative flex min-h-screen flex-1 flex-col items-center bg-[#10151c] p-6 text-white sm:p-10">
+            <main
+                className="relative flex min-h-screen flex-1 flex-col items-center overflow-hidden bg-black p-6 text-[#c8ffb0] sm:p-10"
+                style={monoFont}
+            >
+                <div
+                    className="pointer-events-none absolute inset-0 opacity-20"
+                    style={{
+                        backgroundImage:
+                            'repeating-linear-gradient(0deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 1px, transparent 1px, transparent 3px)',
+                    }}
+                />
                 <StadiumSubPageHeader />
 
-                <div className="w-full max-w-4xl border border-[#4a5662] bg-[#141b23] p-5 sm:p-8">
-                    <div className="mb-6 flex items-center justify-between border-b border-[#4a5662] pb-3">
-                        <span className="text-xs font-bold tracking-widest text-[#aab4bd] uppercase">
+                <header className="relative mb-6 text-center">
+                    <p className="text-xs tracking-[0.3em] text-[#5fae5f] uppercase">
+                        AC Milan
+                    </p>
+                    <h1 className="mt-1 text-2xl font-bold tracking-widest text-[#39ff14] uppercase [text-shadow:0_0_8px_rgba(57,255,20,0.7)]">
+                        Stadium Construction
+                    </h1>
+                    <p className="mt-1 text-xs tracking-widest text-[#5fae5f] uppercase">
+                        Season 2001/02
+                    </p>
+                </header>
+
+                <div className="relative w-full max-w-4xl border-2 border-[#f5f000]/50 bg-[#04120a] shadow-[0_0_20px_rgba(245,240,0,0.15)]">
+                    <div className="flex items-center justify-between border-b border-[#f5f000]/50 bg-[#241f08] px-5 py-3 sm:px-8">
+                        <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
                             Stadium Capacity
                         </span>
-                        <span className="text-xl font-bold text-[#f5f000]">
+                        <span className="text-xl font-bold text-[#f5f000] [text-shadow:0_0_5px_rgba(245,240,0,0.5)]">
                             {formatNumber(totalCapacity)}
                         </span>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-8 p-5 sm:p-8 md:grid-cols-2">
                         <div className="flex flex-col gap-5">
                             <div className="flex items-center justify-center gap-4">
                                 <button
                                     type="button"
                                     aria-label="Previous stand"
                                     onClick={() => goToStand(-1)}
-                                    className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-[#4a5662] bg-[#182029] text-[#f5f000] hover:bg-[#232d38]"
+                                    className="flex size-8 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#39ff14] hover:bg-[#0f2a0f]"
                                 >
                                     <ChevronLeft size={18} />
                                 </button>
-                                <h1 className="min-w-[220px] text-center text-lg font-bold tracking-wide text-[#f5f000] uppercase">
+                                <h1 className="min-w-[220px] text-center text-lg font-bold tracking-wide text-[#39ff14] uppercase [text-shadow:0_0_6px_rgba(57,255,20,0.6)]">
                                     {stand.label}
                                 </h1>
                                 <button
                                     type="button"
                                     aria-label="Next stand"
                                     onClick={() => goToStand(1)}
-                                    className="flex size-8 cursor-pointer items-center justify-center rounded-full border border-[#4a5662] bg-[#182029] text-[#f5f000] hover:bg-[#232d38]"
+                                    className="flex size-8 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#39ff14] hover:bg-[#0f2a0f]"
                                 >
                                     <ChevronRight size={18} />
                                 </button>
@@ -301,35 +535,35 @@ export default function StadiumConstruction() {
                                 }
                             />
 
-                            <div className="flex flex-col gap-2 border-t border-[#4a5662] pt-4 text-sm">
+                            <div className="flex flex-col gap-2 border-t border-[#1f3a1f] pt-4 text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-[#aab4bd]">
+                                    <span className="text-[#5fae5f]">
                                         Improvement Cost
                                     </span>
-                                    <span className="font-bold text-[#e6ecf1]">
+                                    <span className="font-bold text-[#c8ffb0]">
                                         {formatMoney(improvementCost)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-[#aab4bd]">
+                                    <span className="text-[#5fae5f]">
                                         Cash Available
                                     </span>
-                                    <span className="font-bold text-[#e6ecf1]">
+                                    <span className="font-bold text-[#c8ffb0]">
                                         {formatMoney(CASH_AVAILABLE)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-[#aab4bd]">
+                                    <span className="text-[#5fae5f]">
                                         Construction Time
                                     </span>
-                                    <span className="font-bold text-[#e6ecf1]">
+                                    <span className="font-bold text-[#c8ffb0]">
                                         {constructionWeeks} week
                                         {constructionWeeks === 1 ? '' : 's'}
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-3 border-t border-[#4a5662] pt-4">
+                            <div className="flex flex-col gap-3 border-t border-[#1f3a1f] pt-4">
                                 <StepperRow
                                     label="maintenance"
                                     value={`${stand.maintenancePercent}%`}
@@ -349,32 +583,68 @@ export default function StadiumConstruction() {
                                     }
                                 />
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-[#aab4bd]">Cost</span>
-                                    <span className="font-bold text-[#e6ecf1]">
+                                    <span className="text-[#5fae5f]">Cost</span>
+                                    <span className="font-bold text-[#c8ffb0]">
                                         {formatMoney(maintenanceCost)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-[#aab4bd]">
+                                    <span className="text-[#5fae5f]">
                                         Ground Condition
                                     </span>
-                                    <span className="font-bold text-[#e6ecf1]">
+                                    <span className="font-bold text-[#c8ffb0]">
                                         {stand.groundCondition}%
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex min-h-[260px] flex-col items-center justify-center gap-2 border border-dashed border-[#4a5662] bg-[#0d1218] text-center">
-                            <span className="text-xs font-bold tracking-widest text-[#4a5662] uppercase">
+                        <div className="flex min-h-[260px] flex-col items-center justify-center gap-2 border border-dashed border-[#1f3a1f] bg-[#020a05] text-center">
+                            <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
                                 {stand.label}
                             </span>
-                            <span className="text-xs text-[#4a5662]">
+                            <span className="text-xs text-[#3a5a3a]">
                                 Stand visual coming soon
                             </span>
                         </div>
                     </div>
                 </div>
+
+                <div className="relative mt-6 w-full max-w-4xl border-2 border-[#f5f000]/50 bg-[#04120a] shadow-[0_0_20px_rgba(245,240,0,0.15)]">
+                    <div className="border-b border-[#f5f000]/50 bg-[#241f08] px-5 py-3 sm:px-8">
+                        <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
+                            Commercial Venues
+                        </span>
+                    </div>
+
+                    <div className="p-5 sm:p-8">
+                        {builtVenues.map((venue) => (
+                            <BuiltVenueRow key={venue.id} venue={venue} />
+                        ))}
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onClick={openBuildModal}
+                    className="mt-6 flex w-full max-w-4xl cursor-pointer items-center justify-center gap-2 border border-dashed border-[#1f3a1f] bg-[#04120a] px-5 py-3 text-xs font-bold tracking-widest text-[#5fae5f] uppercase hover:border-[#39ff14]/50 hover:text-[#39ff14]"
+                >
+                    <Plus size={14} />
+                    Build New Venue
+                </button>
+
+                {isBuildModalOpen && (
+                    <BuildVenueModal
+                        venues={buildableVenues}
+                        index={Math.min(
+                            buildModalIndex,
+                            Math.max(0, buildableVenues.length - 1),
+                        )}
+                        onNavigate={navigateBuildModal}
+                        onBuild={buildFromModal}
+                        onClose={() => setIsBuildModalOpen(false)}
+                    />
+                )}
             </main>
         </GameLayout>
     );

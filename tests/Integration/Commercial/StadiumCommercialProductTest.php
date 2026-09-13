@@ -2,6 +2,7 @@
 
 namespace Tests\Integration\Commercial;
 
+use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\BaseData\BaseCommercialProducts;
 use App\Models\Instance;
 use App\Models\Stadium;
@@ -19,9 +20,10 @@ class StadiumCommercialProductTest extends TestCase
     {
         $instance = Instance::factory()->create();
         $stadium = Stadium::factory()->create(['instance_id' => $instance->id]);
-        $baseProduct = BaseCommercialProducts::query()->forceCreate(['slug' => 'draft-lager', 'category' => 'bar', 'name' => 'Draft Lager', 'description' => 'Cold one, on tap', 'base_price' => 450]);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $baseProduct = BaseCommercialProducts::query()->forceCreate(['slug' => 'draft-lager', 'category_id' => $category->id, 'name' => 'Draft Lager', 'description' => 'Cold one, on tap', 'base_price' => 450]);
 
-        $product = StadiumCommercialProduct::factory()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'base_product_id' => $baseProduct->id, 'category' => 'bar', 'base_price' => 450, 'price_change_coef' => 1.1]);
+        $product = StadiumCommercialProduct::factory()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'base_product_id' => $baseProduct->id, 'base_price' => 450, 'price_change_coef' => 1.1]);
 
         $this->assertFalse($product->timestamps);
         $this->assertSame($stadium->id, $product->stadium->id);

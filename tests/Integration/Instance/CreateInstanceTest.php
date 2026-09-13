@@ -21,6 +21,7 @@ use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\PersonService;
+use App\Services\StadiumService\StadiumType;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
@@ -56,6 +57,8 @@ class CreateInstanceTest extends TestCase
         $this->assertSame(2, User::findOrFail($this->userId)->instances()->count());
         $instance = Instance::findOrFail($response->json('data.id'));
         $this->assertNotSame(1, $instance->id);
+        $arsenal = Club::query()->where('instance_id', $instance->id)->where('base_club_id', 1)->firstOrFail();
+        $this->assertSame(StadiumType::GLOBAL, $arsenal->stadium->type);
         $this->assertSame($instance->instance_hash, $response->json('data.instance_hash'));
         $tournament = Competition::where('type', 'tournament')->where('groups', 0)->first();
         $tournamentGroup = Competition::where('type', 'tournament')->where('groups', 1)->first();
