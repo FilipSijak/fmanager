@@ -1,16 +1,33 @@
+import { Link } from '@inertiajs/react';
 import { Image as ImageIcon } from 'lucide-react';
+import { finance, stadium } from '@/routes';
 
-const menuItems = [
-    'File',
-    'Stad',
-    'Busi',
-    'Chair',
-    'Data',
-    'Trans',
-    'Mngr',
-    'Squad',
-    'Match',
-    'Help',
+type MenuItem = {
+    label: string;
+    /** Path to a real icon asset (3:2 ratio). Falls back to a mock icon when unset. */
+    icon?: string;
+    href?: string;
+};
+
+const menuItems: MenuItem[] = [
+    { label: 'File' },
+    {
+        label: 'Stad',
+        icon: '/game-assets/menu/menu-stadium.png',
+        href: stadium.url(),
+    },
+    {
+        label: 'Finance',
+        icon: '/game-assets/menu/menu-finances.png',
+        href: finance.url(),
+    },
+    { label: 'Chair' },
+    { label: 'Data' },
+    { label: 'Trans' },
+    { label: 'Mngr' },
+    { label: 'Squad' },
+    { label: 'Match' },
+    { label: 'Help' },
 ];
 
 export default function TopMenu() {
@@ -28,20 +45,50 @@ export default function TopMenu() {
                     }}
                 />
 
-                {menuItems.map((item) => (
-                    <button
-                        key={item}
-                        type="button"
-                        className="relative flex w-28 shrink-0 flex-col items-center justify-center gap-2 border-r border-[#2a2f1a] px-3 py-3 hover:bg-[#39ff14]/10"
-                    >
-                        <span className="text-sm font-bold tracking-wide text-[#f5f000] uppercase [text-shadow:0_0_5px_rgba(245,240,0,0.6)]">
-                            {item}
-                        </span>
-                        <span className="flex h-14 w-full items-center justify-center rounded-sm border border-[#2a2f1a] bg-[#0a0f0a] text-[#4dfaff]">
-                            <ImageIcon size={36} />
-                        </span>
-                    </button>
-                ))}
+                {menuItems.map((item) => {
+                    const itemContent = (
+                        <>
+                            <span className="text-sm font-bold tracking-wide text-[#f5f000] uppercase [text-shadow:0_0_5px_rgba(245,240,0,0.6)]">
+                                {item.label}
+                            </span>
+                            <span
+                                className="flex w-full items-center justify-center overflow-hidden rounded-sm border border-[#2a2f1a] bg-[#0a0f0a] text-[#4dfaff]"
+                                style={{ aspectRatio: '3 / 2' }}
+                            >
+                                {item.icon ? (
+                                    <img
+                                        src={item.icon}
+                                        alt=""
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <ImageIcon size={36} />
+                                )}
+                            </span>
+                        </>
+                    );
+
+                    const className =
+                        'relative flex w-28 shrink-0 flex-col items-center justify-center gap-2 border-r border-[#2a2f1a] px-3 py-3 hover:bg-[#39ff14]/10';
+
+                    return item.href ? (
+                        <Link
+                            key={item.label}
+                            href={item.href}
+                            className={className}
+                        >
+                            {itemContent}
+                        </Link>
+                    ) : (
+                        <button
+                            key={item.label}
+                            type="button"
+                            className={className}
+                        >
+                            {itemContent}
+                        </button>
+                    );
+                })}
             </div>
         </div>
     );

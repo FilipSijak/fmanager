@@ -31,6 +31,7 @@ $templateRoutes = function () {
     Route::get('/player-profile', fn () => Inertia::render('PlayerProfile'))->name('player-profile');
     Route::get('/tactics', fn () => Inertia::render('Tactics'))->name('tactics');
     Route::get('/office', fn () => Inertia::render('Office'))->name('office');
+    Route::get('/finance', fn () => Inertia::render('Finance'))->name('finance');
     Route::get('/stadium', fn () => Inertia::render('Stadium'))->name('stadium');
     Route::get('/stadium/construction', fn () => Inertia::render('StadiumConstruction'))->name('stadium.construction');
     Route::get('/stadium/restaurants', fn () => Inertia::render('StadiumRestaurants'))->name('stadium.restaurants');
