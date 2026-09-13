@@ -9,6 +9,7 @@ use App\Models\BaseData\BaseStadiums;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Stadium;
+use App\Services\StadiumService\StadiumType;
 use Illuminate\Support\Facades\DB;
 
 class InitialSeed
@@ -74,6 +75,9 @@ class InitialSeed
             $stadium->country_code = $baseStadium->countryCode;
             $stadium->city_id = $baseStadium->cityId;
             $stadium->capacity = $baseStadium->capacity;
+            $stadiumType = StadiumType::fromCapacity($baseStadium->capacity);
+            $stadium->type = $stadiumType;
+            $stadium->commercial_limit = $stadiumType->commercialLimit();
 
             $stadiums[] = $stadium->toArray();
         }

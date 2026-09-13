@@ -21,6 +21,8 @@ class CreateStadiumsTable extends Migration
             $table->integer('city_id')->unsigned()->nullable();
             $table->integer('capacity');
             $table->unsignedInteger('active_capacity')->default(0);
+            $table->string('type', 20)->default('local');
+            $table->unsignedTinyInteger('commercial_limit')->default(3);
         });
     }
 
