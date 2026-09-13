@@ -124,6 +124,9 @@ const seasonProgress = [
     { month: 'May', balance: 4_235_000 },
 ];
 
+const POSITIVE_COLOR = '#39ff14';
+const NEGATIVE_COLOR = '#ff3b3b';
+
 function SeasonChart() {
     const width = 760;
     const height = 220;
@@ -132,24 +135,26 @@ function SeasonChart() {
     const plotH = height - padding.top - padding.bottom;
 
     const values = seasonProgress.map((p) => p.balance);
-    const min = Math.min(...values);
-    const max = Math.max(...values);
+    const dataMin = Math.min(...values);
+    const dataMax = Math.max(...values);
+    const hasNegative = dataMin < 0;
+
+    // Keep the existing tight auto-scale when every value is positive, but
+    // extend the domain to include zero once a negative value appears so the
+    // baseline (and the pos/neg color split) has somewhere meaningful to sit.
+    const min = hasNegative ? Math.min(dataMin, 0) : dataMin;
+    const max = hasNegative ? Math.max(dataMax, 0) : dataMax;
     const range = max - min || 1;
+
+    const scaleY = (balance: number) =>
+        padding.top + plotH - ((balance - min) / range) * plotH;
 
     const points = seasonProgress.map((p, i) => {
         const x = padding.left + (i / (seasonProgress.length - 1)) * plotW;
-        const y = padding.top + plotH - ((p.balance - min) / range) * plotH;
-        return { x, y, ...p };
+        return { x, y: scaleY(p.balance), ...p };
     });
 
-    // Stepped ("step-after") path instead of straight diagonals, for an old
-    // terminal-plot look rather than a smooth modern line chart.
-    const stepPath = points
-        .map((p, i) => (i === 0 ? `M${p.x},${p.y}` : `H${p.x} V${p.y}`))
-        .join(' ');
-
-    const baselineY = padding.top + plotH;
-    const areaPath = `${stepPath} L${points[points.length - 1].x},${baselineY} L${points[0].x},${baselineY} Z`;
+    const zeroY = scaleY(0);
 
     const gridLines = 4;
 
@@ -202,35 +207,94 @@ function SeasonChart() {
                 </text>
             ))}
 
-            <path
-                d={areaPath}
-                fill="#39ff14"
-                fillOpacity="0.12"
-                stroke="none"
-            />
-            <path
-                d={stepPath}
-                fill="none"
-                stroke="#39ff14"
-                strokeWidth="2.5"
-                strokeLinejoin="miter"
-                style={{
-                    filter: 'drop-shadow(0 0 4px rgba(57,255,20,0.8))',
-                }}
-            />
-            {points.map((p) => (
-                <rect
-                    key={`dot-${p.month}`}
-                    x={p.x - 3}
-                    y={p.y - 3}
-                    width="6"
-                    height="6"
-                    fill="#f5f000"
-                    style={{
-                        filter: 'drop-shadow(0 0 3px rgba(245,240,0,0.8))',
-                    }}
+            {hasNegative && (
+                <line
+                    x1={padding.left}
+                    y1={zeroY}
+                    x2={width - padding.right}
+                    y2={zeroY}
+                    stroke="#f5f000"
+                    strokeOpacity="0.5"
+                    strokeWidth="1"
                 />
-            ))}
+            )}
+
+            {/* Each step's plateau is filled down/up to the zero line and colored
+                by that value's sign, instead of one single-color area. */}
+            {points.map((p, i) => {
+                if (i === 0) {
+                    return null;
+                }
+                const prev = points[i - 1];
+                const color =
+                    prev.balance >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR;
+                return (
+                    <rect
+                        key={`area-${p.month}`}
+                        x={prev.x}
+                        y={Math.min(prev.y, zeroY)}
+                        width={p.x - prev.x}
+                        height={Math.abs(zeroY - prev.y)}
+                        fill={color}
+                        fillOpacity="0.12"
+                    />
+                );
+            })}
+
+            {/* Stepped ("step-after") segments instead of smooth diagonals, for an
+                old terminal-plot look, colored per-segment by sign. */}
+            {points.map((p, i) => {
+                if (i === 0) {
+                    return null;
+                }
+                const prev = points[i - 1];
+                const prevColor =
+                    prev.balance >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR;
+                const currColor =
+                    p.balance >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR;
+                return (
+                    <g key={`seg-${p.month}`}>
+                        <line
+                            x1={prev.x}
+                            y1={prev.y}
+                            x2={p.x}
+                            y2={prev.y}
+                            stroke={prevColor}
+                            strokeWidth="2.5"
+                            style={{
+                                filter: `drop-shadow(0 0 4px ${prevColor})`,
+                            }}
+                        />
+                        <line
+                            x1={p.x}
+                            y1={prev.y}
+                            x2={p.x}
+                            y2={p.y}
+                            stroke={currColor}
+                            strokeWidth="2.5"
+                            style={{
+                                filter: `drop-shadow(0 0 4px ${currColor})`,
+                            }}
+                        />
+                    </g>
+                );
+            })}
+            {points.map((p) => {
+                const color = p.balance >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR;
+                return (
+                    <rect
+                        key={`dot-${p.month}`}
+                        x={p.x - 3}
+                        y={p.y - 3}
+                        width="6"
+                        height="6"
+                        fill={p.balance >= 0 ? '#f5f000' : color}
+                        style={{
+                            filter: `drop-shadow(0 0 3px ${color})`,
+                        }}
+                    />
+                );
+            })}
         </svg>
     );
 }
