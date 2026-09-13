@@ -41,11 +41,6 @@ enum StadiumType: string
 
     public function commercialLimit(): int
     {
-        return match ($this) {
-            self::VILLAGE => 5,
-            self::LOCAL => 8,
-            self::REGIONAL => 12,
-            self::GLOBAL => 20,
-        };
+        return StadiumConfig::COMMERCIAL_LIMITS[$this->value];
     }
 }
