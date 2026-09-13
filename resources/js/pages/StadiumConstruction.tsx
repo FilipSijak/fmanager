@@ -114,6 +114,66 @@ const COST_PER_SEAT = 50;
 const WEEKS_PER_1000_SEATS = 2;
 const CAPACITY_STEP = 500;
 
+type CommercialVenue = {
+    id: string;
+    name: string;
+    description: string;
+    built: boolean;
+    buildCost: number;
+    weeklyRevenue: number;
+};
+
+const initialVenues: CommercialVenue[] = [
+    {
+        id: 'bar',
+        name: 'Bar',
+        description: 'Matchday drinks and hospitality',
+        built: true,
+        buildCost: 350_000,
+        weeklyRevenue: 8_000,
+    },
+    {
+        id: 'restaurant',
+        name: 'Restaurant',
+        description: 'Sit-down dining for hospitality guests',
+        built: true,
+        buildCost: 500_000,
+        weeklyRevenue: 6_500,
+    },
+    {
+        id: 'shop',
+        name: 'Shop',
+        description: 'Merchandise and club store',
+        built: true,
+        buildCost: 250_000,
+        weeklyRevenue: 4_200,
+    },
+    {
+        id: 'casino',
+        name: 'Casino',
+        description: 'High-roller matchday gaming lounge',
+        built: false,
+        buildCost: 2_500_000,
+        weeklyRevenue: 45_000,
+    },
+    {
+        id: 'hotel',
+        name: 'Hotel',
+        description: 'On-site stay for visiting fans and staff',
+        built: false,
+        buildCost: 4_000_000,
+        weeklyRevenue: 60_000,
+    },
+    {
+        id: 'nightclub',
+        name: 'Nightclub',
+        description: 'Post-match entertainment venue',
+        built: false,
+        buildCost: 1_200_000,
+        weeklyRevenue: 22_000,
+    },
+];
+
 function formatMoney(value: number): string {
     return `£${Math.round(value).toLocaleString('en-US')}`;
 }
@@ -182,9 +242,73 @@ function StepperRow({
     );
 }
 
+function BuiltVenueRow({ venue }: { venue: CommercialVenue }) {
+    return (
+        <div className="flex items-center justify-between gap-4 border-b border-[#132a13] px-2 py-2 text-xs last:border-b-0">
+            <div className="min-w-0">
+                <p className="truncate font-bold tracking-wide text-[#c8ffb0] uppercase">
+                    {venue.name}
+                </p>
+                <p className="truncate text-[#5fae5f]">{venue.description}</p>
+            </div>
+            <span className="shrink-0 font-bold text-[#f5f000]">
+                {formatMoney(venue.weeklyRevenue)}/wk
+            </span>
+        </div>
+    );
+}
+
+function BuildableVenueCard({
+    venue,
+    onBuild,
+}: {
+    venue: CommercialVenue;
+    onBuild: () => void;
+}) {
+    return (
+        <div className="flex flex-col gap-3 border border-[#1f3a1f] bg-[#020a05] p-4">
+            <p className="text-sm font-bold tracking-wide text-[#c8ffb0] uppercase">
+                {venue.name}
+            </p>
+            <p className="text-xs text-[#5fae5f]">{venue.description}</p>
+            <div className="flex flex-col gap-1 text-xs">
+                <div className="flex justify-between">
+                    <span className="text-[#5fae5f]">Build Cost</span>
+                    <span className="font-bold text-[#c8ffb0]">
+                        {formatMoney(venue.buildCost)}
+                    </span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="text-[#5fae5f]">Weekly Revenue</span>
+                    <span className="font-bold text-[#f5f000]">
+                        {formatMoney(venue.weeklyRevenue)}
+                    </span>
+                </div>
+            </div>
+            <button
+                type="button"
+                onClick={onBuild}
+                className="w-full cursor-pointer border border-[#39ff14]/60 bg-[#0f2a0f] py-1.5 text-xs font-bold tracking-wide text-[#39ff14] uppercase hover:bg-[#153a15] [text-shadow:0_0_5px_rgba(57,255,20,0.6)]"
+            >
+                Build
+            </button>
+        </div>
+    );
+}
+
 export default function StadiumConstruction() {
     const [stands, setStands] = useState<StandPlan[]>(initialStands);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [venues, setVenues] = useState<CommercialVenue[]>(initialVenues);
+
+    const buildVenue = (id: string) => {
+        setVenues((current) =>
+            current.map((v) => (v.id === id ? { ...v, built: true } : v)),
+        );
+    };
+
+    const builtVenues = venues.filter((v) => v.built);
+    const buildableVenues = venues.filter((v) => !v.built);
 
     const stand = stands[activeIndex];
     const totalCapacity = stands.reduce((sum, s) => sum + s.capacity, 0);
@@ -385,6 +509,38 @@ export default function StadiumConstruction() {
                                 Stand visual coming soon
                             </span>
                         </div>
+                    </div>
+                </div>
+
+                <div className="relative mt-6 w-full max-w-4xl border border-[#1f3a1f] bg-[#04120a]">
+                    <div className="border-b border-[#1f3a1f] bg-[#08210f] px-5 py-3 sm:px-8">
+                        <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
+                            Commercial Venues
+                        </span>
+                    </div>
+
+                    <div className="p-5 sm:p-8">
+                        {builtVenues.map((venue) => (
+                            <BuiltVenueRow key={venue.id} venue={venue} />
+                        ))}
+                    </div>
+                </div>
+
+                <div className="relative mt-6 w-full max-w-4xl border border-[#1f3a1f] bg-[#04120a]">
+                    <div className="border-b border-[#1f3a1f] bg-[#08210f] px-5 py-3 sm:px-8">
+                        <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
+                            Build New Venue
+                        </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-8 lg:grid-cols-3">
+                        {buildableVenues.map((venue) => (
+                            <BuildableVenueCard
+                                key={venue.id}
+                                venue={venue}
+                                onBuild={() => buildVenue(venue.id)}
+                            />
+                        ))}
                     </div>
                 </div>
             </main>
