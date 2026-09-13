@@ -14,6 +14,11 @@ class Stadium extends Model
 
     public $timestamps = false;
 
+    public function commercialProducts(): HasMany
+    {
+        return $this->hasMany(StadiumCommercialProduct::class);
+    }
+
     public function stands(): HasMany
     {
         return $this->hasMany(StadiumStand::class);
