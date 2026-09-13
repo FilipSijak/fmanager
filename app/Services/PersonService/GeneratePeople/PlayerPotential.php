@@ -8,6 +8,7 @@ use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use Carbon\CarbonInterface;
+use Random\Randomizer;
 
 class PlayerPotential extends PersonPotential
 {
@@ -19,8 +20,9 @@ class PlayerPotential extends PersonPotential
 
     private readonly AgePotentialCurve $physicalAgePotentialCurve;
 
-    public function __construct()
+    public function __construct(?Randomizer $randomizer = null)
     {
+        parent::__construct($randomizer);
         $this->agePotentialCurve = new AgePotentialCurve(self::AGE_POTENTIAL_BRACKETS);
         $this->technicalAgePotentialCurve = new AgePotentialCurve(self::TECHNICAL_AGE_POTENTIAL_BRACKETS);
         $this->mentalAgePotentialCurve = new AgePotentialCurve(self::MENTAL_AGE_POTENTIAL_BRACKETS);

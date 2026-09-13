@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\StadiumService;
 
 use App\Models\Stadium;
 use App\Models\StadiumStand;
@@ -8,6 +8,16 @@ use App\StadiumStandStatus;
 
 class StadiumService
 {
+    public function typeForCapacity(int $capacity): StadiumType
+    {
+        return StadiumType::fromCapacity($capacity);
+    }
+
+    public function commercialLimitForType(StadiumType $type): int
+    {
+        return $type->commercialLimit();
+    }
+
     public function recalculateCapacities(Stadium $stadium): void
     {
         $stands = StadiumStand::query()->whereBelongsTo($stadium);

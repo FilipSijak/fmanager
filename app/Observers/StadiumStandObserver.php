@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Models\StadiumStand;
-use App\Services\StadiumService;
+use App\Services\StadiumService\StadiumService;
 
 class StadiumStandObserver
 {
