@@ -18,6 +18,18 @@ class StadiumTypeTest extends TestCase
     }
 
     #[Test]
+    public function it_maps_club_rank_to_a_stadium_type(): void
+    {
+        $this->assertSame(StadiumType::VILLAGE, StadiumType::fromClubRank(1));
+        $this->assertSame(StadiumType::VILLAGE, StadiumType::fromClubRank(3));
+        $this->assertSame(StadiumType::LOCAL, StadiumType::fromClubRank(4));
+        $this->assertSame(StadiumType::LOCAL, StadiumType::fromClubRank(11));
+        $this->assertSame(StadiumType::REGIONAL, StadiumType::fromClubRank(12));
+        $this->assertSame(StadiumType::REGIONAL, StadiumType::fromClubRank(16));
+        $this->assertSame(StadiumType::GLOBAL, StadiumType::fromClubRank(17));
+    }
+
+    #[Test]
     public function it_defines_capacity_and_commercial_limits_for_each_type(): void
     {
         $this->assertSame(1000, StadiumType::VILLAGE->maximumCapacity());
