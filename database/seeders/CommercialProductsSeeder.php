@@ -15,6 +15,8 @@ class CommercialProductsSeeder extends Seeder
         $categories = [
             ['slug' => 'shop', 'name' => 'Shop', 'description' => 'Retail products and club merchandise'],
             ['slug' => 'bar', 'name' => 'Bar', 'description' => 'Drinks and refreshments'],
+            ['slug' => 'cafe', 'name' => 'Cafe', 'description' => 'Coffee, tea, and light refreshments'],
+            ['slug' => 'food_kiosk', 'name' => 'Food Kiosk', 'description' => 'Quick matchday food'],
             ['slug' => 'restaurant', 'name' => 'Restaurant', 'description' => 'Casual dining'],
             ['slug' => 'casino', 'name' => 'Casino', 'description' => 'Casino entertainment'],
             ['slug' => 'hotel', 'name' => 'Hotel', 'description' => 'Stadium hotel accommodation'],
@@ -27,14 +29,16 @@ class CommercialProductsSeeder extends Seeder
 
         $categoryIds = DB::table('base_commercial_categories')->pluck('id', 'slug');
         $availableStadiumTypes = [
-            'shop' => ['village', 'local', 'regional', 'global'],
+            'shop' => ['local', 'regional', 'global'],
             'bar' => ['village', 'local', 'regional', 'global'],
+            'cafe' => ['village', 'local', 'regional', 'global'],
+            'food_kiosk' => ['village', 'local'],
             'restaurant' => ['local', 'regional', 'global'],
-            'casino' => ['regional', 'global'],
-            'hotel' => ['regional', 'global'],
-            'vip_hospitality' => ['local', 'regional', 'global'],
+            'casino' => ['global'],
+            'hotel' => ['global'],
+            'vip_hospitality' => ['global'],
             'fine_dining' => ['regional', 'global'],
-            'events_venue' => ['regional', 'global'],
+            'events_venue' => ['global'],
         ];
         $availability = [];
 
