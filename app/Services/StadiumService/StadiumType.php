@@ -12,9 +12,9 @@ enum StadiumType: string
     public static function fromCapacity(int $capacity): self
     {
         return match (true) {
-            $capacity <= 20000 => self::VILLAGE,
-            $capacity <= 40000 => self::LOCAL,
-            $capacity <= 70000 => self::REGIONAL,
+            $capacity <= 1000 => self::VILLAGE,
+            $capacity <= 5000 => self::LOCAL,
+            $capacity <= 30000 => self::REGIONAL,
             default => self::GLOBAL,
         };
     }
@@ -22,9 +22,9 @@ enum StadiumType: string
     public function maximumCapacity(): int
     {
         return match ($this) {
-            self::VILLAGE => 20000,
-            self::LOCAL => 40000,
-            self::REGIONAL => 70000,
+            self::VILLAGE => 1000,
+            self::LOCAL => 5000,
+            self::REGIONAL => 30000,
             self::GLOBAL => 100000,
         };
     }
