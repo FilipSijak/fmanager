@@ -169,18 +169,29 @@ export default function Stadium() {
                                 />
                             );
                         })}
-                        {hoveredHotspot && (
-                            <div
-                                className="pointer-events-none absolute -translate-x-1/2 -translate-y-full rounded border border-[#4a5662] bg-[#202831] px-3 py-1.5 text-xs font-bold whitespace-nowrap text-[#f5f000] shadow-lg"
-                                style={{
-                                    left: `${((hoveredHotspot.box[0] + hoveredHotspot.box[2]) / 2 / CANVAS_W) * 100}%`,
-                                    top: `${(hoveredHotspot.box[1] / CANVAS_H) * 100}%`,
-                                    marginTop: '-8px',
-                                }}
-                            >
-                                {hoveredHotspot.destination}
-                            </div>
-                        )}
+                        {hoveredHotspot &&
+                            (() => {
+                                // When the hotspot's top edge is too close to the
+                                // scene's top, an above-anchored tooltip would be
+                                // clipped by the container, so flip it to render
+                                // below the edge instead.
+                                const tooLowToFitAbove =
+                                    hoveredHotspot.box[1] < 80;
+                                return (
+                                    <div
+                                        className={`pointer-events-none absolute -translate-x-1/2 rounded border border-[#4a5662] bg-[#202831] px-3 py-1.5 text-xs font-bold whitespace-nowrap text-[#f5f000] shadow-lg ${tooLowToFitAbove ? '' : '-translate-y-full'}`}
+                                        style={{
+                                            left: `${((hoveredHotspot.box[0] + hoveredHotspot.box[2]) / 2 / CANVAS_W) * 100}%`,
+                                            top: `${(hoveredHotspot.box[1] / CANVAS_H) * 100}%`,
+                                            marginTop: tooLowToFitAbove
+                                                ? '8px'
+                                                : '-8px',
+                                        }}
+                                    >
+                                        {hoveredHotspot.destination}
+                                    </div>
+                                );
+                            })()}
                     </div>
                 </section>
             </main>
