@@ -352,8 +352,20 @@ export default function StadiumConstruction() {
                 />
                 <StadiumSubPageHeader />
 
-                <div className="relative w-full max-w-4xl border border-[#1f3a1f] bg-[#04120a]">
-                    <div className="flex items-center justify-between border-b border-[#1f3a1f] bg-[#08210f] px-5 py-3 sm:px-8">
+                <header className="relative mb-6 text-center">
+                    <p className="text-xs tracking-[0.3em] text-[#5fae5f] uppercase">
+                        AC Milan
+                    </p>
+                    <h1 className="mt-1 text-2xl font-bold tracking-widest text-[#39ff14] uppercase [text-shadow:0_0_8px_rgba(57,255,20,0.7)]">
+                        Stadium Construction
+                    </h1>
+                    <p className="mt-1 text-xs tracking-widest text-[#5fae5f] uppercase">
+                        Season 2001/02
+                    </p>
+                </header>
+
+                <div className="relative w-full max-w-4xl border-2 border-[#f5f000]/50 bg-[#04120a] shadow-[0_0_20px_rgba(245,240,0,0.15)]">
+                    <div className="flex items-center justify-between border-b border-[#f5f000]/50 bg-[#241f08] px-5 py-3 sm:px-8">
                         <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
                             Stadium Capacity
                         </span>
@@ -512,8 +524,8 @@ export default function StadiumConstruction() {
                     </div>
                 </div>
 
-                <div className="relative mt-6 w-full max-w-4xl border border-[#1f3a1f] bg-[#04120a]">
-                    <div className="border-b border-[#1f3a1f] bg-[#08210f] px-5 py-3 sm:px-8">
+                <div className="relative mt-6 w-full max-w-4xl border-2 border-[#f5f000]/50 bg-[#04120a] shadow-[0_0_20px_rgba(245,240,0,0.15)]">
+                    <div className="border-b border-[#f5f000]/50 bg-[#241f08] px-5 py-3 sm:px-8">
                         <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
                             Commercial Venues
                         </span>
