@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\StadiumService;
 
 use App\Models\Stadium;
 use App\Models\StadiumStand;
