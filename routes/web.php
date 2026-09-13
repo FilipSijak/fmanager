@@ -32,6 +32,10 @@ $templateRoutes = function () {
     Route::get('/tactics', fn () => Inertia::render('Tactics'))->name('tactics');
     Route::get('/office', fn () => Inertia::render('Office'))->name('office');
     Route::get('/stadium', fn () => Inertia::render('Stadium'))->name('stadium');
+    Route::get('/stadium/construction', fn () => Inertia::render('StadiumConstruction'))->name('stadium.construction');
+    Route::get('/stadium/restaurants', fn () => Inertia::render('StadiumRestaurants'))->name('stadium.restaurants');
+    Route::get('/stadium/bars', fn () => Inertia::render('StadiumBars'))->name('stadium.bars');
+    Route::get('/stadium/shops', fn () => Inertia::render('StadiumShops'))->name('stadium.shops');
 };
 
 if (env('ENVIRONMENT') === 'dev') {
