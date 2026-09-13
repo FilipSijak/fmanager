@@ -29,4 +29,9 @@ class Stadium extends Model
     {
         return $this->hasMany(StadiumStand::class);
     }
+
+    public function commercialVenues(): HasMany
+    {
+        return $this->hasMany(StadiumCommercialVenue::class);
+    }
 }
