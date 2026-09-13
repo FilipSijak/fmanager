@@ -33,12 +33,12 @@ class StadiumTypeTest extends TestCase
     public function it_defines_capacity_and_commercial_limits_for_each_type(): void
     {
         $this->assertSame(1000, StadiumType::VILLAGE->maximumCapacity());
-        $this->assertSame(1, StadiumType::VILLAGE->commercialLimit());
+        $this->assertSame(5, StadiumType::VILLAGE->commercialLimit());
         $this->assertSame(5000, StadiumType::LOCAL->maximumCapacity());
-        $this->assertSame(3, StadiumType::LOCAL->commercialLimit());
+        $this->assertSame(8, StadiumType::LOCAL->commercialLimit());
         $this->assertSame(30000, StadiumType::REGIONAL->maximumCapacity());
-        $this->assertSame(6, StadiumType::REGIONAL->commercialLimit());
+        $this->assertSame(12, StadiumType::REGIONAL->commercialLimit());
         $this->assertSame(100000, StadiumType::GLOBAL->maximumCapacity());
-        $this->assertSame(10, StadiumType::GLOBAL->commercialLimit());
+        $this->assertSame(20, StadiumType::GLOBAL->commercialLimit());
     }
 }

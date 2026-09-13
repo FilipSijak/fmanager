@@ -42,10 +42,10 @@ enum StadiumType: string
     public function commercialLimit(): int
     {
         return match ($this) {
-            self::VILLAGE => 1,
-            self::LOCAL => 3,
-            self::REGIONAL => 6,
-            self::GLOBAL => 10,
+            self::VILLAGE => 5,
+            self::LOCAL => 8,
+            self::REGIONAL => 12,
+            self::GLOBAL => 20,
         };
     }
 }
