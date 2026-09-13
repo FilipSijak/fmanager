@@ -52,10 +52,12 @@ function StatCard({
     label,
     value,
     emphasize = false,
+    negative = false,
 }: {
     label: string;
     value: string;
     emphasize?: boolean;
+    negative?: boolean;
 }) {
     return (
         <div
@@ -69,8 +71,10 @@ function StatCard({
                 {label}
             </p>
             <p
-                className={`mt-1 font-bold text-[#f5f000] [text-shadow:0_0_5px_rgba(245,240,0,0.5)] ${
-                    emphasize ? 'text-2xl' : 'text-lg'
+                className={`mt-1 font-bold whitespace-nowrap ${emphasize ? 'text-2xl' : 'text-lg'} ${
+                    negative
+                        ? 'text-[#ff3b3b] [text-shadow:0_0_5px_rgba(255,59,59,0.5)]'
+                        : 'text-[#f5f000] [text-shadow:0_0_5px_rgba(245,240,0,0.5)]'
                 }`}
             >
                 {value}
@@ -377,6 +381,9 @@ const stadiumFinance = [
 ];
 
 export default function Finance() {
+    const bankBalance = -1_250_000;
+    const netProfit = -350_000;
+
     return (
         <GameLayout active="Nations & Clubs">
             <Head title="AC Milan - Finance" />
@@ -409,7 +416,8 @@ export default function Finance() {
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                             <StatCard
                                 label="Bank Balance"
-                                value={formatMoney(4_235_000)}
+                                value={formatMoney(bankBalance)}
+                                negative={bankBalance < 0}
                                 emphasize
                             />
                             <StatCard
@@ -434,7 +442,8 @@ export default function Finance() {
                             />
                             <StatCard
                                 label="Net Profit"
-                                value={formatMoney(4_250_000)}
+                                value={formatMoney(netProfit)}
+                                negative={netProfit < 0}
                                 emphasize
                             />
                         </div>
