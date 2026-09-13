@@ -1,5 +1,5 @@
 import { Head } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Minus, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Minus, Plus, X } from 'lucide-react';
 import { useState } from 'react';
 import StadiumSubPageHeader from '@/components/game/StadiumSubPageHeader';
 import GameLayout from '@/layouts/GameLayout';
@@ -258,40 +258,102 @@ function BuiltVenueRow({ venue }: { venue: CommercialVenue }) {
     );
 }
 
-function BuildableVenueCard({
-    venue,
+function BuildVenueModal({
+    venues,
+    index,
+    onNavigate,
     onBuild,
+    onClose,
 }: {
-    venue: CommercialVenue;
-    onBuild: () => void;
+    venues: CommercialVenue[];
+    index: number;
+    onNavigate: (direction: -1 | 1) => void;
+    onBuild: (id: string) => void;
+    onClose: () => void;
 }) {
+    const venue = venues[index];
+
     return (
-        <div className="flex flex-col gap-3 border border-[#1f3a1f] bg-[#020a05] p-4">
-            <p className="text-sm font-bold tracking-wide text-[#c8ffb0] uppercase">
-                {venue.name}
-            </p>
-            <p className="text-xs text-[#5fae5f]">{venue.description}</p>
-            <div className="flex flex-col gap-1 text-xs">
-                <div className="flex justify-between">
-                    <span className="text-[#5fae5f]">Build Cost</span>
-                    <span className="font-bold text-[#c8ffb0]">
-                        {formatMoney(venue.buildCost)}
-                    </span>
-                </div>
-                <div className="flex justify-between">
-                    <span className="text-[#5fae5f]">Weekly Revenue</span>
-                    <span className="font-bold text-[#f5f000]">
-                        {formatMoney(venue.weeklyRevenue)}
-                    </span>
-                </div>
-            </div>
-            <button
-                type="button"
-                onClick={onBuild}
-                className="w-full cursor-pointer border border-[#39ff14]/60 bg-[#0f2a0f] py-1.5 text-xs font-bold tracking-wide text-[#39ff14] uppercase hover:bg-[#153a15] [text-shadow:0_0_5px_rgba(57,255,20,0.6)]"
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-6">
+            <div
+                className="relative w-full max-w-sm border-2 border-[#39ff14]/50 bg-[#04120a] shadow-[0_0_30px_rgba(57,255,20,0.2)]"
+                style={monoFont}
             >
-                Build
-            </button>
+                <div className="flex items-center justify-between border-b border-[#1f3a1f] bg-[#08210f] px-5 py-3">
+                    <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
+                        Build New Venue
+                    </span>
+                    <button
+                        type="button"
+                        aria-label="Close"
+                        onClick={onClose}
+                        className="flex size-7 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#c8ffb0] hover:bg-[#0f2a0f]"
+                    >
+                        <X size={14} />
+                    </button>
+                </div>
+
+                {venue ? (
+                    <div className="flex flex-col gap-4 p-6">
+                        <div className="flex items-center justify-center gap-4">
+                            <button
+                                type="button"
+                                aria-label="Previous venue"
+                                onClick={() => onNavigate(-1)}
+                                className="flex size-8 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#39ff14] hover:bg-[#0f2a0f]"
+                            >
+                                <ChevronLeft size={18} />
+                            </button>
+                            <p className="min-w-[160px] text-center text-lg font-bold tracking-wide text-[#39ff14] uppercase [text-shadow:0_0_6px_rgba(57,255,20,0.6)]">
+                                {venue.name}
+                            </p>
+                            <button
+                                type="button"
+                                aria-label="Next venue"
+                                onClick={() => onNavigate(1)}
+                                className="flex size-8 cursor-pointer items-center justify-center border border-[#1f3a1f] bg-[#020a05] text-[#39ff14] hover:bg-[#0f2a0f]"
+                            >
+                                <ChevronRight size={18} />
+                            </button>
+                        </div>
+
+                        <p className="text-center text-xs text-[#5fae5f]">
+                            {venue.description}
+                        </p>
+
+                        <div className="flex flex-col gap-1 border-t border-[#1f3a1f] pt-4 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-[#5fae5f]">
+                                    Build Cost
+                                </span>
+                                <span className="font-bold text-[#c8ffb0]">
+                                    {formatMoney(venue.buildCost)}
+                                </span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-[#5fae5f]">
+                                    Weekly Revenue
+                                </span>
+                                <span className="font-bold text-[#f5f000]">
+                                    {formatMoney(venue.weeklyRevenue)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={() => onBuild(venue.id)}
+                            className="w-full cursor-pointer border border-[#39ff14]/60 bg-[#0f2a0f] py-2 text-sm font-bold tracking-wide text-[#39ff14] uppercase hover:bg-[#153a15] [text-shadow:0_0_5px_rgba(57,255,20,0.6)]"
+                        >
+                            Build {venue.name}
+                        </button>
+                    </div>
+                ) : (
+                    <p className="p-6 text-center text-xs text-[#5fae5f]">
+                        All available venues have been built.
+                    </p>
+                )}
+            </div>
         </div>
     );
 }
@@ -300,6 +362,8 @@ export default function StadiumConstruction() {
     const [stands, setStands] = useState<StandPlan[]>(initialStands);
     const [activeIndex, setActiveIndex] = useState(0);
     const [venues, setVenues] = useState<CommercialVenue[]>(initialVenues);
+    const [isBuildModalOpen, setIsBuildModalOpen] = useState(false);
+    const [buildModalIndex, setBuildModalIndex] = useState(0);
 
     const buildVenue = (id: string) => {
         setVenues((current) =>
@@ -309,6 +373,28 @@ export default function StadiumConstruction() {
 
     const builtVenues = venues.filter((v) => v.built);
     const buildableVenues = venues.filter((v) => !v.built);
+
+    const openBuildModal = () => {
+        setBuildModalIndex(0);
+        setIsBuildModalOpen(true);
+    };
+
+    const navigateBuildModal = (direction: -1 | 1) => {
+        setBuildModalIndex((current) => {
+            const length = buildableVenues.length;
+            if (length === 0) {
+                return 0;
+            }
+            return (current + direction + length) % length;
+        });
+    };
+
+    const buildFromModal = (id: string) => {
+        buildVenue(id);
+        setBuildModalIndex((current) =>
+            Math.max(0, Math.min(current, buildableVenues.length - 2)),
+        );
+    };
 
     const stand = stands[activeIndex];
     const totalCapacity = stands.reduce((sum, s) => sum + s.capacity, 0);
@@ -538,23 +624,27 @@ export default function StadiumConstruction() {
                     </div>
                 </div>
 
-                <div className="relative mt-6 w-full max-w-4xl border border-[#1f3a1f] bg-[#04120a]">
-                    <div className="border-b border-[#1f3a1f] bg-[#08210f] px-5 py-3 sm:px-8">
-                        <span className="text-xs font-bold tracking-widest text-[#5fae5f] uppercase">
-                            Build New Venue
-                        </span>
-                    </div>
+                <button
+                    type="button"
+                    onClick={openBuildModal}
+                    className="mt-6 flex w-full max-w-4xl cursor-pointer items-center justify-center gap-2 border border-dashed border-[#1f3a1f] bg-[#04120a] px-5 py-3 text-xs font-bold tracking-widest text-[#5fae5f] uppercase hover:border-[#39ff14]/50 hover:text-[#39ff14]"
+                >
+                    <Plus size={14} />
+                    Build New Venue
+                </button>
 
-                    <div className="grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 sm:p-8 lg:grid-cols-3">
-                        {buildableVenues.map((venue) => (
-                            <BuildableVenueCard
-                                key={venue.id}
-                                venue={venue}
-                                onBuild={() => buildVenue(venue.id)}
-                            />
-                        ))}
-                    </div>
-                </div>
+                {isBuildModalOpen && (
+                    <BuildVenueModal
+                        venues={buildableVenues}
+                        index={Math.min(
+                            buildModalIndex,
+                            Math.max(0, buildableVenues.length - 1),
+                        )}
+                        onNavigate={navigateBuildModal}
+                        onBuild={buildFromModal}
+                        onClose={() => setIsBuildModalOpen(false)}
+                    />
+                )}
             </main>
         </GameLayout>
     );

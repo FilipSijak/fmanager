@@ -6,9 +6,12 @@ use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
+use App\Models\StadiumStand;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\StadiumService\StadiumService;
 use App\Services\StadiumService\StadiumType;
+use App\StadiumStandPosition;
+use App\StadiumStandStatus;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -161,6 +164,56 @@ class StadiumServiceTest extends TestCase
         $categories = app(StadiumService::class)->buildableCommercialCategoriesForStadium($stadium);
 
         $this->assertCount(0, $categories);
+    }
+
+    #[Test]
+    public function it_accepts_a_stadium_build_when_stand_capacities_are_within_type_limits(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::LOCAL, 'capacity' => 0, 'active_capacity' => 0]);
+        StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 1000, 'status' => StadiumStandStatus::ACTIVE]);
+        StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH_EAST, 'capacity' => 2000, 'status' => StadiumStandStatus::UNDER_CONSTRUCTION]);
+        $stadium->refresh();
+
+        app(StadiumService::class)->validateStadiumBuild($stadium);
+
+        $this->assertSame(5000, app(StadiumService::class)->maximumCapacityForStadium($stadium));
+    }
+
+    #[Test]
+    public function it_rejects_a_stadium_build_above_the_type_capacity(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::VILLAGE, 'capacity' => 0, 'active_capacity' => 0]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium capacity exceeds the maximum for its stadium type.');
+
+        app(StadiumService::class)->validateStadiumCapacity($stadium, 1001);
+    }
+
+    #[Test]
+    public function it_rejects_a_stadium_build_when_stored_capacities_do_not_match_its_stands(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 0, 'active_capacity' => 0]);
+        StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 1000, 'status' => StadiumStandStatus::ACTIVE]);
+        $stadium->forceFill(['capacity' => 999, 'active_capacity' => 1000])->saveQuietly();
+        $stadium->refresh();
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium capacity does not match its stands.');
+
+        app(StadiumService::class)->validateStadiumBuild($stadium);
+    }
+
+    #[Test]
+    public function it_rejects_a_negative_stadium_capacity(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::VILLAGE]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium capacity cannot be negative.');
+
+        app(StadiumService::class)->validateStadiumCapacity($stadium, -1);
     }
 
     private function mapCategoryToStadiumType(int $categoryId, StadiumType $stadiumType): void

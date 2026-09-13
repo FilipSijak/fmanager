@@ -7,6 +7,7 @@ use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
 use App\Services\CommercialService\CommercialVenueSize;
+use App\StadiumStandPosition;
 use App\StadiumStandStatus;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
@@ -25,9 +26,54 @@ class StadiumService
         return $type->commercialLimit();
     }
 
-    /**
-     * @return Collection<int, StadiumCommercialVenue>
-     */
+    public function maximumCapacityForStadium(Stadium $stadium): int
+    {
+        return $stadium->type->maximumCapacity();
+    }
+
+    public function maximumStandsForStadium(Stadium $stadium): int
+    {
+        return count(StadiumStandPosition::cases());
+    }
+
+    public function validateStadiumCapacity(Stadium $stadium, int $capacity): void
+    {
+        if ($capacity < 0) {
+            throw new DomainException('Stadium capacity cannot be negative.');
+        }
+
+        if ($capacity > $this->maximumCapacityForStadium($stadium)) {
+            throw new DomainException('Stadium capacity exceeds the maximum for its stadium type.');
+        }
+    }
+
+    public function validateStadiumBuild(Stadium $stadium): void
+    {
+        $stands = $stadium->stands()->get();
+        $capacity = (int) $stands->sum('capacity');
+        $activeCapacity = (int) $stands
+            ->where('status', StadiumStandStatus::ACTIVE)
+            ->sum('capacity');
+
+        if ($stands->count() > $this->maximumStandsForStadium($stadium)) {
+            throw new DomainException('A stadium cannot have more than eight stands.');
+        }
+
+        if ($stands->contains(fn (StadiumStand $stand): bool => $stand->capacity !== null && $stand->capacity < 0)) {
+            throw new DomainException('Stadium stand capacity cannot be negative.');
+        }
+
+        $this->validateStadiumCapacity($stadium, $capacity);
+
+        if ((int) $stadium->capacity !== $capacity) {
+            throw new DomainException('Stadium capacity does not match its stands.');
+        }
+
+        if ((int) $stadium->active_capacity !== $activeCapacity) {
+            throw new DomainException('Stadium active capacity does not match its active stands.');
+        }
+    }
+
     public function commercialVenuesForStadium(Stadium $stadium): Collection
     {
         return StadiumCommercialVenue::query()
