@@ -8,6 +8,7 @@ use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Events\Transfers\TransferEvent;
 use App\Listeners\CompleteSeason;
+use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
@@ -30,6 +31,7 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         NextDay::class => [
+            CompleteStadiumStandConstruction::class,
             ProcessTransfers::class,
             RunDailyTraining::class,
         ],
