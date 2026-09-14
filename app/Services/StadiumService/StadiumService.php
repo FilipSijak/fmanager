@@ -17,7 +17,10 @@ use Illuminate\Support\Facades\DB;
 
 class StadiumService
 {
-    public function __construct(private readonly VenueConstructionCostCalculator $venueConstructionCostCalculator) {}
+    public function __construct(
+        private readonly VenueConstructionCostCalculator $venueConstructionCostCalculator,
+        private readonly StadiumExpansionCostCalculator $stadiumExpansionCostCalculator,
+    ) {}
 
     public function typeForCapacity(int $capacity): StadiumType
     {
@@ -155,6 +158,11 @@ class StadiumService
                 ),
             ]);
         });
+    }
+
+    public function stadiumExpansionCost(Stadium $stadium, int $additionalCapacity): int
+    {
+        return $this->stadiumExpansionCostCalculator->calculate($stadium, $additionalCapacity);
     }
 
     public function demolishCommercialVenue(Stadium $stadium, int $venueId): int

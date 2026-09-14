@@ -3,6 +3,7 @@
 namespace Tests\Integration\Services\StadiumService;
 
 use App\Models\BaseData\BaseCommercialCategory;
+use App\Models\BaseData\BaseStadiumExpansionCost;
 use App\Models\Country;
 use App\Models\Instance;
 use App\Models\Stadium;
@@ -215,6 +216,41 @@ class StadiumServiceTest extends TestCase
         $categories = app(StadiumService::class)->buildableCommercialCategoriesForStadium($stadium);
 
         $this->assertCount(0, $categories);
+    }
+
+    #[Test]
+    public function it_calculates_country_adjusted_expansion_cost_per_1000_seats(): void
+    {
+        $instance = Instance::factory()->create();
+        Country::query()->forceCreate(['code' => 'GBR', 'name' => 'United Kingdom', 'ranking' => 100, 'population' => 60000000]);
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'country_code' => 'GBR', 'type' => StadiumType::LOCAL, 'capacity' => 4000]);
+        BaseStadiumExpansionCost::query()->create(['stadium_type' => StadiumType::LOCAL, 'cost_per_1000_seats' => 40000]);
+
+        $cost = app(StadiumService::class)->stadiumExpansionCost($stadium, 1000);
+
+        $this->assertSame(60000, $cost);
+    }
+
+    #[Test]
+    public function it_rejects_an_expansion_above_the_stadium_type_capacity(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 5000]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium expansion exceeds the maximum capacity for its type.');
+
+        app(StadiumService::class)->stadiumExpansionCost($stadium, 1);
+    }
+
+    #[Test]
+    public function it_rejects_a_non_positive_expansion(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 4000]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium expansion capacity must be greater than zero.');
+
+        app(StadiumService::class)->stadiumExpansionCost($stadium, 0);
     }
 
     #[Test]

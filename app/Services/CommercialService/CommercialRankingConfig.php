@@ -12,6 +12,11 @@ final class CommercialRankingConfig
 
     private const int MAX_CLUB_RANK = 20;
 
+    public static function countryCostMultiplier(int $rank): float
+    {
+        return 1 + (self::normalizeCountryRank($rank) * self::MAX_COUNTRY_COST_PREMIUM);
+    }
+
     public static function normalizeCountryRank(int $rank): float
     {
         return self::normalize($rank, self::MAX_COUNTRY_RANK);

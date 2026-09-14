@@ -34,10 +34,7 @@ class VenueConstructionCostCalculator
             throw new DomainException('The stadium country does not have a ranking for venue construction.');
         }
 
-        $countryMultiplier = 1 + (
-            CommercialRankingConfig::normalizeCountryRank((int) $country->ranking)
-            * CommercialRankingConfig::MAX_COUNTRY_COST_PREMIUM
-        );
+        $countryMultiplier = CommercialRankingConfig::countryCostMultiplier((int) $country->ranking);
 
         return (int) round($baseCost * $countryMultiplier);
     }
