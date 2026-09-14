@@ -1,0 +1,50 @@
+app/Models/Stadium.php
+  s_bd0435e2d5f85e::t_daa5af9a89526f 33-35
+  s_bd0435e2d5f85e::t_f0a4fc7eefab48 36-37
+database/migrations/2026_09_14_213820_create_stadium_stand_constructions_table.php
+  s_bd0435e2d5f85e::t_1821ed97c7192d 16-26
+  s_bd0435e2d5f85e::t_b26e2c9aeccf5f 1-15,27-37
+database/factories/StadiumStandConstructionFactory.php
+  s_bd0435e2d5f85e::t_d8933166c15869 1-4,6-19,22,30-32
+  s_bd0435e2d5f85e::t_1427e206c97fd1 5,20-21,23-29
+app/Listeners/CompleteStadiumStandConstruction.php
+  s_bd0435e2d5f85e::t_d8933166c15869 1-5,8-10,12-14,19-20
+  s_bd0435e2d5f85e::t_4edf3db1a9070e 6-7,11,15-18
+app/Providers/EventServiceProvider.php
+  s_bd0435e2d5f85e::t_1821ed97c7192d 11
+  s_bd0435e2d5f85e::t_1427e206c97fd1 34
+app/Models/StadiumStand.php
+  s_bd0435e2d5f85e::t_1821ed97c7192d 13
+  s_bd0435e2d5f85e::t_daa5af9a89526f 36-39
+  s_bd0435e2d5f85e::t_140a65c1d2b26d 40
+app/Services/StadiumService/StadiumStandConstructionService.php
+  s_bd0435e2d5f85e::t_4edf3db1a9070e 5-13,16,18,20-30,33-38,40-42,46-47,49-51,53-56,59-61,69-77,80-93,95-102
+  s_bd0435e2d5f85e::t_1821ed97c7192d 19,31-32,39,43-45,48,52,57-58,62-68,78-79,94
+  s_bd0435e2d5f85e::t_d8933166c15869 1-4,14-15,17,103-104
+app/Models/StadiumStandConstruction.php
+  s_bd0435e2d5f85e::t_1821ed97c7192d 5,8,12
+  s_bd0435e2d5f85e::t_d8933166c15869 1-4,6-7,9-11,13,33
+  s_bd0435e2d5f85e::t_0a18432cf18f7f 14,17-32
+  s_bd0435e2d5f85e::t_657bc1fa286433 15-16
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_bd0435e2d5f85e::t_df4da30b12efe2 347-349,351-357,364-368,372-378,384-388,390
+  s_bd0435e2d5f85e::t_657bc1fa286433 350,362,382
+  s_bd0435e2d5f85e::t_1821ed97c7192d 14,18,358-361,363,369-371,379-381,383,389
+  s_bd0435e2d5f85e::t_938a98a064ff34 391
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "57f913aaf19d9d43fe152089852dc9ceb14132ea",
+  "prompts": {},
+  "sessions": {
+    "s_bd0435e2d5f85e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a176-7c33-78f2-8a0f-1d2bd85f63f7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
