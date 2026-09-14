@@ -4,6 +4,8 @@ namespace App\Services\CommercialService;
 
 final class CommercialRankingConfig
 {
+    public const float MAX_COUNTRY_COST_PREMIUM = 0.50;
+
     private const int MAX_COUNTRY_RANK = 100;
 
     private const int MAX_COMPETITION_RANK = 10000;

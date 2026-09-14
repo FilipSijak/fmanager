@@ -7,6 +7,7 @@ use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
 use App\Services\CommercialService\CommercialVenueSize;
+use App\Services\CommercialService\VenueConstructionCostCalculator;
 use App\StadiumStandPosition;
 use App\StadiumStandStatus;
 use DomainException;
@@ -16,6 +17,8 @@ use Illuminate\Support\Facades\DB;
 
 class StadiumService
 {
+    public function __construct(private readonly VenueConstructionCostCalculator $venueConstructionCostCalculator) {}
+
     public function typeForCapacity(int $capacity): StadiumType
     {
         return StadiumType::fromCapacity($capacity);
@@ -145,6 +148,11 @@ class StadiumService
                 'stadium_id' => $lockedStadium->id,
                 'category_id' => $categoryId,
                 'size' => $size,
+                'build_cost' => $this->venueConstructionCostCalculator->calculate(
+                    $lockedStadium,
+                    BaseCommercialCategory::query()->findOrFail($categoryId),
+                    $size,
+                ),
             ]);
         });
     }

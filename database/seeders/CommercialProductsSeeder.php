@@ -28,6 +28,29 @@ class CommercialProductsSeeder extends Seeder
         DB::table('base_commercial_categories')->insert($categories);
 
         $categoryIds = DB::table('base_commercial_categories')->pluck('id', 'slug');
+        $venueCosts = [
+            'shop' => [250000, 400000, 625000],
+            'bar' => [350000, 560000, 875000],
+            'cafe' => [300000, 480000, 750000],
+            'food_kiosk' => [150000, 240000, 375000],
+            'restaurant' => [500000, 800000, 1250000],
+            'casino' => [2500000, 4000000, 6250000],
+            'hotel' => [4000000, 6400000, 10000000],
+            'vip_hospitality' => [1500000, 2400000, 3750000],
+            'fine_dining' => [1000000, 1600000, 2500000],
+            'events_venue' => [1200000, 1920000, 3000000],
+        ];
+
+        foreach ($venueCosts as $categorySlug => $costs) {
+            foreach ($costs as $size => $baseCost) {
+                DB::table('base_commercial_venue_costs')->insert([
+                    'category_id' => $categoryIds[$categorySlug],
+                    'size' => $size + 1,
+                    'base_cost' => $baseCost,
+                ]);
+            }
+        }
+
         $availableStadiumTypes = [
             'shop' => ['local', 'regional', 'global'],
             'bar' => ['village', 'local', 'regional', 'global'],

@@ -3,6 +3,7 @@
 namespace Tests\Integration\Services\StadiumService;
 
 use App\Models\BaseData\BaseCommercialCategory;
+use App\Models\Country;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
@@ -30,6 +31,13 @@ class StadiumServiceTest extends TestCase
             'instance_id' => $instance->id,
             'type' => StadiumType::LOCAL,
             'commercial_limit' => 1,
+            'country_code' => 'GBR',
+        ]);
+        Country::query()->forceCreate([
+            'code' => 'GBR',
+            'name' => 'United Kingdom',
+            'ranking' => 100,
+            'population' => 60000000,
         ]);
         $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
         $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
@@ -222,5 +230,13 @@ class StadiumServiceTest extends TestCase
             'category_id' => $categoryId,
             'stadium_type' => $stadiumType->value,
         ]);
+
+        foreach (CommercialVenueSize::cases() as $size) {
+            DB::table('base_commercial_venue_costs')->insert([
+                'category_id' => $categoryId,
+                'size' => $size->value,
+                'base_cost' => 100000,
+            ]);
+        }
     }
 }

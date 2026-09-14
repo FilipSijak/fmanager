@@ -14,13 +14,13 @@ class StadiumCommercialVenue extends Model
     /** @use HasFactory<StadiumCommercialVenueFactory> */
     use HasFactory;
 
-    protected $fillable = ['instance_id', 'stadium_id', 'category_id', 'size'];
+    protected $fillable = ['instance_id', 'stadium_id', 'category_id', 'size', 'build_cost'];
 
     public $timestamps = false;
 
     protected function casts(): array
     {
-        return ['size' => CommercialVenueSize::class];
+        return ['size' => CommercialVenueSize::class, 'build_cost' => 'integer'];
     }
 
     public function instance(): BelongsTo

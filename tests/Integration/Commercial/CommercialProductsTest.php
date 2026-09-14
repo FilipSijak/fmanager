@@ -21,6 +21,7 @@ class CommercialProductsTest extends TestCase
 
         $this->assertSame(10, BaseCommercialCategory::query()->count());
         $this->assertSame(22, DB::table('base_commercial_category_stadium_type')->count());
+        $this->assertSame(30, DB::table('base_commercial_venue_costs')->count());
         $this->assertSame(18, BaseCommercialProducts::query()->count());
         $this->assertSame(6, BaseCommercialProducts::query()->where('category_id', BaseCommercialCategory::query()->where('slug', 'bar')->value('id'))->count());
         $this->assertSame(6, BaseCommercialProducts::query()->where('category_id', BaseCommercialCategory::query()->where('slug', 'restaurant')->value('id'))->count());

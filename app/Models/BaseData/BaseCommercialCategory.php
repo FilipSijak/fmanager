@@ -22,4 +22,9 @@ class BaseCommercialCategory extends Model
     {
         return $this->hasMany(BaseCommercialProducts::class, 'category_id');
     }
+
+    public function venueCosts(): HasMany
+    {
+        return $this->hasMany(BaseCommercialVenueCost::class, 'category_id');
+    }
 }
