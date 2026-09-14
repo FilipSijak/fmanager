@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 
 class StadiumStandConstructionService
 {
+    public function __construct(private readonly StadiumService $stadiumService) {}
+
     public function durationInWeeks(int $capacityIncrease): int
     {
         if ($capacityIncrease <= 0 || $capacityIncrease % 1000 !== 0) {
@@ -58,7 +60,7 @@ class StadiumStandConstructionService
                 'status' => StadiumStandStatus::UNDER_CONSTRUCTION,
             ])->save();
 
-            return StadiumStandConstruction::query()->create([
+            $construction = StadiumStandConstruction::query()->create([
                 'instance_id' => $stadium->instance_id,
                 'stadium_id' => $stadium->id,
                 'stadium_stand_id' => $lockedStand->id,
@@ -67,6 +69,10 @@ class StadiumStandConstructionService
                 'started_at' => $startedAt,
                 'completes_at' => $startedAt->addWeeks($durationInWeeks),
             ]);
+
+            $this->stadiumService->recalculateCapacities($stadium->fresh());
+
+            return $construction;
         });
     }
 

@@ -4,6 +4,7 @@ namespace App\Services\StadiumService;
 
 use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\BaseData\BaseStadiumStandCapacityLimit;
+use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
@@ -82,11 +83,9 @@ class StadiumService
 
     public function validateStadiumBuild(Stadium $stadium): void
     {
-        $stands = $stadium->stands()->get();
+        $stands = $stadium->stands()->with('construction')->get();
         $capacity = (int) $stands->sum('capacity');
-        $activeCapacity = (int) $stands
-            ->where('status', StadiumStandStatus::ACTIVE)
-            ->sum('capacity');
+        $activeCapacity = $this->activeCapacityForStands($stands);
 
         foreach ($stands as $stand) {
             if ($stand->position === null) {
@@ -237,15 +236,35 @@ class StadiumService
         });
     }
 
+    public function recalculateCapacitiesForInstance(Instance $instance): void
+    {
+        Stadium::query()
+            ->where('instance_id', $instance->id)
+            ->get()
+            ->each(function (Stadium $stadium): void {
+                $this->recalculateCapacities($stadium);
+            });
+    }
+
+    private function activeCapacityForStands(Collection $stands): int
+    {
+        return (int) $stands
+            ->where('status', StadiumStandStatus::ACTIVE)
+            ->sum('capacity');
+    }
+
     public function recalculateCapacities(Stadium $stadium): void
     {
-        $stands = StadiumStand::query()->whereBelongsTo($stadium);
+        $stands = StadiumStand::query()
+            ->with('construction')
+            ->whereBelongsTo($stadium)
+            ->get();
+
+        $activeCapacity = $this->activeCapacityForStands($stands);
 
         $stadium->forceFill([
-            'capacity' => (int) (clone $stands)->sum('capacity'),
-            'active_capacity' => (int) $stands
-                ->where('status', StadiumStandStatus::ACTIVE->value)
-                ->sum('capacity'),
+            'capacity' => (int) $stands->sum('capacity'),
+            'active_capacity' => (int) $activeCapacity,
         ])->saveQuietly();
     }
 }

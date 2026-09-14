@@ -2,6 +2,8 @@
 
 namespace Tests\Integration\Services\StadiumService;
 
+use App\Events\NextDay;
+use App\Listeners\CompleteStadiumStandConstruction;
 use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\BaseData\BaseStadiumExpansionCost;
 use App\Models\Country;
@@ -371,6 +373,29 @@ class StadiumServiceTest extends TestCase
         $this->assertDatabaseCount('stadium_stand_constructions', 2);
         $this->assertSame(StadiumStandStatus::UNDER_CONSTRUCTION, $northStand->fresh()->status);
         $this->assertSame(StadiumStandStatus::UNDER_CONSTRUCTION, $southStand->fresh()->status);
+    }
+
+    #[Test]
+    public function it_recalculates_active_capacity_for_all_stadiums_with_ongoing_construction(): void
+    {
+        $instance = Instance::factory()->create(['instance_date' => '2026-09-14']);
+        $firstStadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 7000, 'active_capacity' => 7000]);
+        $secondStadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 3000, 'active_capacity' => 3000]);
+        $firstStand = StadiumStand::factory()->create(['stadium_id' => $firstStadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 7000, 'status' => StadiumStandStatus::ACTIVE]);
+        $secondStand = StadiumStand::factory()->create(['stadium_id' => $secondStadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 3000, 'status' => StadiumStandStatus::ACTIVE]);
+        $constructionService = app(StadiumStandConstructionService::class);
+        $startedAt = CarbonImmutable::parse('2026-09-14');
+        $constructionService->startConstruction($firstStand, 10000, $startedAt);
+        $constructionService->startConstruction($secondStand, 6000, $startedAt);
+        $firstStadium->forceFill(['active_capacity' => 0])->saveQuietly();
+        $secondStadium->forceFill(['active_capacity' => 0])->saveQuietly();
+
+        app(CompleteStadiumStandConstruction::class)->handle(new NextDay($instance));
+
+        $this->assertSame(0, $firstStadium->fresh()->active_capacity);
+        $this->assertSame(0, $secondStadium->fresh()->active_capacity);
+        $this->assertSame(10000, $firstStadium->fresh()->capacity);
+        $this->assertSame(6000, $secondStadium->fresh()->capacity);
     }
 
     #[Test]
