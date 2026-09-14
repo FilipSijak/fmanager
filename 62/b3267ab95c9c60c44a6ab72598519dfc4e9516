@@ -1,0 +1,50 @@
+app/Models/StadiumCommercialVenue.php
+  s_bd0435e2d5f85e::t_a48a7fabfbbc65 17,23
+app/Models/BaseData/BaseCommercialCategory.php
+  s_bd0435e2d5f85e::t_a48a7fabfbbc65 25-29
+database/seeders/CommercialProductsSeeder.php
+  s_bd0435e2d5f85e::t_777849d0c7a842 31-53
+tests/Integration/Services/CommercialService/VenueConstructionCostCalculatorTest.php
+  s_bd0435e2d5f85e::t_2d287484c2c057 1-50
+app/Services/CommercialService/CommercialRankingConfig.php
+  s_bd0435e2d5f85e::t_46382ce96bd0e5 8
+  s_bd0435e2d5f85e::t_a48a7fabfbbc65 7
+app/Services/CommercialService/VenueConstructionCostCalculator.php
+  s_bd0435e2d5f85e::t_a48a7fabfbbc65 1-4,10-11,39-40
+  s_bd0435e2d5f85e::t_1f1357416a4f29 5-9,12-38
+app/Services/StadiumService/StadiumService.php
+  s_bd0435e2d5f85e::t_1f1357416a4f29 10,20
+  s_bd0435e2d5f85e::t_46382ce96bd0e5 21
+  s_bd0435e2d5f85e::t_777849d0c7a842 151-155
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_bd0435e2d5f85e::t_8f6acebce82e57 233-234,236-237
+  s_bd0435e2d5f85e::t_6f12d87f8866c6 6,34-40
+  s_bd0435e2d5f85e::t_46382ce96bd0e5 235,238-240
+tests/Integration/Commercial/CommercialProductsTest.php
+  s_bd0435e2d5f85e::t_46382ce96bd0e5 24
+app/Models/BaseData/BaseCommercialVenueCost.php
+  s_bd0435e2d5f85e::t_a48a7fabfbbc65 5,7,11-28
+  s_bd0435e2d5f85e::t_4745f75fe4631a 1-4,6,8-10,29
+database/migrations/2026_09_14_200032_add_build_cost_to_stadium_commercial_venues_table.php
+  s_bd0435e2d5f85e::t_4745f75fe4631a 1-14,16-24,26-28
+  s_bd0435e2d5f85e::t_a48a7fabfbbc65 15,25
+database/migrations/2026_09_14_200032_create_base_commercial_venue_costs_table.php
+  s_bd0435e2d5f85e::t_4745f75fe4631a 1-14,21-31
+  s_bd0435e2d5f85e::t_a48a7fabfbbc65 15-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "62b3267ab95c9c60c44a6ab72598519dfc4e9516",
+  "prompts": {},
+  "sessions": {
+    "s_bd0435e2d5f85e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a176-7c33-78f2-8a0f-1d2bd85f63f7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
