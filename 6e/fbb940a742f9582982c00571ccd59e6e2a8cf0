@@ -1,0 +1,25 @@
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_bd0435e2d5f85e::t_562aba8270ec59 127-169
+app/Services/CommercialService/VenueConstructionCostCalculator.php
+  s_bd0435e2d5f85e::t_562aba8270ec59 15,44
+  s_bd0435e2d5f85e::t_939b0f6708f56f 12-14,45-48
+  s_bd0435e2d5f85e::t_c259ac0f89bb9e 49
+app/Services/StadiumService/StadiumService.php
+  s_bd0435e2d5f85e::t_939b0f6708f56f 160-187
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "6efbb940a742f9582982c00571ccd59e6e2a8cf0",
+  "prompts": {},
+  "sessions": {
+    "s_bd0435e2d5f85e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a176-7c33-78f2-8a0f-1d2bd85f63f7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
