@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedInteger('stadium_id');
             $table->unsignedInteger('category_id');
             $table->unsignedTinyInteger('size');
+            $table->unsignedInteger('build_cost')->nullable();
 
             $table->foreign('instance_id')->references('id')->on('instances')->cascadeOnDelete();
             $table->foreign('stadium_id')->references('id')->on('stadiums')->cascadeOnDelete();
