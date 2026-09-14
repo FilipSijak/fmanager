@@ -1,0 +1,27 @@
+tests/Feature/Integration/Stadium/StadiumCapacityTest.php
+  s_bd0435e2d5f85e::t_67bd65340e99d4 34-42
+  s_bd0435e2d5f85e::t_3d8601535a0a99 33
+app/Models/Instance.php
+  s_bd0435e2d5f85e::t_67bd65340e99d4 16-20
+  s_bd0435e2d5f85e::t_9f6e5b6352f089 8
+app/Models/Stadium.php
+  s_bd0435e2d5f85e::t_67bd65340e99d4 24-26
+  s_bd0435e2d5f85e::t_9f6e5b6352f089 8
+  s_bd0435e2d5f85e::t_ebaa24a3cbd5d3 27-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "005ed1f46c773840abada4fe9b9562e2538fb183",
+  "prompts": {},
+  "sessions": {
+    "s_bd0435e2d5f85e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a176-7c33-78f2-8a0f-1d2bd85f63f7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
