@@ -1,0 +1,42 @@
+app/Models/BaseData/BaseStadiumStandCapacityLimit.php
+  s_bd0435e2d5f85e::t_2af6596c6d5e70 1-4,7-10,25
+  s_bd0435e2d5f85e::t_08bd1dd0e0c030 5-6,12-14,16-19,23-24
+  s_bd0435e2d5f85e::t_e616e00f2b1681 11,15,20-22
+database/migrations/2026_09_14_212244_create_base_stadium_stand_capacity_limits_table.php
+  s_bd0435e2d5f85e::t_e616e00f2b1681 16-19
+  s_bd0435e2d5f85e::t_2d6e978dc1bbc1 1-15,20-30
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_bd0435e2d5f85e::t_02f2b5b44e1740 62-65,88-90,297,299,305,356
+  s_bd0435e2d5f85e::t_e616e00f2b1681 66-87,313,316,324-325,328,336-337,340
+  s_bd0435e2d5f85e::t_114b282e89250d 310-312,314,317,319-323,326,329,331-335,338,341,343-344
+  s_bd0435e2d5f85e::t_437546d64c89df 315,318,327,330,339,342
+  s_bd0435e2d5f85e::t_a9b8277870d467 266
+tests/Integration/Stadium/StadiumTypeTest.php
+  s_bd0435e2d5f85e::t_feb8538e9560a2 16,18
+  s_bd0435e2d5f85e::t_02f2b5b44e1740 17,19,39,41
+app/Services/StadiumService/StadiumService.php
+  s_bd0435e2d5f85e::t_e616e00f2b1681 44,51-53,65,68,93,100,104,108,113
+  s_bd0435e2d5f85e::t_5ea0d2382a6ad2 6,43,45-50,58-64,66-67,91-92,94,96-99,101-103,105-107,109,112
+database/seeders/StadiumConstructionSeeder.php
+  s_bd0435e2d5f85e::t_e616e00f2b1681 24-45
+  s_bd0435e2d5f85e::t_55583f3f165757 6,23
+  s_bd0435e2d5f85e::t_1c81227e22d38e 46
+app/Services/StadiumService/StadiumType.php
+  s_bd0435e2d5f85e::t_08bd1dd0e0c030 16-17,44-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ddd3d26f4406a61212193e6e2d5e1ba1616ff4f6",
+  "prompts": {},
+  "sessions": {
+    "s_bd0435e2d5f85e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a176-7c33-78f2-8a0f-1d2bd85f63f7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
