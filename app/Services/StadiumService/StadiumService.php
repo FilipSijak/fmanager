@@ -8,6 +8,7 @@ use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
+use App\Models\StadiumStandConstruction;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\CommercialService\VenueConstructionCostCalculator;
 use App\StadiumStandPosition;
@@ -238,8 +239,18 @@ class StadiumService
 
     public function recalculateCapacitiesForInstance(Instance $instance): void
     {
+        $stadiumIds = StadiumStandConstruction::query()
+            ->where('instance_id', $instance->id)
+            ->distinct()
+            ->pluck('stadium_id');
+
+        if ($stadiumIds->isEmpty()) {
+            return;
+        }
+
         Stadium::query()
             ->where('instance_id', $instance->id)
+            ->whereIn('id', $stadiumIds)
             ->get()
             ->each(function (Stadium $stadium): void {
                 $this->recalculateCapacities($stadium);

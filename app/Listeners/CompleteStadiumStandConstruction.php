@@ -15,10 +15,10 @@ class CompleteStadiumStandConstruction
 
     public function handle(NextDay $event): void
     {
+        $this->stadiumService->recalculateCapacitiesForInstance($event->instance);
         $this->constructionService->completeForInstance(
             $event->instance,
             CarbonImmutable::parse($event->instance->instance_date)->startOfDay(),
         );
-        $this->stadiumService->recalculateCapacitiesForInstance($event->instance);
     }
 }
