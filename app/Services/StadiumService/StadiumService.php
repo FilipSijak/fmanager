@@ -157,6 +157,34 @@ class StadiumService
         });
     }
 
+    public function demolishCommercialVenue(Stadium $stadium, int $venueId): int
+    {
+        return DB::transaction(function () use ($stadium, $venueId): int {
+            $lockedStadium = Stadium::query()->whereKey($stadium->id)->lockForUpdate()->firstOrFail();
+            $venue = StadiumCommercialVenue::query()
+                ->with('category')
+                ->where('instance_id', $lockedStadium->instance_id)
+                ->where('stadium_id', $lockedStadium->id)
+                ->whereKey($venueId)
+                ->first();
+
+            if ($venue === null) {
+                throw new DomainException('This commercial venue does not exist at the stadium.');
+            }
+
+            $buildCost = $venue->build_cost ?? $this->venueConstructionCostCalculator->calculate(
+                $lockedStadium,
+                $venue->category,
+                $venue->size,
+            );
+            $demolitionCost = $this->venueConstructionCostCalculator->demolitionCost($buildCost);
+
+            $venue->delete();
+
+            return $demolitionCost;
+        });
+    }
+
     public function recalculateCapacities(Stadium $stadium): void
     {
         $stands = StadiumStand::query()->whereBelongsTo($stadium);

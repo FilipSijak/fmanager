@@ -125,6 +125,49 @@ class StadiumServiceTest extends TestCase
     }
 
     #[Test]
+    public function it_demolishes_a_venue_and_returns_a_rounded_demolition_cost(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id]);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
+        $venue = StadiumCommercialVenue::query()->create([
+            'instance_id' => $instance->id,
+            'stadium_id' => $stadium->id,
+            'category_id' => $category->id,
+            'size' => CommercialVenueSize::LARGE,
+            'build_cost' => 845000,
+        ]);
+
+        $demolitionCost = app(StadiumService::class)->demolishCommercialVenue($stadium, $venue->id);
+
+        $this->assertSame(85000, $demolitionCost);
+        $this->assertDatabaseMissing('stadium_commercial_venues', ['id' => $venue->id]);
+    }
+
+    #[Test]
+    public function it_rejects_demolishing_a_venue_that_does_not_belong_to_the_stadium(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id]);
+        $otherStadium = Stadium::factory()->create(['instance_id' => $instance->id]);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
+        $venue = StadiumCommercialVenue::query()->create([
+            'instance_id' => $instance->id,
+            'stadium_id' => $otherStadium->id,
+            'category_id' => $category->id,
+            'size' => CommercialVenueSize::SMALL,
+            'build_cost' => 250000,
+        ]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('This commercial venue does not exist at the stadium.');
+
+        app(StadiumService::class)->demolishCommercialVenue($stadium, $venue->id);
+    }
+
+    #[Test]
     public function it_lists_built_venues_with_their_categories(): void
     {
         $instance = Instance::factory()->create();

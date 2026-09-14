@@ -9,6 +9,10 @@ use DomainException;
 
 class VenueConstructionCostCalculator
 {
+    private const float DEMOLITION_COST_RATE = 0.10;
+
+    private const int DEMOLITION_COST_ROUNDING_UNIT = 1000;
+
     public function calculate(
         Stadium $stadium,
         BaseCommercialCategory $category,
@@ -36,5 +40,11 @@ class VenueConstructionCostCalculator
         );
 
         return (int) round($baseCost * $countryMultiplier);
+    }
+
+    public function demolitionCost(int $buildCost): int
+    {
+        return (int) round(($buildCost * self::DEMOLITION_COST_RATE) / self::DEMOLITION_COST_ROUNDING_UNIT)
+            * self::DEMOLITION_COST_ROUNDING_UNIT;
     }
 }
