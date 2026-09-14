@@ -3,9 +3,12 @@
 namespace App\Services\StadiumService;
 
 use App\Models\BaseData\BaseCommercialCategory;
+use App\Models\BaseData\BaseStadiumStandCapacityLimit;
+use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
+use App\Models\StadiumStandConstruction;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\CommercialService\VenueConstructionCostCalculator;
 use App\StadiumStandPosition;
@@ -39,7 +42,33 @@ class StadiumService
 
     public function maximumStandsForStadium(Stadium $stadium): int
     {
-        return count(StadiumStandPosition::cases());
+        return BaseStadiumStandCapacityLimit::query()
+            ->where('stadium_type', $stadium->type->value)
+            ->count();
+    }
+
+    public function maximumCapacityForStand(Stadium $stadium, StadiumStandPosition $position): int
+    {
+        return (int) BaseStadiumStandCapacityLimit::query()
+            ->where('stadium_type', $stadium->type->value)
+            ->where('position', $position->value)
+            ->value('maximum_capacity');
+    }
+
+    public function validateStadiumStandPosition(Stadium $stadium, StadiumStandPosition $position): void
+    {
+        if ($this->maximumCapacityForStand($stadium, $position) === 0) {
+            if ($stadium->type->allowsCornerStands() === false && in_array($position, [
+                StadiumStandPosition::NORTH_EAST,
+                StadiumStandPosition::SOUTH_EAST,
+                StadiumStandPosition::SOUTH_WEST,
+                StadiumStandPosition::NORTH_WEST,
+            ], true)) {
+                throw new DomainException('Village and Local stadiums cannot build corner stands.');
+            }
+
+            throw new DomainException('This stand position is not available for the stadium type.');
+        }
     }
 
     public function validateStadiumCapacity(Stadium $stadium, int $capacity): void
@@ -55,18 +84,33 @@ class StadiumService
 
     public function validateStadiumBuild(Stadium $stadium): void
     {
-        $stands = $stadium->stands()->get();
+        $stands = $stadium->stands()->with('construction')->get();
         $capacity = (int) $stands->sum('capacity');
-        $activeCapacity = (int) $stands
-            ->where('status', StadiumStandStatus::ACTIVE)
-            ->sum('capacity');
+        $activeCapacity = $this->activeCapacityForStands($stands);
 
-        if ($stands->count() > $this->maximumStandsForStadium($stadium)) {
-            throw new DomainException('A stadium cannot have more than eight stands.');
+        foreach ($stands as $stand) {
+            if ($stand->position === null) {
+                throw new DomainException('Stadium stands must have a position.');
+            }
+
+            $this->validateStadiumStandPosition($stadium, $stand->position);
+            $maximumStandCapacity = $this->maximumCapacityForStand($stadium, $stand->position);
+
+            if ($stand->capacity !== null && $stand->capacity < 0) {
+                throw new DomainException('Stadium stand capacity cannot be negative.');
+            }
+
+            if ($stand->capacity !== null && $stand->capacity % 1000 !== 0) {
+                throw new DomainException('Stadium stand capacity must be a multiple of 1,000 seats.');
+            }
+
+            if ($stand->capacity !== null && $stand->capacity > $maximumStandCapacity) {
+                throw new DomainException('Stadium stand capacity exceeds the maximum for its position.');
+            }
         }
 
-        if ($stands->contains(fn (StadiumStand $stand): bool => $stand->capacity !== null && $stand->capacity < 0)) {
-            throw new DomainException('Stadium stand capacity cannot be negative.');
+        if ($stands->count() > $this->maximumStandsForStadium($stadium)) {
+            throw new DomainException('A stadium cannot have more stands than its type allows.');
         }
 
         $this->validateStadiumCapacity($stadium, $capacity);
@@ -193,15 +237,45 @@ class StadiumService
         });
     }
 
+    public function recalculateCapacitiesForInstance(Instance $instance): void
+    {
+        $stadiumIds = StadiumStandConstruction::query()
+            ->where('instance_id', $instance->id)
+            ->distinct()
+            ->pluck('stadium_id');
+
+        if ($stadiumIds->isEmpty()) {
+            return;
+        }
+
+        Stadium::query()
+            ->where('instance_id', $instance->id)
+            ->whereIn('id', $stadiumIds)
+            ->get()
+            ->each(function (Stadium $stadium): void {
+                $this->recalculateCapacities($stadium);
+            });
+    }
+
+    private function activeCapacityForStands(Collection $stands): int
+    {
+        return (int) $stands
+            ->where('status', StadiumStandStatus::ACTIVE)
+            ->sum('capacity');
+    }
+
     public function recalculateCapacities(Stadium $stadium): void
     {
-        $stands = StadiumStand::query()->whereBelongsTo($stadium);
+        $stands = StadiumStand::query()
+            ->with('construction')
+            ->whereBelongsTo($stadium)
+            ->get();
+
+        $activeCapacity = $this->activeCapacityForStands($stands);
 
         $stadium->forceFill([
-            'capacity' => (int) (clone $stands)->sum('capacity'),
-            'active_capacity' => (int) $stands
-                ->where('status', StadiumStandStatus::ACTIVE->value)
-                ->sum('capacity'),
+            'capacity' => (int) $stands->sum('capacity'),
+            'active_capacity' => (int) $activeCapacity,
         ])->saveQuietly();
     }
 }

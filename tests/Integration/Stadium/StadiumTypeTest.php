@@ -13,8 +13,10 @@ class StadiumTypeTest extends TestCase
     {
         $this->assertSame(StadiumType::VILLAGE, StadiumType::fromCapacity(1000));
         $this->assertSame(StadiumType::LOCAL, StadiumType::fromCapacity(1001));
-        $this->assertSame(StadiumType::REGIONAL, StadiumType::fromCapacity(5001));
-        $this->assertSame(StadiumType::GLOBAL, StadiumType::fromCapacity(30001));
+        $this->assertSame(StadiumType::LOCAL, StadiumType::fromCapacity(20000));
+        $this->assertSame(StadiumType::REGIONAL, StadiumType::fromCapacity(20001));
+        $this->assertSame(StadiumType::REGIONAL, StadiumType::fromCapacity(60000));
+        $this->assertSame(StadiumType::GLOBAL, StadiumType::fromCapacity(60001));
     }
 
     #[Test]
@@ -34,9 +36,9 @@ class StadiumTypeTest extends TestCase
     {
         $this->assertSame(1000, StadiumType::VILLAGE->maximumCapacity());
         $this->assertSame(5, StadiumType::VILLAGE->commercialLimit());
-        $this->assertSame(5000, StadiumType::LOCAL->maximumCapacity());
+        $this->assertSame(20000, StadiumType::LOCAL->maximumCapacity());
         $this->assertSame(8, StadiumType::LOCAL->commercialLimit());
-        $this->assertSame(30000, StadiumType::REGIONAL->maximumCapacity());
+        $this->assertSame(60000, StadiumType::REGIONAL->maximumCapacity());
         $this->assertSame(12, StadiumType::REGIONAL->commercialLimit());
         $this->assertSame(100000, StadiumType::GLOBAL->maximumCapacity());
         $this->assertSame(20, StadiumType::GLOBAL->commercialLimit());

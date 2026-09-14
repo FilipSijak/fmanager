@@ -2,6 +2,8 @@
 
 namespace Tests\Integration\Services\StadiumService;
 
+use App\Events\NextDay;
+use App\Listeners\CompleteStadiumStandConstruction;
 use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\BaseData\BaseStadiumExpansionCost;
 use App\Models\Country;
@@ -11,9 +13,11 @@ use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\StadiumService\StadiumService;
+use App\Services\StadiumService\StadiumStandConstructionService;
 use App\Services\StadiumService\StadiumType;
 use App\StadiumStandPosition;
 use App\StadiumStandStatus;
+use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +60,35 @@ class StadiumServiceTest extends TestCase
             'stadium_id' => $stadium->id,
             'category_id' => $category->id,
             'size' => CommercialVenueSize::MEDIUM->value,
+        ]);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        DB::table('base_stadium_stand_capacity_limits')->insert([
+            ['stadium_type' => StadiumType::VILLAGE->value, 'position' => StadiumStandPosition::NORTH->value, 'maximum_capacity' => 1000],
+            ['stadium_type' => StadiumType::LOCAL->value, 'position' => StadiumStandPosition::NORTH->value, 'maximum_capacity' => 7000],
+            ['stadium_type' => StadiumType::LOCAL->value, 'position' => StadiumStandPosition::EAST->value, 'maximum_capacity' => 3000],
+            ['stadium_type' => StadiumType::LOCAL->value, 'position' => StadiumStandPosition::SOUTH->value, 'maximum_capacity' => 7000],
+            ['stadium_type' => StadiumType::LOCAL->value, 'position' => StadiumStandPosition::WEST->value, 'maximum_capacity' => 3000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::NORTH->value, 'maximum_capacity' => 14000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::EAST->value, 'maximum_capacity' => 6000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::SOUTH->value, 'maximum_capacity' => 14000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::WEST->value, 'maximum_capacity' => 6000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::NORTH_EAST->value, 'maximum_capacity' => 5000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::SOUTH_EAST->value, 'maximum_capacity' => 5000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::SOUTH_WEST->value, 'maximum_capacity' => 5000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::NORTH_WEST->value, 'maximum_capacity' => 5000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::NORTH->value, 'maximum_capacity' => 20000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::EAST->value, 'maximum_capacity' => 12000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::SOUTH->value, 'maximum_capacity' => 20000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::WEST->value, 'maximum_capacity' => 12000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::NORTH_EAST->value, 'maximum_capacity' => 9000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::SOUTH_EAST->value, 'maximum_capacity' => 9000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::SOUTH_WEST->value, 'maximum_capacity' => 9000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::NORTH_WEST->value, 'maximum_capacity' => 9000],
         ]);
     }
 
@@ -234,7 +267,7 @@ class StadiumServiceTest extends TestCase
     #[Test]
     public function it_rejects_an_expansion_above_the_stadium_type_capacity(): void
     {
-        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 5000]);
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 20000]);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Stadium expansion exceeds the maximum capacity for its type.');
@@ -254,17 +287,145 @@ class StadiumServiceTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_corner_stands_for_village_and_local_stadiums(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Village and Local stadiums cannot build corner stands.');
+
+        app(StadiumService::class)->validateStadiumStandPosition($stadium, StadiumStandPosition::NORTH_EAST);
+    }
+
+    #[Test]
+    public function it_allows_one_stand_for_village_four_for_local_and_eight_for_global_stadiums(): void
+    {
+        $villageStadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::VILLAGE]);
+        $localStadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL]);
+        $globalStadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::GLOBAL]);
+
+        $service = app(StadiumService::class);
+
+        $this->assertSame(1, $service->maximumStandsForStadium($villageStadium));
+        $this->assertSame(4, $service->maximumStandsForStadium($localStadium));
+        $this->assertSame(8, $service->maximumStandsForStadium($globalStadium));
+    }
+
+    #[Test]
+    public function it_rejects_non_north_stands_for_a_village_stadium(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::VILLAGE]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('This stand position is not available for the stadium type.');
+
+        app(StadiumService::class)->validateStadiumStandPosition($stadium, StadiumStandPosition::EAST);
+    }
+
+    #[Test]
+    public function it_rejects_a_stand_above_its_position_capacity(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 0, 'active_capacity' => 0]);
+        StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 8000, 'status' => StadiumStandStatus::ACTIVE]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium stand capacity exceeds the maximum for its position.');
+
+        app(StadiumService::class)->validateStadiumBuild($stadium->refresh());
+    }
+
+    #[Test]
+    public function it_rejects_a_stand_capacity_that_is_not_a_multiple_of_one_thousand(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 0, 'active_capacity' => 0]);
+        StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 1500, 'status' => StadiumStandStatus::ACTIVE]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium stand capacity must be a multiple of 1,000 seats.');
+
+        app(StadiumService::class)->validateStadiumBuild($stadium->refresh());
+    }
+
+    #[Test]
+    public function it_calculates_one_week_of_construction_per_thousand_seats(): void
+    {
+        $service = app(StadiumStandConstructionService::class);
+
+        $this->assertSame(10, $service->durationInWeeks(10000));
+    }
+
+    #[Test]
+    public function it_starts_independent_construction_for_multiple_stands(): void
+    {
+        $instance = Instance::factory()->create(['instance_date' => '2026-09-14']);
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 0, 'active_capacity' => 0]);
+        $northStand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 0, 'status' => null]);
+        $southStand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::SOUTH, 'capacity' => 0, 'status' => null]);
+        $service = app(StadiumStandConstructionService::class);
+        $startedAt = CarbonImmutable::parse('2026-09-14');
+
+        $northConstruction = $service->startConstruction($northStand, 10000, $startedAt);
+        $southConstruction = $service->startConstruction($southStand, 10000, $startedAt);
+
+        $this->assertSame(10000, $northConstruction->capacity_increase);
+        $this->assertSame('2026-11-23', $northConstruction->completes_at->toDateString());
+        $this->assertSame('2026-11-23', $southConstruction->completes_at->toDateString());
+        $this->assertDatabaseCount('stadium_stand_constructions', 2);
+        $this->assertSame(StadiumStandStatus::UNDER_CONSTRUCTION, $northStand->fresh()->status);
+        $this->assertSame(StadiumStandStatus::UNDER_CONSTRUCTION, $southStand->fresh()->status);
+    }
+
+    #[Test]
+    public function it_recalculates_active_capacity_for_all_stadiums_with_ongoing_construction(): void
+    {
+        $instance = Instance::factory()->create(['instance_date' => '2026-09-14']);
+        $firstStadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 7000, 'active_capacity' => 7000]);
+        $secondStadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 3000, 'active_capacity' => 3000]);
+        $firstStand = StadiumStand::factory()->create(['stadium_id' => $firstStadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 7000, 'status' => StadiumStandStatus::ACTIVE]);
+        $secondStand = StadiumStand::factory()->create(['stadium_id' => $secondStadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 3000, 'status' => StadiumStandStatus::ACTIVE]);
+        $constructionService = app(StadiumStandConstructionService::class);
+        $startedAt = CarbonImmutable::parse('2026-09-14');
+        $constructionService->startConstruction($firstStand, 10000, $startedAt);
+        $constructionService->startConstruction($secondStand, 6000, $startedAt);
+        $firstStadium->forceFill(['active_capacity' => 0])->saveQuietly();
+        $secondStadium->forceFill(['active_capacity' => 0])->saveQuietly();
+
+        app(CompleteStadiumStandConstruction::class)->handle(new NextDay($instance));
+
+        $this->assertSame(0, $firstStadium->fresh()->active_capacity);
+        $this->assertSame(0, $secondStadium->fresh()->active_capacity);
+        $this->assertSame(10000, $firstStadium->fresh()->capacity);
+        $this->assertSame(6000, $secondStadium->fresh()->capacity);
+    }
+
+    #[Test]
+    public function it_completes_due_stand_construction_and_activates_the_stand(): void
+    {
+        $instance = Instance::factory()->create(['instance_date' => '2026-09-14']);
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 0, 'active_capacity' => 0]);
+        $stand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 0, 'status' => null]);
+        $service = app(StadiumStandConstructionService::class);
+        $construction = $service->startConstruction($stand, 10000, CarbonImmutable::parse('2026-09-14'));
+
+        $completed = $service->completeForInstance($instance, $construction->completes_at);
+
+        $this->assertSame(1, $completed);
+        $this->assertSame(StadiumStandStatus::ACTIVE, $stand->fresh()->status);
+        $this->assertDatabaseMissing('stadium_stand_constructions', ['id' => $construction->id]);
+    }
+
+    #[Test]
     public function it_accepts_a_stadium_build_when_stand_capacities_are_within_type_limits(): void
     {
         $instance = Instance::factory()->create();
-        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::LOCAL, 'capacity' => 0, 'active_capacity' => 0]);
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 0, 'active_capacity' => 0]);
         StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 1000, 'status' => StadiumStandStatus::ACTIVE]);
         StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH_EAST, 'capacity' => 2000, 'status' => StadiumStandStatus::UNDER_CONSTRUCTION]);
         $stadium->refresh();
 
         app(StadiumService::class)->validateStadiumBuild($stadium);
 
-        $this->assertSame(5000, app(StadiumService::class)->maximumCapacityForStadium($stadium));
+        $this->assertSame(60000, app(StadiumService::class)->maximumCapacityForStadium($stadium));
     }
 
     #[Test]

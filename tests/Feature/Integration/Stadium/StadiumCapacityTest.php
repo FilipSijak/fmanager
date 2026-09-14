@@ -31,6 +31,16 @@ class StadiumCapacityTest extends TestCase
     }
 
     #[Test]
+    public function it_has_an_instance_relationship(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id]);
+
+        $this->assertTrue($stadium->instance->is($instance));
+        $this->assertTrue($instance->stadiums->contains($stadium));
+    }
+
+    #[Test]
     public function it_recalculates_capacity_when_a_stand_changes_or_is_deleted(): void
     {
         $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'capacity' => 0, 'active_capacity' => 0]);

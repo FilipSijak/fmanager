@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 #[ObservedBy([StadiumStandObserver::class])]
 class StadiumStand extends Model
@@ -31,5 +32,10 @@ class StadiumStand extends Model
     public function stadium(): BelongsTo
     {
         return $this->belongsTo(Stadium::class);
+    }
+
+    public function construction(): HasOne
+    {
+        return $this->hasOne(StadiumStandConstruction::class);
     }
 }
