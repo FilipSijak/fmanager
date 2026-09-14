@@ -1,0 +1,22 @@
+app/Listeners/CompleteStadiumStandConstruction.php
+  s_bd0435e2d5f85e::t_1fef67a578bf05 18
+app/Services/StadiumService/StadiumService.php
+  s_bd0435e2d5f85e::t_4598823272d742 11
+  s_bd0435e2d5f85e::t_1fef67a578bf05 242-250,253
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "18c7aff0ca67d4bc67fc739ae8caff492a34ac46",
+  "prompts": {},
+  "sessions": {
+    "s_bd0435e2d5f85e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a176-7c33-78f2-8a0f-1d2bd85f63f7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
