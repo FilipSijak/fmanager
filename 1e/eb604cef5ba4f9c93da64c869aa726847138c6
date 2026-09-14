@@ -1,0 +1,44 @@
+database/seeders/StadiumConstructionSeeder.php
+  s_bd0435e2d5f85e::t_784e0b7c2d97ff 1-4,6,8-15,22-23
+  s_bd0435e2d5f85e::t_453ca7ace886df 17
+  s_bd0435e2d5f85e::t_cbb7312958c16c 5,16,21
+  s_bd0435e2d5f85e::t_0748672f018d8a 7
+  s_bd0435e2d5f85e::t_0d71696a81705a 18-20
+app/Services/StadiumService/StadiumExpansionCostCalculator.php
+  s_bd0435e2d5f85e::t_784e0b7c2d97ff 1-4,11-12,14,51-52
+  s_bd0435e2d5f85e::t_ace4ae09ecff18 5-10,13,15-50
+app/Services/CommercialService/CommercialRankingConfig.php
+  s_bd0435e2d5f85e::t_0ea63e7fc578cf 15-19
+app/Services/StadiumService/StadiumService.php
+  s_bd0435e2d5f85e::t_0ea63e7fc578cf 20-23,163-165
+  s_bd0435e2d5f85e::t_4e3f2f9dfb1c7d 166-167
+app/Services/CommercialService/VenueConstructionCostCalculator.php
+  s_bd0435e2d5f85e::t_0ea63e7fc578cf 37
+app/Models/BaseData/BaseStadiumExpansionCost.php
+  s_bd0435e2d5f85e::t_784e0b7c2d97ff 1-8,19
+  s_bd0435e2d5f85e::t_cbb7312958c16c 9-18
+database/seeders/DatabaseSeeder.php
+  s_bd0435e2d5f85e::t_cbb7312958c16c 26
+database/migrations/2026_09_14_202723_create_base_stadium_expansion_costs_table.php
+  s_bd0435e2d5f85e::t_cbb7312958c16c 15-17
+  s_bd0435e2d5f85e::t_784e0b7c2d97ff 1-14,18-28
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_bd0435e2d5f85e::t_0748672f018d8a 6,221-254
+  s_bd0435e2d5f85e::t_3ac3cdc2b913c5 255
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1eeb604cef5ba4f9c93da64c869aa726847138c6",
+  "prompts": {},
+  "sessions": {
+    "s_bd0435e2d5f85e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a176-7c33-78f2-8a0f-1d2bd85f63f7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
