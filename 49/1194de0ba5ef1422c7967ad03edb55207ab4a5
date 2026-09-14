@@ -1,0 +1,19 @@
+database/migrations/2026_09_13_195706_create_stadium_commercial_venues_table.php
+  s_bd0435e2d5f85e::t_b4b02e7762c1d6 20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "491194de0ba5ef1422c7967ad03edb55207ab4a5",
+  "prompts": {},
+  "sessions": {
+    "s_bd0435e2d5f85e": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a176-7c33-78f2-8a0f-1d2bd85f63f7",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
