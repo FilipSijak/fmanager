@@ -254,17 +254,40 @@ class StadiumServiceTest extends TestCase
     }
 
     #[Test]
+    public function it_rejects_corner_stands_for_village_and_local_stadiums(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Village and Local stadiums cannot build corner stands.');
+
+        app(StadiumService::class)->validateStadiumStandPosition($stadium, StadiumStandPosition::NORTH_EAST);
+    }
+
+    #[Test]
+    public function it_allows_four_stands_for_local_and_eight_for_global_stadiums(): void
+    {
+        $localStadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL]);
+        $globalStadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::GLOBAL]);
+
+        $service = app(StadiumService::class);
+
+        $this->assertSame(4, $service->maximumStandsForStadium($localStadium));
+        $this->assertSame(8, $service->maximumStandsForStadium($globalStadium));
+    }
+
+    #[Test]
     public function it_accepts_a_stadium_build_when_stand_capacities_are_within_type_limits(): void
     {
         $instance = Instance::factory()->create();
-        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::LOCAL, 'capacity' => 0, 'active_capacity' => 0]);
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 0, 'active_capacity' => 0]);
         StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 1000, 'status' => StadiumStandStatus::ACTIVE]);
         StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH_EAST, 'capacity' => 2000, 'status' => StadiumStandStatus::UNDER_CONSTRUCTION]);
         $stadium->refresh();
 
         app(StadiumService::class)->validateStadiumBuild($stadium);
 
-        $this->assertSame(5000, app(StadiumService::class)->maximumCapacityForStadium($stadium));
+        $this->assertSame(30000, app(StadiumService::class)->maximumCapacityForStadium($stadium));
     }
 
     #[Test]

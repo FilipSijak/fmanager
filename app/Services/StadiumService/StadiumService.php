@@ -39,7 +39,21 @@ class StadiumService
 
     public function maximumStandsForStadium(Stadium $stadium): int
     {
-        return count(StadiumStandPosition::cases());
+        return $stadium->type->allowsCornerStands()
+            ? count(StadiumStandPosition::cases())
+            : 4;
+    }
+
+    public function validateStadiumStandPosition(Stadium $stadium, StadiumStandPosition $position): void
+    {
+        if (! $stadium->type->allowsCornerStands() && in_array($position, [
+            StadiumStandPosition::NORTH_EAST,
+            StadiumStandPosition::SOUTH_EAST,
+            StadiumStandPosition::SOUTH_WEST,
+            StadiumStandPosition::NORTH_WEST,
+        ], true)) {
+            throw new DomainException('Village and Local stadiums cannot build corner stands.');
+        }
     }
 
     public function validateStadiumCapacity(Stadium $stadium, int $capacity): void
@@ -60,6 +74,15 @@ class StadiumService
         $activeCapacity = (int) $stands
             ->where('status', StadiumStandStatus::ACTIVE)
             ->sum('capacity');
+
+        if ($stands->contains(fn (StadiumStand $stand): bool => $stand->position !== null && ! $stadium->type->allowsCornerStands() && in_array($stand->position, [
+            StadiumStandPosition::NORTH_EAST,
+            StadiumStandPosition::SOUTH_EAST,
+            StadiumStandPosition::SOUTH_WEST,
+            StadiumStandPosition::NORTH_WEST,
+        ], true))) {
+            throw new DomainException('Village and Local stadiums cannot build corner stands.');
+        }
 
         if ($stands->count() > $this->maximumStandsForStadium($stadium)) {
             throw new DomainException('A stadium cannot have more than eight stands.');

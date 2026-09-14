@@ -29,6 +29,14 @@ enum StadiumType: string
         };
     }
 
+    public function allowsCornerStands(): bool
+    {
+        return match ($this) {
+            self::VILLAGE, self::LOCAL => false,
+            self::REGIONAL, self::GLOBAL => true,
+        };
+    }
+
     public function maximumCapacity(): int
     {
         return match ($this) {
