@@ -3,6 +3,7 @@
 namespace App\Services\StadiumService;
 
 use App\Models\BaseData\BaseCommercialCategory;
+use App\Models\BaseData\BaseStadiumStandCapacityLimit;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
@@ -39,20 +40,32 @@ class StadiumService
 
     public function maximumStandsForStadium(Stadium $stadium): int
     {
-        return $stadium->type->allowsCornerStands()
-            ? count(StadiumStandPosition::cases())
-            : 4;
+        return BaseStadiumStandCapacityLimit::query()
+            ->where('stadium_type', $stadium->type->value)
+            ->count();
+    }
+
+    public function maximumCapacityForStand(Stadium $stadium, StadiumStandPosition $position): int
+    {
+        return (int) BaseStadiumStandCapacityLimit::query()
+            ->where('stadium_type', $stadium->type->value)
+            ->where('position', $position->value)
+            ->value('maximum_capacity');
     }
 
     public function validateStadiumStandPosition(Stadium $stadium, StadiumStandPosition $position): void
     {
-        if (! $stadium->type->allowsCornerStands() && in_array($position, [
-            StadiumStandPosition::NORTH_EAST,
-            StadiumStandPosition::SOUTH_EAST,
-            StadiumStandPosition::SOUTH_WEST,
-            StadiumStandPosition::NORTH_WEST,
-        ], true)) {
-            throw new DomainException('Village and Local stadiums cannot build corner stands.');
+        if ($this->maximumCapacityForStand($stadium, $position) === 0) {
+            if ($stadium->type->allowsCornerStands() === false && in_array($position, [
+                StadiumStandPosition::NORTH_EAST,
+                StadiumStandPosition::SOUTH_EAST,
+                StadiumStandPosition::SOUTH_WEST,
+                StadiumStandPosition::NORTH_WEST,
+            ], true)) {
+                throw new DomainException('Village and Local stadiums cannot build corner stands.');
+            }
+
+            throw new DomainException('This stand position is not available for the stadium type.');
         }
     }
 
@@ -75,21 +88,29 @@ class StadiumService
             ->where('status', StadiumStandStatus::ACTIVE)
             ->sum('capacity');
 
-        if ($stands->contains(fn (StadiumStand $stand): bool => $stand->position !== null && ! $stadium->type->allowsCornerStands() && in_array($stand->position, [
-            StadiumStandPosition::NORTH_EAST,
-            StadiumStandPosition::SOUTH_EAST,
-            StadiumStandPosition::SOUTH_WEST,
-            StadiumStandPosition::NORTH_WEST,
-        ], true))) {
-            throw new DomainException('Village and Local stadiums cannot build corner stands.');
+        foreach ($stands as $stand) {
+            if ($stand->position === null) {
+                throw new DomainException('Stadium stands must have a position.');
+            }
+
+            $this->validateStadiumStandPosition($stadium, $stand->position);
+            $maximumStandCapacity = $this->maximumCapacityForStand($stadium, $stand->position);
+
+            if ($stand->capacity !== null && $stand->capacity < 0) {
+                throw new DomainException('Stadium stand capacity cannot be negative.');
+            }
+
+            if ($stand->capacity !== null && $stand->capacity % 1000 !== 0) {
+                throw new DomainException('Stadium stand capacity must be a multiple of 1,000 seats.');
+            }
+
+            if ($stand->capacity !== null && $stand->capacity > $maximumStandCapacity) {
+                throw new DomainException('Stadium stand capacity exceeds the maximum for its position.');
+            }
         }
 
         if ($stands->count() > $this->maximumStandsForStadium($stadium)) {
-            throw new DomainException('A stadium cannot have more than eight stands.');
-        }
-
-        if ($stands->contains(fn (StadiumStand $stand): bool => $stand->capacity !== null && $stand->capacity < 0)) {
-            throw new DomainException('Stadium stand capacity cannot be negative.');
+            throw new DomainException('A stadium cannot have more stands than its type allows.');
         }
 
         $this->validateStadiumCapacity($stadium, $capacity);

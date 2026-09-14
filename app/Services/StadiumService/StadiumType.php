@@ -13,8 +13,8 @@ enum StadiumType: string
     {
         return match (true) {
             $capacity <= 1000 => self::VILLAGE,
-            $capacity <= 5000 => self::LOCAL,
-            $capacity <= 30000 => self::REGIONAL,
+            $capacity <= 20000 => self::LOCAL,
+            $capacity <= 60000 => self::REGIONAL,
             default => self::GLOBAL,
         };
     }
@@ -41,8 +41,8 @@ enum StadiumType: string
     {
         return match ($this) {
             self::VILLAGE => 1000,
-            self::LOCAL => 5000,
-            self::REGIONAL => 30000,
+            self::LOCAL => 20000,
+            self::REGIONAL => 60000,
             self::GLOBAL => 100000,
         };
     }

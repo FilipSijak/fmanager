@@ -59,6 +59,35 @@ class StadiumServiceTest extends TestCase
         ]);
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        DB::table('base_stadium_stand_capacity_limits')->insert([
+            ['stadium_type' => StadiumType::VILLAGE->value, 'position' => StadiumStandPosition::NORTH->value, 'maximum_capacity' => 1000],
+            ['stadium_type' => StadiumType::LOCAL->value, 'position' => StadiumStandPosition::NORTH->value, 'maximum_capacity' => 7000],
+            ['stadium_type' => StadiumType::LOCAL->value, 'position' => StadiumStandPosition::EAST->value, 'maximum_capacity' => 3000],
+            ['stadium_type' => StadiumType::LOCAL->value, 'position' => StadiumStandPosition::SOUTH->value, 'maximum_capacity' => 7000],
+            ['stadium_type' => StadiumType::LOCAL->value, 'position' => StadiumStandPosition::WEST->value, 'maximum_capacity' => 3000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::NORTH->value, 'maximum_capacity' => 14000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::EAST->value, 'maximum_capacity' => 6000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::SOUTH->value, 'maximum_capacity' => 14000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::WEST->value, 'maximum_capacity' => 6000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::NORTH_EAST->value, 'maximum_capacity' => 5000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::SOUTH_EAST->value, 'maximum_capacity' => 5000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::SOUTH_WEST->value, 'maximum_capacity' => 5000],
+            ['stadium_type' => StadiumType::REGIONAL->value, 'position' => StadiumStandPosition::NORTH_WEST->value, 'maximum_capacity' => 5000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::NORTH->value, 'maximum_capacity' => 20000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::EAST->value, 'maximum_capacity' => 12000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::SOUTH->value, 'maximum_capacity' => 20000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::WEST->value, 'maximum_capacity' => 12000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::NORTH_EAST->value, 'maximum_capacity' => 9000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::SOUTH_EAST->value, 'maximum_capacity' => 9000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::SOUTH_WEST->value, 'maximum_capacity' => 9000],
+            ['stadium_type' => StadiumType::GLOBAL->value, 'position' => StadiumStandPosition::NORTH_WEST->value, 'maximum_capacity' => 9000],
+        ]);
+    }
+
     #[Test]
     public function it_rejects_a_commercial_category_unavailable_for_the_stadium_type(): void
     {
@@ -234,7 +263,7 @@ class StadiumServiceTest extends TestCase
     #[Test]
     public function it_rejects_an_expansion_above_the_stadium_type_capacity(): void
     {
-        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 5000]);
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 20000]);
 
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Stadium expansion exceeds the maximum capacity for its type.');
@@ -265,15 +294,52 @@ class StadiumServiceTest extends TestCase
     }
 
     #[Test]
-    public function it_allows_four_stands_for_local_and_eight_for_global_stadiums(): void
+    public function it_allows_one_stand_for_village_four_for_local_and_eight_for_global_stadiums(): void
     {
+        $villageStadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::VILLAGE]);
         $localStadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL]);
         $globalStadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::GLOBAL]);
 
         $service = app(StadiumService::class);
 
+        $this->assertSame(1, $service->maximumStandsForStadium($villageStadium));
         $this->assertSame(4, $service->maximumStandsForStadium($localStadium));
         $this->assertSame(8, $service->maximumStandsForStadium($globalStadium));
+    }
+
+    #[Test]
+    public function it_rejects_non_north_stands_for_a_village_stadium(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::VILLAGE]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('This stand position is not available for the stadium type.');
+
+        app(StadiumService::class)->validateStadiumStandPosition($stadium, StadiumStandPosition::EAST);
+    }
+
+    #[Test]
+    public function it_rejects_a_stand_above_its_position_capacity(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 0, 'active_capacity' => 0]);
+        StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 8000, 'status' => StadiumStandStatus::ACTIVE]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium stand capacity exceeds the maximum for its position.');
+
+        app(StadiumService::class)->validateStadiumBuild($stadium->refresh());
+    }
+
+    #[Test]
+    public function it_rejects_a_stand_capacity_that_is_not_a_multiple_of_one_thousand(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 0, 'active_capacity' => 0]);
+        StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 1500, 'status' => StadiumStandStatus::ACTIVE]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium stand capacity must be a multiple of 1,000 seats.');
+
+        app(StadiumService::class)->validateStadiumBuild($stadium->refresh());
     }
 
     #[Test]
@@ -287,7 +353,7 @@ class StadiumServiceTest extends TestCase
 
         app(StadiumService::class)->validateStadiumBuild($stadium);
 
-        $this->assertSame(30000, app(StadiumService::class)->maximumCapacityForStadium($stadium));
+        $this->assertSame(60000, app(StadiumService::class)->maximumCapacityForStadium($stadium));
     }
 
     #[Test]
