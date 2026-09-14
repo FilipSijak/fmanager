@@ -87,6 +87,27 @@ class CreateInstanceTest extends TestCase
                 ->first()
         );
 
+        $clubStadiumIds = DB::table('clubs')
+            ->where('instance_id', $instance->id)
+            ->distinct()
+            ->pluck('stadium_id');
+        $venueCounts = DB::table('stadium_commercial_venues')
+            ->where('instance_id', $instance->id)
+            ->select('stadium_id', DB::raw('COUNT(*) AS venue_count'))
+            ->groupBy('stadium_id')
+            ->pluck('venue_count', 'stadium_id');
+
+        $this->assertCount($clubStadiumIds->count(), $venueCounts);
+
+        foreach (DB::table('stadiums')->where('instance_id', $instance->id)->whereIn('id', $clubStadiumIds)->get() as $stadium) {
+            $allowedVenueCount = DB::table('base_commercial_category_stadium_type')
+                ->where('stadium_type', $stadium->type)
+                ->count();
+            $expectedVenueCount = min(intdiv((int) $stadium->commercial_limit, 2), $allowedVenueCount);
+
+            $this->assertSame($expectedVenueCount, (int) $venueCounts->get($stadium->id));
+        }
+
         $this->assertDatabaseHas(
             'games',
             [

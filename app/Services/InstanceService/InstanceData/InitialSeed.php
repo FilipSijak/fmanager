@@ -4,11 +4,13 @@ namespace App\Services\InstanceService\InstanceData;
 
 use App\Models\Account;
 use App\Models\BaseData\BaseClubs;
+use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\BaseData\BaseCompetitions;
 use App\Models\BaseData\BaseStadiums;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Stadium;
+use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\StadiumService\StadiumType;
 use Illuminate\Support\Facades\DB;
 
@@ -18,6 +20,7 @@ class InitialSeed
     {
         $this->seedClubsFromBaseTable($instanceId);
         $this->seedStadiumsFromBaseTable($instanceId);
+        $this->seedCommercialVenues($instanceId);
         $this->seedCompetitionsFromBaseTable($instanceId);
     }
 
@@ -87,6 +90,60 @@ class InitialSeed
         }
 
         DB::table('stadiums')->insert($stadiums);
+    }
+
+    private function seedCommercialVenues(int $instanceId): void
+    {
+        $baseClubs = BaseClubs::query()->get(['stadium_id']);
+        $baseStadiums = BaseStadiums::query()
+            ->whereIn('id', $baseClubs->pluck('stadium_id')->unique())
+            ->get()
+            ->keyBy('id');
+        $stadiums = Stadium::query()
+            ->where('instance_id', $instanceId)
+            ->get()
+            ->keyBy(fn (Stadium $stadium): string => $stadium->name);
+        $categoryIds = BaseCommercialCategory::query()->pluck('id');
+        $venueSizes = collect(CommercialVenueSize::cases());
+
+        foreach ($baseClubs as $baseClub) {
+            $baseStadium = $baseStadiums->get($baseClub->stadium_id);
+
+            if ($baseStadium === null) {
+                continue;
+            }
+
+            $stadium = $stadiums->get($baseStadium->name);
+
+            if ($stadium === null) {
+                continue;
+            }
+
+            $allowedCategoryIds = DB::table('base_commercial_category_stadium_type')
+                ->where('stadium_type', $stadium->type->value)
+                ->pluck('category_id')
+                ->intersect($categoryIds);
+            $existingCategoryIds = DB::table('stadium_commercial_venues')
+                ->where('instance_id', $instanceId)
+                ->where('stadium_id', $stadium->id)
+                ->pluck('category_id');
+            $availableCategoryIds = $allowedCategoryIds->diff($existingCategoryIds)->shuffle();
+            $targetVenueCount = intdiv((int) $stadium->commercial_limit, 2);
+            $venueCount = min($targetVenueCount - $existingCategoryIds->count(), $availableCategoryIds->count());
+
+            if ($venueCount <= 0) {
+                continue;
+            }
+
+            DB::table('stadium_commercial_venues')->insert(
+                $availableCategoryIds->take($venueCount)->map(fn (int $categoryId): array => [
+                    'instance_id' => $instanceId,
+                    'stadium_id' => $stadium->id,
+                    'category_id' => $categoryId,
+                    'size' => $venueSizes->random()->value,
+                ])->all()
+            );
+        }
     }
 
     public function seedCompetitionsFromBaseTable(int $instanceId): void

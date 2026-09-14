@@ -3,6 +3,8 @@
 namespace Tests\Integration\Services\StadiumService;
 
 use App\Models\BaseData\BaseCommercialCategory;
+use App\Models\BaseData\BaseStadiumExpansionCost;
+use App\Models\Country;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
@@ -30,6 +32,13 @@ class StadiumServiceTest extends TestCase
             'instance_id' => $instance->id,
             'type' => StadiumType::LOCAL,
             'commercial_limit' => 1,
+            'country_code' => 'GBR',
+        ]);
+        Country::query()->forceCreate([
+            'code' => 'GBR',
+            'name' => 'United Kingdom',
+            'ranking' => 100,
+            'population' => 60000000,
         ]);
         $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
         $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
@@ -117,6 +126,49 @@ class StadiumServiceTest extends TestCase
     }
 
     #[Test]
+    public function it_demolishes_a_venue_and_returns_a_rounded_demolition_cost(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id]);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
+        $venue = StadiumCommercialVenue::query()->create([
+            'instance_id' => $instance->id,
+            'stadium_id' => $stadium->id,
+            'category_id' => $category->id,
+            'size' => CommercialVenueSize::LARGE,
+            'build_cost' => 845000,
+        ]);
+
+        $demolitionCost = app(StadiumService::class)->demolishCommercialVenue($stadium, $venue->id);
+
+        $this->assertSame(85000, $demolitionCost);
+        $this->assertDatabaseMissing('stadium_commercial_venues', ['id' => $venue->id]);
+    }
+
+    #[Test]
+    public function it_rejects_demolishing_a_venue_that_does_not_belong_to_the_stadium(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id]);
+        $otherStadium = Stadium::factory()->create(['instance_id' => $instance->id]);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
+        $venue = StadiumCommercialVenue::query()->create([
+            'instance_id' => $instance->id,
+            'stadium_id' => $otherStadium->id,
+            'category_id' => $category->id,
+            'size' => CommercialVenueSize::SMALL,
+            'build_cost' => 250000,
+        ]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('This commercial venue does not exist at the stadium.');
+
+        app(StadiumService::class)->demolishCommercialVenue($stadium, $venue->id);
+    }
+
+    #[Test]
     public function it_lists_built_venues_with_their_categories(): void
     {
         $instance = Instance::factory()->create();
@@ -164,6 +216,41 @@ class StadiumServiceTest extends TestCase
         $categories = app(StadiumService::class)->buildableCommercialCategoriesForStadium($stadium);
 
         $this->assertCount(0, $categories);
+    }
+
+    #[Test]
+    public function it_calculates_country_adjusted_expansion_cost_per_1000_seats(): void
+    {
+        $instance = Instance::factory()->create();
+        Country::query()->forceCreate(['code' => 'GBR', 'name' => 'United Kingdom', 'ranking' => 100, 'population' => 60000000]);
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'country_code' => 'GBR', 'type' => StadiumType::LOCAL, 'capacity' => 4000]);
+        BaseStadiumExpansionCost::query()->create(['stadium_type' => StadiumType::LOCAL, 'cost_per_1000_seats' => 40000]);
+
+        $cost = app(StadiumService::class)->stadiumExpansionCost($stadium, 1000);
+
+        $this->assertSame(60000, $cost);
+    }
+
+    #[Test]
+    public function it_rejects_an_expansion_above_the_stadium_type_capacity(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 5000]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium expansion exceeds the maximum capacity for its type.');
+
+        app(StadiumService::class)->stadiumExpansionCost($stadium, 1);
+    }
+
+    #[Test]
+    public function it_rejects_a_non_positive_expansion(): void
+    {
+        $stadium = Stadium::factory()->create(['instance_id' => Instance::factory()->create()->id, 'type' => StadiumType::LOCAL, 'capacity' => 4000]);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Stadium expansion capacity must be greater than zero.');
+
+        app(StadiumService::class)->stadiumExpansionCost($stadium, 0);
     }
 
     #[Test]
@@ -222,5 +309,13 @@ class StadiumServiceTest extends TestCase
             'category_id' => $categoryId,
             'stadium_type' => $stadiumType->value,
         ]);
+
+        foreach (CommercialVenueSize::cases() as $size) {
+            DB::table('base_commercial_venue_costs')->insert([
+                'category_id' => $categoryId,
+                'size' => $size->value,
+                'base_cost' => 100000,
+            ]);
+        }
     }
 }
