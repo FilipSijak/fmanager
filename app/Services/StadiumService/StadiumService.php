@@ -8,11 +8,12 @@ use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Repositories\StadiumRepository;
 use App\Services\CommercialService\CommercialVenueSize;
+use App\Services\StadiumService\Domain\StadiumBuildValidator;
+use App\Services\StadiumService\Domain\StadiumStandValidator;
 use App\Services\StadiumService\Operations\BuildCommercialVenue;
 use App\Services\StadiumService\Operations\DemolishCommercialVenue;
 use App\StadiumStandPosition;
 use App\StadiumStandStatus;
-use DomainException;
 use Illuminate\Database\Eloquent\Collection;
 
 class StadiumService
@@ -22,6 +23,8 @@ class StadiumService
         private readonly StadiumRepository $stadiumRepository,
         private readonly BuildCommercialVenue $buildCommercialVenue,
         private readonly DemolishCommercialVenue $demolishCommercialVenue,
+        private readonly StadiumBuildValidator $stadiumBuildValidator,
+        private readonly StadiumStandValidator $stadiumStandValidator,
     ) {}
 
     public function typeForCapacity(int $capacity): StadiumType
@@ -51,71 +54,17 @@ class StadiumService
 
     public function validateStadiumStandPosition(Stadium $stadium, StadiumStandPosition $position): void
     {
-        if ($this->maximumCapacityForStand($stadium, $position) === 0) {
-            if ($stadium->type->allowsCornerStands() === false && in_array($position, [
-                StadiumStandPosition::NORTH_EAST,
-                StadiumStandPosition::SOUTH_EAST,
-                StadiumStandPosition::SOUTH_WEST,
-                StadiumStandPosition::NORTH_WEST,
-            ], true)) {
-                throw new DomainException('Village and Local stadiums cannot build corner stands.');
-            }
-
-            throw new DomainException('This stand position is not available for the stadium type.');
-        }
+        $this->stadiumStandValidator->validatePosition($stadium, $position);
     }
 
     public function validateStadiumCapacity(Stadium $stadium, int $capacity): void
     {
-        if ($capacity < 0) {
-            throw new DomainException('Stadium capacity cannot be negative.');
-        }
-
-        if ($capacity > $this->maximumCapacityForStadium($stadium)) {
-            throw new DomainException('Stadium capacity exceeds the maximum for its stadium type.');
-        }
+        $this->stadiumBuildValidator->validateCapacity($stadium, $capacity);
     }
 
     public function validateStadiumBuild(Stadium $stadium): void
     {
-        $stands = $this->stadiumRepository->standsForValidation($stadium);
-        $capacity = (int) $stands->sum('capacity');
-        $activeCapacity = $this->activeCapacityForStands($stands);
-
-        foreach ($stands as $stand) {
-            if ($stand->position === null) {
-                throw new DomainException('Stadium stands must have a position.');
-            }
-
-            $this->validateStadiumStandPosition($stadium, $stand->position);
-            $maximumStandCapacity = $this->maximumCapacityForStand($stadium, $stand->position);
-
-            if ($stand->capacity !== null && $stand->capacity < 0) {
-                throw new DomainException('Stadium stand capacity cannot be negative.');
-            }
-
-            if ($stand->capacity !== null && $stand->capacity % 1000 !== 0) {
-                throw new DomainException('Stadium stand capacity must be a multiple of 1,000 seats.');
-            }
-
-            if ($stand->capacity !== null && $stand->capacity > $maximumStandCapacity) {
-                throw new DomainException('Stadium stand capacity exceeds the maximum for its position.');
-            }
-        }
-
-        if ($stands->count() > $this->maximumStandsForStadium($stadium)) {
-            throw new DomainException('A stadium cannot have more stands than its type allows.');
-        }
-
-        $this->validateStadiumCapacity($stadium, $capacity);
-
-        if ((int) $stadium->capacity !== $capacity) {
-            throw new DomainException('Stadium capacity does not match its stands.');
-        }
-
-        if ((int) $stadium->active_capacity !== $activeCapacity) {
-            throw new DomainException('Stadium active capacity does not match its active stands.');
-        }
+        $this->stadiumBuildValidator->validate($stadium);
     }
 
     public function commercialVenuesForStadium(Stadium $stadium): Collection
