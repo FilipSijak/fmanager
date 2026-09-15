@@ -3,19 +3,16 @@
 namespace App\Services\StadiumService;
 
 use App\Models\BaseData\BaseCommercialCategory;
-use App\Models\BaseData\BaseStadiumStandCapacityLimit;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
-use App\Models\StadiumStand;
-use App\Models\StadiumStandConstruction;
+use App\Repositories\StadiumRepository;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\CommercialService\VenueConstructionCostCalculator;
 use App\StadiumStandPosition;
 use App\StadiumStandStatus;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 class StadiumService
@@ -23,6 +20,7 @@ class StadiumService
     public function __construct(
         private readonly VenueConstructionCostCalculator $venueConstructionCostCalculator,
         private readonly StadiumExpansionCostCalculator $stadiumExpansionCostCalculator,
+        private readonly StadiumRepository $stadiumRepository,
     ) {}
 
     public function typeForCapacity(int $capacity): StadiumType
@@ -42,17 +40,12 @@ class StadiumService
 
     public function maximumStandsForStadium(Stadium $stadium): int
     {
-        return BaseStadiumStandCapacityLimit::query()
-            ->where('stadium_type', $stadium->type->value)
-            ->count();
+        return $this->stadiumRepository->maximumStandsForType($stadium->type);
     }
 
     public function maximumCapacityForStand(Stadium $stadium, StadiumStandPosition $position): int
     {
-        return (int) BaseStadiumStandCapacityLimit::query()
-            ->where('stadium_type', $stadium->type->value)
-            ->where('position', $position->value)
-            ->value('maximum_capacity');
+        return $this->stadiumRepository->maximumCapacityForStand($stadium->type, $position);
     }
 
     public function validateStadiumStandPosition(Stadium $stadium, StadiumStandPosition $position): void
@@ -84,7 +77,7 @@ class StadiumService
 
     public function validateStadiumBuild(Stadium $stadium): void
     {
-        $stands = $stadium->stands()->with('construction')->get();
+        $stands = $this->stadiumRepository->standsForValidation($stadium);
         $capacity = (int) $stands->sum('capacity');
         $activeCapacity = $this->activeCapacityForStands($stands);
 
@@ -126,10 +119,7 @@ class StadiumService
 
     public function commercialVenuesForStadium(Stadium $stadium): Collection
     {
-        return StadiumCommercialVenue::query()
-            ->with('category')
-            ->whereBelongsTo($stadium)
-            ->get();
+        return $this->stadiumRepository->commercialVenuesForStadium($stadium);
     }
 
     /**
@@ -137,67 +127,35 @@ class StadiumService
      */
     public function buildableCommercialCategoriesForStadium(Stadium $stadium): Collection
     {
-        if ($stadium->commercialVenues()->count() >= $stadium->commercial_limit) {
-            return new Collection;
-        }
-
-        $builtCategoryIds = $stadium->commercialVenues()->select('category_id');
-
-        return BaseCommercialCategory::query()
-            ->where('is_active', true)
-            ->whereNotIn('id', $builtCategoryIds)
-            ->whereExists(function (Builder $query) use ($stadium): void {
-                $query->selectRaw('1')
-                    ->from('base_commercial_category_stadium_type')
-                    ->whereColumn('base_commercial_category_stadium_type.category_id', 'base_commercial_categories.id')
-                    ->where('base_commercial_category_stadium_type.stadium_type', $stadium->type->value);
-            })
-            ->orderBy('name')
-            ->get();
+        return $this->stadiumRepository->buildableCommercialCategoriesForStadium($stadium);
     }
 
     public function buildCommercialVenue(Stadium $stadium, int $categoryId, CommercialVenueSize $size): StadiumCommercialVenue
     {
         return DB::transaction(function () use ($stadium, $categoryId, $size): StadiumCommercialVenue {
-            $lockedStadium = Stadium::query()->whereKey($stadium->id)->lockForUpdate()->firstOrFail();
+            $lockedStadium = $this->stadiumRepository->lockStadium($stadium->id);
             $stadiumType = $lockedStadium->type;
 
-            $categoryIsAvailable = DB::table('base_commercial_category_stadium_type')
-                ->where('category_id', $categoryId)
-                ->where('stadium_type', $stadiumType->value)
-                ->exists();
-
-            if (! $categoryIsAvailable) {
+            if (! $this->stadiumRepository->categoryIsAvailableForType($categoryId, $stadiumType)) {
                 throw new DomainException('This commercial category is not available for the stadium type.');
             }
 
-            $categoryAlreadyBuilt = StadiumCommercialVenue::query()
-                ->where('instance_id', $lockedStadium->instance_id)
-                ->where('stadium_id', $lockedStadium->id)
-                ->where('category_id', $categoryId)
-                ->exists();
-
-            if ($categoryAlreadyBuilt) {
+            if ($this->stadiumRepository->commercialVenueExists($lockedStadium, $categoryId)) {
                 throw new DomainException('This commercial venue category has already been built at the stadium.');
             }
 
-            $venueCount = StadiumCommercialVenue::query()
-                ->where('instance_id', $lockedStadium->instance_id)
-                ->where('stadium_id', $lockedStadium->id)
-                ->count();
-
-            if ($venueCount >= $lockedStadium->commercial_limit) {
+            if ($this->stadiumRepository->commercialVenueCount($lockedStadium) >= $lockedStadium->commercial_limit) {
                 throw new DomainException('The stadium has reached its commercial venue limit.');
             }
 
-            return StadiumCommercialVenue::query()->create([
+            return $this->stadiumRepository->createCommercialVenue([
                 'instance_id' => $lockedStadium->instance_id,
                 'stadium_id' => $lockedStadium->id,
                 'category_id' => $categoryId,
                 'size' => $size,
                 'build_cost' => $this->venueConstructionCostCalculator->calculate(
                     $lockedStadium,
-                    BaseCommercialCategory::query()->findOrFail($categoryId),
+                    $this->stadiumRepository->findCategoryOrFail($categoryId),
                     $size,
                 ),
             ]);
@@ -212,13 +170,8 @@ class StadiumService
     public function demolishCommercialVenue(Stadium $stadium, int $venueId): int
     {
         return DB::transaction(function () use ($stadium, $venueId): int {
-            $lockedStadium = Stadium::query()->whereKey($stadium->id)->lockForUpdate()->firstOrFail();
-            $venue = StadiumCommercialVenue::query()
-                ->with('category')
-                ->where('instance_id', $lockedStadium->instance_id)
-                ->where('stadium_id', $lockedStadium->id)
-                ->whereKey($venueId)
-                ->first();
+            $lockedStadium = $this->stadiumRepository->lockStadium($stadium->id);
+            $venue = $this->stadiumRepository->commercialVenueForStadium($lockedStadium, $venueId);
 
             if ($venue === null) {
                 throw new DomainException('This commercial venue does not exist at the stadium.');
@@ -239,19 +192,7 @@ class StadiumService
 
     public function recalculateCapacitiesForInstance(Instance $instance): void
     {
-        $stadiumIds = StadiumStandConstruction::query()
-            ->where('instance_id', $instance->id)
-            ->distinct()
-            ->pluck('stadium_id');
-
-        if ($stadiumIds->isEmpty()) {
-            return;
-        }
-
-        Stadium::query()
-            ->where('instance_id', $instance->id)
-            ->whereIn('id', $stadiumIds)
-            ->get()
+        $this->stadiumRepository->stadiumsWithStandConstructionForInstance($instance)
             ->each(function (Stadium $stadium): void {
                 $this->recalculateCapacities($stadium);
             });
@@ -266,10 +207,7 @@ class StadiumService
 
     public function recalculateCapacities(Stadium $stadium): void
     {
-        $stands = StadiumStand::query()
-            ->with('construction')
-            ->whereBelongsTo($stadium)
-            ->get();
+        $stands = $this->stadiumRepository->standsForCapacity($stadium);
 
         $activeCapacity = $this->activeCapacityForStands($stands);
 
