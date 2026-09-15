@@ -1,0 +1,28 @@
+app/Repositories/StadiumRepository.php
+  s_90af8558614877::t_f2fb45b33d87d1 1-15,17-46,48-77,81-87,89-94,97-113,115-145
+  s_90af8558614877::t_46765efed2606e 16
+  s_90af8558614877::t_9f64d261e075ba 47,78-80,88,95-96,114
+app/Services/StadiumService/StadiumService.php
+  s_90af8558614877::t_46de77726be105 143,147,151,158,174,195,210
+  s_90af8558614877::t_93f3b2918b0abd 139
+  s_90af8558614877::t_fd93dbc06883c1 43
+  s_90af8558614877::t_c865c972382e04 23
+  s_90af8558614877::t_ffb821193411af 48,80,122,130,136,173
+  s_90af8558614877::t_d4879dc81d9e98 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "5f72997ad38c373b94da5dd03d3cb6df64d8cda8",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
