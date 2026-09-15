@@ -1,0 +1,41 @@
+app/Repositories/StadiumRepository.php
+  s_90af8558614877::t_59dc4416739bdf 31
+  s_90af8558614877::t_7d4854ae3808d8 20
+  s_90af8558614877::t_d4fe216d2f8a4c 48
+  s_90af8558614877::t_fcac687a79b4c3 49,71
+  s_90af8558614877::t_aae750dd3a6bb3 78
+  s_90af8558614877::t_50a17175fe8c9a 25,37,93
+  s_90af8558614877::t_98561a007798ce 50
+  s_90af8558614877::t_2b2edbd5251f7f 62-64,117
+app/Models/StadiumCommercialVenue.php
+  s_90af8558614877::t_50a17175fe8c9a 26
+  s_90af8558614877::t_99065e7fadb7ef 8,22-25,27-28
+app/Models/StadiumStand.php
+  s_90af8558614877::t_50a17175fe8c9a 10,24-27
+  s_90af8558614877::t_f486ace6b32d72 28
+app/Models/BaseData/BaseCommercialCategory.php
+  s_90af8558614877::t_6e2c4baa41d919 9
+  s_90af8558614877::t_f591f9808cb494 26
+  s_90af8558614877::t_50a17175fe8c9a 5-6,19-25,27-32
+  s_90af8558614877::t_ab3a10d140669d 33
+app/Models/BaseData/BaseStadiumStandCapacityLimit.php
+  s_90af8558614877::t_50a17175fe8c9a 20,25
+  s_90af8558614877::t_f242c2a3d7a4f0 7
+  s_90af8558614877::t_04f45f93229bc3 18-19,21-24,26-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "62cdc403bbe58afb00da60b89b97e3664c37bb01",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
