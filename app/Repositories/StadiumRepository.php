@@ -60,6 +60,7 @@ class StadiumRepository
     public function categoryIsAvailableForType(int $categoryId, StadiumType $type): bool
     {
         return BaseCommercialCategory::query()
+            ->active()
             ->whereKey($categoryId)
             ->availableForStadiumType($type)
             ->exists();

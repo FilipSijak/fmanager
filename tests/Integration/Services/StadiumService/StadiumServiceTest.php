@@ -11,6 +11,7 @@ use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
+use App\Models\StadiumStandConstruction;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\StadiumService\StadiumService;
 use App\Services\StadiumService\StadiumStandConstructionService;
@@ -462,6 +463,40 @@ class StadiumServiceTest extends TestCase
         $this->expectExceptionMessage('Stadium capacity cannot be negative.');
 
         app(StadiumService::class)->validateStadiumCapacity($stadium, -1);
+    }
+
+    #[Test]
+    public function it_rejects_building_an_inactive_commercial_category(): void
+    {
+        $instance = Instance::factory()->create();
+        $stadium = Stadium::factory()->create([
+            'instance_id' => $instance->id,
+            'type' => StadiumType::LOCAL,
+        ]);
+        $category = BaseCommercialCategory::query()->forceCreate([
+            'slug' => 'closed-bar',
+            'name' => 'Closed Bar',
+            'is_active' => false,
+        ]);
+        $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
+
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('This commercial category is not available for the stadium type.');
+
+        app(StadiumService::class)->buildCommercialVenue(
+            $stadium,
+            $category->id,
+            CommercialVenueSize::SMALL,
+        );
+    }
+
+    #[Test]
+    public function it_can_instantiate_the_stadium_construction_factory(): void
+    {
+        $attributes = StadiumStandConstruction::factory()->raw();
+
+        $this->assertSame(1000, $attributes['target_capacity']);
+        $this->assertSame(1000, $attributes['capacity_increase']);
     }
 
     private function mapCategoryToStadiumType(int $categoryId, StadiumType $stadiumType): void
