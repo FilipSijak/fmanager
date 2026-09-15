@@ -1,0 +1,75 @@
+database/factories/GameEntityFactory.php
+  s_90af8558614877::t_5a95ed8c58d871 5,7,16-18
+  s_90af8558614877::t_2fff0c10073258 1-4,8-9,11-15,19-21
+  s_90af8558614877::t_f26780166c3d4e 6,10
+app/Models/GameEntity.php
+  s_90af8558614877::t_0b32c5a391a859 5,8-9,14-30
+  s_90af8558614877::t_2fff0c10073258 1-4,6-7,10-13,31
+app/Models/GameEntityAccount.php
+  s_90af8558614877::t_e64bfb152ba700 1-11
+  s_90af8558614877::t_72c8c231dfb779 12-52
+database/migrations/2026_09_15_215907_create_accounts_debt_lines_entities_table.php
+  s_90af8558614877::t_2b265f92617354 1-10,12,20-27
+  s_90af8558614877::t_7f31bf907a0658 11,13-19
+database/factories/GameEntityAccountFactory.php
+  s_90af8558614877::t_e64bfb152ba700 1-4,8-9,11-15,21-23
+  s_90af8558614877::t_f26780166c3d4e 6,10
+  s_90af8558614877::t_6a34fc937b4673 5,7,16-20
+app/Services/FinanceService/FinanceService.php
+  s_90af8558614877::t_eabf28c066fd9f 6-7,9,11,17,34-39,41-86
+  s_90af8558614877::t_2f2fe4d758e75f 16,40
+  s_90af8558614877::t_20382032612342 87-88
+tests/Feature/FinanceEntityTest.php
+  s_90af8558614877::t_e73b9fcc088961 1-4,15,17-20,71,73,75,93,95-96
+  s_90af8558614877::t_b7266026df2eef 5-14,16,21-37,40-70,72,74,76-92,94
+  s_90af8558614877::t_40b6fee0b082c1 38-39
+database/factories/FinanceTransactionEntityFactory.php
+  s_90af8558614877::t_f26780166c3d4e 8,13
+  s_90af8558614877::t_146da8ad8844e3 1-4,11-12,14-18,26-28
+  s_90af8558614877::t_763c3990bc55b4 5-7,9-10,19-25
+app/Models/AccountsDebtLinesEntity.php
+  s_90af8558614877::t_2b265f92617354 1-6,8-11,43
+  s_90af8558614877::t_3cc15d23f5ed05 7,12-13,16-42
+  s_90af8558614877::t_e73b9fcc088961 14-15
+database/migrations/2026_09_15_215904_create_game_entity_accounts_table.php
+  s_90af8558614877::t_e64bfb152ba700 1-22,24,26
+  s_90af8558614877::t_fea4eb7b829dcb 23,25,27-28
+app/EntityTransactionDirection.php
+  s_90af8558614877::t_26f096b2e5fac1 1-8
+  s_90af8558614877::t_f4817e51f7acc7 9
+app/GameEntityType.php
+  s_90af8558614877::t_95d92c20b963da 5,7-11
+  s_90af8558614877::t_26f096b2e5fac1 1-4,6,12
+app/Models/FinanceTransactionEntity.php
+  s_90af8558614877::t_146da8ad8844e3 1-11
+  s_90af8558614877::t_eea920f430f6a7 12-47
+database/migrations/2026_09_15_215905_create_finance_transaction_entities_table.php
+  s_90af8558614877::t_146da8ad8844e3 1-22,24,26
+  s_90af8558614877::t_01d487ed1e534f 23,25,27-31
+database/factories/AccountsDebtLinesEntityFactory.php
+  s_90af8558614877::t_16592b70ba3fc7 5,7-8,16-17,19-23
+  s_90af8558614877::t_f26780166c3d4e 6,11
+  s_90af8558614877::t_2b265f92617354 1-4,9-10,12-15,18,24-26
+database/migrations/2026_09_15_215903_create_game_entities_table.php
+  s_90af8558614877::t_2fff0c10073258 1-10,12,16,19-26
+  s_90af8558614877::t_5b49a7f151ec03 11,13-15,17-18
+app/EntityTransactionType.php
+  s_90af8558614877::t_26f096b2e5fac1 1-4,6,12
+  s_90af8558614877::t_4aec3a801ab180 5,7-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d612da9680fa509404e2a0f22afe3d54a7f2777d",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
