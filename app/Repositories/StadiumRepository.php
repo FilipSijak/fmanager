@@ -12,40 +12,29 @@ use App\Models\StadiumStandConstruction;
 use App\Services\StadiumService\StadiumType;
 use App\StadiumStandPosition;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
 
 class StadiumRepository
 {
     public function maximumStandsForType(StadiumType $type): int
     {
-        return BaseStadiumStandCapacityLimit::query()
-            ->where('stadium_type', $type->value)
-            ->count();
+        return BaseStadiumStandCapacityLimit::query()->forType($type)->count();
     }
 
     public function maximumCapacityForStand(StadiumType $type, StadiumStandPosition $position): int
     {
-        return (int) BaseStadiumStandCapacityLimit::query()
-            ->where('stadium_type', $type->value)
-            ->where('position', $position->value)
-            ->value('maximum_capacity');
+        return (int) BaseStadiumStandCapacityLimit::query()->forType($type)->forPosition($position)->value('maximum_capacity');
     }
 
     /** @return Collection<int, StadiumStand> */
     public function standsForValidation(Stadium $stadium): Collection
     {
-        return $stadium->stands()->with('construction')->get();
+        return StadiumStand::query()->withConstruction()->whereBelongsTo($stadium)->get();
     }
 
     /** @return Collection<int, StadiumCommercialVenue> */
     public function commercialVenuesForStadium(Stadium $stadium): Collection
     {
-        return StadiumCommercialVenue::query()
-            ->with('category')
-            ->whereBelongsTo($stadium)
-            ->where('instance_id', $stadium->instance_id)
-            ->get();
+        return StadiumCommercialVenue::query()->forStadium($stadium)->with('category')->get();
     }
 
     /** @return Collection<int, BaseCommercialCategory> */
@@ -56,14 +45,9 @@ class StadiumRepository
         }
 
         return BaseCommercialCategory::query()
-            ->where('is_active', true)
-            ->whereNotIn('id', $stadium->commercialVenues()->select('category_id'))
-            ->whereExists(function (Builder $query) use ($stadium): void {
-                $query->selectRaw('1')
-                    ->from('base_commercial_category_stadium_type')
-                    ->whereColumn('base_commercial_category_stadium_type.category_id', 'base_commercial_categories.id')
-                    ->where('base_commercial_category_stadium_type.stadium_type', $stadium->type->value);
-            })
+            ->active()
+            ->whereNotIn('id', StadiumCommercialVenue::query()->forStadium($stadium)->select('category_id'))
+            ->availableForStadiumType($stadium->type)
             ->orderBy('name')
             ->get();
     }
@@ -75,25 +59,23 @@ class StadiumRepository
 
     public function categoryIsAvailableForType(int $categoryId, StadiumType $type): bool
     {
-        return DB::table('base_commercial_category_stadium_type')
-            ->where('category_id', $categoryId)
-            ->where('stadium_type', $type->value)
+        return BaseCommercialCategory::query()
+            ->whereKey($categoryId)
+            ->availableForStadiumType($type)
             ->exists();
     }
 
     public function commercialVenueExists(Stadium $stadium, int $categoryId): bool
     {
         return StadiumCommercialVenue::query()
-            ->whereBelongsTo($stadium)
-            ->where('instance_id', $stadium->instance_id)
+            ->forStadium($stadium)
             ->where('category_id', $categoryId)
             ->exists();
     }
 
     public function commercialVenueCount(Stadium $stadium): int
     {
-        return StadiumCommercialVenue::query()->whereBelongsTo($stadium)
-            ->where('instance_id', $stadium->instance_id)->count();
+        return StadiumCommercialVenue::query()->forStadium($stadium)->count();
     }
 
     public function findCategoryOrFail(int $categoryId): BaseCommercialCategory
@@ -108,12 +90,7 @@ class StadiumRepository
 
     public function commercialVenueForStadium(Stadium $stadium, int $venueId): ?StadiumCommercialVenue
     {
-        return StadiumCommercialVenue::query()
-            ->with('category')
-            ->whereBelongsTo($stadium)
-            ->where('instance_id', $stadium->instance_id)
-            ->whereKey($venueId)
-            ->first();
+        return StadiumCommercialVenue::query()->forStadium($stadium)->with('category')->whereKey($venueId)->first();
     }
 
     /** @return Collection<int, Stadium> */
@@ -137,9 +114,7 @@ class StadiumRepository
     /** @return Collection<int, StadiumStand> */
     public function standsForCapacity(Stadium $stadium): Collection
     {
-        return StadiumStand::query()
-            ->with('construction')
-            ->whereBelongsTo($stadium)
+        return StadiumStand::query()->withConstruction()->whereBelongsTo($stadium)
             ->get();
     }
 }
