@@ -7,11 +7,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class StadiumStandResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
@@ -19,6 +14,7 @@ class StadiumStandResource extends JsonResource
             'position' => $this->position?->value,
             'capacity' => $this->capacity,
             'status' => $this->status?->value,
+            'construction' => new StadiumStandConstructionResource($this->whenLoaded('construction')),
         ];
     }
 }

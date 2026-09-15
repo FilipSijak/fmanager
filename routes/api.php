@@ -8,6 +8,7 @@ use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\PlayerSearchController;
+use App\Http\Controllers\StadiumController;
 use App\Http\Controllers\TransferController;
 use App\Http\Middleware\EnsureGameIsValid;
 use App\Http\Middleware\SetGameContext;
@@ -23,6 +24,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/news/{newsId}/read', [NewsController::class, 'markAsRead']);
 
         Route::get('/dashboard', [DashboardController::class, 'index']);
+
+        Route::prefix('stadium')->group(function (): void {
+            Route::get('/', [StadiumController::class, 'show']);
+            Route::get('/commercial-categories', [StadiumController::class, 'buildableCommercialCategories']);
+            Route::post('/commercial-venues', [StadiumController::class, 'buildCommercialVenue']);
+            Route::delete('/commercial-venues/{venueId}', [StadiumController::class, 'demolishCommercialVenue']);
+            Route::post('/stands/{standId}/construction', [StadiumController::class, 'startStandConstruction']);
+        });
 
         Route::post('/game/{gameId}/complete', [GameController::class, 'complete']);
         Route::post('/game/{gameId}/postpone', [GameController::class, 'postpone']);

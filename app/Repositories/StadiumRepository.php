@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\BaseData\BaseStadiumStandCapacityLimit;
+use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
@@ -55,6 +56,29 @@ class StadiumRepository
     public function stadiumById(int $stadiumId): ?Stadium
     {
         return Stadium::query()->whereKey($stadiumId)->first();
+    }
+
+    public function managedStadiumForInstance(int $instanceId): Stadium
+    {
+        $clubId = Instance::query()->whereKey($instanceId)->value('club_id');
+        $stadiumId = Club::query()
+            ->forInstance($instanceId)
+            ->whereKey($clubId)
+            ->value('stadium_id');
+
+        return Stadium::query()
+            ->where('instance_id', $instanceId)
+            ->whereKey($stadiumId)
+            ->with(['stands.construction', 'commercialVenues.category'])
+            ->firstOrFail();
+    }
+
+    public function standForStadium(Stadium $stadium, int $standId): StadiumStand
+    {
+        return StadiumStand::query()
+            ->whereBelongsTo($stadium)
+            ->whereKey($standId)
+            ->firstOrFail();
     }
 
     public function lockStadium(int $stadiumId): Stadium
