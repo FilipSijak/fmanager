@@ -20,25 +20,31 @@ class InitialSeed
 {
     public function seedFromBaseTables(int $instanceId): void
     {
-        $this->seedClubsFromBaseTable($instanceId);
-        $this->seedStadiumsFromBaseTable($instanceId);
+        $stadiumIdsByBaseId = $this->seedStadiumsFromBaseTable($instanceId);
+        $this->seedClubsFromBaseTable($instanceId, $stadiumIdsByBaseId);
         $this->seedCommercialVenues($instanceId);
         $this->seedCompetitionsFromBaseTable($instanceId);
     }
 
-    public function seedClubsFromBaseTable(int $instanceId): void
+    /**
+     * @param  array<int, int>  $stadiumIdsByBaseId
+     */
+    public function seedClubsFromBaseTable(int $instanceId, array $stadiumIdsByBaseId): void
     {
         $baseClubs = BaseClubs::all();
         $clubs = [];
 
         foreach ($baseClubs as $baseClub) {
+            $stadiumId = $stadiumIdsByBaseId[$baseClub->stadium_id] ?? throw new \LogicException(
+                "No stadium was seeded for base stadium {$baseClub->stadium_id}.",
+            );
             $club = new Club;
 
             $club->name = $baseClub->name;
             $club->instance_id = $instanceId;
             $club->country_code = $baseClub->country_code;
             $club->city_id = $baseClub->city_id;
-            $club->stadium_id = $baseClub->stadium_id;
+            $club->stadium_id = $stadiumId;
             $club->rank = $baseClub->rank;
             $club->rank_academy = $baseClub->rank_academy;
             $club->rank_training = $baseClub->rank_training;
@@ -67,7 +73,7 @@ class InitialSeed
         }
     }
 
-    public function seedStadiumsFromBaseTable(int $instanceId): void
+    public function seedStadiumsFromBaseTable(int $instanceId): array
     {
         $baseStadiums = BaseStadiums::all();
         $baseClubs = BaseClubs::all();
@@ -75,6 +81,7 @@ class InitialSeed
             ->orderBy('id')
             ->get(['stadium_type', 'position', 'maximum_capacity'])
             ->groupBy('stadium_type');
+        $stadiumIdsByBaseId = [];
         $stands = [];
 
         foreach ($baseStadiums as $baseStadium) {
@@ -94,6 +101,7 @@ class InitialSeed
                 'type' => $stadiumType->value,
                 'commercial_limit' => $stadiumType->commercialLimit(),
             ]);
+            $stadiumIdsByBaseId[$baseStadium->id] = $stadiumId;
 
             $remainingCapacity = $capacity;
             foreach ($standCapacityLimits->get($stadiumType->value, collect()) as $limit) {
@@ -115,6 +123,8 @@ class InitialSeed
         if ($stands !== []) {
             DB::table('stadium_stands')->insert($stands);
         }
+
+        return $stadiumIdsByBaseId;
     }
 
     private function capacityForType(int $capacity, StadiumType $type): int

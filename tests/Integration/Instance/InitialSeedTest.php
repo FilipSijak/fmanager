@@ -3,6 +3,7 @@
 namespace Tests\Integration\Instance;
 
 use App\Models\BaseData\BaseStadiumStandCapacityLimit;
+use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Services\InstanceService\InstanceData\InitialSeed;
@@ -51,6 +52,25 @@ class InitialSeedTest extends TestCase
                     $this->assertSame(StadiumStandStatus::ACTIVE, $stand->status);
                 }
             }
+        }
+    }
+
+    #[Test]
+    public function it_links_each_instance_club_to_that_instances_stadium(): void
+    {
+        (new DatabaseSeeder)->run();
+        $firstInstance = Instance::factory()->create();
+        $secondInstance = Instance::factory()->create();
+
+        app(InitialSeed::class)->seedFromBaseTables($firstInstance->id);
+        app(InitialSeed::class)->seedFromBaseTables($secondInstance->id);
+
+        $clubs = Club::query()->where('instance_id', $secondInstance->id)->with('stadium')->get();
+
+        $this->assertNotEmpty($clubs);
+
+        foreach ($clubs as $club) {
+            $this->assertSame($secondInstance->id, $club->stadium->instance_id);
         }
     }
 }
