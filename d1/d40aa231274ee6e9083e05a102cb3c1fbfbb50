@@ -1,0 +1,29 @@
+app/Services/StadiumService/Domain/StadiumBuildValidator.php
+  s_90af8558614877::t_d49dd94c5a0fef 6,22,27,38,44,48,55,59,63,67-68
+  s_90af8558614877::t_c52a6bcbec3fa3 5,7-11,14-19,21,23-26,28-37,39-43,45-47,49-54,56-58,60-62,64-66
+  s_90af8558614877::t_fe61f36025f8d8 1-4,12-13,20,69-70
+app/Services/StadiumService/StadiumService.php
+  s_90af8558614877::t_494f7547b470e1 26-27
+  s_90af8558614877::t_073c8ac4a8e618 57,62,67
+  s_90af8558614877::t_67c3069acd9725 11-12
+app/Services/StadiumService/Domain/StadiumStandValidator.php
+  s_90af8558614877::t_fe61f36025f8d8 1-4,11-12,18,46-47
+  s_90af8558614877::t_85fb24d714a1f5 5-10,13-17,19-25,27-28,30-35,37-39,41-43,45
+  s_90af8558614877::t_d49dd94c5a0fef 26,29,36,40,44
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d1d40aa231274ee6e9083e05a102cb3c1fbfbb50",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
