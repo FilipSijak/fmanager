@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\BaseData\BaseCommercialCategory;
 use App\Services\CommercialService\CommercialVenueSize;
 use Database\Factories\StadiumCommercialVenueFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,6 +18,13 @@ class StadiumCommercialVenue extends Model
     protected $fillable = ['instance_id', 'stadium_id', 'category_id', 'size', 'build_cost'];
 
     public $timestamps = false;
+
+    public function scopeForStadium(Builder $query, Stadium $stadium): Builder
+    {
+        return $query
+            ->whereBelongsTo($stadium)
+            ->where('instance_id', $stadium->instance_id);
+    }
 
     protected function casts(): array
     {
