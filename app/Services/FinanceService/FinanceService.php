@@ -6,6 +6,7 @@ use App\DataModels\ClubFinancialSummary;
 use App\EntityTransactionDirection;
 use App\EntityTransactionType;
 use App\FinanceEntityLoanStatus;
+use App\GameEntityType;
 use App\Models\Account;
 use App\Models\AccountsDebtLinesEntity;
 use App\Models\FinanceEntityLoan;
@@ -14,6 +15,8 @@ use App\Models\FinanceTransactions;
 use App\Models\GameEntityAccount;
 use App\Models\Instance;
 use App\Repositories\ClubRepository;
+use App\Services\FinanceService\Domain\BankLoanCalculator;
+use App\Services\FinanceService\Domain\BankLoanTerms;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -26,6 +29,7 @@ class FinanceService
     public function __construct(
         private readonly ClubRepository $clubRepository,
         private readonly GameContext $gameContext,
+        private readonly BankLoanCalculator $bankLoanCalculator,
     ) {}
 
     public function getClubFinances(): ?ClubFinancialSummary
@@ -35,27 +39,41 @@ class FinanceService
         return $this->clubRepository->getTransferBudgetAndBalance($instance->club_id);
     }
 
+    public function takeOutBankLoan(
+        int $amount,
+        int $lengthYears,
+        CarbonInterface $startedAt,
+    ): FinanceEntityLoan {
+        $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
+        $clubAccount = Account::query()
+            ->where('club_id', $instance->club_id)
+            ->firstOrFail();
+        $bankAccount = GameEntityAccount::query()
+            ->where('instance_id', $instance->id)
+            ->whereHas('gameEntity', function (Builder $query): void {
+                $query->where('type', GameEntityType::BANK->value);
+            })
+            ->firstOrFail();
+        $terms = $this->bankLoanCalculator->calculate($amount, $lengthYears);
+
+        return $this->issueLoan(
+            $bankAccount,
+            $clubAccount,
+            $terms,
+            $startedAt,
+        );
+    }
+
     public function issueLoan(
         GameEntityAccount $lenderGameEntityAccount,
         Account $borrowerClubAccount,
-        int $principal,
-        int $interestAmount,
-        int $installmentCount,
+        BankLoanTerms $terms,
         CarbonInterface $startedAt,
     ): FinanceEntityLoan {
-        if ($principal <= 0) {
-            throw new DomainException('Loan principal must be greater than zero.');
-        }
-
-        if ($interestAmount < 0) {
-            throw new DomainException('Loan interest amount cannot be negative.');
-        }
-
-        if ($installmentCount <= 0) {
-            throw new DomainException('Loan must have at least one installment.');
-        }
-
-        $totalAmount = $principal + $interestAmount;
+        $principal = $terms->principal;
+        $interestAmount = $terms->interestAmount;
+        $totalAmount = $terms->totalAmount;
+        $installmentCount = $terms->installmentCount;
 
         return DB::transaction(function () use (
             $lenderGameEntityAccount,
@@ -64,6 +82,7 @@ class FinanceService
             $interestAmount,
             $totalAmount,
             $installmentCount,
+            $terms,
             $startedAt,
         ): FinanceEntityLoan {
             $loan = FinanceEntityLoan::query()->create([
@@ -95,12 +114,8 @@ class FinanceService
                 ->whereKey($borrowerClubAccount->id)
                 ->update(['future_balance' => DB::raw("future_balance - {$totalAmount}")]);
 
-            $baseInstallmentAmount = intdiv($totalAmount, $installmentCount);
-
-            for ($installmentNumber = 1; $installmentNumber <= $installmentCount; $installmentNumber++) {
-                $installmentAmount = $installmentNumber === $installmentCount
-                    ? $totalAmount - ($baseInstallmentAmount * ($installmentCount - 1))
-                    : $baseInstallmentAmount;
+            foreach ($terms->installmentAmounts as $index => $installmentAmount) {
+                $installmentNumber = $index + 1;
 
                 $loan->installments()->create([
                     'game_entity_account_id' => $lenderGameEntityAccount->id,
