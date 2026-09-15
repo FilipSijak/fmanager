@@ -1,0 +1,32 @@
+app/Http/Resources/ClubFinancialSummaryResource.php
+  s_90af8558614877::t_a03137cea827bf 1-4,6-8,10-13,23-24
+  s_90af8558614877::t_8f164058afa179 5,9,14-22
+app/Services/FinanceService/FinanceService.php
+  s_90af8558614877::t_973b6b8892ebfd 32,44
+  s_90af8558614877::t_53f26b836d66d0 5,8-10,16-27
+app/Http/Controllers/FinanceController.php
+  s_90af8558614877::t_08e768a6fd8d09 1-4,9-11,26
+  s_90af8558614877::t_c9e5f6210b1d25 5-8,12-25
+tests/Feature/FinanceApiTest.php
+  s_90af8558614877::t_a03137cea827bf 1-4,8,10-13,18,40,50-51
+  s_90af8558614877::t_752e05b4e08d87 5-7,9,14-17,19-39,41-49
+routes/api.php
+  s_90af8558614877::t_1457bbaa1b540c 6
+  s_90af8558614877::t_165b943a80dd1a 28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "cc8a0476f8a55ee077d8c6c00b726d2814b6def5",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
