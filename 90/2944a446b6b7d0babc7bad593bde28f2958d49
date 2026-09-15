@@ -1,0 +1,31 @@
+app/Services/StadiumService/Operations/DemolishCommercialVenue.php
+  s_90af8558614877::t_c47234a8645e39 1-4,11-12,19,39-40
+  s_90af8558614877::t_bbd697360e16c1 5-10,13,16-17,26-27,32,34,36,38
+  s_90af8558614877::t_b1ff0b03582eb6 14-15,18,20-24,28-31,33,35,37
+  s_90af8558614877::t_e20b655079f480 25
+app/Services/StadiumService/StadiumService.php
+  s_90af8558614877::t_b09924803de7ad 24,146
+  s_90af8558614877::t_46f02429937f22 11-12,23
+  s_90af8558614877::t_3ff112828f0c65 136
+app/Services/StadiumService/Operations/BuildCommercialVenue.php
+  s_90af8558614877::t_c47234a8645e39 1-4,13-14,21,50-51
+  s_90af8558614877::t_a2f50a86de5dbd 16-17,20,22-26,30,34,38,44-46
+  s_90af8558614877::t_8b1030d4bc663c 5-12,15,18-19,28-29,32-33,36-37,47-49
+  s_90af8558614877::t_e20b655079f480 27,31,35,39-43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "902944a446b6b7d0babc7bad593bde28f2958d49",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
