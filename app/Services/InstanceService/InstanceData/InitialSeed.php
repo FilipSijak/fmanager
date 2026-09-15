@@ -7,11 +7,13 @@ use App\Models\BaseData\BaseClubs;
 use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\BaseData\BaseCompetitions;
 use App\Models\BaseData\BaseStadiums;
+use App\Models\BaseData\BaseStadiumStandCapacityLimit;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Stadium;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\StadiumService\StadiumType;
+use App\StadiumStandStatus;
 use Illuminate\Support\Facades\DB;
 
 class InitialSeed
@@ -69,27 +71,66 @@ class InitialSeed
     {
         $baseStadiums = BaseStadiums::all();
         $baseClubs = BaseClubs::all();
-        $stadiums = [];
+        $standCapacityLimits = BaseStadiumStandCapacityLimit::query()
+            ->orderBy('id')
+            ->get(['stadium_type', 'position', 'maximum_capacity'])
+            ->groupBy('stadium_type');
+        $stands = [];
 
         foreach ($baseStadiums as $baseStadium) {
-            $stadium = new Stadium;
-
-            $stadium->name = $baseStadium->name;
-            $stadium->instance_id = $instanceId;
-            $stadium->country_code = $baseStadium->countryCode;
-            $stadium->city_id = $baseStadium->cityId;
-            $stadium->capacity = $baseStadium->capacity;
             $baseClub = $baseClubs->firstWhere('stadium_id', $baseStadium->id);
             $stadiumType = $baseClub === null
                 ? StadiumType::fromCapacity($baseStadium->capacity)
                 : StadiumType::fromClubRank((int) $baseClub->rank);
-            $stadium->type = $stadiumType;
-            $stadium->commercial_limit = $stadiumType->commercialLimit();
+            $capacity = $this->capacityForType((int) $baseStadium->capacity, $stadiumType);
 
-            $stadiums[] = $stadium->toArray();
+            $stadiumId = DB::table('stadiums')->insertGetId([
+                'name' => $baseStadium->name,
+                'instance_id' => $instanceId,
+                'country_code' => $baseStadium->countryCode,
+                'city_id' => $baseStadium->cityId,
+                'capacity' => $capacity,
+                'active_capacity' => $capacity,
+                'type' => $stadiumType->value,
+                'commercial_limit' => $stadiumType->commercialLimit(),
+            ]);
+
+            $remainingCapacity = $capacity;
+            foreach ($standCapacityLimits->get($stadiumType->value, collect()) as $limit) {
+                $standCapacity = min($remainingCapacity, (int) $limit->maximum_capacity);
+
+                $stands[] = [
+                    'stadium_id' => $stadiumId,
+                    'position' => $limit->position,
+                    'capacity' => $standCapacity,
+                    'status' => $standCapacity > 0 ? StadiumStandStatus::ACTIVE->value : null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+
+                $remainingCapacity -= $standCapacity;
+            }
         }
 
-        DB::table('stadiums')->insert($stadiums);
+        if ($stands !== []) {
+            DB::table('stadium_stands')->insert($stands);
+        }
+    }
+
+    private function capacityForType(int $capacity, StadiumType $type): int
+    {
+        $minimumCapacity = match ($type) {
+            StadiumType::VILLAGE => 1000,
+            StadiumType::LOCAL => StadiumType::VILLAGE->maximumCapacity() + 1,
+            StadiumType::REGIONAL => StadiumType::LOCAL->maximumCapacity() + 1,
+            StadiumType::GLOBAL => StadiumType::REGIONAL->maximumCapacity() + 1,
+        };
+        $boundedCapacity = min(max($capacity, $minimumCapacity), $type->maximumCapacity());
+
+        return min(
+            $type->maximumCapacity(),
+            (int) (ceil($boundedCapacity / 1000) * 1000),
+        );
     }
 
     private function seedCommercialVenues(int $instanceId): void
