@@ -1,0 +1,55 @@
+app/Http/Resources/StadiumStandConstructionResource.php
+  s_90af8558614877::t_faa2b933327d95 1-11,19-20
+  s_90af8558614877::t_6fd129912493a3 12-18
+routes/api.php
+  s_90af8558614877::t_f2da01404f5ead 11
+  s_90af8558614877::t_26b38607cfe78b 28-35
+app/Http/Controllers/StadiumController.php
+  s_90af8558614877::t_faa2b933327d95 1-4,21-23,119
+  s_90af8558614877::t_0fde56ca3e1015 5-20,24-118
+app/Http/Resources/StadiumCommercialVenueResource.php
+  s_90af8558614877::t_044875e65d9834 12-17
+  s_90af8558614877::t_faa2b933327d95 1-11,18-19
+app/Http/Requests/StartStadiumStandConstructionRequest.php
+  s_90af8558614877::t_faa2b933327d95 1-10,12-16,18-20
+  s_90af8558614877::t_38f54d5d3d5cac 11,17
+app/Http/Resources/StadiumResource.php
+  s_90af8558614877::t_d030515ae4e96c 10,20
+  s_90af8558614877::t_4a757d0bfc9f7f 15-16
+app/Http/Resources/StadiumCommercialCategoryResource.php
+  s_90af8558614877::t_325a71e2bcfd12 12-17
+  s_90af8558614877::t_faa2b933327d95 1-11,18-19
+app/Repositories/StadiumRepository.php
+  s_90af8558614877::t_e6b80885f07787 7
+  s_90af8558614877::t_da23e3623e562d 61-82
+  s_90af8558614877::t_982fc91f1e2c38 83
+app/Http/Requests/BuildStadiumCommercialVenueRequest.php
+  s_90af8558614877::t_faa2b933327d95 1-4,6,8-12,14-18,21-23
+  s_90af8558614877::t_5afa3a5f1fc24d 5,7,13,19-20
+app/Http/Resources/StadiumStandResource.php
+  s_90af8558614877::t_9e1231d4aedabb 17
+tests/Feature/StadiumApiTest.php
+  s_90af8558614877::t_fca1378773a1b2 170-177
+  s_90af8558614877::t_0642e8a7190343 5-6,8-14,16-17,22-129,132-133,135,137-142,149-152,154-158,160-164,166-169,178,181-184
+  s_90af8558614877::t_5a0dc7cda1e1fd 159
+  s_90af8558614877::t_981b7d6a3cf28b 130-131
+  s_90af8558614877::t_4a757d0bfc9f7f 180
+  s_90af8558614877::t_40a0b7571e2fed 1-4,15,18-21,134,136,165,179,185-186
+  s_90af8558614877::t_fd5fbc0c2d6c1b 7,143-148,153
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c596ea900325f13e2a54c1bcc6a098ac76fac5ca",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
