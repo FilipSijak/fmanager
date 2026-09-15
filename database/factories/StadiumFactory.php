@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Models\City;
 use App\Models\Instance;
+use App\Models\Stadium;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Stadium>
+ * @extends Factory<Stadium>
  */
 class StadiumFactory extends Factory
 {
@@ -20,10 +21,10 @@ class StadiumFactory extends Factory
     {
         return [
             'name' => $this->faker->name,
-            'instance_id' => Instance::factory()->make(['id'])->id,
+            'instance_id' => Instance::factory(),
             'country_code' => $this->faker->countryCode,
             'city_id' => City::factory()->create()->id,
-            'capacity' => random_int(1000, 100000)
+            'capacity' => random_int(1000, 100000),
         ];
     }
 }

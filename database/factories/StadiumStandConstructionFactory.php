@@ -2,6 +2,9 @@
 
 namespace Database\Factories;
 
+use App\Models\Instance;
+use App\Models\Stadium;
+use App\Models\StadiumStand;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

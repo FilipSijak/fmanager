@@ -52,6 +52,11 @@ class StadiumRepository
             ->get();
     }
 
+    public function stadiumById(int $stadiumId): ?Stadium
+    {
+        return Stadium::query()->whereKey($stadiumId)->first();
+    }
+
     public function lockStadium(int $stadiumId): Stadium
     {
         return Stadium::query()->whereKey($stadiumId)->lockForUpdate()->firstOrFail();
@@ -60,6 +65,7 @@ class StadiumRepository
     public function categoryIsAvailableForType(int $categoryId, StadiumType $type): bool
     {
         return BaseCommercialCategory::query()
+            ->active()
             ->whereKey($categoryId)
             ->availableForStadiumType($type)
             ->exists();

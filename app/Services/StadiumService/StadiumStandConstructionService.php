@@ -2,10 +2,11 @@
 
 namespace App\Services\StadiumService;
 
-use App\Models\BaseData\BaseStadiumStandCapacityLimit;
 use App\Models\Instance;
 use App\Models\StadiumStand;
 use App\Models\StadiumStandConstruction;
+use App\Repositories\StadiumRepository;
+use App\Services\StadiumService\Domain\StadiumStandValidator;
 use App\StadiumStandStatus;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -13,7 +14,11 @@ use Illuminate\Support\Facades\DB;
 
 class StadiumStandConstructionService
 {
-    public function __construct(private readonly StadiumService $stadiumService) {}
+    public function __construct(
+        private readonly StadiumService $stadiumService,
+        private readonly StadiumRepository $stadiumRepository,
+        private readonly StadiumStandValidator $stadiumStandValidator,
+    ) {}
 
     public function durationInWeeks(int $capacityIncrease): int
     {
@@ -41,18 +46,9 @@ class StadiumStandConstructionService
                 throw new DomainException('The new stadium stand capacity must be greater than its current capacity.');
             }
 
-            $maximumCapacity = (int) BaseStadiumStandCapacityLimit::query()
-                ->where('stadium_type', $stadium->type->value)
-                ->where('position', $lockedStand->position->value)
-                ->value('maximum_capacity');
-
-            if ($maximumCapacity === 0) {
-                throw new DomainException('This stand position is not available for the stadium type.');
-            }
-
-            if ($targetCapacity > $maximumCapacity) {
-                throw new DomainException('Stadium stand capacity exceeds the maximum for its position.');
-            }
+            $this->stadiumStandValidator->validatePosition($stadium, $lockedStand->position);
+            $maximumCapacity = $this->stadiumRepository->maximumCapacityForStand($stadium->type, $lockedStand->position);
+            $this->stadiumStandValidator->validateCapacityValue($targetCapacity, $maximumCapacity);
 
             $durationInWeeks = $this->durationInWeeks($capacityIncrease);
             $lockedStand->forceFill([
@@ -79,13 +75,14 @@ class StadiumStandConstructionService
     public function completeForInstance(Instance $instance, CarbonImmutable $asOf): int
     {
         $completed = 0;
+        $affectedStadiumIds = [];
 
         StadiumStandConstruction::query()
             ->where('instance_id', $instance->id)
             ->whereDate('completes_at', '<=', $asOf->toDateString())
             ->get()
-            ->each(function (StadiumStandConstruction $construction) use (&$completed): void {
-                DB::transaction(function () use ($construction, &$completed): void {
+            ->each(function (StadiumStandConstruction $construction) use (&$completed, &$affectedStadiumIds): void {
+                DB::transaction(function () use ($construction, &$completed, &$affectedStadiumIds): void {
                     $lockedConstruction = StadiumStandConstruction::query()
                         ->whereKey($construction->id)
                         ->lockForUpdate()
@@ -95,15 +92,23 @@ class StadiumStandConstructionService
                         return;
                     }
 
+                    $affectedStadiumIds[$lockedConstruction->stadium_id] = true;
                     $stand = StadiumStand::query()->whereKey($lockedConstruction->stadium_stand_id)->first();
                     if ($stand !== null) {
-                        $stand->forceFill(['status' => StadiumStandStatus::ACTIVE])->save();
+                        $stand->forceFill(['status' => StadiumStandStatus::ACTIVE])->saveQuietly();
                     }
 
                     $lockedConstruction->delete();
                     $completed++;
                 });
             });
+
+        foreach (array_keys($affectedStadiumIds) as $stadiumId) {
+            $stadium = $this->stadiumRepository->stadiumById((int) $stadiumId);
+            if ($stadium !== null) {
+                $this->stadiumService->recalculateCapacities($stadium);
+            }
+        }
 
         return $completed;
     }

@@ -32,15 +32,24 @@ class StadiumStandValidator
 
     public function validateCapacity(StadiumStand $stand, int $maximumCapacity): void
     {
-        if ($stand->capacity !== null && $stand->capacity < 0) {
+        if ($stand->capacity === null) {
+            return;
+        }
+
+        $this->validateCapacityValue((int) $stand->capacity, $maximumCapacity);
+    }
+
+    public function validateCapacityValue(int $capacity, int $maximumCapacity): void
+    {
+        if ($capacity < 0) {
             throw new DomainException('Stadium stand capacity cannot be negative.');
         }
 
-        if ($stand->capacity !== null && $stand->capacity % 1000 !== 0) {
+        if ($capacity % 1000 !== 0) {
             throw new DomainException('Stadium stand capacity must be a multiple of 1,000 seats.');
         }
 
-        if ($stand->capacity !== null && $stand->capacity > $maximumCapacity) {
+        if ($capacity > $maximumCapacity) {
             throw new DomainException('Stadium stand capacity exceeds the maximum for its position.');
         }
     }
