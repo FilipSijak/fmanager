@@ -1,0 +1,22 @@
+tests/Integration/Stadium/StadiumIntegrityTest.php
+  s_90af8558614877::t_ac2481694969e3 1-66
+database/migrations/2026_09_15_202927_add_stadium_instance_integrity_constraints.php
+  s_90af8558614877::t_c666de646f0f01 1-10,42-45,65-66
+  s_90af8558614877::t_90f5a7eba1a2a1 11-41,46-64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "ec4a5795aa3fa6db4cc1352867430701d0a76519",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
