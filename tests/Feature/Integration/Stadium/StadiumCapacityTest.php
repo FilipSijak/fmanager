@@ -5,6 +5,7 @@ namespace Tests\Feature\Integration\Stadium;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumStand;
+use App\Services\StadiumService\StadiumService;
 use App\StadiumStandPosition;
 use App\StadiumStandStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -24,7 +25,7 @@ class StadiumCapacityTest extends TestCase
         StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH_EAST, 'capacity' => 5000, 'status' => StadiumStandStatus::UNDER_CONSTRUCTION]);
         StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::SOUTH, 'capacity' => 2000, 'status' => null]);
 
-        $stadium->refresh();
+        app(StadiumService::class)->recalculateCapacities($stadium);
 
         $this->assertSame(17000, $stadium->capacity);
         $this->assertSame(10000, $stadium->active_capacity);
@@ -47,13 +48,12 @@ class StadiumCapacityTest extends TestCase
         $stand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::WEST, 'capacity' => 12000, 'status' => StadiumStandStatus::UNDER_CONSTRUCTION]);
 
         $stand->update(['status' => StadiumStandStatus::ACTIVE, 'capacity' => 15000]);
-        $stadium->refresh();
-
+        app(StadiumService::class)->recalculateCapacities($stadium);
         $this->assertSame(15000, $stadium->capacity);
         $this->assertSame(15000, $stadium->active_capacity);
 
         $stand->delete();
-        $stadium->refresh();
+        app(StadiumService::class)->recalculateCapacities($stadium);
 
         $this->assertSame(0, $stadium->capacity);
         $this->assertSame(0, $stadium->active_capacity);

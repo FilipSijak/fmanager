@@ -412,6 +412,8 @@ class StadiumServiceTest extends TestCase
 
         $this->assertSame(1, $completed);
         $this->assertSame(StadiumStandStatus::ACTIVE, $stand->fresh()->status);
+        $this->assertSame(10000, $stadium->fresh()->capacity);
+        $this->assertSame(10000, $stadium->fresh()->active_capacity);
         $this->assertDatabaseMissing('stadium_stand_constructions', ['id' => $construction->id]);
     }
 
@@ -422,7 +424,7 @@ class StadiumServiceTest extends TestCase
         $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 0, 'active_capacity' => 0]);
         StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 1000, 'status' => StadiumStandStatus::ACTIVE]);
         StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH_EAST, 'capacity' => 2000, 'status' => StadiumStandStatus::UNDER_CONSTRUCTION]);
-        $stadium->refresh();
+        app(StadiumService::class)->recalculateCapacities($stadium);
 
         app(StadiumService::class)->validateStadiumBuild($stadium);
 

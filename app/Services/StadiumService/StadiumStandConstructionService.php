@@ -75,13 +75,14 @@ class StadiumStandConstructionService
     public function completeForInstance(Instance $instance, CarbonImmutable $asOf): int
     {
         $completed = 0;
+        $affectedStadiumIds = [];
 
         StadiumStandConstruction::query()
             ->where('instance_id', $instance->id)
             ->whereDate('completes_at', '<=', $asOf->toDateString())
             ->get()
-            ->each(function (StadiumStandConstruction $construction) use (&$completed): void {
-                DB::transaction(function () use ($construction, &$completed): void {
+            ->each(function (StadiumStandConstruction $construction) use (&$completed, &$affectedStadiumIds): void {
+                DB::transaction(function () use ($construction, &$completed, &$affectedStadiumIds): void {
                     $lockedConstruction = StadiumStandConstruction::query()
                         ->whereKey($construction->id)
                         ->lockForUpdate()
@@ -91,15 +92,23 @@ class StadiumStandConstructionService
                         return;
                     }
 
+                    $affectedStadiumIds[$lockedConstruction->stadium_id] = true;
                     $stand = StadiumStand::query()->whereKey($lockedConstruction->stadium_stand_id)->first();
                     if ($stand !== null) {
-                        $stand->forceFill(['status' => StadiumStandStatus::ACTIVE])->save();
+                        $stand->forceFill(['status' => StadiumStandStatus::ACTIVE])->saveQuietly();
                     }
 
                     $lockedConstruction->delete();
                     $completed++;
                 });
             });
+
+        foreach (array_keys($affectedStadiumIds) as $stadiumId) {
+            $stadium = $this->stadiumRepository->stadiumById((int) $stadiumId);
+            if ($stadium !== null) {
+                $this->stadiumService->recalculateCapacities($stadium);
+            }
+        }
 
         return $completed;
     }

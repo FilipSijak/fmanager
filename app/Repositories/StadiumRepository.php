@@ -52,6 +52,11 @@ class StadiumRepository
             ->get();
     }
 
+    public function stadiumById(int $stadiumId): ?Stadium
+    {
+        return Stadium::query()->whereKey($stadiumId)->first();
+    }
+
     public function lockStadium(int $stadiumId): Stadium
     {
         return Stadium::query()->whereKey($stadiumId)->lockForUpdate()->firstOrFail();

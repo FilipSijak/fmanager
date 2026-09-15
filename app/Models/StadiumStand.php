@@ -2,18 +2,15 @@
 
 namespace App\Models;
 
-use App\Observers\StadiumStandObserver;
 use App\StadiumStandPosition;
 use App\StadiumStandStatus;
 use Database\Factories\StadiumStandFactory;
-use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-#[ObservedBy([StadiumStandObserver::class])]
 class StadiumStand extends Model
 {
     /** @use HasFactory<StadiumStandFactory> */
