@@ -5,7 +5,10 @@ namespace App\Services\FinanceService;
 use App\DataModels\ClubFinancialSummary;
 use App\EntityTransactionDirection;
 use App\EntityTransactionType;
+use App\FinanceEntityLoanStatus;
 use App\Models\Account;
+use App\Models\AccountsDebtLinesEntity;
+use App\Models\FinanceEntityLoan;
 use App\Models\FinanceTransactionEntity;
 use App\Models\FinanceTransactions;
 use App\Models\GameEntityAccount;
@@ -15,6 +18,7 @@ use App\Support\GameContext;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class FinanceService
@@ -29,6 +33,153 @@ class FinanceService
         $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
 
         return $this->clubRepository->getTransferBudgetAndBalance($instance->club_id);
+    }
+
+    public function issueLoan(
+        GameEntityAccount $lenderGameEntityAccount,
+        Account $borrowerClubAccount,
+        int $principal,
+        int $interestAmount,
+        int $installmentCount,
+        CarbonInterface $startedAt,
+    ): FinanceEntityLoan {
+        if ($principal <= 0) {
+            throw new DomainException('Loan principal must be greater than zero.');
+        }
+
+        if ($interestAmount < 0) {
+            throw new DomainException('Loan interest amount cannot be negative.');
+        }
+
+        if ($installmentCount <= 0) {
+            throw new DomainException('Loan must have at least one installment.');
+        }
+
+        $totalAmount = $principal + $interestAmount;
+
+        return DB::transaction(function () use (
+            $lenderGameEntityAccount,
+            $borrowerClubAccount,
+            $principal,
+            $interestAmount,
+            $totalAmount,
+            $installmentCount,
+            $startedAt,
+        ): FinanceEntityLoan {
+            $loan = FinanceEntityLoan::query()->create([
+                'instance_id' => $lenderGameEntityAccount->instance_id,
+                'lender_game_entity_account_id' => $lenderGameEntityAccount->id,
+                'borrower_club_account_id' => $borrowerClubAccount->id,
+                'principal' => $principal,
+                'interest_amount' => $interestAmount,
+                'total_amount' => $totalAmount,
+                'installment_count' => $installmentCount,
+                'started_at' => $startedAt->toDateString(),
+                'status' => FinanceEntityLoanStatus::ACTIVE,
+            ]);
+
+            $this->makeEntityTransaction(
+                $lenderGameEntityAccount,
+                $borrowerClubAccount,
+                EntityTransactionDirection::ENTITY_TO_CLUB,
+                EntityTransactionType::LOAN,
+                $principal,
+                $startedAt,
+                $loan->id,
+            );
+
+            $lenderGameEntityAccount->newQuery()
+                ->whereKey($lenderGameEntityAccount->id)
+                ->update(['future_balance' => DB::raw("future_balance + {$totalAmount}")]);
+            $borrowerClubAccount->newQuery()
+                ->whereKey($borrowerClubAccount->id)
+                ->update(['future_balance' => DB::raw("future_balance - {$totalAmount}")]);
+
+            $baseInstallmentAmount = intdiv($totalAmount, $installmentCount);
+
+            for ($installmentNumber = 1; $installmentNumber <= $installmentCount; $installmentNumber++) {
+                $installmentAmount = $installmentNumber === $installmentCount
+                    ? $totalAmount - ($baseInstallmentAmount * ($installmentCount - 1))
+                    : $baseInstallmentAmount;
+
+                $loan->installments()->create([
+                    'game_entity_account_id' => $lenderGameEntityAccount->id,
+                    'club_account_id' => $borrowerClubAccount->id,
+                    'amount' => $installmentAmount,
+                    'created_at' => $startedAt->toDateString(),
+                    'due_date' => $startedAt->copy()->addMonths($installmentNumber)->toDateString(),
+                    'installment_number' => $installmentNumber,
+                ]);
+            }
+
+            return $loan->load('installments');
+        });
+    }
+
+    public function repayLoanInstallment(
+        AccountsDebtLinesEntity $installment,
+        CarbonInterface $paidAt,
+    ): FinanceTransactionEntity {
+        return DB::transaction(function () use ($installment, $paidAt): FinanceTransactionEntity {
+            $lockedInstallment = AccountsDebtLinesEntity::query()
+                ->whereKey($installment->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($lockedInstallment->paid_at !== null) {
+                throw new DomainException('This loan installment has already been paid.');
+            }
+
+            $loan = $lockedInstallment->loan()->lockForUpdate()->firstOrFail();
+
+            $transaction = $this->recordEntityRepayment(
+                GameEntityAccount::query()
+                    ->whereKey($lockedInstallment->game_entity_account_id)
+                    ->lockForUpdate()
+                    ->firstOrFail(),
+                Account::query()
+                    ->whereKey($lockedInstallment->club_account_id)
+                    ->lockForUpdate()
+                    ->firstOrFail(),
+                $lockedInstallment->amount,
+                $paidAt,
+                $loan->id,
+            );
+
+            $lockedInstallment->forceFill([
+                'paid_at' => $paidAt,
+                'transaction_id' => $transaction->id,
+            ])->save();
+
+            if (! $loan->installments()->whereNull('paid_at')->exists()) {
+                $loan->update(['status' => FinanceEntityLoanStatus::COMPLETED]);
+            }
+
+            return $transaction;
+        });
+    }
+
+    public function processDueLoanInstallments(Instance $instance, CarbonInterface $asOf): int
+    {
+        $processed = 0;
+
+        AccountsDebtLinesEntity::query()
+            ->whereNull('paid_at')
+            ->whereDate('due_date', '<=', $asOf->toDateString())
+            ->whereHas('loan', function (Builder $query) use ($instance): void {
+                $query
+                    ->where('instance_id', $instance->id)
+                    ->where('status', FinanceEntityLoanStatus::ACTIVE);
+            })
+            ->orderBy('due_date')
+            ->orderBy('id')
+            ->get()
+            ->each(function (AccountsDebtLinesEntity $installment) use (&$processed, $asOf): void {
+                $this->repayLoanInstallment($installment, $asOf);
+                $processed++;
+            });
+
+        return $processed;
     }
 
     public function makeEntityTransaction(
@@ -122,5 +273,26 @@ class FinanceService
         DB::commit();
 
         return true;
+    }
+
+    private function recordEntityRepayment(
+        GameEntityAccount $entityAccount,
+        Account $clubAccount,
+        int $amount,
+        CarbonInterface $paidAt,
+        int $loanId,
+    ): FinanceTransactionEntity {
+        $entityAccount->increment('balance', $amount);
+        $clubAccount->decrement('balance', $amount);
+
+        return FinanceTransactionEntity::query()->create([
+            'game_entity_account_id' => $entityAccount->id,
+            'club_account_id' => $clubAccount->id,
+            'direction' => EntityTransactionDirection::CLUB_TO_ENTITY,
+            'event_type' => EntityTransactionType::LOAN_REPAYMENT,
+            'event_id' => $loanId,
+            'amount' => $amount,
+            'transaction_date' => $paidAt,
+        ]);
     }
 }

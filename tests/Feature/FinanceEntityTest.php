@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\EntityTransactionDirection;
 use App\EntityTransactionType;
+use App\FinanceEntityLoanStatus;
 use App\GameEntityType;
 use App\Models\Account;
+use App\Models\AccountsDebtLinesEntity;
 use App\Models\Club;
 use App\Models\GameEntity;
 use App\Models\GameEntityAccount;
@@ -68,9 +70,98 @@ class FinanceEntityTest extends TestCase
         $this->assertSame(11000, $entityAccount->fresh()->balance);
     }
 
+    #[Test]
+    public function it_issues_a_loan_with_monthly_installments(): void
+    {
+        [$entityAccount, $clubAccount] = $this->accounts();
+
+        $loan = app(FinanceService::class)->issueLoan(
+            $entityAccount,
+            $clubAccount,
+            10000,
+            1000,
+            3,
+            CarbonImmutable::parse('2026-09-15'),
+        );
+
+        $this->assertSame(10000, $loan->principal);
+        $this->assertSame(1000, $loan->interest_amount);
+        $this->assertSame(11000, $loan->total_amount);
+        $this->assertSame(FinanceEntityLoanStatus::ACTIVE, $loan->status);
+        $this->assertSame([3666, 3666, 3668], $loan->installments->pluck('amount')->all());
+        $this->assertSame(
+            ['2026-10-15', '2026-11-15', '2026-12-15'],
+            $loan->installments->pluck('due_date')->map->toDateString()->all(),
+        );
+        $this->assertSame(20000, $clubAccount->fresh()->balance);
+        $this->assertSame(9000, $clubAccount->fresh()->future_balance);
+        $this->assertSame(0, $entityAccount->fresh()->balance);
+        $this->assertSame(11000, $entityAccount->fresh()->future_balance);
+        $this->assertDatabaseHas('finance_transactions_entities', [
+            'event_type' => EntityTransactionType::LOAN->value,
+            'event_id' => $loan->id,
+            'amount' => 10000,
+        ]);
+    }
+
+    #[Test]
+    public function it_settles_loan_installments_and_completes_the_loan(): void
+    {
+        [$entityAccount, $clubAccount] = $this->accounts();
+        $loan = app(FinanceService::class)->issueLoan(
+            $entityAccount,
+            $clubAccount,
+            10000,
+            1000,
+            2,
+            CarbonImmutable::parse('2026-09-15'),
+        );
+
+        $installments = $loan->installments()->orderBy('installment_number')->get();
+
+        app(FinanceService::class)->repayLoanInstallment(
+            $installments->first(),
+            CarbonImmutable::parse('2026-10-15'),
+        );
+        app(FinanceService::class)->repayLoanInstallment(
+            $installments->last(),
+            CarbonImmutable::parse('2026-11-15'),
+        );
+
+        $this->assertSame(FinanceEntityLoanStatus::COMPLETED, $loan->fresh()->status);
+        $this->assertSame(9000, $clubAccount->fresh()->balance);
+        $this->assertSame(11000, $entityAccount->fresh()->balance);
+        $this->assertSame(2, AccountsDebtLinesEntity::query()->whereNotNull('paid_at')->count());
+        $this->assertSame(2, $loan->fresh()->installments()->whereNotNull('transaction_id')->count());
+    }
+
     /**
      * @return array{0: GameEntityAccount, 1: Account}
      */
+    #[Test]
+    public function it_processes_installments_when_they_are_due(): void
+    {
+        [$entityAccount, $clubAccount] = $this->accounts();
+        $loan = app(FinanceService::class)->issueLoan(
+            $entityAccount,
+            $clubAccount,
+            10000,
+            1000,
+            2,
+            CarbonImmutable::parse('2026-09-15'),
+        );
+
+        $processed = app(FinanceService::class)->processDueLoanInstallments(
+            $loan->instance,
+            CarbonImmutable::parse('2026-10-15'),
+        );
+
+        $this->assertSame(1, $processed);
+        $this->assertSame(5500, $entityAccount->fresh()->balance);
+        $this->assertSame(14500, $clubAccount->fresh()->balance);
+        $this->assertSame(FinanceEntityLoanStatus::ACTIVE, $loan->fresh()->status);
+    }
+
     private function accounts(): array
     {
         $instance = Instance::factory()->create();
