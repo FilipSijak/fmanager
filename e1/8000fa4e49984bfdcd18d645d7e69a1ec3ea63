@@ -1,0 +1,47 @@
+app/FinanceEntityLoanStatus.php
+  s_90af8558614877::t_a476864d3573ed 5,7-10
+  s_90af8558614877::t_29aa8634f3c361 1-4,6,11
+database/factories/FinanceEntityLoanFactory.php
+  s_90af8558614877::t_29aa8634f3c361 1-4,11-12,14-18,28-30
+  s_90af8558614877::t_f9d523e28557c7 5-6,8-10,19-27
+  s_90af8558614877::t_1f32403d99290f 7,13
+app/Providers/EventServiceProvider.php
+  s_90af8558614877::t_bd2f3bcb5a7c39 15,36
+app/Services/FinanceService/FinanceService.php
+  s_90af8558614877::t_0da1870639572c 8,10-11,38-159,183-184,277-297
+  s_90af8558614877::t_bd2f3bcb5a7c39 21,160-182
+database/migrations/2026_09_15_223814_create_finance_entity_loans_table.php
+  s_90af8558614877::t_15a47ac5327978 11,13-25,27-28
+  s_90af8558614877::t_29aa8634f3c361 1-10,12,26,29-36
+app/Listeners/ProcessFinanceEntityLoanInstallments.php
+  s_90af8558614877::t_985ecacc69f972 1-5,8-10,14-16,21-22
+  s_90af8558614877::t_d846acc399a1d6 6-7,11-13,17-20
+app/Models/FinanceEntityLoan.php
+  s_90af8558614877::t_c3a64694b63a95 5,8-9,14-57
+  s_90af8558614877::t_29aa8634f3c361 1-4,6-7,10-13,58
+tests/Feature/FinanceEntityTest.php
+  s_90af8558614877::t_461d6d2945b4be 7,10,73-135
+  s_90af8558614877::t_eeb553a6a879bb 160
+  s_90af8558614877::t_f37423be2cdfd4 136,141-159,161-164
+  s_90af8558614877::t_dd7e1912642521 137
+app/Models/AccountsDebtLinesEntity.php
+  s_90af8558614877::t_1e1f66e85f7855 18,24-26,35-37,41-45,55-59
+database/migrations/2026_09_15_223815_add_loan_tracking_to_accounts_debt_lines_entities_table.php
+  s_90af8558614877::t_9c1355cb4d3b00 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "e18000fa4e49984bfdcd18d645d7e69a1ec3ea63",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
