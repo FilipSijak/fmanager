@@ -12,6 +12,7 @@ use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
+use App\Listeners\ProcessFinanceEntityLoanInstallments;
 use App\Listeners\ProcessTransfers;
 use App\Listeners\RunDailyTraining;
 use App\Listeners\StartSeason;
@@ -32,6 +33,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         NextDay::class => [
             CompleteStadiumStandConstruction::class,
+            ProcessFinanceEntityLoanInstallments::class,
             ProcessTransfers::class,
             RunDailyTraining::class,
         ],

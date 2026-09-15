@@ -3,6 +3,8 @@
 use App\Http\Controllers\ClubController;
 use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FinanceController;
+use App\Http\Controllers\FinanceLoanController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\NewsController;
@@ -24,6 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/news/{newsId}/read', [NewsController::class, 'markAsRead']);
 
         Route::get('/dashboard', [DashboardController::class, 'index']);
+        Route::get('/finance', [FinanceController::class, 'show']);
+        Route::post('/finance/loans', [FinanceLoanController::class, 'store']);
 
         Route::prefix('stadium')->group(function (): void {
             Route::get('/', [StadiumController::class, 'show']);

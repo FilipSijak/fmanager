@@ -2,6 +2,7 @@
 
 namespace App\Services\InstanceService\InstanceData;
 
+use App\GameEntityType;
 use App\Models\Account;
 use App\Models\BaseData\BaseClubs;
 use App\Models\BaseData\BaseCommercialCategory;
@@ -23,7 +24,46 @@ class InitialSeed
         $stadiumIdsByBaseId = $this->seedStadiumsFromBaseTable($instanceId);
         $this->seedClubsFromBaseTable($instanceId, $stadiumIdsByBaseId);
         $this->seedCommercialVenues($instanceId);
+        $this->seedGameEntities($instanceId);
         $this->seedCompetitionsFromBaseTable($instanceId);
+    }
+
+    public function seedGameEntities(int $instanceId): void
+    {
+        $balances = [
+            GameEntityType::BANK->value => 50_000_000_000,
+            GameEntityType::SPONSOR->value => 10_000_000_000,
+            GameEntityType::LEAGUE->value => 10_000_000_000,
+            GameEntityType::TV_BROADCASTER->value => 10_000_000_000,
+            GameEntityType::COMPETITION->value => 10_000_000_000,
+        ];
+        $names = [
+            GameEntityType::BANK->value => 'Game Bank',
+            GameEntityType::SPONSOR->value => 'Sponsors',
+            GameEntityType::LEAGUE->value => 'League Authority',
+            GameEntityType::TV_BROADCASTER->value => 'TV Broadcaster',
+            GameEntityType::COMPETITION->value => 'Competition Authority',
+        ];
+
+        foreach ($balances as $type => $balance) {
+            $gameEntityId = DB::table('game_entities')->insertGetId([
+                'instance_id' => $instanceId,
+                'type' => $type,
+                'name' => $names[$type],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            DB::table('accounts_game_entities')->insert([
+                'game_entity_id' => $gameEntityId,
+                'instance_id' => $instanceId,
+                'balance' => $balance,
+                'future_balance' => $balance,
+                'allowed_debt' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 
     /**
