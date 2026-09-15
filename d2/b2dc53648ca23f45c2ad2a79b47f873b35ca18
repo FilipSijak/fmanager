@@ -1,0 +1,23 @@
+tests/Integration/Instance/InitialSeedTest.php
+  s_90af8558614877::t_3c19d636922a0e 1-8,10-56
+  s_90af8558614877::t_8686453438e4b4 9
+app/Services/InstanceService/InstanceData/InitialSeed.php
+  s_90af8558614877::t_88e2667960b6f0 10,16
+  s_90af8558614877::t_fd8eaf7ec83b7c 74-78,85-113,115-116,118,120-133
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "d2b2dc53648ca23f45c2ad2a79b47f873b35ca18",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
