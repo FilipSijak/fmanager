@@ -1,0 +1,56 @@
+app/Services/FinanceService/Domain/BankLoanCalculator.php
+  s_90af8558614877::t_1a03797ff8a9fe 1-4,7-8,12,40-41
+  s_90af8558614877::t_72ad070abad2eb 5-6,9-11,13-39
+tests/Feature/FinanceEntityTest.php
+  s_90af8558614877::t_f7f7589bdd5840 15
+  s_90af8558614877::t_cc684518c46bfc 93-94,97,99,120-125,130-131,151
+  s_90af8558614877::t_e1e7860ac83925 114,141,156,158
+  s_90af8558614877::t_16f2f36d1371c3 152
+  s_90af8558614877::t_d6c92a4810496a 157
+  s_90af8558614877::t_65fb6df58d46dc 82,87-88,90-91
+app/Http/Controllers/FinanceLoanController.php
+  s_90af8558614877::t_d4b1d29a6e9b31 5-12,16-39
+  s_90af8558614877::t_3f047e28f8931a 1-4,13-15,40
+tests/Unit/BankLoanCalculatorTest.php
+  s_90af8558614877::t_02e86b0c1bc684 1-4,8-10,13,23-24
+  s_90af8558614877::t_db48f34833e406 5-7,11-12,14-22
+app/Services/FinanceService/FinanceService.php
+  s_90af8558614877::t_f7f7589bdd5840 9,19
+  s_90af8558614877::t_36ac88cf992ece 85
+  s_90af8558614877::t_83d8cc64e93721 62,70,73-76,117-118
+  s_90af8558614877::t_4cc44304af8b75 18,32,42-61,63-64
+  s_90af8558614877::t_11d09ab222562a 65-66
+app/Http/Resources/FinanceEntityLoanResource.php
+  s_90af8558614877::t_db571923c16aa5 12-21
+  s_90af8558614877::t_3f047e28f8931a 1-11,22-23
+app/Services/FinanceService/Domain/BankLoanTerms.php
+  s_90af8558614877::t_1a03797ff8a9fe 1-4,6-7,9,17
+  s_90af8558614877::t_f11880acdb9288 5,8,10-16
+routes/api.php
+  s_90af8558614877::t_b9ffc95e6b0fa3 30
+  s_90af8558614877::t_3393700623c600 7
+tests/Feature/FinanceLoanApiTest.php
+  s_90af8558614877::t_02e86b0c1bc684 1-4,11,13-16,72,81,85-86
+  s_90af8558614877::t_947c9a51ea21bc 5-10,12,17-71,73-80,82-84
+app/Http/Requests/TakeOutBankLoanRequest.php
+  s_90af8558614877::t_3f047e28f8931a 1-19
+  s_90af8558614877::t_370541b0471ef0 20-21
+app/Http/Resources/FinanceEntityLoanInstallmentResource.php
+  s_90af8558614877::t_cdc6ed65b1ed4d 1-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "dc60bb7634a76299248c6987bafc5f0c83ec3473",
+  "prompts": {},
+  "sessions": {
+    "s_90af8558614877": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0a615-7307-73f1-94ac-a926f7a66906",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
