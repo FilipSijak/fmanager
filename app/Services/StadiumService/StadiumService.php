@@ -8,19 +8,20 @@ use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Repositories\StadiumRepository;
 use App\Services\CommercialService\CommercialVenueSize;
-use App\Services\CommercialService\VenueConstructionCostCalculator;
+use App\Services\StadiumService\Operations\BuildCommercialVenue;
+use App\Services\StadiumService\Operations\DemolishCommercialVenue;
 use App\StadiumStandPosition;
 use App\StadiumStandStatus;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 
 class StadiumService
 {
     public function __construct(
-        private readonly VenueConstructionCostCalculator $venueConstructionCostCalculator,
         private readonly StadiumExpansionCostCalculator $stadiumExpansionCostCalculator,
         private readonly StadiumRepository $stadiumRepository,
+        private readonly BuildCommercialVenue $buildCommercialVenue,
+        private readonly DemolishCommercialVenue $demolishCommercialVenue,
     ) {}
 
     public function typeForCapacity(int $capacity): StadiumType
@@ -132,34 +133,7 @@ class StadiumService
 
     public function buildCommercialVenue(Stadium $stadium, int $categoryId, CommercialVenueSize $size): StadiumCommercialVenue
     {
-        return DB::transaction(function () use ($stadium, $categoryId, $size): StadiumCommercialVenue {
-            $lockedStadium = $this->stadiumRepository->lockStadium($stadium->id);
-            $stadiumType = $lockedStadium->type;
-
-            if (! $this->stadiumRepository->categoryIsAvailableForType($categoryId, $stadiumType)) {
-                throw new DomainException('This commercial category is not available for the stadium type.');
-            }
-
-            if ($this->stadiumRepository->commercialVenueExists($lockedStadium, $categoryId)) {
-                throw new DomainException('This commercial venue category has already been built at the stadium.');
-            }
-
-            if ($this->stadiumRepository->commercialVenueCount($lockedStadium) >= $lockedStadium->commercial_limit) {
-                throw new DomainException('The stadium has reached its commercial venue limit.');
-            }
-
-            return $this->stadiumRepository->createCommercialVenue([
-                'instance_id' => $lockedStadium->instance_id,
-                'stadium_id' => $lockedStadium->id,
-                'category_id' => $categoryId,
-                'size' => $size,
-                'build_cost' => $this->venueConstructionCostCalculator->calculate(
-                    $lockedStadium,
-                    $this->stadiumRepository->findCategoryOrFail($categoryId),
-                    $size,
-                ),
-            ]);
-        });
+        return $this->buildCommercialVenue->handle($stadium, $categoryId, $size);
     }
 
     public function stadiumExpansionCost(Stadium $stadium, int $additionalCapacity): int
@@ -169,25 +143,7 @@ class StadiumService
 
     public function demolishCommercialVenue(Stadium $stadium, int $venueId): int
     {
-        return DB::transaction(function () use ($stadium, $venueId): int {
-            $lockedStadium = $this->stadiumRepository->lockStadium($stadium->id);
-            $venue = $this->stadiumRepository->commercialVenueForStadium($lockedStadium, $venueId);
-
-            if ($venue === null) {
-                throw new DomainException('This commercial venue does not exist at the stadium.');
-            }
-
-            $buildCost = $venue->build_cost ?? $this->venueConstructionCostCalculator->calculate(
-                $lockedStadium,
-                $venue->category,
-                $venue->size,
-            );
-            $demolitionCost = $this->venueConstructionCostCalculator->demolitionCost($buildCost);
-
-            $venue->delete();
-
-            return $demolitionCost;
-        });
+        return $this->demolishCommercialVenue->handle($stadium, $venueId);
     }
 
     public function recalculateCapacitiesForInstance(Instance $instance): void
