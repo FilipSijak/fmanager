@@ -1,0 +1,43 @@
+database/migrations/2026_09_15_223814_create_finance_entity_loans_table.php
+  s_f4cb6483f235cf::t_bc756dd6ecc5fe 5,21-29,39-40,42-58
+database/migrations/2020_02_08_131508_create_players_table.php
+  s_6c1bda8fbe108b::t_c64b41ddc3e328 28-36,47,59,61,63-64,71-73
+  s_6c1bda8fbe108b::t_308e726b2003d6 4-5
+database/migrations/2026_09_13_195706_create_stadium_commercial_venues_table.php
+  s_6c1bda8fbe108b::t_5ff8ce300e5645 25
+database/migrations/2020_05_07_200938_create_competition_season_table.php
+  s_6c1bda8fbe108b::t_5ff8ce300e5645 23
+  s_6c1bda8fbe108b::t_308e726b2003d6 4-5
+database/migrations/2026_09_14_213820_create_stadium_stand_constructions_table.php
+  s_6c1bda8fbe108b::t_5ff8ce300e5645 27-29
+  s_f4cb6483f235cf::t_bc756dd6ecc5fe 23
+database/migrations/2020_09_30_072550_create_staff_table.php
+  s_6c1bda8fbe108b::t_308e726b2003d6 4-5,10,14,18,22
+  s_6c1bda8fbe108b::t_5ff8ce300e5645 42,50,55-56
+database/migrations/2026_09_11_231244_create_stadium_stands_table.php
+  s_6c1bda8fbe108b::t_67fbe3b6b15c53 14-21,32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "258690b481d0780eb65e557770fb54122dfe61a4",
+  "prompts": {},
+  "sessions": {
+    "s_6c1bda8fbe108b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0abb4-8c73-76c1-ad11-fcc977e74442",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    },
+    "s_f4cb6483f235cf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab3c-2033-7271-892f-ffa51f1d52a0",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
