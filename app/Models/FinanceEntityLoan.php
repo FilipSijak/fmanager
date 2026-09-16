@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\FinanceEntityLoanStatus;
+use App\FinanceLoanType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,7 @@ class FinanceEntityLoan extends Model
         'instance_id',
         'lender_game_entity_account_id',
         'borrower_club_account_id',
+        'loan_type',
         'principal',
         'interest_amount',
         'total_amount',
@@ -33,6 +35,7 @@ class FinanceEntityLoan extends Model
             'installment_count' => 'integer',
             'started_at' => 'date',
             'status' => FinanceEntityLoanStatus::class,
+            'loan_type' => FinanceLoanType::class,
         ];
     }
 

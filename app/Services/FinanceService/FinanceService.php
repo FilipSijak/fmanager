@@ -6,6 +6,7 @@ use App\DataModels\ClubFinancialSummary;
 use App\EntityTransactionDirection;
 use App\EntityTransactionType;
 use App\FinanceEntityLoanStatus;
+use App\FinanceLoanType;
 use App\GameEntityType;
 use App\Models\Account;
 use App\Models\AccountsDebtLinesEntity;
@@ -18,6 +19,7 @@ use App\Repositories\ClubRepository;
 use App\Services\FinanceService\Domain\CashLoanCalculator;
 use App\Services\FinanceService\Domain\CashLoanEligibility;
 use App\Services\FinanceService\Domain\CashLoanTerms;
+use App\Services\FinanceService\Domain\MortgageLoanCalculator;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -32,6 +34,7 @@ class FinanceService
         private readonly GameContext $gameContext,
         private readonly CashLoanCalculator $cashLoanCalculator,
         private readonly CashLoanEligibility $cashLoanEligibility,
+        private readonly MortgageLoanCalculator $mortgageLoanCalculator,
     ) {}
 
     public function getClubFinances(): ?ClubFinancialSummary
@@ -66,11 +69,64 @@ class FinanceService
         );
     }
 
+    public function payForConstruction(int $amount, CarbonInterface $transactionDate): FinanceTransactionEntity
+    {
+        $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
+        $clubAccount = Account::query()
+            ->where('club_id', $instance->club_id)
+            ->lockForUpdate()
+            ->firstOrFail();
+        if ($clubAccount->balance < $amount) {
+            throw new DomainException('The club cannot afford this construction.');
+        }
+        $bankAccount = GameEntityAccount::query()
+            ->where('instance_id', $instance->id)
+            ->whereHas('gameEntity', function (Builder $query): void {
+                $query->where('type', GameEntityType::BANK->value);
+            })
+            ->firstOrFail();
+
+        return $this->makeEntityTransaction(
+            $bankAccount,
+            $clubAccount,
+            EntityTransactionDirection::CLUB_TO_ENTITY,
+            EntityTransactionType::STADIUM_CONSTRUCTION,
+            $amount,
+            $transactionDate,
+        );
+    }
+
+    public function takeOutMortgageLoan(
+        int $amount,
+        int $lengthYears,
+        CarbonInterface $startedAt,
+    ): FinanceEntityLoan {
+        $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
+        $clubAccount = Account::query()->where('club_id', $instance->club_id)->firstOrFail();
+        $bankAccount = GameEntityAccount::query()
+            ->where('instance_id', $instance->id)
+            ->whereHas('gameEntity', function (Builder $query): void {
+                $query->where('type', GameEntityType::BANK->value);
+            })
+            ->firstOrFail();
+
+        return $this->issueLoan(
+            $bankAccount,
+            $clubAccount,
+            $this->mortgageLoanCalculator->calculate($amount, $lengthYears),
+            $startedAt,
+            FinanceLoanType::MORTGAGE,
+            false,
+        );
+    }
+
     public function issueLoan(
         GameEntityAccount $lenderGameEntityAccount,
         Account $borrowerClubAccount,
         CashLoanTerms $terms,
         CarbonInterface $startedAt,
+        FinanceLoanType $loanType = FinanceLoanType::CASH,
+        bool $disbursePrincipal = true,
     ): FinanceEntityLoan {
         $principal = $terms->principal;
         $interestAmount = $terms->interestAmount;
@@ -86,18 +142,21 @@ class FinanceService
             $installmentCount,
             $terms,
             $startedAt,
+            $loanType,
+            $disbursePrincipal,
         ): FinanceEntityLoan {
             $lockedClubAccount = Account::query()
                 ->whereKey($borrowerClubAccount->id)
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            $this->cashLoanEligibility->ensureEligible($lockedClubAccount, $terms);
+            $this->cashLoanEligibility->ensureEligible($lockedClubAccount, $terms, $disbursePrincipal);
 
             $loan = FinanceEntityLoan::query()->create([
                 'instance_id' => $lenderGameEntityAccount->instance_id,
                 'lender_game_entity_account_id' => $lenderGameEntityAccount->id,
                 'borrower_club_account_id' => $borrowerClubAccount->id,
+                'loan_type' => $loanType,
                 'principal' => $principal,
                 'interest_amount' => $interestAmount,
                 'total_amount' => $totalAmount,
@@ -106,15 +165,17 @@ class FinanceService
                 'status' => FinanceEntityLoanStatus::ACTIVE,
             ]);
 
-            $this->makeEntityTransaction(
-                $lenderGameEntityAccount,
-                $lockedClubAccount,
-                EntityTransactionDirection::ENTITY_TO_CLUB,
-                EntityTransactionType::LOAN,
-                $principal,
-                $startedAt,
-                $loan->id,
-            );
+            if ($disbursePrincipal) {
+                $this->makeEntityTransaction(
+                    $lenderGameEntityAccount,
+                    $lockedClubAccount,
+                    EntityTransactionDirection::ENTITY_TO_CLUB,
+                    EntityTransactionType::LOAN,
+                    $principal,
+                    $startedAt,
+                    $loan->id,
+                );
+            }
 
             $lenderGameEntityAccount->newQuery()
                 ->whereKey($lenderGameEntityAccount->id)

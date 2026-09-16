@@ -11,6 +11,7 @@ class FinanceEntityLoanResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'loan_type' => $this->loan_type?->value,
             'principal' => $this->principal,
             'interest_amount' => $this->interest_amount,
             'total_amount' => $this->total_amount,

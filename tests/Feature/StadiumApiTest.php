@@ -2,9 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\GameEntityType;
+use App\Models\Account;
 use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\Club;
 use App\Models\Country;
+use App\Models\GameEntity;
+use App\Models\GameEntityAccount;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumStandConstruction;
@@ -102,9 +106,12 @@ class StadiumApiTest extends TestCase
         ]);
         $this->mapCategoryToType($category->id, StadiumType::LOCAL);
 
-        $response = $this->apiRequest($instance)->postJson('/api/stadium/commercial-venues', [
+        $response = $this->apiRequest($instance)->postJson('/api/stadium/construction', [
+            'building_type' => 'commercial_venue',
             'category_id' => $category->id,
             'size' => CommercialVenueSize::LARGE->value,
+            'payment_method' => 'cash',
+            'length_years' => 0,
         ]);
 
         $response
@@ -157,6 +164,9 @@ class StadiumApiTest extends TestCase
             'stadium_id' => $stadium->id,
         ]);
         $instance->forceFill(['club_id' => $club->id])->saveQuietly();
+        Account::factory()->create(['club_id' => $club->id, 'balance' => 1_000_000, 'future_balance' => 1_000_000]);
+        $bank = GameEntity::factory()->create(['instance_id' => $instance->id, 'type' => GameEntityType::BANK]);
+        GameEntityAccount::factory()->create(['game_entity_id' => $bank->id, 'instance_id' => $instance->id, 'balance' => 50_000_000_000, 'future_balance' => 50_000_000_000]);
 
         return [$instance->fresh(), $stadium->fresh()];
     }

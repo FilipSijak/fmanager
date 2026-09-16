@@ -9,4 +9,5 @@ enum EntityTransactionType: string
     case TV_REVENUE = 'tv_revenue';
     case LOAN = 'loan';
     case LOAN_REPAYMENT = 'loan_repayment';
+    case STADIUM_CONSTRUCTION = 'stadium_construction';
 }
