@@ -1,0 +1,26 @@
+tests/Integration/Competition/KnockoutSummaryTest.php
+  s_6c1bda8fbe108b::t_48e5751e4447d8 27
+  s_6c1bda8fbe108b::t_0daa397a6bba86 7
+tests/Integration/Services/CompetitionService/CompetitionUpdaterTest.php
+  s_6c1bda8fbe108b::t_08b669dbee326b 33-34
+tests/Integration/Services/ClubService/SquadAnalysisTest.php
+  s_6c1bda8fbe108b::t_48e5751e4447d8 25
+  s_6c1bda8fbe108b::t_eb0da3ccc33153 6
+  s_6c1bda8fbe108b::t_0daa397a6bba86 10,24,27-28,34-35,40-41,44-51
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1fb9374d7ac40dc3fbaff53055f3f8ff1be90665",
+  "prompts": {},
+  "sessions": {
+    "s_6c1bda8fbe108b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0abb4-8c73-76c1-ad11-fcc977e74442",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
