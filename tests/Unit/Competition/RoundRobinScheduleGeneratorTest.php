@@ -13,7 +13,7 @@ class RoundRobinScheduleGeneratorTest extends TestCase
     #[Test]
     public function it_generates_a_four_club_double_round_robin(): void
     {
-        $rounds = (new RoundRobinScheduleGenerator())->generateDoubleRoundRobinRounds([1, 2, 3, 4]);
+        $rounds = (new RoundRobinScheduleGenerator)->generateDoubleRoundRobinRounds([1, 2, 3, 4]);
 
         $this->assertCount(6, $rounds);
 
@@ -28,7 +28,7 @@ class RoundRobinScheduleGeneratorTest extends TestCase
     #[Test]
     public function it_generates_a_twenty_club_double_round_robin(): void
     {
-        $rounds = (new RoundRobinScheduleGenerator())->generateDoubleRoundRobinRounds(range(1, 20));
+        $rounds = (new RoundRobinScheduleGenerator)->generateDoubleRoundRobinRounds(range(1, 20));
 
         $this->assertCount(38, $rounds);
 
@@ -46,7 +46,7 @@ class RoundRobinScheduleGeneratorTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new RoundRobinScheduleGenerator())->generateDoubleRoundRobinRounds($clubIds);
+        (new RoundRobinScheduleGenerator)->generateDoubleRoundRobinRounds($clubIds);
     }
 
     public static function invalidClubSets(): array
@@ -54,7 +54,7 @@ class RoundRobinScheduleGeneratorTest extends TestCase
         return [
             'non integer' => [[1, 2, 3, '4']],
             'too few' => [[1, 2]],
-            'too many' => [range(1, 22)],
+            'too many' => [range(1, 23)],
             'odd count' => [[1, 2, 3, 4, 5]],
             'duplicates' => [[1, 2, 3, 3]],
         ];

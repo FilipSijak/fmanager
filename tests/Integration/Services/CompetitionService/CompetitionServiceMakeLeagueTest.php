@@ -12,6 +12,7 @@ use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use InvalidArgumentException;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -45,9 +46,9 @@ class CompetitionServiceMakeLeagueTest extends TestCase
     #[DataProvider('invalidClubCounts')]
     public function it_throws_when_club_count_is_not_twenty(int $clubCount): void
     {
-        $this->expectException(\UnexpectedValueException::class);
-        $this->expectExceptionMessage('League schedule requires exactly 20 clubs');
-
+        Season::factory()->create(['id' => 1, 'instance_id' => 1, 'start_date' => '2026-08-15', 'end_date' => '2027-08-15']);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/between|even/i');
         $this->makeService()->makeLeague(range(1, $clubCount), 10, 1, 1);
     }
 

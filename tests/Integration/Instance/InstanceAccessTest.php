@@ -3,6 +3,7 @@
 namespace Tests\Integration\Instance;
 
 use App\Events\NextDay;
+use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Models\User;
@@ -43,7 +44,8 @@ class InstanceAccessTest extends TestCase
     public function users_can_list_and_switch_between_their_own_games(): void
     {
         $user = User::factory()->create();
-        $games = Instance::factory()->count(2)->create(['user_id' => $user->id]);
+        $club = Club::factory()->create();
+        $games = Instance::factory()->count(2)->create(['user_id' => $user->id, 'club_id' => $club->id]);
         $other = Instance::factory()->create();
         $this->actingAs($user)->get('/setup-game')->assertInertia(fn (Assert $page) => $page
             ->component('GameStart')->has('instances', 2)

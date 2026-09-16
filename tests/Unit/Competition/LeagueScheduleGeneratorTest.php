@@ -27,7 +27,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function it_generates_exactly_380_fixtures(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         $this->assertCount(380, $fixtures);
@@ -40,15 +40,15 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function every_club_pair_appears_exactly_twice_with_home_away_swapped(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         // Build a lookup: pairKey => [[home, away], ...]
         $pairings = [];
         foreach ($fixtures as $f) {
             $key = min($f['home_club_id'], $f['away_club_id'])
-                 . '-'
-                 . max($f['home_club_id'], $f['away_club_id']);
+                 .'-'
+                 .max($f['home_club_id'], $f['away_club_id']);
 
             $pairings[$key][] = [$f['home_club_id'], $f['away_club_id']];
         }
@@ -87,13 +87,13 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function every_fixture_date_falls_on_a_saturday_or_sunday(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         foreach ($fixtures as $f) {
             /** @var DateTimeImmutable $date */
             $date = $f['date'];
-            $dow  = (int) $date->format('N'); // 6=Saturday, 7=Sunday
+            $dow = (int) $date->format('N'); // 6=Saturday, 7=Sunday
 
             $this->assertContains(
                 $dow,
@@ -110,7 +110,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function there_are_exactly_38_rounds(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         $rounds = array_unique(array_column($fixtures, 'round'));
@@ -128,7 +128,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function each_club_appears_exactly_once_per_round(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         // Group fixtures by round.
@@ -165,14 +165,14 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function each_half_independently_contains_all_190_unique_pairings_exactly_once(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
-        $firstHalfPairings  = [];
+        $firstHalfPairings = [];
         $secondHalfPairings = [];
 
         foreach ($fixtures as $f) {
-            $key = $f['home_club_id'] . '->' . $f['away_club_id'];
+            $key = $f['home_club_id'].'->'.$f['away_club_id'];
 
             if ($f['round'] <= 19) {
                 $firstHalfPairings[$key] = ($firstHalfPairings[$key] ?? 0) + 1;
@@ -213,7 +213,7 @@ class LeagueScheduleGeneratorTest extends TestCase
         // The second half must be the mirror of the first half (home/away swapped).
         foreach ($firstHalfPairings as $key => $_) {
             [$home, $away] = explode('->', $key);
-            $reversedKey   = $away . '->' . $home;
+            $reversedKey = $away.'->'.$home;
 
             $this->assertArrayHasKey(
                 $reversedKey,
@@ -230,7 +230,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function every_round_has_between_4_and_6_fixtures_on_each_day(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         $byRound = [];
@@ -286,7 +286,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function home_away_balance_invariant_holds_across_the_half_boundary(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         $byRound = [];
@@ -311,7 +311,7 @@ class LeagueScheduleGeneratorTest extends TestCase
                     2,
                     $diff,
                     "Club {$clubId} home/away balance |{$home[$clubId]}-{$away[$clubId]}|={$diff} "
-                    . "exceeds 2 after round {$round} (including across the half-boundary)."
+                    ."exceeds 2 after round {$round} (including across the half-boundary)."
                 );
             }
         }
@@ -320,7 +320,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function no_club_has_three_consecutive_home_or_away_matches_including_across_half_boundary(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         // Build per-club ordered list of 'H' or 'A' across all 38 rounds.
@@ -348,13 +348,13 @@ class LeagueScheduleGeneratorTest extends TestCase
             for ($i = 2; $i < count($seq); $i++) {
                 $this->assertFalse(
                     $seq[$i - 2] === $seq[$i - 1] && $seq[$i - 1] === $seq[$i] && $seq[$i] === 'H',
-                    "Club {$clubId} has 3+ consecutive home matches ending at round " . ($i + 1) . " "
-                    . "(this check spans the round-19 → round-20 boundary)."
+                    "Club {$clubId} has 3+ consecutive home matches ending at round ".($i + 1).' '
+                    .'(this check spans the round-19 → round-20 boundary).'
                 );
                 $this->assertFalse(
                     $seq[$i - 2] === $seq[$i - 1] && $seq[$i - 1] === $seq[$i] && $seq[$i] === 'A',
-                    "Club {$clubId} has 3+ consecutive away matches ending at round " . ($i + 1) . " "
-                    . "(this check spans the round-19 → round-20 boundary)."
+                    "Club {$clubId} has 3+ consecutive away matches ending at round ".($i + 1).' '
+                    .'(this check spans the round-19 → round-20 boundary).'
                 );
             }
         }
@@ -369,7 +369,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     {
         $service = new LeagueScheduleGenerator(2025);
 
-        $start   = hrtime(true); // monotonic nanosecond timer
+        $start = hrtime(true); // monotonic nanosecond timer
         $fixtures = $service->generateSchedule($this->twentyClubs);
         $elapsed = hrtime(true) - $start;
 
@@ -393,12 +393,12 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function round_1_starts_on_the_first_saturday_of_september(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         $round1Dates = array_map(
-            static fn(array $f): string => $f['date']->format('Y-m-d'),
-            array_filter($fixtures, static fn(array $f): bool => $f['round'] === 1)
+            static fn (array $f): string => $f['date']->format('Y-m-d'),
+            array_filter($fixtures, static fn (array $f): bool => $f['round'] === 1)
         );
 
         $uniqueDates = array_unique($round1Dates);
@@ -409,7 +409,7 @@ class LeagueScheduleGeneratorTest extends TestCase
             $this->assertContains(
                 $dateStr,
                 ['2025-09-06', '2025-09-07'],
-                "Round 1 fixtures must be on the first September 2025 weekend (Sep 6–7)."
+                'Round 1 fixtures must be on the first September 2025 weekend (Sep 6–7).'
             );
         }
     }
@@ -417,13 +417,13 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function round_1_sunday_is_the_day_immediately_after_round_1_saturday(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
-        $round1 = array_filter($fixtures, static fn(array $f): bool => $f['round'] === 1);
+        $round1 = array_filter($fixtures, static fn (array $f): bool => $f['round'] === 1);
 
         $saturdays = [];
-        $sundays   = [];
+        $sundays = [];
 
         foreach ($round1 as $f) {
             $dow = (int) $f['date']->format('N');
@@ -435,10 +435,10 @@ class LeagueScheduleGeneratorTest extends TestCase
         }
 
         $this->assertNotEmpty($saturdays, 'Round 1 must have Saturday fixtures.');
-        $this->assertNotEmpty($sundays,   'Round 1 must have Sunday fixtures.');
+        $this->assertNotEmpty($sundays, 'Round 1 must have Sunday fixtures.');
 
-        $satDate = new \DateTimeImmutable(array_unique($saturdays)[0]);
-        $sunDate = new \DateTimeImmutable(array_unique($sundays)[0]);
+        $satDate = new DateTimeImmutable(array_unique($saturdays)[0]);
+        $sunDate = new DateTimeImmutable(array_unique($sundays)[0]);
 
         // Sunday must be exactly Saturday + 1 day (not "first Sunday of September").
         $expectedSunday = $satDate->modify('+1 day')->format('Y-m-d');
@@ -458,7 +458,7 @@ class LeagueScheduleGeneratorTest extends TestCase
         $schedule1 = $service1->generateSchedule($this->twentyClubs);
         $schedule2 = $service2->generateSchedule($this->twentyClubs);
 
-        $this->assertSame($schedule1[0]['round'],        $schedule2[0]['round']);
+        $this->assertSame($schedule1[0]['round'], $schedule2[0]['round']);
         $this->assertSame($schedule1[0]['home_club_id'], $schedule2[0]['home_club_id']);
         $this->assertSame($schedule1[0]['away_club_id'], $schedule2[0]['away_club_id']);
         $this->assertSame(
@@ -511,8 +511,8 @@ class LeagueScheduleGeneratorTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $clubs    = range(1, 19);
-        $clubs[]  = '20'; // string instead of int
+        $clubs = range(1, 19);
+        $clubs[] = '20'; // string instead of int
 
         $service = new LeagueScheduleGenerator(2025);
         $service->generateSchedule($clubs);
@@ -523,7 +523,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        $clubs   = range(1, 19);
+        $clubs = range(1, 19);
         $clubs[] = 20.0; // float instead of int
 
         $service = new LeagueScheduleGenerator(2025);
@@ -537,7 +537,7 @@ class LeagueScheduleGeneratorTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/integer/i');
 
-        $clubs   = range(1, 20);
+        $clubs = range(1, 20);
         $clubs[] = '21'; // 21 elements, one non-integer
 
         $service = new LeagueScheduleGenerator(2025);
@@ -549,10 +549,10 @@ class LeagueScheduleGeneratorTest extends TestCase
     {
         // 19 elements with a duplicate; cardinality error must be reported, not duplicate error.
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessageMatches('/19|fewer|only/i');
+        $this->expectExceptionMessageMatches('/even/i');
 
-        $clubs    = range(1, 18);
-        $clubs[]  = 1; // duplicate
+        $clubs = range(1, 18);
+        $clubs[] = 1; // duplicate
         // 19 elements total (18 unique + 1 duplicate)
 
         $service = new LeagueScheduleGenerator(2025);
@@ -593,7 +593,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     public function caller_array_is_not_mutated_after_generate_schedule(): void
     {
         $original = range(1, 20);
-        $input    = range(1, 20);
+        $input = range(1, 20);
 
         $service = new LeagueScheduleGenerator(2025);
         $service->generateSchedule($input);
@@ -652,14 +652,14 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function it_uses_current_year_when_no_year_is_supplied(): void
     {
-        $service  = new LeagueScheduleGenerator();
+        $service = new LeagueScheduleGenerator;
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         // Evaluate current year in UTC, matching the service's own resolution.
         $currentYear = (int) (new DateTimeImmutable('now', new \DateTimeZone('UTC')))->format('Y');
 
         // The first round must start in September of the current year.
-        $round1 = array_filter($fixtures, static fn(array $f): bool => $f['round'] === 1);
+        $round1 = array_filter($fixtures, static fn (array $f): bool => $f['round'] === 1);
         $firstFixture = reset($round1);
 
         $this->assertSame(
@@ -680,7 +680,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function home_away_difference_never_exceeds_2_after_any_round(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         // Group by round, sorted.
@@ -706,7 +706,7 @@ class LeagueScheduleGeneratorTest extends TestCase
                     2,
                     $diff,
                     "Club {$clubId} home/away difference exceeds 2 after round {$round} "
-                    . "(home={$home[$clubId]}, away={$away[$clubId]})."
+                    ."(home={$home[$clubId]}, away={$away[$clubId]})."
                 );
             }
         }
@@ -715,7 +715,7 @@ class LeagueScheduleGeneratorTest extends TestCase
     #[Test]
     public function no_club_has_more_than_two_consecutive_home_or_away_matches(): void
     {
-        $service  = new LeagueScheduleGenerator(2025);
+        $service = new LeagueScheduleGenerator(2025);
         $fixtures = $service->generateSchedule($this->twentyClubs);
 
         // Build per-club ordered list of 'H' or 'A'.
@@ -730,7 +730,7 @@ class LeagueScheduleGeneratorTest extends TestCase
         foreach ($byRound as $roundFixtures) {
             foreach ($roundFixtures as $f) {
                 $records[$f['home_club_id']][] = 'H';
-                $records[$f['away_club_id']][]  = 'A';
+                $records[$f['away_club_id']][] = 'A';
             }
         }
 
@@ -739,11 +739,11 @@ class LeagueScheduleGeneratorTest extends TestCase
             for ($i = 2; $i < count($seq); $i++) {
                 $this->assertFalse(
                     $seq[$i - 2] === $seq[$i - 1] && $seq[$i - 1] === $seq[$i] && $seq[$i] === 'H',
-                    "Club {$clubId} has 3+ consecutive home matches ending at round " . ($i + 1) . "."
+                    "Club {$clubId} has 3+ consecutive home matches ending at round ".($i + 1).'.'
                 );
                 $this->assertFalse(
                     $seq[$i - 2] === $seq[$i - 1] && $seq[$i - 1] === $seq[$i] && $seq[$i] === 'A',
-                    "Club {$clubId} has 3+ consecutive away matches ending at round " . ($i + 1) . "."
+                    "Club {$clubId} has 3+ consecutive away matches ending at round ".($i + 1).'.'
                 );
             }
         }

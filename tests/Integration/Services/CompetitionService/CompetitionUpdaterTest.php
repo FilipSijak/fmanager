@@ -45,7 +45,7 @@ class CompetitionUpdaterTest extends TestCase
                 [
                     'id' => 2,
                     'instance_id' => 1,
-                    'season_id' => 1,
+                    'season_id' => $season->id,
                     'competition_id' => $leagueCompetition->id,
                     'hometeam_id' => 2,
                     'awayteam_id' => 19,
@@ -62,7 +62,7 @@ class CompetitionUpdaterTest extends TestCase
                 [
                     'id' => 444,
                     'instance_id' => 1,
-                    'season_id' => 1,
+                    'season_id' => $season->id,
                     'competition_id' => $tournamentCompetition->id,
                     'hometeam_id' => 17,
                     'awayteam_id' => 19,
@@ -77,17 +77,17 @@ class CompetitionUpdaterTest extends TestCase
             ],
         ];
 
-        $leagueCompetition->seasons()->attach(1, ['club_id' => 2, 'instance_id' => 1]);
-        $leagueCompetition->seasons()->attach(1, ['club_id' => 19, 'instance_id' => 1]);
+        $leagueCompetition->seasons()->attach($season->id, ['club_id' => 2, 'instance_id' => 1]);
+        $leagueCompetition->seasons()->attach($season->id, ['club_id' => 19, 'instance_id' => 1]);
         Game::factory()->create(
-            ['instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id, 'hometeam_id' => 17, 'awayteam_id' => 19, 'winner' => 1, 'stadium_id' => 1, 'match_summary' => '{}']
+            ['instance_id' => 1, 'season_id' => $season->id, 'competition_id' => $tournamentCompetition->id, 'hometeam_id' => 17, 'awayteam_id' => 19, 'winner' => 1, 'stadium_id' => 1, 'match_summary' => '{}']
         );
         Game::factory()->create(
-            ['instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id, 'hometeam_id' => 19, 'awayteam_id' => 17, 'winner' => null, 'stadium_id' => 1]
+            ['instance_id' => 1, 'season_id' => $season->id, 'competition_id' => $tournamentCompetition->id, 'hometeam_id' => 19, 'awayteam_id' => 17, 'winner' => null, 'stadium_id' => 1]
         );
         DB::table('competition_season')->insert([
-            ['club_id' => 17, 'group_id' => 1, 'groups_active' => true, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id],
-            ['club_id' => 19, 'group_id' => 1, 'groups_active' => true, 'instance_id' => 1, 'season_id' => 1, 'competition_id' => $tournamentCompetition->id],
+            ['club_id' => 17, 'group_id' => 1, 'groups_active' => true, 'instance_id' => 1, 'season_id' => $season->id, 'competition_id' => $tournamentCompetition->id],
+            ['club_id' => 19, 'group_id' => 1, 'groups_active' => true, 'instance_id' => 1, 'season_id' => $season->id, 'competition_id' => $tournamentCompetition->id],
         ]);
 
         $competitionUpdater->setGamesByCompetition($gamesByCompetition);
