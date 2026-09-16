@@ -1,0 +1,43 @@
+app/Services/FinanceService/FinanceService.php
+  s_f4cb6483f235cf::t_c573c551075b14 18,44,46,72
+  s_f4cb6483f235cf::t_223b511d125793 33,59
+  s_f4cb6483f235cf::t_49357292a0c707 20
+app/Http/Requests/TakeOutCashLoanRequest.php
+  s_f4cb6483f235cf::t_c573c551075b14 1-17,19-21
+  s_f4cb6483f235cf::t_223b511d125793 18
+app/Http/Controllers/FinanceLoanController.php
+  s_f4cb6483f235cf::t_c573c551075b14 6,21,26,28
+app/Services/FinanceService/Domain/CashLoanTerms.php
+  s_f4cb6483f235cf::t_c573c551075b14 1-17
+app/Services/FinanceService/Domain/CashLoanCalculator.php
+  s_f4cb6483f235cf::t_c573c551075b14 1-41
+tests/Feature/FinanceEntityTest.php
+  s_f4cb6483f235cf::t_223b511d125793 82,87-88,97,99,114,141
+  s_f4cb6483f235cf::t_a2dfd838f55c85 91,151-152
+  s_f4cb6483f235cf::t_c573c551075b14 15
+tests/Feature/FinanceLoanApiTest.php
+  s_f4cb6483f235cf::t_a2dfd838f55c85 20
+  s_f4cb6483f235cf::t_223b511d125793 49,55-56,118
+  s_f4cb6483f235cf::t_c573c551075b14 84
+app/Services/FinanceService/Domain/CashLoanEligibility.php
+  s_f4cb6483f235cf::t_223b511d125793 10
+tests/Unit/CashLoanCalculatorTest.php
+  s_f4cb6483f235cf::t_223b511d125793 5,9,12,14,17-18,20-21
+  s_f4cb6483f235cf::t_a2dfd838f55c85 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "713a1369698ce70a50840fba8e9d8213a4e5dcc4",
+  "prompts": {},
+  "sessions": {
+    "s_f4cb6483f235cf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab3c-2033-7271-892f-ffa51f1d52a0",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
