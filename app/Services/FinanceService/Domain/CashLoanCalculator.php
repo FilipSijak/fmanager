@@ -4,22 +4,22 @@ namespace App\Services\FinanceService\Domain;
 
 use DomainException;
 
-class BankLoanCalculator
+class CashLoanCalculator
 {
-    private const float ANNUAL_INTEREST_RATE = 0.05;
+    private const float CASH_LOAN_ANNUAL_INTEREST_RATE = 0.08;
 
-    public function calculate(int $amount, int $lengthYears): BankLoanTerms
+    public function calculate(int $amount, int $lengthMonths): CashLoanTerms
     {
         if ($amount <= 0) {
             throw new DomainException('Loan amount must be greater than zero.');
         }
 
-        if ($lengthYears <= 0) {
-            throw new DomainException('Loan length must be at least one year.');
+        if ($lengthMonths <= 0) {
+            throw new DomainException('Loan length must be at least one month.');
         }
 
-        $installmentCount = $lengthYears * 12;
-        $interestAmount = (int) round($amount * self::ANNUAL_INTEREST_RATE * $lengthYears);
+        $installmentCount = $lengthMonths;
+        $interestAmount = (int) round($amount * self::CASH_LOAN_ANNUAL_INTEREST_RATE * ($lengthMonths / 12));
         $totalAmount = $amount + $interestAmount;
         $baseInstallmentAmount = intdiv($totalAmount, $installmentCount);
         $installmentAmounts = [];
@@ -30,7 +30,7 @@ class BankLoanCalculator
                 : $baseInstallmentAmount;
         }
 
-        return new BankLoanTerms(
+        return new CashLoanTerms(
             principal: $amount,
             interestAmount: $interestAmount,
             totalAmount: $totalAmount,

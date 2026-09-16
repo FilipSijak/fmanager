@@ -17,7 +17,7 @@ class FinanceLoanApiTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function it_allows_the_managed_club_to_take_out_a_bank_loan(): void
+    public function it_allows_the_managed_club_to_take_out_a_cash_loan(): void
     {
         $instance = Instance::factory()->create([
             'instance_hash' => 'loan-instance',
@@ -46,14 +46,14 @@ class FinanceLoanApiTest extends TestCase
             ->withHeaders(['instanceHash' => $instance->instance_hash])
             ->postJson('/api/finance/loans', [
                 'amount' => 12000,
-                'length_years' => 2,
+                'length_months' => 24,
             ]);
 
         $response
             ->assertOk()
             ->assertJsonPath('data.principal', 12000)
-            ->assertJsonPath('data.interest_amount', 1200)
-            ->assertJsonPath('data.total_amount', 13200)
+            ->assertJsonPath('data.interest_amount', 1920)
+            ->assertJsonPath('data.total_amount', 13920)
             ->assertJsonPath('data.installment_count', 24)
             ->assertJsonPath('data.status', 'active')
             ->assertJsonCount(24, 'data.installments');
@@ -81,7 +81,7 @@ class FinanceLoanApiTest extends TestCase
 
         $response
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['amount', 'length_years']);
+            ->assertJsonValidationErrors(['amount', 'length_months']);
     }
 
     #[Test]
@@ -115,7 +115,7 @@ class FinanceLoanApiTest extends TestCase
             ->withHeaders(['instanceHash' => $instance->instance_hash])
             ->postJson('/api/finance/loans', [
                 'amount' => 12000,
-                'length_years' => 2,
+                'length_months' => 24,
             ]);
 
         $response

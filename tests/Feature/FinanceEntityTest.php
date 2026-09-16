@@ -12,7 +12,7 @@ use App\Models\Club;
 use App\Models\GameEntity;
 use App\Models\GameEntityAccount;
 use App\Models\Instance;
-use App\Services\FinanceService\Domain\BankLoanCalculator;
+use App\Services\FinanceService\Domain\CashLoanCalculator;
 use App\Services\FinanceService\FinanceService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -79,24 +79,24 @@ class FinanceEntityTest extends TestCase
         $loan = app(FinanceService::class)->issueLoan(
             $entityAccount,
             $clubAccount,
-            app(BankLoanCalculator::class)->calculate(10000, 1),
+            app(CashLoanCalculator::class)->calculate(10000, 12),
             CarbonImmutable::parse('2026-09-15'),
         );
 
         $this->assertSame(10000, $loan->principal);
-        $this->assertSame(500, $loan->interest_amount);
-        $this->assertSame(10500, $loan->total_amount);
+        $this->assertSame(800, $loan->interest_amount);
+        $this->assertSame(10800, $loan->total_amount);
         $this->assertSame(FinanceEntityLoanStatus::ACTIVE, $loan->status);
         $this->assertSame(12, $loan->installments->count());
-        $this->assertSame(10500, $loan->installments->sum('amount'));
+        $this->assertSame(10800, $loan->installments->sum('amount'));
         $this->assertSame(
             array_slice(['2026-10-15', '2026-11-15', '2026-12-15'], 0, 3),
             array_slice($loan->installments->pluck('due_date')->map->toDateString()->all(), 0, 3),
         );
         $this->assertSame(20000, $clubAccount->fresh()->balance);
-        $this->assertSame(9500, $clubAccount->fresh()->future_balance);
+        $this->assertSame(9200, $clubAccount->fresh()->future_balance);
         $this->assertSame(0, $entityAccount->fresh()->balance);
-        $this->assertSame(10500, $entityAccount->fresh()->future_balance);
+        $this->assertSame(10800, $entityAccount->fresh()->future_balance);
         $this->assertDatabaseHas('finance_transactions_entities', [
             'event_type' => EntityTransactionType::LOAN->value,
             'event_id' => $loan->id,
@@ -111,7 +111,7 @@ class FinanceEntityTest extends TestCase
         $loan = app(FinanceService::class)->issueLoan(
             $entityAccount,
             $clubAccount,
-            app(BankLoanCalculator::class)->calculate(10000, 2),
+            app(CashLoanCalculator::class)->calculate(10000, 24),
             CarbonImmutable::parse('2026-09-15'),
         );
 
@@ -138,7 +138,7 @@ class FinanceEntityTest extends TestCase
         $loan = app(FinanceService::class)->issueLoan(
             $entityAccount,
             $clubAccount,
-            app(BankLoanCalculator::class)->calculate(10000, 2),
+            app(CashLoanCalculator::class)->calculate(10000, 24),
             CarbonImmutable::parse('2026-09-15'),
         );
 
@@ -148,8 +148,8 @@ class FinanceEntityTest extends TestCase
         );
 
         $this->assertSame(1, $processed);
-        $this->assertSame(458, $entityAccount->fresh()->balance);
-        $this->assertSame(19542, $clubAccount->fresh()->balance);
+        $this->assertSame(483, $entityAccount->fresh()->balance);
+        $this->assertSame(19517, $clubAccount->fresh()->balance);
         $this->assertSame(FinanceEntityLoanStatus::ACTIVE, $loan->fresh()->status);
     }
 

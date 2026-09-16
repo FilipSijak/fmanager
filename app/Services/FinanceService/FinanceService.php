@@ -15,9 +15,9 @@ use App\Models\FinanceTransactions;
 use App\Models\GameEntityAccount;
 use App\Models\Instance;
 use App\Repositories\ClubRepository;
-use App\Services\FinanceService\Domain\BankLoanCalculator;
-use App\Services\FinanceService\Domain\BankLoanTerms;
+use App\Services\FinanceService\Domain\CashLoanCalculator;
 use App\Services\FinanceService\Domain\CashLoanEligibility;
+use App\Services\FinanceService\Domain\CashLoanTerms;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -30,7 +30,7 @@ class FinanceService
     public function __construct(
         private readonly ClubRepository $clubRepository,
         private readonly GameContext $gameContext,
-        private readonly BankLoanCalculator $bankLoanCalculator,
+        private readonly CashLoanCalculator $cashLoanCalculator,
         private readonly CashLoanEligibility $cashLoanEligibility,
     ) {}
 
@@ -41,9 +41,9 @@ class FinanceService
         return $this->clubRepository->getTransferBudgetAndBalance($instance->club_id);
     }
 
-    public function takeOutBankLoan(
+    public function takeOutCashLoan(
         int $amount,
-        int $lengthYears,
+        int $lengthMonths,
         CarbonInterface $startedAt,
     ): FinanceEntityLoan {
         $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
@@ -56,7 +56,7 @@ class FinanceService
                 $query->where('type', GameEntityType::BANK->value);
             })
             ->firstOrFail();
-        $terms = $this->bankLoanCalculator->calculate($amount, $lengthYears);
+        $terms = $this->cashLoanCalculator->calculate($amount, $lengthMonths);
 
         return $this->issueLoan(
             $bankAccount,
@@ -69,7 +69,7 @@ class FinanceService
     public function issueLoan(
         GameEntityAccount $lenderGameEntityAccount,
         Account $borrowerClubAccount,
-        BankLoanTerms $terms,
+        CashLoanTerms $terms,
         CarbonInterface $startedAt,
     ): FinanceEntityLoan {
         $principal = $terms->principal;

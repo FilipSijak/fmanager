@@ -2,7 +2,7 @@
 
 namespace App\Services\FinanceService\Domain;
 
-final readonly class BankLoanTerms
+final readonly class CashLoanTerms
 {
     /**
      * @param  list<int>  $installmentAmounts

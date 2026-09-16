@@ -7,7 +7,7 @@ use DomainException;
 
 class CashLoanEligibility
 {
-    public function ensureEligible(Account $clubAccount, BankLoanTerms $terms): void
+    public function ensureEligible(Account $clubAccount, CashLoanTerms $terms): void
     {
         $projectedBalance = $clubAccount->future_balance + $terms->principal - $terms->totalAmount;
 
