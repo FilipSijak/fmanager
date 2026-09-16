@@ -1,0 +1,34 @@
+tests/Unit/Competition/RoundRobinScheduleGeneratorTest.php
+  s_6c1bda8fbe108b::t_a359f83301b693 57
+  s_6c1bda8fbe108b::t_6479bc9d87f0d1 16,31,49
+tests/Integration/Services/CompetitionService/CompetitionServiceMakeLeagueTest.php
+  s_6c1bda8fbe108b::t_6479bc9d87f0d1 15
+  s_6c1bda8fbe108b::t_a359f83301b693 49
+  s_6c1bda8fbe108b::t_da8213d439f355 50-51
+tests/Unit/Competition/LeagueScheduleGeneratorTest.php
+  s_6c1bda8fbe108b::t_6479bc9d87f0d1 30,43,50-51,90,96,113,131,168,171,175,216,233,289,314,323,351-352,356-357,372,396,400-401,412,420,423,426,438,440-441,461,514-515,526,540,554-555,596,655,662,683,709,718,733,742,746
+  s_6c1bda8fbe108b::t_da8213d439f355 552
+tests/Integration/Services/CompetitionService/CompetitionUpdaterTest.php
+  s_6c1bda8fbe108b::t_193d3f28f6728c 48,65,80-81,83,86,89-90
+tests/Integration/Instance/InstanceAccessTest.php
+  s_6c1bda8fbe108b::t_a359f83301b693 47-48
+  s_6c1bda8fbe108b::t_70f3fb9fe009c3 6
+tests/Integration/Instance/CreateInstanceTest.php
+  s_6c1bda8fbe108b::t_a359f83301b693 77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "a504f96bba824089f376f209d152bf76a23de010",
+  "prompts": {},
+  "sessions": {
+    "s_6c1bda8fbe108b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0abb4-8c73-76c1-ad11-fcc977e74442",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
