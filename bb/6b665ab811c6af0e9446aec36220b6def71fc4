@@ -1,0 +1,33 @@
+app/Services/FinanceService/Domain/CashLoanTerms.php
+  s_f4cb6483f235cf::t_50bac97eb3c984 5
+database/migrations/2026_09_16_000003_add_mortgage_reference_constraint.php
+  s_f4cb6483f235cf::t_1aba7ebfdb39a3 1-36
+app/Services/FinanceService/Domain/CashLoanEligibility.php
+  s_f4cb6483f235cf::t_50bac97eb3c984 10
+app/Services/FinanceService/Domain/MortgageLoanTerms.php
+  s_f4cb6483f235cf::t_26ebb5ad92f2f8 1-5
+app/Services/FinanceService/Domain/LoanTerms.php
+  s_f4cb6483f235cf::t_26ebb5ad92f2f8 1-17
+app/Services/FinanceService/FinanceService.php
+  s_f4cb6483f235cf::t_50bac97eb3c984 23,132
+  s_f4cb6483f235cf::t_2f5c13f494580c 18-19,166-171
+  s_f4cb6483f235cf::t_d90f271ba7ab3d 163-165,172-176
+app/Services/FinanceService/Domain/MortgageLoanCalculator.php
+  s_f4cb6483f235cf::t_f42093676e8af6 11,33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "bb6b665ab811c6af0e9446aec36220b6def71fc4",
+  "prompts": {},
+  "sessions": {
+    "s_f4cb6483f235cf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab3c-2033-7271-892f-ffa51f1d52a0",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
