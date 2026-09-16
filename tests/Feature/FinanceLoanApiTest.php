@@ -83,4 +83,46 @@ class FinanceLoanApiTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['amount', 'length_years']);
     }
+
+    #[Test]
+    public function it_rejects_a_loan_that_exceeds_the_clubs_allowed_debt(): void
+    {
+        $instance = Instance::factory()->create([
+            'instance_hash' => 'unaffordable-loan-instance',
+            'instance_date' => '2026-09-15',
+        ]);
+        $club = Club::factory()->create(['instance_id' => $instance->id]);
+        $instance->forceFill(['club_id' => $club->id])->saveQuietly();
+        Account::factory()->create([
+            'club_id' => $club->id,
+            'balance' => 1000,
+            'future_balance' => 1000,
+            'allowed_debt' => 500,
+        ]);
+        $bank = GameEntity::factory()->create([
+            'instance_id' => $instance->id,
+            'type' => GameEntityType::BANK,
+        ]);
+        GameEntityAccount::factory()->create([
+            'game_entity_id' => $bank->id,
+            'instance_id' => $instance->id,
+            'balance' => 50_000_000_000,
+            'future_balance' => 50_000_000_000,
+        ]);
+
+        $response = $this
+            ->actingAs($instance->user)
+            ->withHeaders(['instanceHash' => $instance->instance_hash])
+            ->postJson('/api/finance/loans', [
+                'amount' => 12000,
+                'length_years' => 2,
+            ]);
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'The club cannot afford this loan.');
+
+        $this->assertDatabaseCount('finance_entity_loans', 0);
+        $this->assertDatabaseCount('finance_transactions_entities', 0);
+    }
 }

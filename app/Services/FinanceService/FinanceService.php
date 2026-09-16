@@ -17,6 +17,7 @@ use App\Models\Instance;
 use App\Repositories\ClubRepository;
 use App\Services\FinanceService\Domain\BankLoanCalculator;
 use App\Services\FinanceService\Domain\BankLoanTerms;
+use App\Services\FinanceService\Domain\CashLoanEligibility;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -30,6 +31,7 @@ class FinanceService
         private readonly ClubRepository $clubRepository,
         private readonly GameContext $gameContext,
         private readonly BankLoanCalculator $bankLoanCalculator,
+        private readonly CashLoanEligibility $cashLoanEligibility,
     ) {}
 
     public function getClubFinances(): ?ClubFinancialSummary
@@ -85,6 +87,13 @@ class FinanceService
             $terms,
             $startedAt,
         ): FinanceEntityLoan {
+            $lockedClubAccount = Account::query()
+                ->whereKey($borrowerClubAccount->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $this->cashLoanEligibility->ensureEligible($lockedClubAccount, $terms);
+
             $loan = FinanceEntityLoan::query()->create([
                 'instance_id' => $lenderGameEntityAccount->instance_id,
                 'lender_game_entity_account_id' => $lenderGameEntityAccount->id,
@@ -99,7 +108,7 @@ class FinanceService
 
             $this->makeEntityTransaction(
                 $lenderGameEntityAccount,
-                $borrowerClubAccount,
+                $lockedClubAccount,
                 EntityTransactionDirection::ENTITY_TO_CLUB,
                 EntityTransactionType::LOAN,
                 $principal,
@@ -111,7 +120,7 @@ class FinanceService
                 ->whereKey($lenderGameEntityAccount->id)
                 ->update(['future_balance' => DB::raw("future_balance + {$totalAmount}")]);
             $borrowerClubAccount->newQuery()
-                ->whereKey($borrowerClubAccount->id)
+                ->whereKey($lockedClubAccount->id)
                 ->update(['future_balance' => DB::raw("future_balance - {$totalAmount}")]);
 
             foreach ($terms->installmentAmounts as $index => $installmentAmount) {
