@@ -30,8 +30,8 @@ class CompetitionUpdaterTest extends TestCase
         $tournamentUpdater = new TournamentUpdater($competitionRepository, app(CompetitionTournamentRepository::class), app(GameContext::class));
         $leagueUpdater = new LeagueUpdater($competitionRepository);
         $competitionUpdater = new CompetitionUpdater($leagueUpdater, $tournamentUpdater);
-        $season = Season::factory()->create();
-        $instance = Instance::factory()->create();
+        $instance = Instance::factory()->create(['id' => 1]);
+        $season = Season::factory()->create(['instance_id' => $instance->id]);
 
         (new DatabaseSeeder)->run();
         $init = new InitialSeed;
