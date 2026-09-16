@@ -1,0 +1,23 @@
+app/Services/FinanceService/FinanceService.php
+  s_f4cb6483f235cf::t_421af143c059e8 20,34,90-96,111,123
+tests/Feature/FinanceLoanApiTest.php
+  s_f4cb6483f235cf::t_59c62ce3c0f2cb 86-127
+app/Services/FinanceService/Domain/CashLoanEligibility.php
+  s_f4cb6483f235cf::t_eadc78c381095e 1-18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "4607d69f12529a5903ced04bb4225e091b5b7a10",
+  "prompts": {},
+  "sessions": {
+    "s_f4cb6483f235cf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab3c-2033-7271-892f-ffa51f1d52a0",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
