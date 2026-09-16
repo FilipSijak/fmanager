@@ -35,7 +35,10 @@ class StadiumStandConstructionService
             $lockedStand = StadiumStand::query()->whereKey($stadiumStand->id)->lockForUpdate()->firstOrFail();
             $stadium = $lockedStand->stadium()->firstOrFail();
 
-            if (StadiumStandConstruction::query()->where('stadium_stand_id', $lockedStand->id)->exists()) {
+            if (StadiumStandConstruction::query()
+                ->where('stadium_stand_id', $lockedStand->id)
+                ->whereNull('completed_at')
+                ->exists()) {
                 throw new DomainException('This stadium stand already has construction in progress.');
             }
 
@@ -79,10 +82,11 @@ class StadiumStandConstructionService
 
         StadiumStandConstruction::query()
             ->where('instance_id', $instance->id)
+            ->whereNull('completed_at')
             ->whereDate('completes_at', '<=', $asOf->toDateString())
             ->get()
-            ->each(function (StadiumStandConstruction $construction) use (&$completed, &$affectedStadiumIds): void {
-                DB::transaction(function () use ($construction, &$completed, &$affectedStadiumIds): void {
+            ->each(function (StadiumStandConstruction $construction) use (&$completed, &$affectedStadiumIds, $asOf): void {
+                DB::transaction(function () use ($construction, &$completed, &$affectedStadiumIds, $asOf): void {
                     $lockedConstruction = StadiumStandConstruction::query()
                         ->whereKey($construction->id)
                         ->lockForUpdate()
@@ -98,7 +102,7 @@ class StadiumStandConstructionService
                         $stand->forceFill(['status' => StadiumStandStatus::ACTIVE])->saveQuietly();
                     }
 
-                    $lockedConstruction->delete();
+                    $lockedConstruction->update(['completed_at' => $asOf->toDateString()]);
                     $completed++;
                 });
             });

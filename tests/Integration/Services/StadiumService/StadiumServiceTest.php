@@ -414,7 +414,10 @@ class StadiumServiceTest extends TestCase
         $this->assertSame(StadiumStandStatus::ACTIVE, $stand->fresh()->status);
         $this->assertSame(10000, $stadium->fresh()->capacity);
         $this->assertSame(10000, $stadium->fresh()->active_capacity);
-        $this->assertDatabaseMissing('stadium_stand_constructions', ['id' => $construction->id]);
+        $this->assertDatabaseHas('stadium_stand_constructions', [
+            'id' => $construction->id,
+            'completed_at' => $construction->completes_at->toDateString(),
+        ]);
     }
 
     #[Test]

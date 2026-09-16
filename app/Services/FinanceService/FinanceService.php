@@ -100,6 +100,8 @@ class FinanceService
         int $amount,
         int $lengthYears,
         CarbonInterface $startedAt,
+        ?int $stadiumStandConstructionId = null,
+        ?int $stadiumCommercialVenueId = null,
     ): FinanceEntityLoan {
         $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
         $clubAccount = Account::query()->where('club_id', $instance->club_id)->firstOrFail();
@@ -117,6 +119,8 @@ class FinanceService
             $startedAt,
             FinanceLoanType::MORTGAGE,
             false,
+            $stadiumStandConstructionId,
+            $stadiumCommercialVenueId,
         );
     }
 
@@ -127,6 +131,8 @@ class FinanceService
         CarbonInterface $startedAt,
         FinanceLoanType $loanType = FinanceLoanType::CASH,
         bool $disbursePrincipal = true,
+        ?int $stadiumStandConstructionId = null,
+        ?int $stadiumCommercialVenueId = null,
     ): FinanceEntityLoan {
         $principal = $terms->principal;
         $interestAmount = $terms->interestAmount;
@@ -144,6 +150,8 @@ class FinanceService
             $startedAt,
             $loanType,
             $disbursePrincipal,
+            $stadiumStandConstructionId,
+            $stadiumCommercialVenueId,
         ): FinanceEntityLoan {
             $lockedClubAccount = Account::query()
                 ->whereKey($borrowerClubAccount->id)
@@ -157,6 +165,8 @@ class FinanceService
                 'lender_game_entity_account_id' => $lenderGameEntityAccount->id,
                 'borrower_club_account_id' => $borrowerClubAccount->id,
                 'loan_type' => $loanType,
+                'stadium_stand_construction_id' => $stadiumStandConstructionId,
+                'stadium_commercial_venue_id' => $stadiumCommercialVenueId,
                 'principal' => $principal,
                 'interest_amount' => $interestAmount,
                 'total_amount' => $totalAmount,

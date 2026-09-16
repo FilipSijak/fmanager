@@ -51,19 +51,27 @@ class StadiumConstructionService
 
             if ($paymentMethod === ConstructionPaymentMethod::CASH) {
                 $this->financeService->payForConstruction($cost, $startedAt);
-            } else {
-                $this->financeService->takeOutMortgageLoan($cost, $lengthYears, $startedAt);
             }
 
-            if ($buildingType === StadiumConstructionType::STAND) {
-                return $this->standConstructionService->startConstruction(
+            $construction = $buildingType === StadiumConstructionType::STAND
+                ? $this->standConstructionService->startConstruction(
                     $this->stadiumRepository->standForStadium($stadium, $standId),
                     $targetCapacity,
                     $startedAt,
+                )
+                : $this->stadiumService->buildCommercialVenue($stadium, $categoryId, $size);
+
+            if ($paymentMethod === ConstructionPaymentMethod::MORTGAGE) {
+                $this->financeService->takeOutMortgageLoan(
+                    $cost,
+                    $lengthYears,
+                    $startedAt,
+                    $construction instanceof StadiumStandConstruction ? $construction->id : null,
+                    $construction instanceof StadiumCommercialVenue ? $construction->id : null,
                 );
             }
 
-            return $this->stadiumService->buildCommercialVenue($stadium, $categoryId, $size);
+            return $construction;
         });
     }
 

@@ -18,6 +18,8 @@ class FinanceEntityLoan extends Model
         'lender_game_entity_account_id',
         'borrower_club_account_id',
         'loan_type',
+        'stadium_stand_construction_id',
+        'stadium_commercial_venue_id',
         'principal',
         'interest_amount',
         'total_amount',
@@ -52,6 +54,16 @@ class FinanceEntityLoan extends Model
     public function borrowerClubAccount(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'borrower_club_account_id');
+    }
+
+    public function stadiumStandConstruction(): BelongsTo
+    {
+        return $this->belongsTo(StadiumStandConstruction::class);
+    }
+
+    public function stadiumCommercialVenue(): BelongsTo
+    {
+        return $this->belongsTo(StadiumCommercialVenue::class);
     }
 
     public function installments(): HasMany
