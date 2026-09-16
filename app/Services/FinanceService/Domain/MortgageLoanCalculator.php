@@ -8,7 +8,7 @@ class MortgageLoanCalculator
 {
     private const float ANNUAL_INTEREST_RATE = 0.05;
 
-    public function calculate(int $amount, int $lengthYears): CashLoanTerms
+    public function calculate(int $amount, int $lengthYears): MortgageLoanTerms
     {
         if ($amount <= 0) {
             throw new DomainException('Mortgage amount must be greater than zero.');
@@ -30,7 +30,7 @@ class MortgageLoanCalculator
                 : $baseInstallmentAmount;
         }
 
-        return new CashLoanTerms(
+        return new MortgageLoanTerms(
             principal: $amount,
             interestAmount: $interestAmount,
             totalAmount: $totalAmount,

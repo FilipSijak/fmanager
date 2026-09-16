@@ -15,10 +15,12 @@ use App\Models\FinanceTransactionEntity;
 use App\Models\FinanceTransactions;
 use App\Models\GameEntityAccount;
 use App\Models\Instance;
+use App\Models\StadiumCommercialVenue;
+use App\Models\StadiumStandConstruction;
 use App\Repositories\ClubRepository;
 use App\Services\FinanceService\Domain\CashLoanCalculator;
 use App\Services\FinanceService\Domain\CashLoanEligibility;
-use App\Services\FinanceService\Domain\CashLoanTerms;
+use App\Services\FinanceService\Domain\LoanTerms;
 use App\Services\FinanceService\Domain\MortgageLoanCalculator;
 use App\Support\GameContext;
 use Carbon\Carbon;
@@ -127,7 +129,7 @@ class FinanceService
     public function issueLoan(
         GameEntityAccount $lenderGameEntityAccount,
         Account $borrowerClubAccount,
-        CashLoanTerms $terms,
+        LoanTerms $terms,
         CarbonInterface $startedAt,
         FinanceLoanType $loanType = FinanceLoanType::CASH,
         bool $disbursePrincipal = true,
@@ -157,6 +159,20 @@ class FinanceService
                 ->whereKey($borrowerClubAccount->id)
                 ->lockForUpdate()
                 ->firstOrFail();
+
+            $hasConstructionReference = (int) ($stadiumStandConstructionId !== null) + (int) ($stadiumCommercialVenueId !== null);
+            if ($loanType === FinanceLoanType::MORTGAGE && $hasConstructionReference !== 1) {
+                throw new DomainException('Mortgage loans must reference exactly one construction.');
+            }
+            if ($loanType === FinanceLoanType::MORTGAGE && $stadiumStandConstructionId !== null && ! StadiumStandConstruction::query()->whereKey($stadiumStandConstructionId)->where('instance_id', $lenderGameEntityAccount->instance_id)->exists()) {
+                throw new DomainException('Mortgage construction does not belong to this instance.');
+            }
+            if ($loanType === FinanceLoanType::MORTGAGE && $stadiumCommercialVenueId !== null && ! StadiumCommercialVenue::query()->whereKey($stadiumCommercialVenueId)->where('instance_id', $lenderGameEntityAccount->instance_id)->exists()) {
+                throw new DomainException('Mortgage construction does not belong to this instance.');
+            }
+            if ($loanType !== FinanceLoanType::MORTGAGE && $hasConstructionReference !== 0) {
+                throw new DomainException('Only mortgage loans may reference a construction.');
+            }
 
             $this->cashLoanEligibility->ensureEligible($lockedClubAccount, $terms, $disbursePrincipal);
 
