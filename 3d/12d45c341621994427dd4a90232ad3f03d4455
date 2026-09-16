@@ -1,0 +1,31 @@
+tests/Feature/FinanceLoanApiTest.php
+  s_f4cb6483f235cf::t_e19eeff280e5a7 68-73
+routes/api.php
+  s_f4cb6483f235cf::t_0080e6fd8164e5 30
+app/Services/FinanceService/FinanceService.php
+  s_f4cb6483f235cf::t_aeb53c2f2494b1 51,55-57,61-62,189,196
+  s_f4cb6483f235cf::t_e336e1c798bd9c 30,50,52-54,58-60,63-67,190-192,197-199
+app/Http/Controllers/FinanceLoanController.php
+  s_f4cb6483f235cf::t_0080e6fd8164e5 21-23,25-27
+  s_f4cb6483f235cf::t_aeb53c2f2494b1 24
+database/migrations/2026_09_16_190149_prevent_multiple_mortgages_per_construction.php
+  s_f4cb6483f235cf::t_e336e1c798bd9c 17,28
+  s_f4cb6483f235cf::t_aeb53c2f2494b1 14-16,25-27
+  s_f4cb6483f235cf::t_0080e6fd8164e5 1-13,18-24,29-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3d12d45c341621994427dd4a90232ad3f03d4455",
+  "prompts": {},
+  "sessions": {
+    "s_f4cb6483f235cf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab3c-2033-7271-892f-ffa51f1d52a0",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
