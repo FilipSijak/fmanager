@@ -20,9 +20,13 @@ return new class extends Migration
             $table->unsignedInteger('capacity_increase');
             $table->date('started_at');
             $table->date('completes_at');
+            $table->date('completed_at')->nullable();
             $table->foreign('instance_id')->references('id')->on('instances')->cascadeOnDelete();
             $table->foreign('stadium_id')->references('id')->on('stadiums')->cascadeOnDelete();
             $table->foreign('stadium_stand_id')->references('id')->on('stadium_stands')->cascadeOnDelete();
+            $table->index(['instance_id', 'completes_at'], 'ssc_instance_completes_at_index');
+            $table->foreign(['instance_id', 'stadium_id'], 'ssc_instance_stadium_foreign')->references(['instance_id', 'id'])->on('stadiums')->cascadeOnDelete();
+            $table->foreign(['stadium_id', 'stadium_stand_id'], 'ssc_stadium_stand_foreign')->references(['stadium_id', 'id'])->on('stadium_stands')->cascadeOnDelete();
             $table->unique('stadium_stand_id');
         });
     }

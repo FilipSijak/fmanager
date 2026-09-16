@@ -27,14 +27,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::get('/finance', [FinanceController::class, 'show']);
+        Route::get('/finance/loans', [FinanceLoanController::class, 'index']);
         Route::post('/finance/loans', [FinanceLoanController::class, 'store']);
 
         Route::prefix('stadium')->group(function (): void {
             Route::get('/', [StadiumController::class, 'show']);
             Route::get('/commercial-categories', [StadiumController::class, 'buildableCommercialCategories']);
-            Route::post('/commercial-venues', [StadiumController::class, 'buildCommercialVenue']);
+            Route::post('/construction', [StadiumController::class, 'build']);
             Route::delete('/commercial-venues/{venueId}', [StadiumController::class, 'demolishCommercialVenue']);
-            Route::post('/stands/{standId}/construction', [StadiumController::class, 'startStandConstruction']);
         });
 
         Route::post('/game/{gameId}/complete', [GameController::class, 'complete']);

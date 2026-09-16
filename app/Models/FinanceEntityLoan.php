@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\FinanceEntityLoanStatus;
+use App\FinanceLoanType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,9 @@ class FinanceEntityLoan extends Model
         'instance_id',
         'lender_game_entity_account_id',
         'borrower_club_account_id',
+        'loan_type',
+        'stadium_stand_construction_id',
+        'stadium_commercial_venue_id',
         'principal',
         'interest_amount',
         'total_amount',
@@ -33,6 +37,7 @@ class FinanceEntityLoan extends Model
             'installment_count' => 'integer',
             'started_at' => 'date',
             'status' => FinanceEntityLoanStatus::class,
+            'loan_type' => FinanceLoanType::class,
         ];
     }
 
@@ -49,6 +54,16 @@ class FinanceEntityLoan extends Model
     public function borrowerClubAccount(): BelongsTo
     {
         return $this->belongsTo(Account::class, 'borrower_club_account_id');
+    }
+
+    public function stadiumStandConstruction(): BelongsTo
+    {
+        return $this->belongsTo(StadiumStandConstruction::class);
+    }
+
+    public function stadiumCommercialVenue(): BelongsTo
+    {
+        return $this->belongsTo(StadiumCommercialVenue::class);
     }
 
     public function installments(): HasMany

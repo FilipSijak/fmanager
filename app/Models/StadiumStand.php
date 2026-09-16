@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class StadiumStand extends Model
@@ -39,6 +40,11 @@ class StadiumStand extends Model
 
     public function construction(): HasOne
     {
-        return $this->hasOne(StadiumStandConstruction::class);
+        return $this->hasOne(StadiumStandConstruction::class)->whereNull('completed_at');
+    }
+
+    public function constructionHistory(): HasMany
+    {
+        return $this->hasMany(StadiumStandConstruction::class);
     }
 }

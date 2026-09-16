@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class StadiumCommercialVenue extends Model
 {
@@ -29,6 +30,11 @@ class StadiumCommercialVenue extends Model
     protected function casts(): array
     {
         return ['size' => CommercialVenueSize::class, 'build_cost' => 'integer'];
+    }
+
+    public function mortgageLoan(): HasOne
+    {
+        return $this->hasOne(FinanceEntityLoan::class, 'stadium_commercial_venue_id');
     }
 
     public function instance(): BelongsTo

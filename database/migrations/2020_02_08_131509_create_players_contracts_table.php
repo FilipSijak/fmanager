@@ -18,6 +18,7 @@ return new class extends Migration
             $table->date('contract_start');
             $table->date('contract_end')->index('player_contract_end_idx');
             $table->integer('salary')->unsigned();
+            $table->unsignedInteger('signing_fee')->nullable();
             $table->integer('appearance')->unsigned()->nullable();
             $table->integer('clean_sheet')->unsigned()->nullable();
             $table->integer('goal')->unsigned()->nullable();

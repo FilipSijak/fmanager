@@ -71,19 +71,10 @@ class CreateTournamentKnockoutTable extends Migration
             $table->foreign('next_tie_id')->references('id')->on('tournament_knockout_ties')->nullOnDelete();
         });
 
-        Schema::table('games', function (Blueprint $table) {
-            $table->unsignedBigInteger('knockout_tie_id')->nullable()->after('competition_id');
-            $table->unsignedInteger('leg_number')->nullable()->after('knockout_tie_id');
-            $table->foreign('knockout_tie_id')->references('id')->on('tournament_knockout_ties')->nullOnDelete();
-        });
     }
 
     public function down(): void
     {
-        Schema::table('games', function (Blueprint $table) {
-            $table->dropForeign(['knockout_tie_id']);
-            $table->dropColumn(['knockout_tie_id', 'leg_number']);
-        });
         Schema::dropIfExists('tournament_knockout_ties');
         Schema::dropIfExists('tournament_knockout_rounds');
         Schema::dropIfExists('tournament_knockout_participants');

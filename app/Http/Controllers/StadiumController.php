@@ -2,18 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\ConstructionPaymentMethod;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\BuildStadiumCommercialVenueRequest;
+use App\Http\Requests\BuildStadiumRequest;
 use App\Http\Requests\StartStadiumStandConstructionRequest;
 use App\Http\Resources\StadiumCommercialCategoryResource;
 use App\Http\Resources\StadiumCommercialVenueResource;
 use App\Http\Resources\StadiumResource;
 use App\Http\Resources\StadiumStandConstructionResource;
 use App\Models\Stadium;
+use App\Models\StadiumStandConstruction;
 use App\Repositories\StadiumRepository;
 use App\Services\CommercialService\CommercialVenueSize;
+use App\Services\StadiumService\StadiumConstructionService;
 use App\Services\StadiumService\StadiumService;
 use App\Services\StadiumService\StadiumStandConstructionService;
+use App\StadiumConstructionType;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use DomainException;
@@ -26,6 +31,7 @@ class StadiumController extends Controller
         private readonly StadiumRepository $stadiumRepository,
         private readonly StadiumService $stadiumService,
         private readonly StadiumStandConstructionService $constructionService,
+        private readonly StadiumConstructionService $stadiumConstructionService,
     ) {}
 
     public function show(): JsonResponse
@@ -43,6 +49,36 @@ class StadiumController extends Controller
                 $this->stadiumService->buildableCommercialCategoriesForStadium($this->managedStadium()),
             )->resolve(request()),
         );
+    }
+
+    public function build(BuildStadiumRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        try {
+            $construction = $this->stadiumConstructionService->build(
+                $this->managedStadium(),
+                StadiumConstructionType::from($data['building_type']),
+                isset($data['stand_id']) ? (int) $data['stand_id'] : null,
+                isset($data['target_capacity']) ? (int) $data['target_capacity'] : null,
+                isset($data['category_id']) ? (int) $data['category_id'] : null,
+                isset($data['size']) ? CommercialVenueSize::from((int) $data['size']) : null,
+                ConstructionPaymentMethod::from($data['payment_method']),
+                (int) $data['length_years'],
+                CarbonImmutable::parse($this->gameContext->instanceDate()),
+            );
+
+            $resource = $construction instanceof StadiumStandConstruction
+                ? new StadiumStandConstructionResource($construction)
+                : new StadiumCommercialVenueResource($construction->load('category'));
+
+            return ResponseHelper::success(
+                $resource->toArray(request()),
+                ResponseHelper::RESPONSE_SUCCESS_CODE,
+            );
+        } catch (DomainException $exception) {
+            return $this->domainError($exception);
+        }
     }
 
     public function buildCommercialVenue(BuildStadiumCommercialVenueRequest $request): JsonResponse

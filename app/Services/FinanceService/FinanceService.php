@@ -6,6 +6,7 @@ use App\DataModels\ClubFinancialSummary;
 use App\EntityTransactionDirection;
 use App\EntityTransactionType;
 use App\FinanceEntityLoanStatus;
+use App\FinanceLoanType;
 use App\GameEntityType;
 use App\Models\Account;
 use App\Models\AccountsDebtLinesEntity;
@@ -14,14 +15,19 @@ use App\Models\FinanceTransactionEntity;
 use App\Models\FinanceTransactions;
 use App\Models\GameEntityAccount;
 use App\Models\Instance;
+use App\Models\StadiumCommercialVenue;
+use App\Models\StadiumStandConstruction;
 use App\Repositories\ClubRepository;
-use App\Services\FinanceService\Domain\BankLoanCalculator;
-use App\Services\FinanceService\Domain\BankLoanTerms;
+use App\Services\FinanceService\Domain\CashLoanCalculator;
+use App\Services\FinanceService\Domain\CashLoanEligibility;
+use App\Services\FinanceService\Domain\LoanTerms;
+use App\Services\FinanceService\Domain\MortgageLoanCalculator;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class FinanceService
@@ -29,7 +35,9 @@ class FinanceService
     public function __construct(
         private readonly ClubRepository $clubRepository,
         private readonly GameContext $gameContext,
-        private readonly BankLoanCalculator $bankLoanCalculator,
+        private readonly CashLoanCalculator $cashLoanCalculator,
+        private readonly CashLoanEligibility $cashLoanEligibility,
+        private readonly MortgageLoanCalculator $mortgageLoanCalculator,
     ) {}
 
     public function getClubFinances(): ?ClubFinancialSummary
@@ -39,9 +47,27 @@ class FinanceService
         return $this->clubRepository->getTransferBudgetAndBalance($instance->club_id);
     }
 
-    public function takeOutBankLoan(
+    /**
+     * @return Collection<int, FinanceEntityLoan>
+     */
+    public function getClubLoans(): Collection
+    {
+        $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
+        $clubAccount = Account::query()
+            ->where('club_id', $instance->club_id)
+            ->firstOrFail();
+
+        return FinanceEntityLoan::query()
+            ->where('instance_id', $instance->id)
+            ->where('borrower_club_account_id', $clubAccount->id)
+            ->with('installments')
+            ->latest('id')
+            ->get();
+    }
+
+    public function takeOutCashLoan(
         int $amount,
-        int $lengthYears,
+        int $lengthMonths,
         CarbonInterface $startedAt,
     ): FinanceEntityLoan {
         $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
@@ -54,7 +80,7 @@ class FinanceService
                 $query->where('type', GameEntityType::BANK->value);
             })
             ->firstOrFail();
-        $terms = $this->bankLoanCalculator->calculate($amount, $lengthYears);
+        $terms = $this->cashLoanCalculator->calculate($amount, $lengthMonths);
 
         return $this->issueLoan(
             $bankAccount,
@@ -64,11 +90,70 @@ class FinanceService
         );
     }
 
+    public function payForConstruction(int $amount, CarbonInterface $transactionDate): FinanceTransactionEntity
+    {
+        $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
+        $clubAccount = Account::query()
+            ->where('club_id', $instance->club_id)
+            ->lockForUpdate()
+            ->firstOrFail();
+        if ($clubAccount->balance < $amount) {
+            throw new DomainException('The club cannot afford this construction.');
+        }
+        $bankAccount = GameEntityAccount::query()
+            ->where('instance_id', $instance->id)
+            ->whereHas('gameEntity', function (Builder $query): void {
+                $query->where('type', GameEntityType::BANK->value);
+            })
+            ->firstOrFail();
+
+        return $this->makeEntityTransaction(
+            $bankAccount,
+            $clubAccount,
+            EntityTransactionDirection::CLUB_TO_ENTITY,
+            EntityTransactionType::STADIUM_CONSTRUCTION,
+            $amount,
+            $transactionDate,
+        );
+    }
+
+    public function takeOutMortgageLoan(
+        int $amount,
+        int $lengthYears,
+        CarbonInterface $startedAt,
+        ?int $stadiumStandConstructionId = null,
+        ?int $stadiumCommercialVenueId = null,
+    ): FinanceEntityLoan {
+        $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
+        $clubAccount = Account::query()->where('club_id', $instance->club_id)->firstOrFail();
+        $bankAccount = GameEntityAccount::query()
+            ->where('instance_id', $instance->id)
+            ->whereHas('gameEntity', function (Builder $query): void {
+                $query->where('type', GameEntityType::BANK->value);
+            })
+            ->firstOrFail();
+
+        return $this->issueLoan(
+            $bankAccount,
+            $clubAccount,
+            $this->mortgageLoanCalculator->calculate($amount, $lengthYears),
+            $startedAt,
+            FinanceLoanType::MORTGAGE,
+            false,
+            $stadiumStandConstructionId,
+            $stadiumCommercialVenueId,
+        );
+    }
+
     public function issueLoan(
         GameEntityAccount $lenderGameEntityAccount,
         Account $borrowerClubAccount,
-        BankLoanTerms $terms,
+        LoanTerms $terms,
         CarbonInterface $startedAt,
+        FinanceLoanType $loanType = FinanceLoanType::CASH,
+        bool $disbursePrincipal = true,
+        ?int $stadiumStandConstructionId = null,
+        ?int $stadiumCommercialVenueId = null,
     ): FinanceEntityLoan {
         $principal = $terms->principal;
         $interestAmount = $terms->interestAmount;
@@ -84,11 +169,47 @@ class FinanceService
             $installmentCount,
             $terms,
             $startedAt,
+            $loanType,
+            $disbursePrincipal,
+            $stadiumStandConstructionId,
+            $stadiumCommercialVenueId,
         ): FinanceEntityLoan {
+            $lockedClubAccount = Account::query()
+                ->whereKey($borrowerClubAccount->id)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $hasConstructionReference = (int) ($stadiumStandConstructionId !== null) + (int) ($stadiumCommercialVenueId !== null);
+            if ($loanType === FinanceLoanType::MORTGAGE && $hasConstructionReference !== 1) {
+                throw new DomainException('Mortgage loans must reference exactly one construction.');
+            }
+            if ($loanType === FinanceLoanType::MORTGAGE && $stadiumStandConstructionId !== null && ! StadiumStandConstruction::query()->whereKey($stadiumStandConstructionId)->where('instance_id', $lenderGameEntityAccount->instance_id)->exists()) {
+                throw new DomainException('Mortgage construction does not belong to this instance.');
+            }
+            if ($loanType === FinanceLoanType::MORTGAGE && $stadiumStandConstructionId !== null && FinanceEntityLoan::query()->where('stadium_stand_construction_id', $stadiumStandConstructionId)->exists()) {
+                throw new DomainException('This construction already has a mortgage loan.');
+            }
+
+            if ($loanType === FinanceLoanType::MORTGAGE && $stadiumCommercialVenueId !== null && ! StadiumCommercialVenue::query()->whereKey($stadiumCommercialVenueId)->where('instance_id', $lenderGameEntityAccount->instance_id)->exists()) {
+                throw new DomainException('Mortgage construction does not belong to this instance.');
+            }
+            if ($loanType === FinanceLoanType::MORTGAGE && $stadiumCommercialVenueId !== null && FinanceEntityLoan::query()->where('stadium_commercial_venue_id', $stadiumCommercialVenueId)->exists()) {
+                throw new DomainException('This construction already has a mortgage loan.');
+            }
+
+            if ($loanType !== FinanceLoanType::MORTGAGE && $hasConstructionReference !== 0) {
+                throw new DomainException('Only mortgage loans may reference a construction.');
+            }
+
+            $this->cashLoanEligibility->ensureEligible($lockedClubAccount, $terms, $disbursePrincipal);
+
             $loan = FinanceEntityLoan::query()->create([
                 'instance_id' => $lenderGameEntityAccount->instance_id,
                 'lender_game_entity_account_id' => $lenderGameEntityAccount->id,
                 'borrower_club_account_id' => $borrowerClubAccount->id,
+                'loan_type' => $loanType,
+                'stadium_stand_construction_id' => $stadiumStandConstructionId,
+                'stadium_commercial_venue_id' => $stadiumCommercialVenueId,
                 'principal' => $principal,
                 'interest_amount' => $interestAmount,
                 'total_amount' => $totalAmount,
@@ -97,21 +218,23 @@ class FinanceService
                 'status' => FinanceEntityLoanStatus::ACTIVE,
             ]);
 
-            $this->makeEntityTransaction(
-                $lenderGameEntityAccount,
-                $borrowerClubAccount,
-                EntityTransactionDirection::ENTITY_TO_CLUB,
-                EntityTransactionType::LOAN,
-                $principal,
-                $startedAt,
-                $loan->id,
-            );
+            if ($disbursePrincipal) {
+                $this->makeEntityTransaction(
+                    $lenderGameEntityAccount,
+                    $lockedClubAccount,
+                    EntityTransactionDirection::ENTITY_TO_CLUB,
+                    EntityTransactionType::LOAN,
+                    $principal,
+                    $startedAt,
+                    $loan->id,
+                );
+            }
 
             $lenderGameEntityAccount->newQuery()
                 ->whereKey($lenderGameEntityAccount->id)
                 ->update(['future_balance' => DB::raw("future_balance + {$totalAmount}")]);
             $borrowerClubAccount->newQuery()
-                ->whereKey($borrowerClubAccount->id)
+                ->whereKey($lockedClubAccount->id)
                 ->update(['future_balance' => DB::raw("future_balance - {$totalAmount}")]);
 
             foreach ($terms->installmentAmounts as $index => $installmentAmount) {

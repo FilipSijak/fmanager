@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateGamesTable extends Migration
 {
@@ -29,6 +29,8 @@ class CreateGamesTable extends Migration
             $table->integer('home_team_goals')->nullable();
             $table->integer('away_team_goals')->nullable();
             $table->json('match_summary')->nullable();
+            $table->unsignedBigInteger('knockout_tie_id')->nullable();
+            $table->unsignedInteger('leg_number')->nullable();
         });
     }
 

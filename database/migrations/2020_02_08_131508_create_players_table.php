@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreatePlayersTable extends Migration
 {
@@ -25,6 +25,15 @@ class CreatePlayersTable extends Migration
      */
     public function up()
     {
+        Schema::create('people', function (Blueprint $table) {
+            $table->id();
+            $table->integer('instance_id')->index();
+            $table->string('first_name', 50);
+            $table->string('last_name', 50);
+            $table->date('dob')->nullable();
+            $table->string('country_code', 10);
+            $table->index(['instance_id', 'last_name', 'first_name']);
+        });
         Schema::create('players', function (Blueprint $table) {
 
             $allPlayerFields = array_merge(
@@ -35,29 +44,33 @@ class CreatePlayersTable extends Migration
 
             $table->increments('id');
             $table->integer('instance_id')->index('instance_id');
+            $table->foreignId('person_id')->constrained('people')->restrictOnDelete();
             $table->integer('club_id')->nullable();
             $table->integer('loan_club_id')->nullable();
             $table->integer('contract_id')->unsigned()->index('player_contract')->nullable();
             $table->integer('value')->nullable();
-            $table->string('first_name', 30);
-            $table->string('last_name', 30);
             $table->integer('marketing_rank');
             $table->integer('potential');
             $table->integer('max_potential');
             $table->integer('ambition');
             $table->integer('loyalty');
             $table->string('position');
-            $table->string('country_code');
-            $table->date('dob')->nullable();
             $table->integer('technical')->nullable();
+            $table->integer('current_technical_potential')->default(0);
             $table->integer('mental')->nullable();
+            $table->integer('current_mental_potential')->default(0);
             $table->integer('physical')->nullable();
+            $table->integer('current_physical_potential')->default(0);
+            $table->boolean('is_retired')->default(false);
             $table->date('loan_start')->nullable();
             $table->date('loan_end')->nullable();
 
             foreach ($allPlayerFields as $field) {
                 $table->integer($field);
             }
+
+            $table->index(['instance_id', 'is_retired', 'position', 'potential'], 'players_active_position_potential_idx');
+            $table->index(['instance_id', 'is_retired', 'club_id', 'position', 'potential'], 'players_active_club_position_potential_idx');
         });
     }
 

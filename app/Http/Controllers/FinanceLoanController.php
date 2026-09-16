@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
-use App\Http\Requests\TakeOutBankLoanRequest;
+use App\Http\Requests\TakeOutCashLoanRequest;
 use App\Http\Resources\FinanceEntityLoanResource;
 use App\Services\FinanceService\FinanceService;
 use App\Support\GameContext;
@@ -18,14 +18,21 @@ class FinanceLoanController extends Controller
         private readonly GameContext $gameContext,
     ) {}
 
-    public function store(TakeOutBankLoanRequest $request): JsonResponse
+    public function index(): JsonResponse
+    {
+        return ResponseHelper::success(
+            FinanceEntityLoanResource::collection($this->financeService->getClubLoans())->resolve(request()),
+        );
+    }
+
+    public function store(TakeOutCashLoanRequest $request): JsonResponse
     {
         $data = $request->validated();
 
         try {
-            $loan = $this->financeService->takeOutBankLoan(
+            $loan = $this->financeService->takeOutCashLoan(
                 (int) $data['amount'],
-                (int) $data['length_years'],
+                (int) $data['length_months'],
                 CarbonImmutable::parse($this->gameContext->instanceDate()),
             );
 

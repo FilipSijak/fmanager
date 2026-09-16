@@ -8,22 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::rename('staff', 'staff_coaching');
-        Schema::table('staff_coaching', function (Blueprint $table): void {
-            $table->unsignedInteger('club_id')->nullable()->after('person_id');
-            $table->foreign('club_id')->references('id')->on('clubs')->nullOnDelete();
-        });
-        Schema::dropIfExists('staff_club');
 
         Schema::create('staff_physio', function (Blueprint $table): void {
             $table->id();
             $table->integer('instance_id')->index();
             $table->foreignId('person_id')->constrained('people')->restrictOnDelete();
             $table->unsignedInteger('club_id')->nullable();
+            $table->foreignId('contract_id')->nullable()->constrained('staff_contracts')->nullOnDelete();
             $table->foreign('club_id')->references('id')->on('clubs')->nullOnDelete();
             $table->string('team_type');
-            $table->date('contract_start')->nullable();
-            $table->date('contract_end')->nullable();
             $table->boolean('is_retired')->default(false);
             $table->unsignedTinyInteger('physiotherapy');
             $table->unsignedTinyInteger('injury_prevention');
@@ -39,10 +32,9 @@ return new class extends Migration
             $table->integer('instance_id')->index();
             $table->foreignId('person_id')->constrained('people')->restrictOnDelete();
             $table->unsignedInteger('club_id')->nullable();
+            $table->foreignId('contract_id')->nullable()->constrained('staff_contracts')->nullOnDelete();
             $table->foreign('club_id')->references('id')->on('clubs')->nullOnDelete();
             $table->string('region')->nullable();
-            $table->date('contract_start')->nullable();
-            $table->date('contract_end')->nullable();
             $table->boolean('is_retired')->default(false);
             $table->unsignedTinyInteger('judging_player_ability');
             $table->unsignedTinyInteger('judging_player_potential');
@@ -58,15 +50,5 @@ return new class extends Migration
     {
         Schema::dropIfExists('staff_scouts');
         Schema::dropIfExists('staff_physio');
-        Schema::create('staff_club', function (Blueprint $table): void {
-            $table->bigIncrements('id');
-            $table->integer('staff_id');
-            $table->integer('club_id');
-        });
-        Schema::table('staff_coaching', function (Blueprint $table): void {
-            $table->dropForeign(['club_id']);
-            $table->dropColumn('club_id');
-        });
-        Schema::rename('staff_coaching', 'staff');
     }
 };

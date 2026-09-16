@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class TakeOutBankLoanRequest extends FormRequest
+class TakeOutCashLoanRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -15,7 +15,7 @@ class TakeOutBankLoanRequest extends FormRequest
     {
         return [
             'amount' => ['required', 'integer', 'min:1'],
-            'length_years' => ['required', 'integer', 'min:1', 'max:30'],
+            'length_months' => ['required', 'integer', 'min:1', 'max:36'],
         ];
     }
 }

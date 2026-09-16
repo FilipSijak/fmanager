@@ -21,6 +21,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['stadium_id', 'position']);
+            $table->unique(['stadium_id', 'id'], 'stadium_stands_stadium_id_id_unique');
         });
     }
 

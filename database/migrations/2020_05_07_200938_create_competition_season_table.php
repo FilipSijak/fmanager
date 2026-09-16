@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateCompetitionSeasonTable extends Migration
 {
@@ -20,6 +20,7 @@ class CreateCompetitionSeasonTable extends Migration
             $table->integer('season_id');
             $table->integer('club_id');
             $table->integer('group_id')->nullable();
+            $table->boolean('groups_active')->default(false);
             $table->integer('points')->default(0);
             $table->integer('goals_for')->default(0);
             $table->integer('goals_against')->default(0);
