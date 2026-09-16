@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -17,6 +18,15 @@ return new class extends Migration
             $table->foreignId('borrower_club_account_id')
                 ->constrained('accounts')
                 ->restrictOnDelete();
+            $table->string('loan_type', 20)->default('cash');
+            $table->foreignId('stadium_stand_construction_id')
+                ->nullable()
+                ->constrained('stadium_stand_constructions')
+                ->restrictOnDelete();
+            $table->foreignId('stadium_commercial_venue_id')
+                ->nullable()
+                ->constrained('stadium_commercial_venues')
+                ->restrictOnDelete();
             $table->unsignedBigInteger('principal');
             $table->unsignedBigInteger('interest_amount')->default(0);
             $table->unsignedBigInteger('total_amount');
@@ -26,7 +36,26 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['instance_id', 'status']);
+            $table->unique('stadium_stand_construction_id', 'finance_loans_stand_construction_unique');
+            $table->unique('stadium_commercial_venue_id', 'finance_loans_commercial_venue_unique');
         });
+
+        DB::statement(<<<'SQL'
+            ALTER TABLE finance_entity_loans
+            ADD CONSTRAINT finance_entity_loans_mortgage_reference_check
+            CHECK (
+                (
+                    loan_type = 'mortgage'
+                    AND ((stadium_stand_construction_id IS NOT NULL AND stadium_commercial_venue_id IS NULL)
+                        OR (stadium_stand_construction_id IS NULL AND stadium_commercial_venue_id IS NOT NULL))
+                )
+                OR (
+                    loan_type <> 'mortgage'
+                    AND stadium_stand_construction_id IS NULL
+                    AND stadium_commercial_venue_id IS NULL
+                )
+            )
+            SQL);
     }
 
     public function down(): void

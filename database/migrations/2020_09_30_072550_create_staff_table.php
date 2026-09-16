@@ -1,25 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateStaffTable extends Migration
 {
     private const COACHING = [
-        'attacking', 'defending', 'fitness', 'mental', 'tactical', 'technical', 'working_with_youngsters'
+        'attacking', 'defending', 'fitness', 'mental', 'tactical', 'technical', 'working_with_youngsters',
     ];
 
     private const MENTAL = [
-        'adaptability', 'determination', 'discipline', 'man_management', 'motivating'
+        'adaptability', 'determination', 'discipline', 'man_management', 'motivating',
     ];
 
     private const KNOWLEDGE = [
-        'judging_player_potential', 'judging_player_ability', 'judging_staff_ability', 'negotiating', 'tactics'
+        'judging_player_potential', 'judging_player_ability', 'judging_staff_ability', 'negotiating', 'tactics',
     ];
 
     private const GOALKEEPING = [
-        'distribution', 'handling', 'shot_stopping'
+        'distribution', 'handling', 'shot_stopping',
     ];
 
     /**
@@ -39,21 +39,21 @@ class CreateStaffTable extends Migration
 
             $table->increments('id');
             $table->integer('instance_id');
+            $table->foreignId('person_id')->constrained('people')->restrictOnDelete();
             $table->string('type');
-            $table->string('first_name');
-            $table->string('last_name');
-            $table->date('dob');
-            $table->string('country_code');
             $table->integer('coaching_potential')->nullable();
             $table->integer('mental_potential')->nullable();
             $table->integer('goalkeeping_potential')->nullable();
             $table->integer('knowledge_potential')->nullable();
             $table->date('contract_start')->nullable();
             $table->date('contract_end')->nullable();
+            $table->boolean('is_retired')->default(false);
 
             foreach ($attributesFields as $field) {
                 $table->integer($field);
             }
+
+            $table->index(['instance_id', 'is_retired']);
         });
     }
 

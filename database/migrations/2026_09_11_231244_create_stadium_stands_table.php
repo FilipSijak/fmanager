@@ -11,6 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        Schema::table('stadiums', function (Blueprint $table): void {
+            $table->unsignedBigInteger('instance_id')->change();
+            $table->foreign('instance_id', 'stadiums_instance_id_foreign')
+                ->references('id')
+                ->on('instances')
+                ->cascadeOnDelete();
+            $table->unique(['instance_id', 'id'], 'stadiums_instance_id_id_unique');
+        });
         Schema::create('stadium_stands', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('stadium_id');
@@ -21,6 +29,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['stadium_id', 'position']);
+            $table->unique(['stadium_id', 'id'], 'stadium_stands_stadium_id_id_unique');
         });
     }
 

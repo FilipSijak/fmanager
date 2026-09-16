@@ -22,6 +22,7 @@ return new class extends Migration
             $table->foreign('instance_id')->references('id')->on('instances')->cascadeOnDelete();
             $table->foreign('stadium_id')->references('id')->on('stadiums')->cascadeOnDelete();
             $table->foreign('category_id')->references('id')->on('base_commercial_categories')->restrictOnDelete();
+            $table->foreign(['instance_id', 'stadium_id'], 'scv_instance_stadium_foreign')->references(['instance_id', 'id'])->on('stadiums')->cascadeOnDelete();
             $table->unique(['instance_id', 'stadium_id', 'category_id'], 'scv_instance_stadium_category_unique');
         });
     }
