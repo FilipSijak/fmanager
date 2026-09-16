@@ -1,0 +1,41 @@
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_f4cb6483f235cf::t_13c11c8ca42b45 417-420
+app/Models/FinanceEntityLoan.php
+  s_f4cb6483f235cf::t_ef93a2166c4bba 59-68
+  s_f4cb6483f235cf::t_7a1e7e9e826d0e 21-22
+database/migrations/2026_09_16_000002_link_mortgages_to_constructions.php
+  s_f4cb6483f235cf::t_e9e501751ced05 1-46
+app/Services/FinanceService/FinanceService.php
+  s_f4cb6483f235cf::t_081aed56bb9269 103-104,122-123,134-135,153-154,168-169
+app/Models/StadiumCommercialVenue.php
+  s_f4cb6483f235cf::t_13c11c8ca42b45 12,35-37
+  s_f4cb6483f235cf::t_f4d508cf49f5bb 38-39
+app/Services/StadiumService/StadiumStandConstructionService.php
+  s_f4cb6483f235cf::t_33ff49cc017b7b 38-41,85
+  s_f4cb6483f235cf::t_7a1e7e9e826d0e 88-89,105
+app/Services/StadiumService/StadiumConstructionService.php
+  s_f4cb6483f235cf::t_e972768bba733c 56-57,61-70,74
+app/Models/StadiumStandConstruction.php
+  s_f4cb6483f235cf::t_13c11c8ca42b45 9,30-32
+  s_f4cb6483f235cf::t_ef93a2166c4bba 18,22
+  s_f4cb6483f235cf::t_5665eed05e7596 33-34
+app/Models/StadiumStand.php
+  s_f4cb6483f235cf::t_ef93a2166c4bba 43-48
+  s_f4cb6483f235cf::t_7a1e7e9e826d0e 12
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "1b10418864e2d4377c4e5b19532dfdd7b6faadcb",
+  "prompts": {},
+  "sessions": {
+    "s_f4cb6483f235cf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab3c-2033-7271-892f-ffa51f1d52a0",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
