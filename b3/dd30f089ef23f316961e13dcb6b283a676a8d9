@@ -1,0 +1,61 @@
+app/ConstructionPaymentMethod.php
+  s_f4cb6483f235cf::t_284022b3b95770 1-9
+app/StadiumConstructionType.php
+  s_f4cb6483f235cf::t_284022b3b95770 1-9
+app/Services/FinanceService/Domain/MortgageLoanCalculator.php
+  s_f4cb6483f235cf::t_6ef449863311f7 1-41
+app/Models/FinanceEntityLoan.php
+  s_f4cb6483f235cf::t_8d0602b8725c8d 6,20,38
+app/Http/Controllers/StadiumController.php
+  s_f4cb6483f235cf::t_50f1df886b8d49 5,15,21,34,54-81
+  s_f4cb6483f235cf::t_d47a0919806f8f 8,18
+  s_f4cb6483f235cf::t_bc763873e2f763 82-83
+routes/api.php
+  s_f4cb6483f235cf::t_693155da3a2416 35
+app/EntityTransactionType.php
+  s_f4cb6483f235cf::t_4428a69784fbf1 12
+tests/Feature/StadiumApiTest.php
+  s_f4cb6483f235cf::t_d47a0919806f8f 5-6
+  s_f4cb6483f235cf::t_afdf63d1f7d819 10-11,109-110,113-114,167-169
+app/FinanceLoanType.php
+  s_f4cb6483f235cf::t_ae5fa012c9f2cb 1-9
+database/migrations/2026_09_16_000001_add_loan_type_to_finance_entity_loans_table.php
+  s_f4cb6483f235cf::t_ae5fa012c9f2cb 1-22
+app/Http/Requests/BuildStadiumRequest.php
+  s_f4cb6483f235cf::t_d47a0919806f8f 10
+  s_f4cb6483f235cf::t_284022b3b95770 1-9,11-37,39-43
+  s_f4cb6483f235cf::t_afdf63d1f7d819 38
+tests/Unit/MortgageLoanCalculatorTest.php
+  s_f4cb6483f235cf::t_6b8314f50bfc84 1-23
+app/Services/FinanceService/Domain/CashLoanEligibility.php
+  s_f4cb6483f235cf::t_8d0602b8725c8d 10,12
+app/Services/FinanceService/FinanceService.php
+  s_f4cb6483f235cf::t_d47a0919806f8f 170-176
+  s_f4cb6483f235cf::t_3dd2ce6ece7cbe 177-178
+  s_f4cb6483f235cf::t_8d0602b8725c8d 9,118,128,145,153,159
+  s_f4cb6483f235cf::t_4428a69784fbf1 22,37,99-117,119-122,129,168-169
+  s_f4cb6483f235cf::t_b5a33bfc47b5c4 72-74,82-98,146
+  s_f4cb6483f235cf::t_463e69f426c181 75-81
+app/Services/StadiumService/StadiumConstructionService.php
+  s_f4cb6483f235cf::t_693155da3a2416 9
+  s_f4cb6483f235cf::t_3ebc21711c14af 1-8,10-78,83-86,91-97
+  s_f4cb6483f235cf::t_463e69f426c181 79-82,87-90
+app/Http/Resources/FinanceEntityLoanResource.php
+  s_f4cb6483f235cf::t_8d0602b8725c8d 14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b3dd30f089ef23f316961e13dcb6b283a676a8d9",
+  "prompts": {},
+  "sessions": {
+    "s_f4cb6483f235cf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0ab3c-2033-7271-892f-ffa51f1d52a0",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
