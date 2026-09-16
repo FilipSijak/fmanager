@@ -16,7 +16,9 @@ class CreateStadiumsTable extends Migration
         Schema::create('stadiums', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
-            $table->integer('instance_id');
+            $table->unsignedBigInteger('instance_id');
+            $table->foreign('instance_id', 'stadiums_instance_id_foreign')->references('id')->on('instances')->cascadeOnDelete();
+            $table->unique(['instance_id', 'id'], 'stadiums_instance_id_id_unique');
             $table->string('country_code')->nullable();
             $table->integer('city_id')->unsigned()->nullable();
             $table->integer('capacity');

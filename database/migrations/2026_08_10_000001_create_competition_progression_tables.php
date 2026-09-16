@@ -2,29 +2,12 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('base_competitions', function (Blueprint $table): void {
-            $table->string('competition_scope')->default('domestic')->after('clubs_number');
-            $table->string('continent')->nullable()->after('competition_scope');
-            $table->unsignedTinyInteger('continental_tier')->nullable()->after('continent');
-            $table->unique(['continent', 'continental_tier'], 'base_continental_tier_unique');
-        });
-        Schema::table('competitions', function (Blueprint $table): void {
-            $table->string('competition_scope')->default('domestic')->after('clubs_number');
-            $table->string('continent')->nullable()->after('competition_scope');
-            $table->unsignedTinyInteger('continental_tier')->nullable()->after('continent');
-            $table->unique(
-                ['instance_id', 'continent', 'continental_tier'],
-                'competition_continental_tier_unique'
-            );
-        });
-
         Schema::create('competition_progression_rules', function (Blueprint $table): void {
             $table->id();
             // Source is where the place is earned; target is the competition the club enters.
@@ -70,47 +53,11 @@ return new class extends Migration
             $table->foreign('source_competition_id', 'ccp_source_fk')->references('id')->on('competitions')->cascadeOnDelete();
             $table->foreign('target_competition_id', 'ccp_target_fk')->references('id')->on('competitions')->cascadeOnDelete();
         });
-
-        if (Schema::hasTable('competition_hierarchy')) {
-            $pairs = DB::table('competition_hierarchy')->whereNotNull('child_competition_id')
-                ->select('competition_id', 'child_competition_id')->distinct()->get();
-            foreach ($pairs as $pair) {
-                DB::table('competition_progression_rules')->insert([
-                    [
-                        'source_base_competition_id' => $pair->competition_id,
-                        'target_base_competition_id' => $pair->child_competition_id,
-                        'progression_type' => 'relegation',
-                        'selector_type' => 'bottom_positions',
-                        'places' => 3,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ],
-                    [
-                        'source_base_competition_id' => $pair->child_competition_id,
-                        'target_base_competition_id' => $pair->competition_id,
-                        'progression_type' => 'promotion',
-                        'selector_type' => 'position_range',
-                        'position_from' => 1,
-                        'position_to' => 3,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ],
-                ]);
-            }
-        }
     }
 
     public function down(): void
     {
         Schema::dropIfExists('club_competition_progressions');
         Schema::dropIfExists('competition_progression_rules');
-        Schema::table('competitions', function (Blueprint $table): void {
-            $table->dropUnique('competition_continental_tier_unique');
-            $table->dropColumn(['competition_scope', 'continent', 'continental_tier']);
-        });
-        Schema::table('base_competitions', function (Blueprint $table): void {
-            $table->dropUnique('base_continental_tier_unique');
-            $table->dropColumn(['competition_scope', 'continent', 'continental_tier']);
-        });
     }
 };

@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 
 class CreateBaseCompetitionsTable extends Migration
 {
@@ -21,6 +21,10 @@ class CreateBaseCompetitionsTable extends Migration
             $table->string('type');
             $table->integer('groups')->nullable();
             $table->integer('clubs_number');
+            $table->string('competition_scope')->default('domestic');
+            $table->string('continent')->nullable();
+            $table->unsignedTinyInteger('continental_tier')->nullable();
+            $table->unique(['continent', 'continental_tier'], 'base_continental_tier_unique');
         });
     }
 
