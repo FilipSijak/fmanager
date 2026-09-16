@@ -1,0 +1,36 @@
+database/migrations/2020_09_30_072550_create_staff_table.php
+  s_6c1bda8fbe108b::t_0b7fddd6e8625e 32-40,51-53
+  s_6c1bda8fbe108b::t_ca51be88a1224d 76-77
+database/migrations/2020_02_08_131509_create_players_contracts_table.php
+  s_6c1bda8fbe108b::t_4a221453907e5f 21
+database/migrations/2020_02_13_213642_create_competitions_table.php
+  s_6c1bda8fbe108b::t_91d9d7fdeef142 4-5
+  s_6c1bda8fbe108b::t_4a221453907e5f 25-28
+database/migrations/2026_08_11_000004_create_staff_specialist_tables.php
+  s_6c1bda8fbe108b::t_0b7fddd6e8625e 17,35
+database/migrations/2020_02_13_213641_create_base_competitions_table.php
+  s_6c1bda8fbe108b::t_91d9d7fdeef142 4-5
+  s_6c1bda8fbe108b::t_4a221453907e5f 24-27
+database/migrations/2020_02_10_195043_create_games_table.php
+  s_6c1bda8fbe108b::t_4a221453907e5f 32-33
+  s_6c1bda8fbe108b::t_91d9d7fdeef142 4-5
+database/migrations/2020_02_12_221627_create_stadiums_table.php
+  s_6c1bda8fbe108b::t_bd08409c187ab5 19
+  s_6c1bda8fbe108b::t_27ab601da36220 1-18,20-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9a700d477e5abfdc1e587086e7ba330c19388103",
+  "prompts": {},
+  "sessions": {
+    "s_6c1bda8fbe108b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0abb4-8c73-76c1-ad11-fcc977e74442",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
