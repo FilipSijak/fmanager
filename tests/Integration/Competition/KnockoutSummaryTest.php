@@ -4,6 +4,7 @@ namespace Tests\Integration\Competition;
 
 use App\Models\Club;
 use App\Models\Game;
+use App\Models\Instance;
 use App\Models\Stadium;
 use App\Repositories\GameRepository;
 use App\Services\CompetitionService\Competitions\KnockoutSummaryRoundsData;
@@ -23,6 +24,7 @@ class KnockoutSummaryTest extends TestCase
     public function it_checks_game_info_for_the_current_round()
     {
         (new DatabaseSeeder)->run();
+        Instance::factory()->create(['id' => 1]);
 
         Club::factory()
             ->count(4)

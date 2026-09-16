@@ -38,7 +38,6 @@ class CreateInstanceTest extends TestCase
     {
         parent::setUp();
 
-        $this->clubId = Club::factory()->make(['id' => 1])->id;
         $this->managerId = null;
         $user = User::factory()->create(['id' => 99]);
         $this->userId = $user->id;
@@ -75,7 +74,7 @@ class CreateInstanceTest extends TestCase
             'instances',
             [
                 'id' => $instance->id,
-                'club_id' => $this->clubId,
+                'club_id' => $arsenal->id,
                 'user_id' => $this->userId,
                 'manager_id' => $this->managerId,
             ]
