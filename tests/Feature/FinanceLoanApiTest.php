@@ -65,6 +65,12 @@ class FinanceLoanApiTest extends TestCase
             'lender_game_entity_account_id' => $bankAccount->id,
             'borrower_club_account_id' => $clubAccount->id,
         ]);
+
+        $this->getJson('/api/finance/loans')
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', 1)
+            ->assertJsonCount(24, 'data.0.installments');
     }
 
     #[Test]

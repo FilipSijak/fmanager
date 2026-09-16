@@ -27,6 +27,7 @@ use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class FinanceService
@@ -44,6 +45,24 @@ class FinanceService
         $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
 
         return $this->clubRepository->getTransferBudgetAndBalance($instance->club_id);
+    }
+
+    /**
+     * @return Collection<int, FinanceEntityLoan>
+     */
+    public function getClubLoans(): Collection
+    {
+        $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
+        $clubAccount = Account::query()
+            ->where('club_id', $instance->club_id)
+            ->firstOrFail();
+
+        return FinanceEntityLoan::query()
+            ->where('instance_id', $instance->id)
+            ->where('borrower_club_account_id', $clubAccount->id)
+            ->with('installments')
+            ->latest('id')
+            ->get();
     }
 
     public function takeOutCashLoan(
@@ -167,9 +186,17 @@ class FinanceService
             if ($loanType === FinanceLoanType::MORTGAGE && $stadiumStandConstructionId !== null && ! StadiumStandConstruction::query()->whereKey($stadiumStandConstructionId)->where('instance_id', $lenderGameEntityAccount->instance_id)->exists()) {
                 throw new DomainException('Mortgage construction does not belong to this instance.');
             }
+            if ($loanType === FinanceLoanType::MORTGAGE && $stadiumStandConstructionId !== null && FinanceEntityLoan::query()->where('stadium_stand_construction_id', $stadiumStandConstructionId)->exists()) {
+                throw new DomainException('This construction already has a mortgage loan.');
+            }
+
             if ($loanType === FinanceLoanType::MORTGAGE && $stadiumCommercialVenueId !== null && ! StadiumCommercialVenue::query()->whereKey($stadiumCommercialVenueId)->where('instance_id', $lenderGameEntityAccount->instance_id)->exists()) {
                 throw new DomainException('Mortgage construction does not belong to this instance.');
             }
+            if ($loanType === FinanceLoanType::MORTGAGE && $stadiumCommercialVenueId !== null && FinanceEntityLoan::query()->where('stadium_commercial_venue_id', $stadiumCommercialVenueId)->exists()) {
+                throw new DomainException('This construction already has a mortgage loan.');
+            }
+
             if ($loanType !== FinanceLoanType::MORTGAGE && $hasConstructionReference !== 0) {
                 throw new DomainException('Only mortgage loans may reference a construction.');
             }

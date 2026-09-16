@@ -18,6 +18,13 @@ class FinanceLoanController extends Controller
         private readonly GameContext $gameContext,
     ) {}
 
+    public function index(): JsonResponse
+    {
+        return ResponseHelper::success(
+            FinanceEntityLoanResource::collection($this->financeService->getClubLoans())->resolve(request()),
+        );
+    }
+
     public function store(TakeOutCashLoanRequest $request): JsonResponse
     {
         $data = $request->validated();
