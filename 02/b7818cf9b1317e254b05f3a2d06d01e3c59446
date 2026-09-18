@@ -1,0 +1,41 @@
+app/Models/GameEntity.php
+  s_0976e074d2e6c4::t_fafcbc9aff63de 15,22-24
+  s_0976e074d2e6c4::t_30f803bc34d39c 25-26
+tests/Integration/Instance/InitialSeedTest.php
+  s_0976e074d2e6c4::t_bdd96271736599 92-93,95,97-98,101,114-117
+  s_0976e074d2e6c4::t_eef17d8a7e39ad 91
+  s_0976e074d2e6c4::t_b14ded6c4db759 8,96
+  s_0976e074d2e6c4::t_20d03a7d0d6aa5 118-119
+tests/Feature/FinanceTvRightsTest.php
+  s_0976e074d2e6c4::t_b14ded6c4db759 112
+  s_0976e074d2e6c4::t_9033803314c447 27,36,49,61,82,86,113
+  s_0976e074d2e6c4::t_eef17d8a7e39ad 70
+  s_0976e074d2e6c4::t_c90140210ff86a 115-118,120-122,124-126
+  s_0976e074d2e6c4::t_acf4eddb78fb02 114
+app/Services/FinanceService/FinanceService.php
+  s_0976e074d2e6c4::t_cfa54611be7ab0 428-429,431-433,435-437
+  s_0976e074d2e6c4::t_025804fbc28c0a 414,443,462-466,481
+database/migrations/2026_09_18_151321_add_competition_id_to_game_entities_table.php
+  s_0976e074d2e6c4::t_c98da6a5d83cf0 13
+  s_0976e074d2e6c4::t_fafcbc9aff63de 5,12,14,16-41,46-49
+  s_0976e074d2e6c4::t_8b9ab7920e145a 1-4,6-11,15,42-45,50-52
+app/Services/InstanceService/InstanceData/InitialSeed.php
+  s_0976e074d2e6c4::t_03a923e7feda13 29
+  s_0976e074d2e6c4::t_fafcbc9aff63de 243-268
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "02b7818cf9b1317e254b05f3a2d06d01e3c59446",
+  "prompts": {},
+  "sessions": {
+    "s_0976e074d2e6c4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b4e9-9e32-7050-8e59-78aa6af59d21",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
