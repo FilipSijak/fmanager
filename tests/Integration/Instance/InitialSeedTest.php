@@ -5,6 +5,7 @@ namespace Tests\Integration\Instance;
 use App\GameEntityType;
 use App\Models\BaseData\BaseStadiumStandCapacityLimit;
 use App\Models\Club;
+use App\Models\Competition;
 use App\Models\GameEntityAccount;
 use App\Models\Instance;
 use App\Models\Stadium;
@@ -87,15 +88,17 @@ class InitialSeedTest extends TestCase
         $accounts = GameEntityAccount::query()
             ->where('instance_id', $instance->id)
             ->with('gameEntity')
-            ->get()
-            ->keyBy(fn (GameEntityAccount $account): string => $account->gameEntity->type->value);
+            ->get();
+        $genericAccounts = $accounts->filter(fn (GameEntityAccount $account): bool => $account->gameEntity->competition_id === null);
+        $competitionAccounts = $accounts->filter(fn (GameEntityAccount $account): bool => $account->gameEntity->competition_id !== null);
 
-        $this->assertCount(6, $accounts);
-        $this->assertSame(50_000_000_000, $accounts->get(GameEntityType::BANK->value)->balance);
-        $this->assertSame(1_000_000_000, $accounts->get(GameEntityType::LOAN_SHARKS->value)->balance);
+        $this->assertCount(6, $genericAccounts);
+        $this->assertCount(Competition::query()->where('instance_id', $instance->id)->count(), $competitionAccounts);
+        $this->assertSame(50_000_000_000, $genericAccounts->first(fn (GameEntityAccount $account): bool => $account->gameEntity->type === GameEntityType::BANK)->balance);
+        $this->assertSame(1_000_000_000, $genericAccounts->first(fn (GameEntityAccount $account): bool => $account->gameEntity->type === GameEntityType::LOAN_SHARKS)->balance);
 
         foreach (GameEntityType::cases() as $type) {
-            $account = $accounts->get($type->value);
+            $account = $genericAccounts->first(fn (GameEntityAccount $account): bool => $account->gameEntity->type === $type);
 
             $this->assertNotNull($account);
             $this->assertSame(
@@ -106,6 +109,12 @@ class InitialSeedTest extends TestCase
                 },
                 $account->balance,
             );
+            $this->assertSame($account->balance, $account->future_balance);
+        }
+
+        foreach ($competitionAccounts as $account) {
+            $this->assertSame(GameEntityType::COMPETITION, $account->gameEntity->type);
+            $this->assertSame(10_000_000_000, $account->balance);
             $this->assertSame($account->balance, $account->future_balance);
         }
     }

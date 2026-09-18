@@ -411,6 +411,7 @@ class FinanceService
                 'cs.id AS membership_id',
                 'cs.club_id',
                 'cs.played',
+                'competition.id AS competition_id',
                 'competition.rank AS competition_rank',
                 'competition.clubs_number',
                 'competition.groups',
@@ -424,18 +425,22 @@ class FinanceService
             return;
         }
 
-        $tvBroadcasterAccount = GameEntityAccount::query()
+        $competitionIds = $rows->pluck('competition_id')->map(fn ($id): int => (int) $id)->unique()->values();
+        $competitionAccounts = GameEntityAccount::query()
             ->where('instance_id', $instance->id)
-            ->whereHas('gameEntity', function (Builder $query): void {
-                $query->where('type', GameEntityType::TV_BROADCASTER->value);
+            ->whereHas('gameEntity', function (Builder $query) use ($competitionIds): void {
+                $query->where('type', GameEntityType::COMPETITION->value)
+                    ->whereIn('competition_id', $competitionIds);
             })
-            ->firstOrFail();
+            ->with('gameEntity')
+            ->get()
+            ->keyBy(fn (GameEntityAccount $account): int => (int) $account->gameEntity->competition_id);
         $clubAccounts = Account::query()
             ->whereIn('club_id', $rows->pluck('club_id'))
             ->get()
             ->keyBy('club_id');
 
-        DB::transaction(function () use ($rows, $tvBroadcasterAccount, $clubAccounts, $transactionDate): void {
+        DB::transaction(function () use ($rows, $competitionAccounts, $clubAccounts, $transactionDate): void {
             foreach ($rows as $row) {
                 DB::table('competition_season')
                     ->where('id', $row->membership_id)
@@ -454,6 +459,11 @@ class FinanceService
                     continue;
                 }
 
+                $competitionAccount = $competitionAccounts->get((int) $row->competition_id);
+                if ($competitionAccount === null) {
+                    throw new \LogicException("No finance account exists for competition {$row->competition_id}.");
+                }
+
                 $amount = $this->tvRightsCalculator->calculateForCompetition(
                     (int) $row->competition_rank,
                     (int) $row->club_rank,
@@ -468,7 +478,7 @@ class FinanceService
                 }
 
                 $this->makeEntityTransaction(
-                    $tvBroadcasterAccount,
+                    $competitionAccount,
                     $clubAccount,
                     EntityTransactionDirection::ENTITY_TO_CLUB,
                     EntityTransactionType::TV_REVENUE,

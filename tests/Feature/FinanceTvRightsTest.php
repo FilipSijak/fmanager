@@ -24,7 +24,7 @@ class FinanceTvRightsTest extends TestCase
     #[Test]
     public function it_pays_tournament_tv_rights_based_on_games_played_and_only_once(): void
     {
-        [$instance, $club, $tvAccount] = $this->createFinanceScenario();
+        [$instance, $club] = $this->createFinanceScenario();
         $competition = Competition::factory()->create([
             'id' => 1,
             'instance_id' => $instance->id,
@@ -33,6 +33,7 @@ class FinanceTvRightsTest extends TestCase
             'groups' => 0,
             'clubs_number' => 4,
         ]);
+        $competitionAccount = $this->createCompetitionAccount($instance, $competition);
         $membershipId = DB::table('competition_season')->insertGetId([
             'instance_id' => $instance->id,
             'competition_id' => $competition->id,
@@ -45,7 +46,7 @@ class FinanceTvRightsTest extends TestCase
         app(FinanceService::class)->payTournamentTvRights($instance);
 
         $this->assertSame(26_666_667, $club->account->fresh()->balance);
-        $this->assertSame(973_333_333, $tvAccount->fresh()->balance);
+        $this->assertSame(973_333_333, $competitionAccount->fresh()->balance);
         $this->assertDatabaseCount('finance_transactions_entities', 1);
         $this->assertDatabaseHas('finance_transactions_entities', [
             'event_type' => EntityTransactionType::TV_REVENUE->value,
@@ -57,7 +58,7 @@ class FinanceTvRightsTest extends TestCase
     #[Test]
     public function it_pays_full_tv_rights_for_league_memberships_at_season_start(): void
     {
-        [$instance, $club, $tvAccount] = $this->createFinanceScenario();
+        [$instance, $club] = $this->createFinanceScenario();
         $competition = Competition::factory()->create([
             'id' => 1,
             'instance_id' => $instance->id,
@@ -66,6 +67,7 @@ class FinanceTvRightsTest extends TestCase
             'groups' => null,
             'clubs_number' => 4,
         ]);
+        $competitionAccount = $this->createCompetitionAccount($instance, $competition);
         DB::table('competition_season')->insert([
             'instance_id' => $instance->id,
             'competition_id' => $competition->id,
@@ -77,11 +79,11 @@ class FinanceTvRightsTest extends TestCase
         app(FinanceService::class)->payLeagueTvRights($instance);
 
         $this->assertSame(40_000_000, $club->account->fresh()->balance);
-        $this->assertSame(960_000_000, $tvAccount->fresh()->balance);
+        $this->assertSame(960_000_000, $competitionAccount->fresh()->balance);
     }
 
     /**
-     *  array{0: Instance, 1: Club, 2: GameEntityAccount}
+     *  array{0: Instance, 1: Club}
      */
     private function createFinanceScenario(): array
     {
@@ -107,18 +109,24 @@ class FinanceTvRightsTest extends TestCase
             'balance' => 0,
             'future_balance' => 0,
         ]);
-        $tvBroadcaster = GameEntity::factory()->create([
+
+        return [$instance, $club->load('account')];
+    }
+
+    private function createCompetitionAccount(Instance $instance, Competition $competition): GameEntityAccount
+    {
+        $entity = GameEntity::factory()->create([
             'instance_id' => $instance->id,
-            'type' => GameEntityType::TV_BROADCASTER,
-            'name' => 'TV Broadcaster',
+            'competition_id' => $competition->id,
+            'type' => GameEntityType::COMPETITION,
+            'name' => $competition->name,
         ]);
-        $tvAccount = GameEntityAccount::factory()->create([
-            'game_entity_id' => $tvBroadcaster->id,
+
+        return GameEntityAccount::factory()->create([
+            'game_entity_id' => $entity->id,
             'instance_id' => $instance->id,
             'balance' => 1_000_000_000,
             'future_balance' => 1_000_000_000,
         ]);
-
-        return [$instance, $club->load('account'), $tvAccount];
     }
 }

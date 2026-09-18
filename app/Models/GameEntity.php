@@ -12,11 +12,16 @@ class GameEntity extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['instance_id', 'type', 'name'];
+    protected $fillable = ['instance_id', 'competition_id', 'type', 'name'];
 
     protected function casts(): array
     {
         return ['type' => GameEntityType::class];
+    }
+
+    public function competition(): BelongsTo
+    {
+        return $this->belongsTo(Competition::class);
     }
 
     public function instance(): BelongsTo
