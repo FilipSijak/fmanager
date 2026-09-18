@@ -4,6 +4,6 @@ VALUES ('Premier League', 'GBR', 9700, 'league', 0, 20),
   ('Primera', 'ESP', 8700, 'league', 0, 20),
   ('League 1', 'FRA', 8100, 'league', 0, 20),
   ('Serie A', 'ITA', 9100, 'league', 0, 20),
-  ('Champions League', 'EU', 9900, 'tournament', 1, 32),
-  ('Uefa Cup', 'EU', 8400, 'tournament', 0, 32);
+  ('Champions League', 'EU', 10000, 'tournament', 1, 32),
+  ('Uefa Cup', 'EU', 7000, 'tournament', 0, 32);
 

@@ -2,6 +2,7 @@
 
 namespace App\Services\GameService;
 
+use App\Events\PostMatch;
 use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Season;
@@ -50,6 +51,8 @@ class CompleteGameService
 
             $game->processed_at = now();
             $game->save();
+
+            event(new PostMatch($game->fresh()));
 
             return $game->fresh();
         });

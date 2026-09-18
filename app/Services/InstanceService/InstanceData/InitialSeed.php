@@ -26,12 +26,14 @@ class InitialSeed
         $this->seedCommercialVenues($instanceId);
         $this->seedGameEntities($instanceId);
         $this->seedCompetitionsFromBaseTable($instanceId);
+        $this->seedCompetitionGameEntities($instanceId);
     }
 
     public function seedGameEntities(int $instanceId): void
     {
         $balances = [
             GameEntityType::BANK->value => 50_000_000_000,
+            GameEntityType::LOAN_SHARKS->value => 1_000_000_000,
             GameEntityType::SPONSOR->value => 10_000_000_000,
             GameEntityType::LEAGUE->value => 10_000_000_000,
             GameEntityType::TV_BROADCASTER->value => 10_000_000_000,
@@ -39,6 +41,7 @@ class InitialSeed
         ];
         $names = [
             GameEntityType::BANK->value => 'Game Bank',
+            GameEntityType::LOAN_SHARKS->value => 'Loan sharks',
             GameEntityType::SPONSOR->value => 'Sponsors',
             GameEntityType::LEAGUE->value => 'League Authority',
             GameEntityType::TV_BROADCASTER->value => 'TV Broadcaster',
@@ -235,6 +238,32 @@ class InitialSeed
                 ])->all()
             );
         }
+    }
+
+    public function seedCompetitionGameEntities(int $instanceId): void
+    {
+        Competition::query()
+            ->where('instance_id', $instanceId)
+            ->each(function (Competition $competition) use ($instanceId): void {
+                $gameEntityId = DB::table('game_entities')->insertGetId([
+                    'instance_id' => $instanceId,
+                    'competition_id' => $competition->id,
+                    'type' => GameEntityType::COMPETITION->value,
+                    'name' => $competition->name,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('accounts_game_entities')->insert([
+                    'game_entity_id' => $gameEntityId,
+                    'instance_id' => $instanceId,
+                    'balance' => 10_000_000_000,
+                    'future_balance' => 10_000_000_000,
+                    'allowed_debt' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            });
     }
 
     public function seedCompetitionsFromBaseTable(int $instanceId): void

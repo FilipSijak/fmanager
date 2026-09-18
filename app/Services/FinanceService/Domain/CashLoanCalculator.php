@@ -8,8 +8,11 @@ class CashLoanCalculator
 {
     private const float CASH_LOAN_ANNUAL_INTEREST_RATE = 0.08;
 
-    public function calculate(int $amount, int $lengthMonths): CashLoanTerms
-    {
+    public function calculate(
+        int $amount,
+        int $lengthMonths,
+        float $annualInterestRate = self::CASH_LOAN_ANNUAL_INTEREST_RATE,
+    ): CashLoanTerms {
         if ($amount <= 0) {
             throw new DomainException('Loan amount must be greater than zero.');
         }
@@ -18,8 +21,12 @@ class CashLoanCalculator
             throw new DomainException('Loan length must be at least one month.');
         }
 
+        if ($annualInterestRate < 0) {
+            throw new DomainException('Loan interest rate cannot be negative.');
+        }
+
         $installmentCount = $lengthMonths;
-        $interestAmount = (int) round($amount * self::CASH_LOAN_ANNUAL_INTEREST_RATE * ($lengthMonths / 12));
+        $interestAmount = (int) round($amount * $annualInterestRate * ($lengthMonths / 12));
         $totalAmount = $amount + $interestAmount;
         $baseInstallmentAmount = intdiv($totalAmount, $installmentCount);
         $installmentAmounts = [];

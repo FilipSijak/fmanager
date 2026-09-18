@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\GameEntityType;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\TakeOutCashLoanRequest;
 use App\Http\Resources\FinanceEntityLoanResource;
@@ -34,6 +35,7 @@ class FinanceLoanController extends Controller
                 (int) $data['amount'],
                 (int) $data['length_months'],
                 CarbonImmutable::parse($this->gameContext->instanceDate()),
+                GameEntityType::from($data['lender'] ?? GameEntityType::BANK->value),
             );
 
             return ResponseHelper::success(
