@@ -13,6 +13,7 @@ use App\Models\AccountsDebtLinesEntity;
 use App\Models\FinanceEntityLoan;
 use App\Models\FinanceTransactionEntity;
 use App\Models\FinanceTransactions;
+use App\Models\Game;
 use App\Models\GameEntityAccount;
 use App\Models\Instance;
 use App\Models\StadiumCommercialVenue;
@@ -454,6 +455,119 @@ class FinanceService
                 }
 
                 $amount = $this->competitionPrizeCalculator->calculateLeaguePrize((int) $row->competition_rank);
+                if ($amount <= 0) {
+                    continue;
+                }
+
+                $this->makeEntityTransaction(
+                    $competitionAccount,
+                    $clubAccount,
+                    EntityTransactionDirection::ENTITY_TO_CLUB,
+                    EntityTransactionType::PRIZE,
+                    $amount,
+                    Carbon::parse($instance->instance_date),
+                    (int) $row->membership_id,
+                );
+            }
+        });
+    }
+
+    public function payContinentalCompetitionPrizes(Instance $instance): void
+    {
+        $rows = DB::table('competition_season AS cs')
+            ->join('competitions AS competition', 'competition.id', '=', 'cs.competition_id')
+            ->where('cs.instance_id', $instance->id)
+            ->where('cs.season_id', $instance->season_id)
+            ->where('competition.instance_id', $instance->id)
+            ->where('competition.type', 'tournament')
+            ->where('competition.competition_scope', 'continental')
+            ->select(
+                'cs.id AS membership_id',
+                'cs.club_id',
+                'competition.id AS competition_id',
+                'competition.rank AS competition_rank',
+            )
+            ->orderBy('cs.id')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return;
+        }
+
+        $competitionIds = $rows->pluck('competition_id')->map(fn ($id): int => (int) $id)->unique()->values();
+        $games = DB::table('games AS game')
+            ->leftJoin('tournament_knockout_ties AS tie', 'tie.id', '=', 'game.knockout_tie_id')
+            ->leftJoin('tournament_knockout_rounds AS round', 'round.id', '=', 'tie.round_id')
+            ->where('game.instance_id', $instance->id)
+            ->where('game.season_id', $instance->season_id)
+            ->whereIn('game.competition_id', $competitionIds)
+            ->where('game.status', Game::STATUS_COMPLETED)
+            ->select([
+                'game.competition_id',
+                'game.hometeam_id',
+                'game.awayteam_id',
+                'game.winner',
+                'round.id AS round_id',
+            ])
+            ->get();
+
+        $participation = [];
+        foreach ($games as $game) {
+            $roundKey = $game->round_id === null ? 'group' : 'knockout:'.(int) $game->round_id;
+            foreach ([[$game->hometeam_id, 1], [$game->awayteam_id, 2]] as [$clubId, $result]) {
+                $key = (int) $game->competition_id.':'.(int) $clubId;
+                $participation[$key] ??= ['rounds' => [], 'wins' => 0, 'draws' => 0];
+                $participation[$key]['rounds'][$roundKey] = true;
+
+                if ((int) $game->winner === 3) {
+                    $participation[$key]['draws']++;
+                } elseif ((int) $game->winner === $result) {
+                    $participation[$key]['wins']++;
+                }
+            }
+        }
+
+        $competitionAccounts = GameEntityAccount::query()
+            ->where('instance_id', $instance->id)
+            ->whereHas('gameEntity', function (Builder $query) use ($competitionIds): void {
+                $query->where('type', GameEntityType::COMPETITION->value)
+                    ->whereIn('competition_id', $competitionIds);
+            })
+            ->with('gameEntity')
+            ->get()
+            ->keyBy(fn (GameEntityAccount $account): int => (int) $account->gameEntity->competition_id);
+        $clubAccounts = Account::query()
+            ->whereIn('club_id', $rows->pluck('club_id'))
+            ->get()
+            ->keyBy('club_id');
+
+        DB::transaction(function () use ($rows, $participation, $competitionAccounts, $clubAccounts, $instance): void {
+            foreach ($rows as $row) {
+                DB::table('competition_season')
+                    ->where('id', $row->membership_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (FinanceTransactionEntity::query()
+                    ->where('event_type', EntityTransactionType::PRIZE->value)
+                    ->where('event_id', $row->membership_id)
+                    ->exists()) {
+                    continue;
+                }
+
+                $stats = $participation[(int) $row->competition_id.':'.(int) $row->club_id] ?? null;
+                $competitionAccount = $competitionAccounts->get((int) $row->competition_id);
+                $clubAccount = $clubAccounts->get((int) $row->club_id);
+                if ($stats === null || $competitionAccount === null || $clubAccount === null) {
+                    continue;
+                }
+
+                $amount = $this->competitionPrizeCalculator->calculateContinentalPrize(
+                    (int) $row->competition_rank,
+                    count($stats['rounds']),
+                    $stats['wins'],
+                    $stats['draws'],
+                );
                 if ($amount <= 0) {
                     continue;
                 }

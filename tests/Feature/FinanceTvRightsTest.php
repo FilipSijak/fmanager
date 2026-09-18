@@ -116,6 +116,92 @@ class FinanceTvRightsTest extends TestCase
         $this->assertDatabaseCount('finance_transactions_entities', 1);
     }
 
+    #[Test]
+    public function it_pays_continental_prizes_for_rounds_and_results_from_the_competition_entity(): void
+    {
+        [$instance, $club] = $this->createFinanceScenario();
+        $opponent = Club::factory()->create([
+            'id' => 2,
+            'instance_id' => $instance->id,
+        ]);
+        $competition = Competition::factory()->create([
+            'id' => 1,
+            'instance_id' => $instance->id,
+            'rank' => 10_000,
+            'type' => 'tournament',
+            'competition_scope' => 'continental',
+            'groups' => 1,
+            'clubs_number' => 32,
+        ]);
+        $competitionAccount = $this->createCompetitionAccount($instance, $competition);
+        $membershipId = DB::table('competition_season')->insertGetId([
+            'instance_id' => $instance->id,
+            'competition_id' => $competition->id,
+            'season_id' => 1,
+            'club_id' => $club->id,
+            'played' => 1,
+        ]);
+        DB::table('games')->insert([
+            'instance_id' => $instance->id,
+            'season_id' => 1,
+            'competition_id' => $competition->id,
+            'hometeam_id' => $club->id,
+            'awayteam_id' => $opponent->id,
+            'winner' => 3,
+            'status' => 'completed',
+            'home_team_goals' => 1,
+            'away_team_goals' => 1,
+        ]);
+        DB::table('tournament_knockout')->insert([
+            'id' => 1,
+            'instance_id' => $instance->id,
+            'competition_id' => $competition->id,
+            'season_id' => 1,
+            'participant_count' => 16,
+            'bracket_size' => 16,
+        ]);
+        DB::table('tournament_knockout_rounds')->insert([
+            'id' => 1,
+            'tournament_knockout_id' => 1,
+            'round_number' => 1,
+            'bracket_side' => 'final',
+            'name' => 'final',
+            'number_of_legs' => 1,
+        ]);
+        DB::table('tournament_knockout_ties')->insert([
+            'id' => 1,
+            'round_id' => 1,
+            'position' => 1,
+            'home_club_id' => $club->id,
+            'away_club_id' => $opponent->id,
+        ]);
+        DB::table('games')->insert([
+            'instance_id' => $instance->id,
+            'season_id' => 1,
+            'competition_id' => $competition->id,
+            'hometeam_id' => $club->id,
+            'awayteam_id' => $opponent->id,
+            'winner' => 1,
+            'status' => 'completed',
+            'home_team_goals' => 2,
+            'away_team_goals' => 1,
+            'knockout_tie_id' => 1,
+            'leg_number' => 1,
+        ]);
+
+        app(FinanceService::class)->payContinentalCompetitionPrizes($instance);
+        app(FinanceService::class)->payContinentalCompetitionPrizes($instance);
+
+        $this->assertSame(11_000_000, $club->account->fresh()->balance);
+        $this->assertSame(989_000_000, $competitionAccount->fresh()->balance);
+        $this->assertDatabaseHas('finance_transactions_entities', [
+            'event_type' => EntityTransactionType::PRIZE->value,
+            'event_id' => $membershipId,
+            'amount' => 11_000_000,
+        ]);
+        $this->assertDatabaseCount('finance_transactions_entities', 1);
+    }
+
     /**
      *  array{0: Instance, 1: Club}
      */

@@ -28,4 +28,16 @@ class CompetitionPrizeCalculatorTest extends TestCase
         $this->assertSame(20_000_000, $calculator->calculateLeaguePrize(20_000));
         $this->assertSame(0, $calculator->calculateLeaguePrize(-1));
     }
+
+    #[Test]
+    public function it_pays_continental_round_win_and_draw_rewards_at_the_maximum_rank(): void
+    {
+        $this->assertSame(7_000_000, (new CompetitionPrizeCalculator)->calculateContinentalPrize(10_000, 1, 1, 1));
+    }
+
+    #[Test]
+    public function it_scales_continental_rewards_for_lower_ranked_competitions(): void
+    {
+        $this->assertSame(5_880_000, (new CompetitionPrizeCalculator)->calculateContinentalPrize(8_400, 1, 1, 1));
+    }
 }

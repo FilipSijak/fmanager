@@ -27,7 +27,7 @@ class CommercialServiceTest extends TestCase
             'rank' => 20, 'rank_academy' => 20, 'rank_training' => 20, 'financial_rank' => 20,
         ]);
         DB::table('competitions')->insert([
-            ['id' => 20, 'instance_id' => 1, 'name' => 'Champions League', 'country_code' => 'EU', 'rank' => 9900, 'type' => 'tournament', 'groups' => 1, 'clubs_number' => 32],
+            ['id' => 20, 'instance_id' => 1, 'name' => 'Champions League', 'country_code' => 'EU', 'rank' => 10000, 'type' => 'tournament', 'groups' => 1, 'clubs_number' => 32],
             ['id' => 21, 'instance_id' => 1, 'name' => 'Domestic Cup', 'country_code' => 'GBR', 'rank' => 7000, 'type' => 'tournament', 'groups' => 0, 'clubs_number' => 32],
         ]);
         DB::table('competition_season')->insert([
