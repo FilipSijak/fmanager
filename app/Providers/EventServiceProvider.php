@@ -12,6 +12,8 @@ use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
+use App\Listeners\PayLeagueTvRights;
+use App\Listeners\PayTournamentTvRights;
 use App\Listeners\ProcessFinanceEntityLoanInstallments;
 use App\Listeners\ProcessTransfers;
 use App\Listeners\RunDailyTraining;
@@ -41,9 +43,11 @@ class EventServiceProvider extends ServiceProvider
             DispatchMonthlyPlayerReindex::class,
         ],
         SeasonCompleted::class => [
+            PayTournamentTvRights::class,
             CompleteSeason::class,
         ],
         SeasonStarted::class => [
+            PayLeagueTvRights::class,
             StartSeason::class,
         ],
         TransferEvent::class => [

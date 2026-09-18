@@ -22,6 +22,7 @@ use App\Services\FinanceService\Domain\CashLoanCalculator;
 use App\Services\FinanceService\Domain\CashLoanEligibility;
 use App\Services\FinanceService\Domain\LoanTerms;
 use App\Services\FinanceService\Domain\MortgageLoanCalculator;
+use App\Services\FinanceService\Domain\TvRightsCalculator;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
@@ -38,6 +39,7 @@ class FinanceService
         private readonly CashLoanCalculator $cashLoanCalculator,
         private readonly CashLoanEligibility $cashLoanEligibility,
         private readonly MortgageLoanCalculator $mortgageLoanCalculator,
+        private readonly TvRightsCalculator $tvRightsCalculator,
     ) {}
 
     public function getClubFinances(): ?ClubFinancialSummary
@@ -380,6 +382,101 @@ class FinanceService
                 'amount' => $amount,
                 'transaction_date' => $transactionDate,
             ]);
+        });
+    }
+
+    public function payTournamentTvRights(Instance $instance): void
+    {
+        $this->payTvRightsForCompetitionType($instance, 'tournament', Carbon::parse($instance->instance_date));
+    }
+
+    public function payLeagueTvRights(Instance $instance): void
+    {
+        $this->payTvRightsForCompetitionType($instance, 'league', Carbon::parse($instance->instance_date));
+    }
+
+    private function payTvRightsForCompetitionType(
+        Instance $instance,
+        string $competitionType,
+        CarbonInterface $transactionDate,
+    ): void {
+        $rows = DB::table('competition_season AS cs')
+            ->join('competitions AS competition', 'competition.id', '=', 'cs.competition_id')
+            ->join('clubs AS club', 'club.id', '=', 'cs.club_id')
+            ->where('cs.instance_id', $instance->id)
+            ->where('cs.season_id', $instance->season_id)
+            ->where('competition.instance_id', $instance->id)
+            ->where('competition.type', $competitionType)
+            ->select(
+                'cs.id AS membership_id',
+                'cs.club_id',
+                'cs.played',
+                'competition.rank AS competition_rank',
+                'competition.clubs_number',
+                'competition.groups',
+                'competition.type AS competition_type',
+                'club.rank AS club_rank',
+            )
+            ->orderBy('cs.id')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return;
+        }
+
+        $tvBroadcasterAccount = GameEntityAccount::query()
+            ->where('instance_id', $instance->id)
+            ->whereHas('gameEntity', function (Builder $query): void {
+                $query->where('type', GameEntityType::TV_BROADCASTER->value);
+            })
+            ->firstOrFail();
+        $clubAccounts = Account::query()
+            ->whereIn('club_id', $rows->pluck('club_id'))
+            ->get()
+            ->keyBy('club_id');
+
+        DB::transaction(function () use ($rows, $tvBroadcasterAccount, $clubAccounts, $transactionDate): void {
+            foreach ($rows as $row) {
+                DB::table('competition_season')
+                    ->where('id', $row->membership_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (FinanceTransactionEntity::query()
+                    ->where('event_type', EntityTransactionType::TV_REVENUE->value)
+                    ->where('event_id', $row->membership_id)
+                    ->exists()) {
+                    continue;
+                }
+
+                $clubAccount = $clubAccounts->get((int) $row->club_id);
+                if ($clubAccount === null) {
+                    continue;
+                }
+
+                $amount = $this->tvRightsCalculator->calculateForCompetition(
+                    (int) $row->competition_rank,
+                    (int) $row->club_rank,
+                    (string) $row->competition_type,
+                    (int) $row->clubs_number,
+                    $row->groups === null ? null : (int) $row->groups,
+                    (int) $row->played,
+                );
+
+                if ($amount <= 0) {
+                    continue;
+                }
+
+                $this->makeEntityTransaction(
+                    $tvBroadcasterAccount,
+                    $clubAccount,
+                    EntityTransactionDirection::ENTITY_TO_CLUB,
+                    EntityTransactionType::TV_REVENUE,
+                    $amount,
+                    $transactionDate,
+                    (int) $row->membership_id,
+                );
+            }
         });
     }
 
