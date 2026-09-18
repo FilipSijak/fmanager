@@ -1,0 +1,36 @@
+app/Services/FinanceService/Domain/CompetitionPrizeCalculator.php
+  s_0976e074d2e6c4::t_514c30ab36a66d 7,9-11
+  s_0976e074d2e6c4::t_7ebb9d390316a0 5-6,13
+  s_0976e074d2e6c4::t_832a6c3bae3f5f 1-4,8,12,14-15
+database/migrations/2026_09_18_151321_add_competition_id_to_game_entities_table.php
+  s_0976e074d2e6c4::t_dc811e876bcacc 13-14
+tests/Unit/CompetitionPrizeCalculatorTest.php
+  s_0976e074d2e6c4::t_da6a2e5d0f0ca3 5-6,11-12,14-29
+  s_0976e074d2e6c4::t_97d6a25c9d615e 1-4,7-10,13,30-31
+tests/Feature/FinanceTvRightsTest.php
+  s_0976e074d2e6c4::t_c04c1c73200a7d 85-118
+app/Listeners/PayLeagueCompetitionPrizes.php
+  s_0976e074d2e6c4::t_bd41876ecb5f5b 1-5,7-9,13-15,17-18
+  s_0976e074d2e6c4::t_22fa1d113a5427 6,10-12,16
+app/Services/FinanceService/FinanceService.php
+  s_0976e074d2e6c4::t_8c996f8670b33a 400-473
+  s_0976e074d2e6c4::t_514c30ab36a66d 23,44
+app/Providers/EventServiceProvider.php
+  s_0976e074d2e6c4::t_22fa1d113a5427 15,48
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c95ff1bc2f1cb16d853e2e008e4c204304bc3892",
+  "prompts": {},
+  "sessions": {
+    "s_0976e074d2e6c4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b4e9-9e32-7050-8e59-78aa6af59d21",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
