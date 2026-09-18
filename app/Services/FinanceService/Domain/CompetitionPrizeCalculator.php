@@ -20,6 +20,23 @@ final class CompetitionPrizeCalculator
         return (int) round(self::MAX_LEAGUE_PRIZE * CommercialRankingConfig::normalizeCompetitionRank($competitionRank));
     }
 
+    public function calculateContinentalRoundPrize(int $competitionRank): int
+    {
+        return (int) round(self::MAX_ROUND_PRIZE * CommercialRankingConfig::normalizeCompetitionRank($competitionRank));
+    }
+
+    public function calculateContinentalMatchPrize(int $competitionRank, string $result): int
+    {
+        $basePrize = match ($result) {
+            'win' => self::MAX_WIN_PRIZE,
+            'draw' => self::MAX_DRAW_PRIZE,
+            'loss' => 0,
+            default => throw new InvalidArgumentException('Unsupported match result.'),
+        };
+
+        return (int) round($basePrize * CommercialRankingConfig::normalizeCompetitionRank($competitionRank));
+    }
+
     public function calculateContinentalPrize(
         int $competitionRank,
         int $roundsPlayed,

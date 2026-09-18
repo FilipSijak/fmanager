@@ -31,6 +31,7 @@ use Carbon\CarbonInterface;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
 
 class FinanceService
@@ -470,6 +471,103 @@ class FinanceService
                 );
             }
         });
+    }
+
+    public function payContinentalMatchPrizes(Game $game): void
+    {
+        $row = DB::table('games AS game')
+            ->join('competitions AS competition', 'competition.id', '=', 'game.competition_id')
+            ->leftJoin('tournament_knockout_ties AS tie', 'tie.id', '=', 'game.knockout_tie_id')
+            ->leftJoin('tournament_knockout_rounds AS round', 'round.id', '=', 'tie.round_id')
+            ->where('game.id', $game->id)
+            ->where('game.status', Game::STATUS_COMPLETED)
+            ->select(
+                'game.*',
+                'competition.rank AS competition_rank',
+                'competition.type AS competition_type',
+                'competition.competition_scope',
+                'round.id AS round_id',
+            )
+            ->first();
+
+        if ($row === null || $row->competition_type !== 'tournament' || $row->competition_scope !== 'continental') {
+            return;
+        }
+
+        $competitionAccount = GameEntityAccount::query()
+            ->where('instance_id', $row->instance_id)
+            ->whereHas('gameEntity', function (Builder $query) use ($row): void {
+                $query->where('type', GameEntityType::COMPETITION->value)
+                    ->where('competition_id', $row->competition_id);
+            })
+            ->firstOrFail();
+
+        foreach ([[$row->hometeam_id, 1], [$row->awayteam_id, 2]] as [$clubId, $resultCode]) {
+            $membership = DB::table('competition_season')
+                ->where('instance_id', $row->instance_id)
+                ->where('season_id', $row->season_id)
+                ->where('competition_id', $row->competition_id)
+                ->where('club_id', $clubId)
+                ->first();
+            if ($membership === null) {
+                continue;
+            }
+
+            $clubAccount = Account::query()->where('club_id', $clubId)->first();
+            if ($clubAccount === null) {
+                continue;
+            }
+
+            $result = (int) $row->winner === 3 ? 'draw' : ((int) $row->winner === $resultCode ? 'win' : 'loss');
+            $matchAmount = $this->competitionPrizeCalculator->calculateContinentalMatchPrize(
+                (int) $row->competition_rank,
+                $result,
+            );
+            if ($matchAmount > 0 && ! FinanceTransactionEntity::query()
+                ->where('event_type', EntityTransactionType::CONTINENTAL_MATCH_PRIZE->value)
+                ->where('event_id', $row->id)
+                ->where('club_account_id', $clubAccount->id)
+                ->exists()) {
+                $this->makeEntityTransaction(
+                    $competitionAccount,
+                    $clubAccount,
+                    EntityTransactionDirection::ENTITY_TO_CLUB,
+                    EntityTransactionType::CONTINENTAL_MATCH_PRIZE,
+                    $matchAmount,
+                    Carbon::parse($row->match_start ?? $game->processed_at ?? now()),
+                    (int) $row->id,
+                );
+            }
+
+            $roundEventId = $row->round_id === null ? (int) $membership->id : (int) $row->round_id;
+            $roundComplete = $row->round_id !== null || ! DB::table('games')
+                ->where('instance_id', $row->instance_id)
+                ->where('season_id', $row->season_id)
+                ->where('competition_id', $row->competition_id)
+                ->whereNull('knockout_tie_id')
+                ->where(function (QueryBuilder $query) use ($clubId): void {
+                    $query->where('hometeam_id', $clubId)->orWhere('awayteam_id', $clubId);
+                })
+                ->whereNotIn('status', [Game::STATUS_COMPLETED, Game::STATUS_CANCELLED, Game::STATUS_ABANDONED])
+                ->exists();
+
+            $roundAmount = $this->competitionPrizeCalculator->calculateContinentalRoundPrize((int) $row->competition_rank);
+            if ($roundComplete && $roundAmount > 0 && ! FinanceTransactionEntity::query()
+                ->where('event_type', EntityTransactionType::CONTINENTAL_ROUND_PRIZE->value)
+                ->where('event_id', $roundEventId)
+                ->where('club_account_id', $clubAccount->id)
+                ->exists()) {
+                $this->makeEntityTransaction(
+                    $competitionAccount,
+                    $clubAccount,
+                    EntityTransactionDirection::ENTITY_TO_CLUB,
+                    EntityTransactionType::CONTINENTAL_ROUND_PRIZE,
+                    $roundAmount,
+                    Carbon::parse($row->match_start ?? $game->processed_at ?? now()),
+                    $roundEventId,
+                );
+            }
+        }
     }
 
     public function payContinentalCompetitionPrizes(Instance $instance): void
