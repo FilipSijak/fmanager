@@ -24,11 +24,33 @@ class TvRightsCalculatorTest extends TestCase
     }
 
     #[Test]
-    public function it_clamps_ranks_to_the_supported_normalized_range(): void
+    public function it_calculates_total_games_for_each_competition_format(): void
     {
         $calculator = new TvRightsCalculator;
 
-        $this->assertSame(0, $calculator->calculate(-1, -1));
-        $this->assertSame(40_000_000, $calculator->calculate(20000, 50));
+        $this->assertSame(38, $calculator->totalGamesForClub('league', 20, null));
+        $this->assertSame(13, $calculator->totalGamesForClub('tournament', 32, 1));
+        $this->assertSame(3, $calculator->totalGamesForClub('tournament', 4, 0));
+    }
+
+    #[Test]
+    public function it_pays_tournament_tv_rights_proportionally_to_games_played(): void
+    {
+        $calculator = new TvRightsCalculator;
+
+        $this->assertSame(18_461_538, $calculator->calculateForCompetition(10000, 20, 'tournament', 32, 1, 6));
+        $this->assertSame(40_000_000, $calculator->calculateForCompetition(10000, 20, 'tournament', 32, 1, 13));
+    }
+
+    #[Test]
+    public function league_tv_rights_are_not_reduced_for_partial_game_input(): void
+    {
+        $this->assertSame(40_000_000, (new TvRightsCalculator)->calculateForCompetition(10000, 20, 'league', 20, null, 1));
+    }
+
+    #[Test]
+    public function it_clamps_tournament_games_played_to_the_total(): void
+    {
+        $this->assertSame(40_000_000, (new TvRightsCalculator)->calculateForCompetition(10000, 20, 'tournament', 4, 0, 99));
     }
 }
