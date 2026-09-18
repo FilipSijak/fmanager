@@ -1,0 +1,23 @@
+app/Services/FinanceService/Domain/TvRightsCalculator.php
+  s_0976e074d2e6c4::t_e1af5c286b1cab 1-4,8,16,21-22
+  s_0976e074d2e6c4::t_1465af4d014204 5-7,9-15,17-20
+tests/Unit/TvRightsCalculatorTest.php
+  s_0976e074d2e6c4::t_e1af5c286b1cab 1-4,8-10,13,33-34
+  s_0976e074d2e6c4::t_1465af4d014204 5-7,11-12,14-32
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "42e47cee674d4bcdbcd1328a3d9c69dc04d2338d",
+  "prompts": {},
+  "sessions": {
+    "s_0976e074d2e6c4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b4e9-9e32-7050-8e59-78aa6af59d21",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
