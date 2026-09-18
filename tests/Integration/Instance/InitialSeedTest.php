@@ -90,15 +90,20 @@ class InitialSeedTest extends TestCase
             ->get()
             ->keyBy(fn (GameEntityAccount $account): string => $account->gameEntity->type->value);
 
-        $this->assertCount(5, $accounts);
+        $this->assertCount(6, $accounts);
         $this->assertSame(50_000_000_000, $accounts->get(GameEntityType::BANK->value)->balance);
+        $this->assertSame(1_000_000_000, $accounts->get(GameEntityType::LOAN_SHARKS->value)->balance);
 
         foreach (GameEntityType::cases() as $type) {
             $account = $accounts->get($type->value);
 
             $this->assertNotNull($account);
             $this->assertSame(
-                $type === GameEntityType::BANK ? 50_000_000_000 : 10_000_000_000,
+                match ($type) {
+                    GameEntityType::BANK => 50_000_000_000,
+                    GameEntityType::LOAN_SHARKS => 1_000_000_000,
+                    default => 10_000_000_000,
+                },
                 $account->balance,
             );
             $this->assertSame($account->balance, $account->future_balance);

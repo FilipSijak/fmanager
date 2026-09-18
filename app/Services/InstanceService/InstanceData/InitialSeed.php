@@ -32,6 +32,7 @@ class InitialSeed
     {
         $balances = [
             GameEntityType::BANK->value => 50_000_000_000,
+            GameEntityType::LOAN_SHARKS->value => 1_000_000_000,
             GameEntityType::SPONSOR->value => 10_000_000_000,
             GameEntityType::LEAGUE->value => 10_000_000_000,
             GameEntityType::TV_BROADCASTER->value => 10_000_000_000,
@@ -39,6 +40,7 @@ class InitialSeed
         ];
         $names = [
             GameEntityType::BANK->value => 'Game Bank',
+            GameEntityType::LOAN_SHARKS->value => 'Loan sharks',
             GameEntityType::SPONSOR->value => 'Sponsors',
             GameEntityType::LEAGUE->value => 'League Authority',
             GameEntityType::TV_BROADCASTER->value => 'TV Broadcaster',

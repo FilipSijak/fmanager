@@ -69,21 +69,29 @@ class FinanceService
         int $amount,
         int $lengthMonths,
         CarbonInterface $startedAt,
+        GameEntityType $lenderType = GameEntityType::BANK,
     ): FinanceEntityLoan {
         $instance = Instance::query()->findOrFail($this->gameContext->instanceId());
         $clubAccount = Account::query()
             ->where('club_id', $instance->club_id)
             ->firstOrFail();
-        $bankAccount = GameEntityAccount::query()
+        $lenderAccount = GameEntityAccount::query()
             ->where('instance_id', $instance->id)
-            ->whereHas('gameEntity', function (Builder $query): void {
-                $query->where('type', GameEntityType::BANK->value);
+            ->whereHas('gameEntity', function (Builder $query) use ($lenderType): void {
+                $query->where('type', $lenderType->value);
             })
             ->firstOrFail();
-        $terms = $this->cashLoanCalculator->calculate($amount, $lengthMonths);
+        if ($lengthMonths > $this->cashLoanMaximumLength($lenderType)) {
+            throw new DomainException('The selected lender does not offer loans for that long.');
+        }
+        $terms = $this->cashLoanCalculator->calculate(
+            $amount,
+            $lengthMonths,
+            $this->cashLoanInterestRate($lenderType),
+        );
 
         return $this->issueLoan(
-            $bankAccount,
+            $lenderAccount,
             $clubAccount,
             $terms,
             $startedAt,
@@ -411,6 +419,24 @@ class FinanceService
         DB::commit();
 
         return true;
+    }
+
+    private function cashLoanInterestRate(GameEntityType $lenderType): float
+    {
+        return match ($lenderType) {
+            GameEntityType::BANK => 0.08,
+            GameEntityType::LOAN_SHARKS => 0.15,
+            default => throw new DomainException('The selected entity does not offer cash loans.'),
+        };
+    }
+
+    private function cashLoanMaximumLength(GameEntityType $lenderType): int
+    {
+        return match ($lenderType) {
+            GameEntityType::BANK => 36,
+            GameEntityType::LOAN_SHARKS => 24,
+            default => throw new DomainException('The selected entity does not offer cash loans.'),
+        };
     }
 
     private function recordEntityRepayment(

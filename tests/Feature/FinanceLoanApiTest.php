@@ -32,7 +32,7 @@ class FinanceLoanApiTest extends TestCase
         ]);
         $bank = GameEntity::factory()->create([
             'instance_id' => $instance->id,
-            'type' => GameEntityType::BANK,
+            'type' => GameEntityType::LOAN_SHARKS,
         ]);
         $bankAccount = GameEntityAccount::factory()->create([
             'game_entity_id' => $bank->id,
@@ -47,13 +47,14 @@ class FinanceLoanApiTest extends TestCase
             ->postJson('/api/finance/loans', [
                 'amount' => 12000,
                 'length_months' => 24,
+                'lender' => GameEntityType::LOAN_SHARKS->value,
             ]);
 
         $response
             ->assertOk()
             ->assertJsonPath('data.principal', 12000)
-            ->assertJsonPath('data.interest_amount', 1920)
-            ->assertJsonPath('data.total_amount', 13920)
+            ->assertJsonPath('data.interest_amount', 3600)
+            ->assertJsonPath('data.total_amount', 15600)
             ->assertJsonPath('data.installment_count', 24)
             ->assertJsonPath('data.status', 'active')
             ->assertJsonCount(24, 'data.installments');
@@ -126,7 +127,7 @@ class FinanceLoanApiTest extends TestCase
 
         $response
             ->assertUnprocessable()
-            ->assertJsonPath('message', 'The club cannot afford this loan.');
+            ->assertJsonPath('error', 'The club cannot afford this loan.');
 
         $this->assertDatabaseCount('finance_entity_loans', 0);
         $this->assertDatabaseCount('finance_transactions_entities', 0);
