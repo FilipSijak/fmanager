@@ -1,0 +1,41 @@
+app/Services/FinanceService/Domain/CompetitionPrizeCalculator.php
+  s_0976e074d2e6c4::t_d44f55a159270a 6,12-17,22-39
+  s_0976e074d2e6c4::t_9a8d9ac5990411 40
+tests/Feature/FinanceTvRightsTest.php
+  s_0976e074d2e6c4::t_e0b5f4d6511d18 124-125,128-134,137-189,197-202
+  s_0976e074d2e6c4::t_a74f7d59bef48b 119-123,126-127,135-136,190-196,203-204
+database/competitions.sql
+  s_0976e074d2e6c4::t_82af993c9be93b 7-8
+app/Listeners/PayContinentalCompetitionPrizes.php
+  s_0976e074d2e6c4::t_d45396732b8c4e 6,10-12,16
+  s_0976e074d2e6c4::t_581198cca49b55 1-5,7-9,13-15,17-18
+tests/Integration/Services/CommercialService/CommercialServiceTest.php
+  s_0976e074d2e6c4::t_82af993c9be93b 30
+app/Services/FinanceService/FinanceService.php
+  s_0976e074d2e6c4::t_e0b5f4d6511d18 16,477-483,485-488,490,497-504,506-510,516,518-520,523,525,531-534,536,540,542,546-547,552-553,558,567-569
+  s_0976e074d2e6c4::t_ce4560a14cdf19 475-476,484,489,491-496,505,511-515,517,521-522,524,526-530,535,537-539,541,543-545,548-551,554-557,559-566,570,572-573,583-584
+  s_0976e074d2e6c4::t_259f4ff69522c0 571,574-582,585-587
+app/Providers/EventServiceProvider.php
+  s_0976e074d2e6c4::t_d45396732b8c4e 15,50
+tests/Unit/CompetitionPrizeCalculatorTest.php
+  s_0976e074d2e6c4::t_e0b5f4d6511d18 31
+  s_0976e074d2e6c4::t_c29d43efeec584 32-42
+database/base_competitions.sql
+  s_0976e074d2e6c4::t_82af993c9be93b 7-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9617731fe3a0bfd6d71144627e4eea9842b6bcc2",
+  "prompts": {},
+  "sessions": {
+    "s_0976e074d2e6c4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b4e9-9e32-7050-8e59-78aa6af59d21",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
