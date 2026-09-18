@@ -1,0 +1,39 @@
+app/Http/Requests/TakeOutCashLoanRequest.php
+  s_0976e074d2e6c4::t_1068a7f2e704dd 5,7,21
+tests/Integration/Instance/InitialSeedTest.php
+  s_0976e074d2e6c4::t_1b437ad48047f7 93,95,102-106
+tests/Feature/FinanceLoanApiTest.php
+  s_0976e074d2e6c4::t_3fd414cecfc699 35
+  s_0976e074d2e6c4::t_95362ebfe6352e 50,56-57
+  s_0976e074d2e6c4::t_d147220f6745d9 130
+app/GameEntityType.php
+  s_0976e074d2e6c4::t_585fed7e5fdbdc 8
+app/Services/FinanceService/FinanceService.php
+  s_0976e074d2e6c4::t_1b437ad48047f7 80-81
+  s_0976e074d2e6c4::t_1068a7f2e704dd 78,84-91
+  s_0976e074d2e6c4::t_585fed7e5fdbdc 72,94,424-440
+  s_0976e074d2e6c4::t_c4e11ab0ba9c1d 441
+app/Services/FinanceService/Domain/CashLoanCalculator.php
+  s_0976e074d2e6c4::t_585fed7e5fdbdc 11-14,24-27,29
+  s_0976e074d2e6c4::t_f75bfb9aedd127 15
+app/Services/InstanceService/InstanceData/InitialSeed.php
+  s_0976e074d2e6c4::t_585fed7e5fdbdc 35,43
+app/Http/Controllers/FinanceLoanController.php
+  s_0976e074d2e6c4::t_1068a7f2e704dd 5,38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "28ae14b817179513abdadbc4a2c329f7d265b5c5",
+  "prompts": {},
+  "sessions": {
+    "s_0976e074d2e6c4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0b4e9-9e32-7050-8e59-78aa6af59d21",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
