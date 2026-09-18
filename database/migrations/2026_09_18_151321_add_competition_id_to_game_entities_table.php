@@ -10,7 +10,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('game_entities', function (Blueprint $table): void {
-            $table->foreignId('competition_id')->nullable()->after('instance_id')->constrained('competitions')->cascadeOnDelete();
+            $table->unsignedInteger('competition_id')->nullable()->after('instance_id');
+            $table->foreign('competition_id')->references('id')->on('competitions')->cascadeOnDelete();
             $table->unique(['instance_id', 'competition_id'], 'game_entities_competition_unique');
         });
 

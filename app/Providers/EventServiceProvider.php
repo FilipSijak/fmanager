@@ -12,6 +12,7 @@ use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
+use App\Listeners\PayLeagueCompetitionPrizes;
 use App\Listeners\PayLeagueTvRights;
 use App\Listeners\PayTournamentTvRights;
 use App\Listeners\ProcessFinanceEntityLoanInstallments;
@@ -44,6 +45,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         SeasonCompleted::class => [
             PayTournamentTvRights::class,
+            PayLeagueCompetitionPrizes::class,
             CompleteSeason::class,
         ],
         SeasonStarted::class => [

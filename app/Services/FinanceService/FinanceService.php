@@ -20,6 +20,7 @@ use App\Models\StadiumStandConstruction;
 use App\Repositories\ClubRepository;
 use App\Services\FinanceService\Domain\CashLoanCalculator;
 use App\Services\FinanceService\Domain\CashLoanEligibility;
+use App\Services\FinanceService\Domain\CompetitionPrizeCalculator;
 use App\Services\FinanceService\Domain\LoanTerms;
 use App\Services\FinanceService\Domain\MortgageLoanCalculator;
 use App\Services\FinanceService\Domain\TvRightsCalculator;
@@ -40,6 +41,7 @@ class FinanceService
         private readonly CashLoanEligibility $cashLoanEligibility,
         private readonly MortgageLoanCalculator $mortgageLoanCalculator,
         private readonly TvRightsCalculator $tvRightsCalculator,
+        private readonly CompetitionPrizeCalculator $competitionPrizeCalculator,
     ) {}
 
     public function getClubFinances(): ?ClubFinancialSummary
@@ -393,6 +395,80 @@ class FinanceService
     public function payLeagueTvRights(Instance $instance): void
     {
         $this->payTvRightsForCompetitionType($instance, 'league', Carbon::parse($instance->instance_date));
+    }
+
+    public function payLeagueCompetitionPrizes(Instance $instance): void
+    {
+        $rows = DB::table('competition_season AS cs')
+            ->join('competitions AS competition', 'competition.id', '=', 'cs.competition_id')
+            ->where('cs.instance_id', $instance->id)
+            ->where('cs.season_id', $instance->season_id)
+            ->where('competition.instance_id', $instance->id)
+            ->where('competition.type', 'league')
+            ->select(
+                'cs.id AS membership_id',
+                'cs.club_id',
+                'competition.id AS competition_id',
+                'competition.rank AS competition_rank',
+            )
+            ->orderBy('cs.id')
+            ->get();
+
+        if ($rows->isEmpty()) {
+            return;
+        }
+
+        $competitionIds = $rows->pluck('competition_id')->map(fn ($id): int => (int) $id)->unique()->values();
+        $competitionAccounts = GameEntityAccount::query()
+            ->where('instance_id', $instance->id)
+            ->whereHas('gameEntity', function (Builder $query) use ($competitionIds): void {
+                $query->where('type', GameEntityType::COMPETITION->value)
+                    ->whereIn('competition_id', $competitionIds);
+            })
+            ->with('gameEntity')
+            ->get()
+            ->keyBy(fn (GameEntityAccount $account): int => (int) $account->gameEntity->competition_id);
+        $clubAccounts = Account::query()
+            ->whereIn('club_id', $rows->pluck('club_id'))
+            ->get()
+            ->keyBy('club_id');
+
+        DB::transaction(function () use ($rows, $competitionAccounts, $clubAccounts, $instance): void {
+            foreach ($rows as $row) {
+                DB::table('competition_season')
+                    ->where('id', $row->membership_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if (FinanceTransactionEntity::query()
+                    ->where('event_type', EntityTransactionType::PRIZE->value)
+                    ->where('event_id', $row->membership_id)
+                    ->exists()) {
+                    continue;
+                }
+
+                $clubAccount = $clubAccounts->get((int) $row->club_id);
+                $competitionAccount = $competitionAccounts->get((int) $row->competition_id);
+                if ($clubAccount === null || $competitionAccount === null) {
+                    continue;
+                }
+
+                $amount = $this->competitionPrizeCalculator->calculateLeaguePrize((int) $row->competition_rank);
+                if ($amount <= 0) {
+                    continue;
+                }
+
+                $this->makeEntityTransaction(
+                    $competitionAccount,
+                    $clubAccount,
+                    EntityTransactionDirection::ENTITY_TO_CLUB,
+                    EntityTransactionType::PRIZE,
+                    $amount,
+                    Carbon::parse($instance->instance_date),
+                    (int) $row->membership_id,
+                );
+            }
+        });
     }
 
     private function payTvRightsForCompetitionType(

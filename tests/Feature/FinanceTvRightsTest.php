@@ -82,6 +82,40 @@ class FinanceTvRightsTest extends TestCase
         $this->assertSame(960_000_000, $competitionAccount->fresh()->balance);
     }
 
+    #[Test]
+    public function it_pays_league_prizes_from_the_competition_entity_only_once(): void
+    {
+        [$instance, $club] = $this->createFinanceScenario();
+        $competition = Competition::factory()->create([
+            'id' => 1,
+            'instance_id' => $instance->id,
+            'rank' => 10_000,
+            'type' => 'league',
+            'groups' => null,
+            'clubs_number' => 4,
+        ]);
+        $competitionAccount = $this->createCompetitionAccount($instance, $competition);
+        $membershipId = DB::table('competition_season')->insertGetId([
+            'instance_id' => $instance->id,
+            'competition_id' => $competition->id,
+            'season_id' => 1,
+            'club_id' => $club->id,
+            'played' => 38,
+        ]);
+
+        app(FinanceService::class)->payLeagueCompetitionPrizes($instance);
+        app(FinanceService::class)->payLeagueCompetitionPrizes($instance);
+
+        $this->assertSame(20_000_000, $club->account->fresh()->balance);
+        $this->assertSame(980_000_000, $competitionAccount->fresh()->balance);
+        $this->assertDatabaseHas('finance_transactions_entities', [
+            'event_type' => EntityTransactionType::PRIZE->value,
+            'event_id' => $membershipId,
+            'amount' => 20_000_000,
+        ]);
+        $this->assertDatabaseCount('finance_transactions_entities', 1);
+    }
+
     /**
      *  array{0: Instance, 1: Club}
      */
