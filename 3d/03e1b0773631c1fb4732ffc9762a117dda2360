@@ -1,0 +1,58 @@
+database/migrations/2026_09_21_192952_create_staff_tactic_preferences_table.php
+  s_ac64ae811e5ffb::t_1bf29fd50ff5f8 5,26,28-29,31-32,41-43
+  s_ac64ae811e5ffb::t_ac12074dc15bf3 1-4,6-16,24-25,44-53
+  s_ac64ae811e5ffb::t_6a9e6c1ae1ed22 20-23
+  s_ac64ae811e5ffb::t_8a7e15fdca3765 17-19,27,30,33-40
+app/Models/StaffTacticPreference.php
+  s_ac64ae811e5ffb::t_5ebe73a6f2ab5a 5-8,11,16,18-25,27-30,32
+  s_ac64ae811e5ffb::t_e5772ea4e34e7b 17,26,31
+  s_ac64ae811e5ffb::t_ac12074dc15bf3 1-4,9-10,12-15,33
+app/Repositories/StaffRepository.php
+  s_ac64ae811e5ffb::t_354a17dad8b101 5,189-190
+  s_ac64ae811e5ffb::t_4c6af885491140 14
+  s_ac64ae811e5ffb::t_8a7e15fdca3765 188
+  s_ac64ae811e5ffb::t_faa5e496ae46e3 187
+  s_ac64ae811e5ffb::t_4b20e3064e63dd 28-31,176
+database/factories/StaffTacticPreferenceFactory.php
+  s_ac64ae811e5ffb::t_8e97deb109e6f4 4-13,15-20,26-28
+  s_ac64ae811e5ffb::t_ac12074dc15bf3 1-3
+  s_ac64ae811e5ffb::t_73a76f37236641 14,21-25
+app/Models/StaffCoaching.php
+  s_ac64ae811e5ffb::t_8a7e15fdca3765 10
+  s_ac64ae811e5ffb::t_a33923c5710810 39-41
+  s_ac64ae811e5ffb::t_8183e1ac5dd746 42-43
+app/Services/TacticsService/TacticsService.php
+  s_ac64ae811e5ffb::t_91fcdcdfe5e2e3 53,55,58,70,75,79,88,101-104,107-110,112-119,121,127,129
+  s_ac64ae811e5ffb::t_73a76f37236641 17,92
+  s_ac64ae811e5ffb::t_366b320ef31df0 56-57,73,80-81,86
+  s_ac64ae811e5ffb::t_77f4f9e3c4354d 8-10
+  s_ac64ae811e5ffb::t_64934d641f5cac 27,29,31-32,34-35,38,42,49-51
+  s_ac64ae811e5ffb::t_8a7e15fdca3765 30,33,36,39,43-48,82-85,105-106,111,120,122-126,128
+  s_ac64ae811e5ffb::t_904d6169734455 52,54,87
+database/factories/BaseFormationFactory.php
+  s_ac64ae811e5ffb::t_095a2227aeee00 1-20,24-26
+  s_ac64ae811e5ffb::t_1d2a47f1068873 21-23
+tests/Feature/TacticsApiTest.php
+  s_ac64ae811e5ffb::t_6ab7255b2a46d8 10,38-40,43,45,49-51,54-55
+  s_ac64ae811e5ffb::t_9b957afdcb983a 8-9,117-121
+  s_ac64ae811e5ffb::t_8a7e15fdca3765 42,46-48,52,56
+  s_ac64ae811e5ffb::t_354a17dad8b101 80-87
+  s_ac64ae811e5ffb::t_63e21d34667b67 41,44,53
+  s_ac64ae811e5ffb::t_5e540396d24750 57-58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3d03e1b0773631c1fb4732ffc9762a117dda2360",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
