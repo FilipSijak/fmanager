@@ -11,19 +11,18 @@ use App\Models\StadiumStand;
 use App\Models\StadiumStandConstruction;
 use App\Repositories\StadiumRepository;
 use App\Services\CommercialService\CommercialVenueSize;
-use App\Services\CommercialService\VenueConstructionCostCalculator;
-use App\Services\FinanceService\FinanceService;
+use App\Services\StadiumService\Domain\BuildStadium;
+use App\Services\StadiumService\Domain\CompleteStandConstruction;
 use App\Services\StadiumService\Domain\StadiumBuildValidator;
+use App\Services\StadiumService\Domain\StadiumCapacityManager;
 use App\Services\StadiumService\Domain\StadiumStandValidator;
+use App\Services\StadiumService\Domain\StartStandConstruction;
 use App\Services\StadiumService\Operations\BuildCommercialVenue;
 use App\Services\StadiumService\Operations\DemolishCommercialVenue;
 use App\StadiumConstructionType;
 use App\StadiumStandPosition;
-use App\StadiumStandStatus;
 use Carbon\CarbonImmutable;
-use DomainException;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 
 class StadiumService
 {
@@ -34,8 +33,10 @@ class StadiumService
         private readonly DemolishCommercialVenue $demolishCommercialVenue,
         private readonly StadiumBuildValidator $stadiumBuildValidator,
         private readonly StadiumStandValidator $stadiumStandValidator,
-        private readonly VenueConstructionCostCalculator $venueConstructionCostCalculator,
-        private readonly FinanceService $financeService,
+        private readonly BuildStadium $buildStadium,
+        private readonly StartStandConstruction $startStandConstruction,
+        private readonly CompleteStandConstruction $completeStandConstruction,
+        private readonly StadiumCapacityManager $stadiumCapacityManager,
     ) {}
 
     public function typeForCapacity(int $capacity): StadiumType
@@ -117,109 +118,22 @@ class StadiumService
         int $lengthYears,
         CarbonImmutable $startedAt,
     ): StadiumStandConstruction|StadiumCommercialVenue {
-        return DB::transaction(function () use ($stadium, $buildingType, $standId, $targetCapacity, $categoryId, $size, $paymentMethod, $lengthYears, $startedAt): StadiumStandConstruction|StadiumCommercialVenue {
-            $cost = $this->constructionCost($stadium, $buildingType, $standId, $targetCapacity, $categoryId, $size);
-
-            if ($paymentMethod === ConstructionPaymentMethod::CASH) {
-                $this->financeService->payForConstruction($cost, $startedAt);
-            }
-
-            $construction = $buildingType === StadiumConstructionType::STAND
-                ? $this->startStandConstruction($this->stadiumRepository->standForStadium($stadium, $standId), $targetCapacity, $startedAt)
-                : $this->buildCommercialVenue($stadium, $categoryId, $size);
-
-            if ($paymentMethod === ConstructionPaymentMethod::MORTGAGE) {
-                $this->financeService->takeOutMortgageLoan(
-                    $cost,
-                    $lengthYears,
-                    $startedAt,
-                    $construction instanceof StadiumStandConstruction ? $construction->id : null,
-                    $construction instanceof StadiumCommercialVenue ? $construction->id : null,
-                );
-            }
-
-            return $construction;
-        });
+        return $this->buildStadium->handle($stadium, $buildingType, $standId, $targetCapacity, $categoryId, $size, $paymentMethod, $lengthYears, $startedAt);
     }
 
     public function durationInWeeks(int $capacityIncrease): int
     {
-        if ($capacityIncrease <= 0 || $capacityIncrease % 1000 !== 0) {
-            throw new DomainException('Stadium construction capacity must be a positive multiple of 1,000 seats.');
-        }
-
-        return intdiv($capacityIncrease, 1000);
+        return $this->startStandConstruction->durationInWeeks($capacityIncrease);
     }
 
     public function startStandConstruction(StadiumStand $stadiumStand, int $targetCapacity, CarbonImmutable $startedAt): StadiumStandConstruction
     {
-        return DB::transaction(function () use ($stadiumStand, $targetCapacity, $startedAt): StadiumStandConstruction {
-            $lockedStand = StadiumStand::query()->whereKey($stadiumStand->id)->lockForUpdate()->firstOrFail();
-            $stadium = $lockedStand->stadium()->firstOrFail();
-
-            if (StadiumStandConstruction::query()->where('stadium_stand_id', $lockedStand->id)->whereNull('completed_at')->exists()) {
-                throw new DomainException('This stadium stand already has construction in progress.');
-            }
-
-            $capacityIncrease = $targetCapacity - (int) $lockedStand->capacity;
-            if ($capacityIncrease <= 0) {
-                throw new DomainException('The new stadium stand capacity must be greater than its current capacity.');
-            }
-
-            $this->stadiumStandValidator->validatePosition($stadium, $lockedStand->position);
-            $maximumCapacity = $this->stadiumRepository->maximumCapacityForStand($stadium->type, $lockedStand->position);
-            $this->stadiumStandValidator->validateCapacityValue($targetCapacity, $maximumCapacity);
-
-            $lockedStand->forceFill(['capacity' => $targetCapacity, 'status' => StadiumStandStatus::UNDER_CONSTRUCTION])->save();
-            $construction = StadiumStandConstruction::query()->create([
-                'instance_id' => $stadium->instance_id,
-                'stadium_id' => $stadium->id,
-                'stadium_stand_id' => $lockedStand->id,
-                'target_capacity' => $targetCapacity,
-                'capacity_increase' => $capacityIncrease,
-                'started_at' => $startedAt,
-                'completes_at' => $startedAt->addWeeks($this->durationInWeeks($capacityIncrease)),
-            ]);
-
-            $this->recalculateCapacities($stadium->fresh());
-
-            return $construction;
-        });
+        return $this->startStandConstruction->handle($stadiumStand, $targetCapacity, $startedAt);
     }
 
     public function completeStandConstructionForInstance(Instance $instance, CarbonImmutable $asOf): int
     {
-        $completed = 0;
-        $affectedStadiumIds = [];
-
-        StadiumStandConstruction::query()->where('instance_id', $instance->id)->whereNull('completed_at')
-            ->whereDate('completes_at', '<=', $asOf->toDateString())->get()
-            ->each(function (StadiumStandConstruction $construction) use (&$completed, &$affectedStadiumIds, $asOf): void {
-                DB::transaction(function () use ($construction, &$completed, &$affectedStadiumIds, $asOf): void {
-                    $lockedConstruction = StadiumStandConstruction::query()->whereKey($construction->id)->lockForUpdate()->first();
-                    if ($lockedConstruction === null) {
-                        return;
-                    }
-
-                    $affectedStadiumIds[$lockedConstruction->stadium_id] = true;
-                    $stand = StadiumStand::query()->whereKey($lockedConstruction->stadium_stand_id)->first();
-                    if ($stand !== null) {
-                        $stand->forceFill(['status' => StadiumStandStatus::ACTIVE])->saveQuietly();
-                    }
-
-                    $lockedConstruction->update(['completed_at' => $asOf->toDateString()]);
-                    $completed++;
-                });
-            });
-
-        foreach (array_keys($affectedStadiumIds) as $stadiumId) {
-            $stadium = $this->stadiumRepository->stadiumById((int) $stadiumId);
-            if ($stadium !== null) {
-                $this->recalculateCapacities($stadium);
-            }
-        }
-
-        return $completed;
+        return $this->completeStandConstruction->handle($instance, $asOf);
     }
 
     public function recalculateCapacitiesForInstance(Instance $instance): void
@@ -230,41 +144,8 @@ class StadiumService
             });
     }
 
-    private function activeCapacityForStands(Collection $stands): int
-    {
-        return (int) $stands
-            ->where('status', StadiumStandStatus::ACTIVE)
-            ->sum('capacity');
-    }
-
     public function recalculateCapacities(Stadium $stadium): void
     {
-        $stands = $this->stadiumRepository->standsForCapacity($stadium);
-
-        $activeCapacity = $this->activeCapacityForStands($stands);
-
-        $stadium->forceFill([
-            'capacity' => (int) $stands->sum('capacity'),
-            'active_capacity' => (int) $activeCapacity,
-        ])->saveQuietly();
-    }
-
-    private function constructionCost(Stadium $stadium, StadiumConstructionType $buildingType, ?int $standId, ?int $targetCapacity, ?int $categoryId, ?CommercialVenueSize $size): int
-    {
-        if ($buildingType === StadiumConstructionType::STAND) {
-            if ($standId === null || $targetCapacity === null) {
-                throw new DomainException('Stand construction details are required.');
-            }
-
-            $stand = $this->stadiumRepository->standForStadium($stadium, $standId);
-
-            return $this->stadiumExpansionCost($stadium, $targetCapacity - (int) $stand->capacity);
-        }
-
-        if ($categoryId === null || $size === null) {
-            throw new DomainException('Commercial venue construction details are required.');
-        }
-
-        return $this->venueConstructionCostCalculator->calculate($stadium, $this->stadiumRepository->findCategoryOrFail($categoryId), $size);
+        $this->stadiumCapacityManager->recalculate($stadium);
     }
 }
