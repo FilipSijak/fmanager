@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Club extends Model
 {
-    use HasFactory, BelongsToGameInstance;
+    use BelongsToGameInstance, HasFactory;
 
     public $timestamps = false;
 
@@ -37,6 +38,11 @@ class Club extends Model
     public function account()
     {
         return $this->hasOne(Account::class, 'club_id');
+    }
+
+    public function tactic(): HasOne
+    {
+        return $this->hasOne(ClubTactic::class);
     }
 
     public function scopeRatedTop(Builder $query)
