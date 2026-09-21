@@ -4,19 +4,16 @@ namespace App\Listeners;
 
 use App\Events\NextDay;
 use App\Services\StadiumService\StadiumService;
-use App\Services\StadiumService\StadiumStandConstructionService;
 use Carbon\CarbonImmutable;
 
 class CompleteStadiumStandConstruction
 {
-    public function __construct(private readonly StadiumStandConstructionService $constructionService,
-        private readonly StadiumService $stadiumService,
-    ) {}
+    public function __construct(private readonly StadiumService $stadiumService) {}
 
     public function handle(NextDay $event): void
     {
         $this->stadiumService->recalculateCapacitiesForInstance($event->instance);
-        $this->constructionService->completeForInstance(
+        $this->stadiumService->completeStandConstructionForInstance(
             $event->instance,
             CarbonImmutable::parse($event->instance->instance_date)->startOfDay(),
         );

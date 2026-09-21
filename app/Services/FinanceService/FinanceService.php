@@ -215,7 +215,7 @@ class FinanceService
                 throw new DomainException('Only mortgage loans may reference a construction.');
             }
 
-            $this->cashLoanEligibility->ensureEligible($lockedClubAccount, $terms, $disbursePrincipal);
+            $this->cashLoanEligibility->ensureEligible($lockedClubAccount, $terms);
 
             $loan = FinanceEntityLoan::query()->create([
                 'instance_id' => $lenderGameEntityAccount->instance_id,
