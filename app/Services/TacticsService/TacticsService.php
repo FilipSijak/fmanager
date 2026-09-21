@@ -30,7 +30,13 @@ class TacticsService
             $preference = StaffTacticPreference::query()->where('staff_coaching_id', $staff->id)->first();
 
             if ($preference !== null) {
-                return $preference->load('formation.slots');
+                $preference->load('formation.slots');
+
+                if (! $preference->is_customized) {
+                    $preference->update($this->tacticalDefaultsForFormation($preference->formation));
+                }
+
+                return $preference->fresh()->load('formation.slots');
             }
 
             $formation = $this->defaultFormationForStaff($staff);
@@ -38,9 +44,7 @@ class TacticsService
             return StaffTacticPreference::query()->create([
                 'staff_coaching_id' => $staff->id,
                 'base_formation_id' => $formation->id,
-                'mentality' => Mentality::BALANCED,
-                'pressing' => PressingIntensity::MEDIUM,
-                'passing' => PassingStyle::MIXED,
+                ...$this->tacticalDefaultsForFormation($formation),
             ])->load('formation.slots');
         });
     }
@@ -79,6 +83,7 @@ class TacticsService
                 'mentality' => $mentality,
                 'pressing' => $pressing,
                 'passing' => $passing,
+                'is_customized' => true,
             ]);
 
             return $this->syncClubTactic($club, $preference->fresh());
@@ -93,6 +98,28 @@ class TacticsService
             'pressing' => array_map(fn (PressingIntensity $option): string => $option->value, PressingIntensity::cases()),
             'passing' => array_map(fn (PassingStyle $option): string => $option->value, PassingStyle::cases()),
         ];
+    }
+
+    /**  array{mentality:Mentality,pressing:PressingIntensity,passing:PassingStyle} */
+    private function tacticalDefaultsForFormation(BaseFormation $formation): array
+    {
+        return match ($formation->tactical_tendency) {
+            FormationTendency::ATTACKING => [
+                'mentality' => Mentality::ATTACKING,
+                'pressing' => PressingIntensity::HIGH,
+                'passing' => PassingStyle::SHORT,
+            ],
+            FormationTendency::DEFENSIVE => [
+                'mentality' => Mentality::DEFENSIVE,
+                'pressing' => PressingIntensity::LOW,
+                'passing' => PassingStyle::DIRECT,
+            ],
+            FormationTendency::BALANCED => [
+                'mentality' => Mentality::BALANCED,
+                'pressing' => PressingIntensity::MEDIUM,
+                'passing' => PassingStyle::MIXED,
+            ],
+        };
     }
 
     private function defaultFormationForStaff(StaffCoaching $staff): BaseFormation
@@ -156,6 +183,7 @@ class TacticsService
 
     private function alignAssistantManagerFormation(Club $club, int $formationId): void
     {
+        $formation = BaseFormation::query()->findOrFail($formationId);
         $assistants = StaffCoaching::query()
             ->where('club_id', $club->id)
             ->where('type', PersonTypes::ASSISTANT_MANAGER)
@@ -166,7 +194,13 @@ class TacticsService
             $preference = $this->ensureDefaultForStaff($assistant);
 
             if ($preference->base_formation_id !== $formationId) {
-                $preference->update(['base_formation_id' => $formationId]);
+                $updates = ['base_formation_id' => $formationId];
+
+                if (! $preference->is_customized) {
+                    $updates = [...$updates, ...$this->tacticalDefaultsForFormation($formation)];
+                }
+
+                $preference->update($updates);
             }
         }
     }

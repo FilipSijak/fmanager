@@ -14,11 +14,11 @@ class StaffTacticPreference extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['staff_coaching_id', 'base_formation_id', 'mentality', 'pressing', 'passing'];
+    protected $fillable = ['staff_coaching_id', 'base_formation_id', 'mentality', 'pressing', 'passing', 'is_customized'];
 
     protected function casts(): array
     {
-        return ['mentality' => Mentality::class, 'pressing' => PressingIntensity::class, 'passing' => PassingStyle::class];
+        return ['mentality' => Mentality::class, 'pressing' => PressingIntensity::class, 'passing' => PassingStyle::class, 'is_customized' => 'boolean'];
     }
 
     public function staff(): BelongsTo

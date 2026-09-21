@@ -8,6 +8,7 @@ use App\Models\Instance;
 use App\Models\StaffCoaching;
 use App\Models\StaffTacticPreference;
 use App\Services\PersonService\PersonConfig\PersonTypes;
+use App\Services\TacticsService\FormationTendency;
 use App\Services\TacticsService\TacticsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -33,6 +34,24 @@ class TacticsApiTest extends TestCase
             ->assertJsonPath('data.tactic.passing', 'mixed')
             ->assertJsonCount(2, 'data.formations')
             ->assertJsonPath('data.options.mentalities.0', 'defensive');
+    }
+
+    #[Test]
+    public function it_uses_attacking_defaults_for_attacking_formations(): void
+    {
+        [$instance, $club] = $this->createManagedClub();
+        $formation = $this->createFormation('4-3-3', true, FormationTendency::ATTACKING);
+        $manager = StaffCoaching::query()->where('club_id', $club->id)->where('type', PersonTypes::MANAGER)->firstOrFail();
+
+        app(TacticsService::class)->ensureDefaultForStaff($manager);
+
+        $this->assertDatabaseHas('staff_tactic_preferences', [
+            'staff_coaching_id' => $manager->id,
+            'base_formation_id' => $formation->id,
+            'mentality' => 'attacking',
+            'pressing' => 'high',
+            'passing' => 'short',
+        ]);
     }
 
     #[Test]
@@ -134,9 +153,9 @@ class TacticsApiTest extends TestCase
         return [$instance->fresh(), $club->fresh()];
     }
 
-    private function createFormation(string $code, bool $isActive = true): BaseFormation
+    private function createFormation(string $code, bool $isActive = true, FormationTendency $tendency = FormationTendency::BALANCED): BaseFormation
     {
-        $formation = BaseFormation::query()->create(['code' => $code, 'name' => $code, 'is_active' => $isActive]);
+        $formation = BaseFormation::query()->create(['code' => $code, 'name' => $code, 'is_active' => $isActive, 'tactical_tendency' => $tendency]);
         $formation->slots()->create(['slot' => '1', 'position' => 'GK', 'x' => 50, 'y' => 90]);
 
         return $formation;

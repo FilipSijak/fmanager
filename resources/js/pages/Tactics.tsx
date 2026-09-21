@@ -48,6 +48,7 @@ type Formation = {
     id: number;
     code: string;
     name: string;
+    tactical_tendency: string;
     slots: FormationSlot[];
 };
 

@@ -21,6 +21,7 @@ class BaseFormationFactory extends Factory
             'code' => fake()->unique()->numerify('4-#-#'),
             'name' => fake()->words(2, true),
             'is_active' => true,
+            'tactical_tendency' => 'balanced',
         ];
     }
 }
