@@ -6,6 +6,7 @@ use App\Models\BaseData\BaseFormation;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\StaffCoaching;
+use App\Models\StaffTacticPreference;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\TacticsService\TacticsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,7 +28,6 @@ class TacticsApiTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.tactic.formation.code', '5-3-2')
             ->assertJsonPath('data.tactic.mentality', 'balanced')
             ->assertJsonPath('data.tactic.pressing', 'medium')
             ->assertJsonPath('data.tactic.passing', 'mixed')
@@ -40,6 +40,7 @@ class TacticsApiTest extends TestCase
     {
         [$instance, $club] = $this->createManagedClub();
         $this->createFormation('4-4-2');
+        $this->createFormation('4-3-3');
 
         foreach ([PersonTypes::ASSISTANT_MANAGER, PersonTypes::COACH, PersonTypes::YOUTH_COACH] as $role) {
             StaffCoaching::factory()->create([
@@ -53,6 +54,16 @@ class TacticsApiTest extends TestCase
             app(TacticsService::class)->ensureDefaultForStaff($staff);
         }
 
+        $managerPreference = StaffTacticPreference::query()->where(
+            'staff_coaching_id',
+            StaffCoaching::query()->where('type', PersonTypes::MANAGER)->value('id'),
+        )->value('base_formation_id');
+        $assistantPreference = StaffTacticPreference::query()->where(
+            'staff_coaching_id',
+            StaffCoaching::query()->where('type', PersonTypes::ASSISTANT_MANAGER)->value('id'),
+        )->value('base_formation_id');
+
+        $this->assertSame((int) $managerPreference, (int) $assistantPreference);
         $this->assertDatabaseCount('staff_tactic_preferences', 4);
     }
 

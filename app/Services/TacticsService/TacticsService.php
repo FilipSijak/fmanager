@@ -33,11 +33,7 @@ class TacticsService
                 return $preference->load('formation.slots');
             }
 
-            $formation = BaseFormation::query()->where('is_active', true)->orderBy('id')->first();
-
-            if ($formation === null) {
-                throw new DomainException('No active tactics formations are configured.');
-            }
+            $formation = $this->defaultFormationForStaff($staff);
 
             return StaffTacticPreference::query()->create([
                 'staff_coaching_id' => $staff->id,
@@ -99,6 +95,32 @@ class TacticsService
         ];
     }
 
+    private function defaultFormationForStaff(StaffCoaching $staff): BaseFormation
+    {
+        if ($staff->type === PersonTypes::ASSISTANT_MANAGER && $staff->club_id !== null) {
+            $manager = StaffCoaching::query()
+                ->where('club_id', $staff->club_id)
+                ->where('type', PersonTypes::MANAGER)
+                ->active()
+                ->first();
+
+            if ($manager !== null && $manager->id !== $staff->id) {
+                return $this->ensureDefaultForStaff($manager)->formation;
+            }
+        }
+
+        $formation = BaseFormation::query()
+            ->where('is_active', true)
+            ->inRandomOrder()
+            ->first();
+
+        if ($formation === null) {
+            throw new DomainException('No active tactics formations are configured.');
+        }
+
+        return $formation;
+    }
+
     private function managerForClub(Club $club): StaffCoaching
     {
         $manager = StaffCoaching::query()
@@ -116,7 +138,7 @@ class TacticsService
 
     private function syncClubTactic(Club $club, StaffTacticPreference $preference): ClubTactic
     {
-        return ClubTactic::query()->updateOrCreate(
+        $tactic = ClubTactic::query()->updateOrCreate(
             ['club_id' => $club->id],
             [
                 'base_formation_id' => $preference->base_formation_id,
@@ -125,6 +147,27 @@ class TacticsService
                 'pressing' => $preference->pressing,
                 'passing' => $preference->passing,
             ],
-        )->load(['formation.slots']);
+        );
+
+        $this->alignAssistantManagerFormation($club, $preference->base_formation_id);
+
+        return $tactic->load(['formation.slots']);
+    }
+
+    private function alignAssistantManagerFormation(Club $club, int $formationId): void
+    {
+        $assistants = StaffCoaching::query()
+            ->where('club_id', $club->id)
+            ->where('type', PersonTypes::ASSISTANT_MANAGER)
+            ->active()
+            ->get();
+
+        foreach ($assistants as $assistant) {
+            $preference = $this->ensureDefaultForStaff($assistant);
+
+            if ($preference->base_formation_id !== $formationId) {
+                $preference->update(['base_formation_id' => $formationId]);
+            }
+        }
     }
 }
