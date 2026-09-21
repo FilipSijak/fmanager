@@ -1,0 +1,22 @@
+database/seeders/TacticsSeeder.php
+  s_ac64ae811e5ffb::t_2168167466c8cb 18-29,36-47,54-65,72-82
+  s_ac64ae811e5ffb::t_ea01186ff71ee9 13-17
+  s_ac64ae811e5ffb::t_9a327602da6ff6 30-35,48-53,66-71,83
+  s_ac64ae811e5ffb::t_ef74efa42ec710 84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c79af01b54db745da4cb5d33b1457e88be87dccd",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
