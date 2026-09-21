@@ -5,13 +5,16 @@ namespace App\Services\TacticsService;
 use App\Models\BaseData\BaseFormation;
 use App\Models\Club;
 use App\Models\ClubTactic;
+use App\Models\StaffCoaching;
+use App\Models\StaffTacticPreference;
+use App\Services\PersonService\PersonConfig\PersonTypes;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
 class TacticsService
 {
-    /**  Collection<int, BaseFormation> */
+    /** @return Collection<int, BaseFormation> */
     public function availableFormations(): Collection
     {
         return BaseFormation::query()
@@ -21,34 +24,38 @@ class TacticsService
             ->get();
     }
 
+    public function ensureDefaultForStaff(StaffCoaching $staff): StaffTacticPreference
+    {
+        return DB::transaction(function () use ($staff): StaffTacticPreference {
+            $preference = StaffTacticPreference::query()->where('staff_coaching_id', $staff->id)->first();
+
+            if ($preference !== null) {
+                return $preference->load('formation.slots');
+            }
+
+            $formation = BaseFormation::query()->where('is_active', true)->orderBy('id')->first();
+
+            if ($formation === null) {
+                throw new DomainException('No active tactics formations are configured.');
+            }
+
+            return StaffTacticPreference::query()->create([
+                'staff_coaching_id' => $staff->id,
+                'base_formation_id' => $formation->id,
+                'mentality' => Mentality::BALANCED,
+                'pressing' => PressingIntensity::MEDIUM,
+                'passing' => PassingStyle::MIXED,
+            ])->load('formation.slots');
+        });
+    }
+
     public function currentForClub(Club $club): ClubTactic
     {
         return DB::transaction(function () use ($club): ClubTactic {
-            $tactic = ClubTactic::query()
-                ->where('club_id', $club->id)
-                ->first();
+            $manager = $this->managerForClub($club);
+            $preference = $this->ensureDefaultForStaff($manager);
 
-            if ($tactic === null) {
-                $formation = BaseFormation::query()
-                    ->where('is_active', true)
-                    ->orderBy('id')
-                    ->first();
-
-                if ($formation === null) {
-                    throw new DomainException('No active tactics formations are configured.');
-                }
-
-                $tactic = ClubTactic::query()->create([
-                    'club_id' => $club->id,
-                    'base_formation_id' => $formation->id,
-                    'name' => 'Default tactic',
-                    'mentality' => Mentality::BALANCED,
-                    'pressing' => PressingIntensity::MEDIUM,
-                    'passing' => PassingStyle::MIXED,
-                ]);
-            }
-
-            return $tactic->load(['formation.slots']);
+            return $this->syncClubTactic($club, $preference);
         });
     }
 
@@ -60,30 +67,29 @@ class TacticsService
         PassingStyle $passing,
     ): ClubTactic {
         return DB::transaction(function () use ($club, $formationId, $mentality, $pressing, $passing): ClubTactic {
-            $formationExists = BaseFormation::query()
+            $formation = BaseFormation::query()
                 ->whereKey($formationId)
                 ->where('is_active', true)
-                ->exists();
+                ->first();
 
-            if (! $formationExists) {
+            if ($formation === null) {
                 throw new DomainException('The selected tactics formation is not available.');
             }
 
-            $tactic = ClubTactic::query()->updateOrCreate(
-                ['club_id' => $club->id],
-                [
-                    'base_formation_id' => $formationId,
-                    'mentality' => $mentality,
-                    'pressing' => $pressing,
-                    'passing' => $passing,
-                ],
-            );
+            $manager = $this->managerForClub($club);
+            $preference = $this->ensureDefaultForStaff($manager);
+            $preference->update([
+                'base_formation_id' => $formation->id,
+                'mentality' => $mentality,
+                'pressing' => $pressing,
+                'passing' => $passing,
+            ]);
 
-            return $tactic->load(['formation.slots']);
+            return $this->syncClubTactic($club, $preference->fresh());
         });
     }
 
-    /**  array{mentalities:list<string>,pressing:list<string>,passing:list<string>} */
+    /** @return array{mentalities:list<string>,pressing:list<string>,passing:list<string>} */
     public function options(): array
     {
         return [
@@ -91,5 +97,34 @@ class TacticsService
             'pressing' => array_map(fn (PressingIntensity $option): string => $option->value, PressingIntensity::cases()),
             'passing' => array_map(fn (PassingStyle $option): string => $option->value, PassingStyle::cases()),
         ];
+    }
+
+    private function managerForClub(Club $club): StaffCoaching
+    {
+        $manager = StaffCoaching::query()
+            ->where('club_id', $club->id)
+            ->where('type', PersonTypes::MANAGER)
+            ->active()
+            ->first();
+
+        if ($manager === null) {
+            throw new DomainException('The club does not have an active manager.');
+        }
+
+        return $manager;
+    }
+
+    private function syncClubTactic(Club $club, StaffTacticPreference $preference): ClubTactic
+    {
+        return ClubTactic::query()->updateOrCreate(
+            ['club_id' => $club->id],
+            [
+                'base_formation_id' => $preference->base_formation_id,
+                'name' => 'Manager tactic',
+                'mentality' => $preference->mentality,
+                'pressing' => $preference->pressing,
+                'passing' => $preference->passing,
+            ],
+        )->load(['formation.slots']);
     }
 }

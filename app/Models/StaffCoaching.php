@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class StaffCoaching extends Model
 {
@@ -33,6 +34,11 @@ class StaffCoaching extends Model
     public function contract(): BelongsTo
     {
         return $this->belongsTo(StaffContract::class);
+    }
+
+    public function tacticPreference(): HasOne
+    {
+        return $this->hasOne(StaffTacticPreference::class, 'staff_coaching_id');
     }
 
     public function scopeActive(Builder $query): Builder

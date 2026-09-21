@@ -5,6 +5,9 @@ namespace Tests\Feature;
 use App\Models\BaseData\BaseFormation;
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\StaffCoaching;
+use App\Services\PersonService\PersonConfig\PersonTypes;
+use App\Services\TacticsService\TacticsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -33,6 +36,27 @@ class TacticsApiTest extends TestCase
     }
 
     #[Test]
+    public function it_creates_default_preferences_for_all_coaching_roles(): void
+    {
+        [$instance, $club] = $this->createManagedClub();
+        $this->createFormation('4-4-2');
+
+        foreach ([PersonTypes::ASSISTANT_MANAGER, PersonTypes::COACH, PersonTypes::YOUTH_COACH] as $role) {
+            StaffCoaching::factory()->create([
+                'instance_id' => $instance->id,
+                'club_id' => $club->id,
+                'type' => $role,
+            ]);
+        }
+
+        foreach (StaffCoaching::query()->where('club_id', $club->id)->get() as $staff) {
+            app(TacticsService::class)->ensureDefaultForStaff($staff);
+        }
+
+        $this->assertDatabaseCount('staff_tactic_preferences', 4);
+    }
+
+    #[Test]
     public function it_updates_the_managed_club_tactic(): void
     {
         [$instance, $club] = $this->createManagedClub();
@@ -52,6 +76,14 @@ class TacticsApiTest extends TestCase
             ->assertJsonPath('data.mentality', 'attacking')
             ->assertJsonPath('data.pressing', 'high')
             ->assertJsonPath('data.passing', 'short');
+
+        $this->assertDatabaseHas('staff_tactic_preferences', [
+            'staff_coaching_id' => StaffCoaching::query()->where('club_id', $club->id)->value('id'),
+            'base_formation_id' => $formation->id,
+            'mentality' => 'attacking',
+            'pressing' => 'high',
+            'passing' => 'short',
+        ]);
 
         $this->assertDatabaseHas('club_tactics', [
             'club_id' => $club->id,
@@ -82,6 +114,11 @@ class TacticsApiTest extends TestCase
         $instance = Instance::factory()->create(['instance_hash' => 'tactics-instance-'.uniqid()]);
         $club = Club::factory()->create(['instance_id' => $instance->id]);
         $instance->forceFill(['club_id' => $club->id])->saveQuietly();
+        StaffCoaching::factory()->create([
+            'instance_id' => $instance->id,
+            'club_id' => $club->id,
+            'type' => PersonTypes::MANAGER,
+        ]);
 
         return [$instance->fresh(), $club->fresh()];
     }

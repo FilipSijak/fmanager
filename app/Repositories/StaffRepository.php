@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Models\BaseData\BaseFormation;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\StaffCoaching;
@@ -10,6 +11,7 @@ use App\Models\StaffScout;
 use App\Services\PersonService\GeneratePeople\StaffType\GeneratedStaffData;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffSalary;
 use App\Services\PersonService\PersonConfig\PersonTypes;
+use App\Services\TacticsService\TacticsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
@@ -23,7 +25,10 @@ class StaffRepository
         StaffPhysio::class,
     ];
 
-    public function __construct(private readonly StaffSalary $staffSalary) {}
+    public function __construct(
+        private readonly StaffSalary $staffSalary,
+        private readonly TacticsService $tacticsService,
+    ) {}
 
     /**
      * @param  list<GeneratedStaffData>  $staffMembers
@@ -168,7 +173,7 @@ class StaffRepository
 
     private function insertCoachingStaff(int $instanceId, ?int $clubId, ?int $contractId, int $personId, GeneratedStaffData $staff): void
     {
-        DB::table('staff_coaching')->insert(array_merge([
+        $staffId = DB::table('staff_coaching')->insertGetId(array_merge([
             'instance_id' => $instanceId,
             'person_id' => $personId,
             'club_id' => $clubId,
@@ -179,6 +184,10 @@ class StaffRepository
             'goalkeeping_potential' => $staff->potential,
             'knowledge_potential' => $staff->potential,
         ], $staff->attributes));
+
+        if (BaseFormation::query()->where('is_active', true)->exists()) {
+            $this->tacticsService->ensureDefaultForStaff(StaffCoaching::query()->findOrFail($staffId));
+        }
     }
 
     private function insertScout(int $instanceId, ?int $clubId, ?int $contractId, int $personId, GeneratedStaffData $staff): void
