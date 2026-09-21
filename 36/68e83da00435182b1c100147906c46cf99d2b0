@@ -1,0 +1,27 @@
+app/Services/StadiumService/Domain/StartStandConstruction.php
+  s_ac64ae811e5ffb::t_68c54b975e01ed 7
+  s_ac64ae811e5ffb::t_1b55a5bb6f3b91 35,50
+  s_ac64ae811e5ffb::t_ebf478643906cf 17,34,37,51
+app/Repositories/StadiumConstructionRepository.php
+  s_ac64ae811e5ffb::t_b205c2926cb2d1 1-5,7-64
+  s_ac64ae811e5ffb::t_a99e9dfcd8bf6c 6,66,73,75
+  s_ac64ae811e5ffb::t_1b55a5bb6f3b91 65,67-72,74
+app/Services/StadiumService/Domain/CompleteStandConstruction.php
+  s_ac64ae811e5ffb::t_32550e965e72bc 7,16,25,28,34,36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "3668e83da00435182b1c100147906c46cf99d2b0",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
