@@ -9,7 +9,6 @@ use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
-use App\Models\StadiumStandConstruction;
 use App\Services\StadiumService\StadiumType;
 use App\StadiumStandPosition;
 use Illuminate\Database\Eloquent\Collection;
@@ -121,30 +120,5 @@ class StadiumRepository
     public function commercialVenueForStadium(Stadium $stadium, int $venueId): ?StadiumCommercialVenue
     {
         return StadiumCommercialVenue::query()->forStadium($stadium)->with('category')->whereKey($venueId)->first();
-    }
-
-    /** @return Collection<int, Stadium> */
-    public function stadiumsWithStandConstructionForInstance(Instance $instance): Collection
-    {
-        $stadiumIds = StadiumStandConstruction::query()
-            ->where('instance_id', $instance->id)
-            ->distinct()
-            ->pluck('stadium_id');
-
-        if ($stadiumIds->isEmpty()) {
-            return new Collection;
-        }
-
-        return Stadium::query()
-            ->where('instance_id', $instance->id)
-            ->whereIn('id', $stadiumIds)
-            ->get();
-    }
-
-    /** @return Collection<int, StadiumStand> */
-    public function standsForCapacity(Stadium $stadium): Collection
-    {
-        return StadiumStand::query()->withConstruction()->whereBelongsTo($stadium)
-            ->get();
     }
 }

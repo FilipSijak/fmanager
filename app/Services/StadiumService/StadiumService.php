@@ -94,7 +94,7 @@ class StadiumService
         return $this->stadiumCommercialOperations->demolish($stadium, $venueId);
     }
 
-    public function build(
+    public function buildConstruction(
         Stadium $stadium,
         StadiumConstructionType $buildingType,
         ?int $standId,
@@ -105,7 +105,7 @@ class StadiumService
         int $lengthYears,
         CarbonImmutable $startedAt,
     ): StadiumStandConstruction|StadiumCommercialVenue {
-        return $this->stadiumConstructionOperations->build($stadium, $buildingType, $standId, $targetCapacity, $categoryId, $size, $paymentMethod, $lengthYears, $startedAt);
+        return $this->stadiumConstructionOperations->buildConstruction($stadium, $buildingType, $standId, $targetCapacity, $categoryId, $size, $paymentMethod, $lengthYears, $startedAt);
     }
 
     public function durationInWeeks(int $capacityIncrease): int

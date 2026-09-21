@@ -20,7 +20,7 @@ class StadiumConstructionOperations
         private readonly CompleteStandConstruction $completeStandConstruction,
     ) {}
 
-    public function build(
+    public function buildConstruction(
         Stadium $stadium,
         StadiumConstructionType $buildingType,
         ?int $standId,

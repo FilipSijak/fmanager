@@ -15,7 +15,7 @@ class StadiumCommercialOperations
         private readonly DemolishCommercialVenue $demolishCommercialVenue,
     ) {}
 
-    public function build(Stadium $stadium, int $categoryId, CommercialVenueSize $size): StadiumCommercialVenue
+    public function buildCommercialVenue(Stadium $stadium, int $categoryId, CommercialVenueSize $size): StadiumCommercialVenue
     {
         return $this->buildCommercialVenue->handle($stadium, $categoryId, $size);
     }

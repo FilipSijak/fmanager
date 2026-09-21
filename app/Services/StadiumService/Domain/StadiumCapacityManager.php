@@ -5,17 +5,17 @@ namespace App\Services\StadiumService\Domain;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumStand;
-use App\Repositories\StadiumRepository;
+use App\Repositories\StadiumCapacityRepository;
 use App\StadiumStandStatus;
 use Illuminate\Database\Eloquent\Collection;
 
 class StadiumCapacityManager
 {
-    public function __construct(private readonly StadiumRepository $stadiumRepository) {}
+    public function __construct(private readonly StadiumCapacityRepository $stadiumCapacityRepository) {}
 
     public function recalculate(Stadium $stadium): void
     {
-        $stands = $this->stadiumRepository->standsForCapacity($stadium);
+        $stands = $this->stadiumCapacityRepository->standsForCapacity($stadium);
 
         $stadium->forceFill([
             'capacity' => (int) $stands->sum('capacity'),
@@ -31,7 +31,7 @@ class StadiumCapacityManager
 
     public function recalculateForInstance(Instance $instance): void
     {
-        $this->stadiumRepository->stadiumsWithStandConstructionForInstance($instance)
+        $this->stadiumCapacityRepository->stadiumsWithStandConstructionForInstance($instance)
             ->each(function (Stadium $stadium): void {
                 $this->recalculate($stadium);
             });

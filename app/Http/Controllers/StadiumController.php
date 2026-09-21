@@ -52,7 +52,7 @@ class StadiumController extends Controller
         $data = $request->validated();
 
         try {
-            $construction = $this->stadiumService->build(
+            $construction = $this->stadiumService->buildConstruction(
                 $this->managedStadium(),
                 StadiumConstructionType::from($data['building_type']),
                 isset($data['stand_id']) ? (int) $data['stand_id'] : null,
