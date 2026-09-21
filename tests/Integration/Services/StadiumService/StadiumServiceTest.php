@@ -14,7 +14,6 @@ use App\Models\StadiumStand;
 use App\Models\StadiumStandConstruction;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\StadiumService\StadiumService;
-use App\Services\StadiumService\StadiumStandConstructionService;
 use App\Services\StadiumService\StadiumType;
 use App\StadiumStandPosition;
 use App\StadiumStandStatus;
@@ -350,7 +349,7 @@ class StadiumServiceTest extends TestCase
     #[Test]
     public function it_calculates_one_week_of_construction_per_thousand_seats(): void
     {
-        $service = app(StadiumStandConstructionService::class);
+        $service = app(StadiumService::class);
 
         $this->assertSame(10, $service->durationInWeeks(10000));
     }
@@ -362,11 +361,11 @@ class StadiumServiceTest extends TestCase
         $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 0, 'active_capacity' => 0]);
         $northStand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 0, 'status' => null]);
         $southStand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::SOUTH, 'capacity' => 0, 'status' => null]);
-        $service = app(StadiumStandConstructionService::class);
+        $service = app(StadiumService::class);
         $startedAt = CarbonImmutable::parse('2026-09-14');
 
-        $northConstruction = $service->startConstruction($northStand, 10000, $startedAt);
-        $southConstruction = $service->startConstruction($southStand, 10000, $startedAt);
+        $northConstruction = $service->startStandConstruction($northStand, 10000, $startedAt);
+        $southConstruction = $service->startStandConstruction($southStand, 10000, $startedAt);
 
         $this->assertSame(10000, $northConstruction->capacity_increase);
         $this->assertSame('2026-11-23', $northConstruction->completes_at->toDateString());
@@ -384,10 +383,10 @@ class StadiumServiceTest extends TestCase
         $secondStadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 3000, 'active_capacity' => 3000]);
         $firstStand = StadiumStand::factory()->create(['stadium_id' => $firstStadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 7000, 'status' => StadiumStandStatus::ACTIVE]);
         $secondStand = StadiumStand::factory()->create(['stadium_id' => $secondStadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 3000, 'status' => StadiumStandStatus::ACTIVE]);
-        $constructionService = app(StadiumStandConstructionService::class);
+        $constructionService = app(StadiumService::class);
         $startedAt = CarbonImmutable::parse('2026-09-14');
-        $constructionService->startConstruction($firstStand, 10000, $startedAt);
-        $constructionService->startConstruction($secondStand, 6000, $startedAt);
+        $constructionService->startStandConstruction($firstStand, 10000, $startedAt);
+        $constructionService->startStandConstruction($secondStand, 6000, $startedAt);
         $firstStadium->forceFill(['active_capacity' => 0])->saveQuietly();
         $secondStadium->forceFill(['active_capacity' => 0])->saveQuietly();
 
@@ -405,10 +404,10 @@ class StadiumServiceTest extends TestCase
         $instance = Instance::factory()->create(['instance_date' => '2026-09-14']);
         $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 0, 'active_capacity' => 0]);
         $stand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 0, 'status' => null]);
-        $service = app(StadiumStandConstructionService::class);
-        $construction = $service->startConstruction($stand, 10000, CarbonImmutable::parse('2026-09-14'));
+        $service = app(StadiumService::class);
+        $construction = $service->startStandConstruction($stand, 10000, CarbonImmutable::parse('2026-09-14'));
 
-        $completed = $service->completeForInstance($instance, $construction->completes_at);
+        $completed = $service->completeStandConstructionForInstance($instance, $construction->completes_at);
 
         $this->assertSame(1, $completed);
         $this->assertSame(StadiumStandStatus::ACTIVE, $stand->fresh()->status);

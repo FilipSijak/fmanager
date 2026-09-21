@@ -15,9 +15,7 @@ use App\Models\Stadium;
 use App\Models\StadiumStandConstruction;
 use App\Repositories\StadiumRepository;
 use App\Services\CommercialService\CommercialVenueSize;
-use App\Services\StadiumService\StadiumConstructionService;
 use App\Services\StadiumService\StadiumService;
-use App\Services\StadiumService\StadiumStandConstructionService;
 use App\StadiumConstructionType;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
@@ -30,8 +28,6 @@ class StadiumController extends Controller
         private readonly GameContext $gameContext,
         private readonly StadiumRepository $stadiumRepository,
         private readonly StadiumService $stadiumService,
-        private readonly StadiumStandConstructionService $constructionService,
-        private readonly StadiumConstructionService $stadiumConstructionService,
     ) {}
 
     public function show(): JsonResponse
@@ -56,7 +52,7 @@ class StadiumController extends Controller
         $data = $request->validated();
 
         try {
-            $construction = $this->stadiumConstructionService->build(
+            $construction = $this->stadiumService->build(
                 $this->managedStadium(),
                 StadiumConstructionType::from($data['building_type']),
                 isset($data['stand_id']) ? (int) $data['stand_id'] : null,
@@ -128,7 +124,7 @@ class StadiumController extends Controller
                 $this->managedStadium(),
                 $standId,
             );
-            $construction = $this->constructionService->startConstruction(
+            $construction = $this->stadiumService->startStandConstruction(
                 $stand,
                 (int) $data['target_capacity'],
                 CarbonImmutable::parse($this->gameContext->instanceDate()),
