@@ -105,6 +105,23 @@ class FinanceEntityTest extends TestCase
     }
 
     #[Test]
+    public function it_uses_outstanding_loan_obligations_instead_of_projected_balance_for_eligibility(): void
+    {
+        [$entityAccount, $clubAccount] = $this->accounts();
+        $clubAccount->forceFill(['future_balance' => -100000, 'allowed_debt' => 20000])->save();
+
+        $loan = app(FinanceService::class)->issueLoan(
+            $entityAccount,
+            $clubAccount,
+            app(CashLoanCalculator::class)->calculate(10000, 12),
+            CarbonImmutable::parse('2026-09-15'),
+        );
+
+        $this->assertSame(10800, $loan->total_amount);
+        $this->assertDatabaseHas('finance_entity_loans', ['id' => $loan->id]);
+    }
+
+    #[Test]
     public function it_settles_loan_installments_and_completes_the_loan(): void
     {
         [$entityAccount, $clubAccount] = $this->accounts();
@@ -125,8 +142,8 @@ class FinanceEntityTest extends TestCase
         }
 
         $this->assertSame(FinanceEntityLoanStatus::COMPLETED, $loan->fresh()->status);
-        $this->assertSame(9000, $clubAccount->fresh()->balance);
-        $this->assertSame(11000, $entityAccount->fresh()->balance);
+        $this->assertSame(8400, $clubAccount->fresh()->balance);
+        $this->assertSame(11600, $entityAccount->fresh()->balance);
         $this->assertSame(24, AccountsDebtLinesEntity::query()->whereNotNull('paid_at')->count());
         $this->assertSame(24, $loan->fresh()->installments()->whereNotNull('transaction_id')->count());
     }
