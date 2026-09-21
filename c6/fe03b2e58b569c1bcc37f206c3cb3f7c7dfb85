@@ -1,0 +1,29 @@
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_ac64ae811e5ffb::t_bf9148508db180 367-368,388-389,408,410
+  s_ac64ae811e5ffb::t_96d4c06a0f9ac3 352,364,386,407
+app/Services/StadiumService/StadiumService.php
+  s_ac64ae811e5ffb::t_96d4c06a0f9ac3 10-11,20,23-24
+  s_ac64ae811e5ffb::t_8dfac8a51a9f66 109-147,149-159,162-165,167-172,174,182-194,197-206,208-209,211-224,252-255,257-259,261-264,266-269
+  s_ac64ae811e5ffb::t_08e6d88b976ff6 5,26,148,160-161,166,173,175-181,195-196,207,210,251,256,260,265
+  s_ac64ae811e5ffb::t_df27e7c83d36e4 14-15,37-38
+app/Listeners/CompleteStadiumStandConstruction.php
+  s_ac64ae811e5ffb::t_c6fc3f8a068aa8 11,16
+app/Http/Controllers/StadiumController.php
+  s_ac64ae811e5ffb::t_bf9148508db180 55,127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c6fe03b2e58b569c1bcc37f206c3cb3f7c7dfb85",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
