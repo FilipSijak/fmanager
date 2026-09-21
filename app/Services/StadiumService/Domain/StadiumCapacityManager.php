@@ -2,6 +2,7 @@
 
 namespace App\Services\StadiumService\Domain;
 
+use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumStand;
 use App\Repositories\StadiumRepository;
@@ -26,5 +27,13 @@ class StadiumCapacityManager
     private function activeCapacityForStands(Collection $stands): int
     {
         return (int) $stands->where('status', StadiumStandStatus::ACTIVE)->sum('capacity');
+    }
+
+    public function recalculateForInstance(Instance $instance): void
+    {
+        $this->stadiumRepository->stadiumsWithStandConstructionForInstance($instance)
+            ->each(function (Stadium $stadium): void {
+                $this->recalculate($stadium);
+            });
     }
 }
