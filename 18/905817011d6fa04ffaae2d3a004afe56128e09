@@ -1,0 +1,83 @@
+tests/Feature/TacticsApiTest.php
+  s_ac64ae811e5ffb::t_6799919996b8bb 5-7,9,14-80,82-84,86-101
+  s_ac64ae811e5ffb::t_863a9856338ff0 1-4,8,10-13,81,85,102-103
+app/Http/Requests/UpdateTacticsRequest.php
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-4,8,10-14,16-20,25-27
+  s_ac64ae811e5ffb::t_bf08d1fd09fe36 5-7,9,15,21-24
+app/Models/BaseData/BaseFormation.php
+  s_ac64ae811e5ffb::t_a36ebdc49bf6c9 7
+  s_ac64ae811e5ffb::t_59a6f970b28360 13,15,24
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-4,6,8-10,26
+  s_ac64ae811e5ffb::t_bcec364e9fc9fd 5,11-12,14,16-23,25
+database/migrations/2026_09_21_182732_create_base_formation_slots_table.php
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-13,15,23-33
+  s_ac64ae811e5ffb::t_782bd6df8699f2 14,16-22
+app/Services/TacticsService/PressingIntensity.php
+  s_ac64ae811e5ffb::t_bcec364e9fc9fd 5,7-9
+  s_ac64ae811e5ffb::t_7c8e0828e7b4ad 1-4,6,10
+routes/api.php
+  s_ac64ae811e5ffb::t_355139aeb7158e 14,41-43
+  s_ac64ae811e5ffb::t_bdb4ef5f8146e1 44-45
+app/Services/TacticsService/PassingStyle.php
+  s_ac64ae811e5ffb::t_7c8e0828e7b4ad 1-4,6,10
+  s_ac64ae811e5ffb::t_bcec364e9fc9fd 5,7-9
+app/Http/Resources/TacticsResource.php
+  s_ac64ae811e5ffb::t_57be8c90e04d72 12-19
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-11,20-21
+database/migrations/2026_09_21_182732_create_base_formations_table.php
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-13,15,20-30
+  s_ac64ae811e5ffb::t_782bd6df8699f2 14,16-19
+app/Models/Club.php
+  s_ac64ae811e5ffb::t_7fd499cc2dbe12 10,43-45
+  s_ac64ae811e5ffb::t_6799919996b8bb 14
+  s_ac64ae811e5ffb::t_0e26346c001a02 46-47
+app/Models/ClubTactic.php
+  s_ac64ae811e5ffb::t_bcec364e9fc9fd 5-9,11,15-16,18-25,27-30,32
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-4,10,12-14,33
+  s_ac64ae811e5ffb::t_59a6f970b28360 17,26,31
+database/seeders/DatabaseSeeder.php
+  s_ac64ae811e5ffb::t_93e1c9c84ebe0b 27
+database/migrations/2026_09_21_182732_create_club_tactics_table.php
+  s_ac64ae811e5ffb::t_782bd6df8699f2 14,16-22,24
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-13,15,23,25-35
+app/Http/Resources/FormationResource.php
+  s_ac64ae811e5ffb::t_082d0c578cc6b6 1-11,25-26
+  s_ac64ae811e5ffb::t_57be8c90e04d72 12-24
+resources/js/pages/Tactics.tsx
+  s_ac64ae811e5ffb::t_a36ebdc49bf6c9 4,39-41,44,47-51,54-69,77-79,83-89,124-136,146
+  s_ac64ae811e5ffb::t_5c2d94a22b9aae 6,110-123,137-145,171-192,221-222
+  s_ac64ae811e5ffb::t_1d76ff0f22a6b2 90
+app/Http/Controllers/TacticsController.php
+  s_ac64ae811e5ffb::t_bf08d1fd09fe36 5-17,21-67
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-4,18-20,68
+app/Services/TacticsService/TacticsService.php
+  s_ac64ae811e5ffb::t_7c8e0828e7b4ad 1-4,12-13,16,94-95
+  s_ac64ae811e5ffb::t_57be8c90e04d72 5-11,14-15,17-18,20-93
+  s_ac64ae811e5ffb::t_50d72a6861f1e0 19
+app/Services/TacticsService/Mentality.php
+  s_ac64ae811e5ffb::t_7c8e0828e7b4ad 1-4,6,10
+  s_ac64ae811e5ffb::t_bcec364e9fc9fd 5,7-9
+app/Models/BaseData/BaseFormationSlot.php
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-4,6,8-10,26
+  s_ac64ae811e5ffb::t_bcec364e9fc9fd 5,7,11-12,14,16-23,25
+  s_ac64ae811e5ffb::t_59a6f970b28360 13,15,24
+database/seeders/TacticsSeeder.php
+  s_ac64ae811e5ffb::t_d1af1d78172d02 5,12-38
+  s_ac64ae811e5ffb::t_26812aa35451a8 1-4,6-11,39-40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "18905817011d6fa04ffaae2d3a004afe56128e09",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
