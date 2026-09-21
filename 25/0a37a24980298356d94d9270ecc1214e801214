@@ -1,0 +1,25 @@
+app/Services/TacticsService/TacticsService.php
+  s_ac64ae811e5ffb::t_7a742a683cc300 36,98-101,104-112,114-117,119-121
+  s_ac64ae811e5ffb::t_5b2f7550479150 102-103,113,118,122,141,150-171
+  s_ac64ae811e5ffb::t_5b7d319ce7d667 123
+tests/Feature/TacticsApiTest.php
+  s_ac64ae811e5ffb::t_3a60bed67dd712 9,57-65
+  s_ac64ae811e5ffb::t_980b075ab8aae6 43
+  s_ac64ae811e5ffb::t_3c3130abfe7383 66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "250a37a24980298356d94d9270ecc1214e801214",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
