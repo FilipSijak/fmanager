@@ -11,6 +11,7 @@ use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\PlayerSearchController;
 use App\Http\Controllers\StadiumController;
+use App\Http\Controllers\TacticsController;
 use App\Http\Controllers\TransferController;
 use App\Http\Middleware\EnsureGameIsValid;
 use App\Http\Middleware\SetGameContext;
@@ -35,6 +36,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/commercial-categories', [StadiumController::class, 'buildableCommercialCategories']);
             Route::post('/construction', [StadiumController::class, 'build']);
             Route::delete('/commercial-venues/{venueId}', [StadiumController::class, 'demolishCommercialVenue']);
+        });
+
+        Route::prefix('tactics')->name('tactics.')->group(function (): void {
+            Route::get('/', [TacticsController::class, 'show'])->name('show');
+            Route::put('/', [TacticsController::class, 'update'])->name('update');
         });
 
         Route::post('/game/{gameId}/complete', [GameController::class, 'complete']);

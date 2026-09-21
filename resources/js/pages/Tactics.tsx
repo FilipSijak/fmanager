@@ -1,7 +1,9 @@
 import { Head } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
+import { show as tacticsShow, update as tacticsUpdate } from '@/routes/tactics';
 
 type ListPlayer = {
     number: number;
@@ -34,72 +36,38 @@ const substitutes: ListPlayer[] = [
     { number: 32, name: 'Maxim Tsigalko', rating: 7.32 },
 ];
 
-type PitchPlayer = {
-    number: number;
-    label: string;
+type FormationSlot = {
+    slot: string;
+    position: string;
     x: number;
     y: number;
-    hasArrow?: boolean;
+    has_arrow: boolean;
 };
 
-type FormationName = '5-3-2 Attacking' | '4-4-2' | '4-3-3' | '3-5-2';
-
-const formations: Record<FormationName, PitchPlayer[]> = {
-    '5-3-2 Attacking': [
-        { number: 1, label: 'Abbiati', x: 50, y: 90 },
-        { number: 6, label: 'Maldini', x: 32, y: 74 },
-        { number: 20, label: 'Costacurta', x: 50, y: 76 },
-        { number: 18, label: 'Chamot', x: 68, y: 74 },
-        { number: 11, label: 'Serginho', x: 10, y: 62, hasArrow: true },
-        { number: 2, label: 'Contra', x: 90, y: 62, hasArrow: true },
-        { number: 17, label: 'Ambrosini', x: 30, y: 48, hasArrow: true },
-        { number: 7, label: 'Gattuso', x: 70, y: 48, hasArrow: true },
-        { number: 8, label: 'Rui Costa', x: 50, y: 32, hasArrow: true },
-        { number: 10, label: 'Shevchenko', x: 36, y: 14 },
-        { number: 9, label: 'Inzaghi', x: 64, y: 14 },
-    ],
-    '4-4-2': [
-        { number: 1, label: 'Abbiati', x: 50, y: 90 },
-        { number: 11, label: 'Serginho', x: 15, y: 74 },
-        { number: 6, label: 'Maldini', x: 38, y: 78 },
-        { number: 20, label: 'Costacurta', x: 62, y: 78 },
-        { number: 2, label: 'Contra', x: 85, y: 74 },
-        { number: 17, label: 'Ambrosini', x: 15, y: 50, hasArrow: true },
-        { number: 7, label: 'Gattuso', x: 38, y: 52 },
-        { number: 8, label: 'Rui Costa', x: 62, y: 52 },
-        { number: 18, label: 'Chamot', x: 85, y: 50, hasArrow: true },
-        { number: 10, label: 'Shevchenko', x: 36, y: 20 },
-        { number: 9, label: 'Inzaghi', x: 64, y: 20 },
-    ],
-    '4-3-3': [
-        { number: 1, label: 'Abbiati', x: 50, y: 90 },
-        { number: 11, label: 'Serginho', x: 15, y: 74 },
-        { number: 6, label: 'Maldini', x: 38, y: 78 },
-        { number: 20, label: 'Costacurta', x: 62, y: 78 },
-        { number: 2, label: 'Contra', x: 85, y: 74 },
-        { number: 17, label: 'Ambrosini', x: 30, y: 54, hasArrow: true },
-        { number: 7, label: 'Gattuso', x: 50, y: 58 },
-        { number: 18, label: 'Chamot', x: 70, y: 54, hasArrow: true },
-        { number: 10, label: 'Shevchenko', x: 20, y: 22 },
-        { number: 8, label: 'Rui Costa', x: 50, y: 18, hasArrow: true },
-        { number: 9, label: 'Inzaghi', x: 80, y: 22 },
-    ],
-    '3-5-2': [
-        { number: 1, label: 'Abbiati', x: 50, y: 90 },
-        { number: 6, label: 'Maldini', x: 30, y: 76 },
-        { number: 20, label: 'Costacurta', x: 50, y: 80 },
-        { number: 18, label: 'Chamot', x: 70, y: 76 },
-        { number: 11, label: 'Serginho', x: 8, y: 56, hasArrow: true },
-        { number: 2, label: 'Contra', x: 92, y: 56, hasArrow: true },
-        { number: 17, label: 'Ambrosini', x: 30, y: 44 },
-        { number: 7, label: 'Gattuso', x: 50, y: 48 },
-        { number: 8, label: 'Rui Costa', x: 70, y: 44, hasArrow: true },
-        { number: 10, label: 'Shevchenko', x: 38, y: 16 },
-        { number: 9, label: 'Inzaghi', x: 62, y: 16 },
-    ],
+type Formation = {
+    id: number;
+    code: string;
+    name: string;
+    tactical_tendency: string;
+    slots: FormationSlot[];
 };
 
-const formationNames = Object.keys(formations) as FormationName[];
+type TacticsData = {
+    tactic: {
+        id: number;
+        name: string;
+        formation: Formation;
+        mentality: string;
+        pressing: string;
+        passing: string;
+    };
+    formations: Formation[];
+    options: {
+        mentalities: string[];
+        pressing: string[];
+        passing: string[];
+    };
+};
 
 const pitchTabs = ['Overview', 'With Ball', 'Without Ball'] as const;
 
@@ -107,10 +75,19 @@ const toolbarControls = ['View'] as const;
 const rightToolbarControls = ['Last Match', 'Edit'] as const;
 
 export default function Tactics() {
-    const [formation, setFormation] =
-        useState<FormationName>('5-3-2 Attacking');
+    const [tactics, setTactics] = useState<TacticsData | null>(null);
+    const [formationId, setFormationId] = useState<number | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
     const [tacticsMenuOpen, setTacticsMenuOpen] = useState(false);
     const tacticsMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        api.get(tacticsShow.url()).then((response) => {
+            const data = response.data.data as TacticsData;
+            setTactics(data);
+            setFormationId(data.tactic.formation.id);
+        });
+    }, []);
 
     useEffect(() => {
         if (!tacticsMenuOpen) {
@@ -131,7 +108,43 @@ export default function Tactics() {
             document.removeEventListener('mousedown', handleClickOutside);
     }, [tacticsMenuOpen]);
 
-    const pitchPlayers = formations[formation];
+    const selectedFormation =
+        tactics?.formations.find(
+            (availableFormation) => availableFormation.id === formationId,
+        ) ?? tactics?.tactic.formation;
+    const pitchPlayers =
+        selectedFormation?.slots.map((slot, index) => ({
+            number: startingEleven[index]?.number ?? index + 1,
+            label: startingEleven[index]?.name ?? slot.position,
+            x: slot.x,
+            y: slot.y,
+            hasArrow: slot.has_arrow,
+        })) ?? [];
+    const formationName =
+        selectedFormation?.name ?? selectedFormation?.code ?? 'Loading...';
+
+    function saveFormation(nextFormationId: number): void {
+        if (!tactics) {
+            return;
+        }
+
+        setFormationId(nextFormationId);
+        setIsSaving(true);
+        api.put(tacticsUpdate.url(), {
+            formation_id: nextFormationId,
+            mentality: tactics.tactic.mentality,
+            pressing: tactics.tactic.pressing,
+            passing: tactics.tactic.passing,
+        })
+            .then((response) => {
+                setTactics((current) =>
+                    current
+                        ? { ...current, tactic: response.data.data }
+                        : current,
+                );
+            })
+            .finally(() => setIsSaving(false));
+    }
 
     return (
         <GameLayout active="Nations & Clubs">
@@ -156,23 +169,28 @@ export default function Tactics() {
                         </button>
                         {tacticsMenuOpen && (
                             <div className="absolute top-full left-0 z-10 mt-1 w-48 overflow-hidden rounded border border-slate-400 bg-[#c9c9cc] shadow-lg">
-                                {formationNames.map((name) => (
-                                    <button
-                                        key={name}
-                                        type="button"
-                                        onClick={() => {
-                                            setFormation(name);
-                                            setTacticsMenuOpen(false);
-                                        }}
-                                        className={`block w-full px-4 py-2 text-left text-sm font-semibold hover:bg-slate-300 ${
-                                            name === formation
-                                                ? 'bg-[#0031a5] text-white hover:bg-[#00268a]'
-                                                : 'text-slate-800'
-                                        }`}
-                                    >
-                                        {name}
-                                    </button>
-                                ))}
+                                {tactics?.formations.map(
+                                    (availableFormation) => (
+                                        <button
+                                            key={availableFormation.id}
+                                            type="button"
+                                            onClick={() => {
+                                                saveFormation(
+                                                    availableFormation.id,
+                                                );
+                                                setTacticsMenuOpen(false);
+                                            }}
+                                            className={`block w-full px-4 py-2 text-left text-sm font-semibold hover:bg-slate-300 ${
+                                                availableFormation.id ===
+                                                formationId
+                                                    ? 'bg-[#0031a5] text-white hover:bg-[#00268a]'
+                                                    : 'text-slate-800'
+                                            }`}
+                                        >
+                                            {availableFormation.name}
+                                        </button>
+                                    ),
+                                )}
                             </div>
                         )}
                     </div>
@@ -201,7 +219,8 @@ export default function Tactics() {
 
                 <div className="flex items-center justify-between px-5 py-3">
                     <h2 className="text-lg font-bold text-[#f5f000]">
-                        {formation}*
+                        {formationName}
+                        {isSaving ? ' …' : ''}
                     </h2>
                     <div className="flex overflow-hidden rounded border border-white/10">
                         {pitchTabs.map((tab) => (
