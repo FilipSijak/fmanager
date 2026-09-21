@@ -1,0 +1,23 @@
+app/Services/StadiumService/Domain/CompleteStandConstruction.php
+  s_ac64ae811e5ffb::t_77a7e6552aa96c 28
+app/Repositories/StadiumConstructionRepository.php
+  s_ac64ae811e5ffb::t_266bd190839d98 44,48-49
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_ac64ae811e5ffb::t_77a7e6552aa96c 413-416
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "05fbf32f1d598d046fd73ffe55c4ca7c602b4dfe",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
