@@ -410,6 +410,10 @@ class StadiumServiceTest extends TestCase
         $completed = $service->completeStandConstructionForInstance($instance, $construction->completes_at);
 
         $this->assertSame(1, $completed);
+
+        $completedAgain = $service->completeStandConstructionForInstance($instance, $construction->completes_at);
+
+        $this->assertSame(0, $completedAgain);
         $this->assertSame(StadiumStandStatus::ACTIVE, $stand->fresh()->status);
         $this->assertSame(10000, $stadium->fresh()->capacity);
         $this->assertSame(10000, $stadium->fresh()->active_capacity);

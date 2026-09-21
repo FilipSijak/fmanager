@@ -41,10 +41,12 @@ class StadiumConstructionRepository
             ->get();
     }
 
-    public function lockConstruction(int $constructionId): ?StadiumStandConstruction
+    public function lockDueConstruction(int $constructionId, CarbonImmutable $asOf): ?StadiumStandConstruction
     {
         return StadiumStandConstruction::query()
             ->whereKey($constructionId)
+            ->whereNull('completed_at')
+            ->whereDate('completes_at', '<=', $asOf->toDateString())
             ->lockForUpdate()
             ->first();
     }

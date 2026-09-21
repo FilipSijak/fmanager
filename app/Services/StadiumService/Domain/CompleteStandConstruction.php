@@ -25,7 +25,7 @@ class CompleteStandConstruction
         $this->stadiumConstructionRepository->dueForInstance($instance, $asOf)
             ->each(function (StadiumStandConstruction $construction) use (&$completed, &$affectedStadiumIds, $asOf): void {
                 DB::transaction(function () use ($construction, &$completed, &$affectedStadiumIds, $asOf): void {
-                    $lockedConstruction = $this->stadiumConstructionRepository->lockConstruction($construction->id);
+                    $lockedConstruction = $this->stadiumConstructionRepository->lockDueConstruction($construction->id, $asOf);
                     if ($lockedConstruction === null) {
                         return;
                     }
