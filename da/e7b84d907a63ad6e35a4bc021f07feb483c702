@@ -1,0 +1,19 @@
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_ac64ae811e5ffb::t_392dc806914d0d 16-17,52,111,137,160,368-369,388-389,408,490
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "dae7b84d907a63ad6e35a4bc021f07feb483c702",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
