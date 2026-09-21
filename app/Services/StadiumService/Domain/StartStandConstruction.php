@@ -31,8 +31,10 @@ class StartStandConstruction
     public function handle(StadiumStand $stadiumStand, int $targetCapacity, CarbonImmutable $startedAt): StadiumStandConstruction
     {
         return DB::transaction(function () use ($stadiumStand, $targetCapacity, $startedAt): StadiumStandConstruction {
+            $stadium = $this->stadiumConstructionRepository->stadiumForStand($stadiumStand);
+            $lockedStadium = $this->stadiumRepository->lockStadium($stadium->id);
             $lockedStand = $this->stadiumConstructionRepository->lockStand($stadiumStand->id);
-            $stadium = $this->stadiumConstructionRepository->stadiumForStand($lockedStand);
+            $stadium = $lockedStadium;
 
             if ($this->stadiumConstructionRepository->hasConstructionInProgress($lockedStand)) {
                 throw new DomainException('This stadium stand already has construction in progress.');

@@ -40,15 +40,16 @@ class BuildStadium
         CarbonImmutable $startedAt,
     ): StadiumStandConstruction|StadiumCommercialVenue {
         return DB::transaction(function () use ($stadium, $buildingType, $standId, $targetCapacity, $categoryId, $size, $paymentMethod, $lengthYears, $startedAt): StadiumStandConstruction|StadiumCommercialVenue {
-            $cost = $this->constructionCost($stadium, $buildingType, $standId, $targetCapacity, $categoryId, $size);
+            $lockedStadium = $this->stadiumRepository->lockStadium($stadium->id);
+            $cost = $this->constructionCost($lockedStadium, $buildingType, $standId, $targetCapacity, $categoryId, $size);
 
             if ($paymentMethod === ConstructionPaymentMethod::CASH) {
                 $this->financeService->payForConstruction($cost, $startedAt);
             }
 
             $construction = $buildingType === StadiumConstructionType::STAND
-                ? $this->startStandConstruction->handle($this->stadiumRepository->standForStadium($stadium, $standId), $targetCapacity, $startedAt)
-                : $this->buildCommercialVenue->handle($stadium, $categoryId, $size);
+                ? $this->startStandConstruction->handle($this->stadiumRepository->standForStadium($lockedStadium, $standId), $targetCapacity, $startedAt)
+                : $this->buildCommercialVenue->handle($lockedStadium, $categoryId, $size);
 
             if ($paymentMethod === ConstructionPaymentMethod::MORTGAGE) {
                 $this->financeService->takeOutMortgageLoan(

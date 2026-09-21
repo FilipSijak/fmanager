@@ -138,6 +138,109 @@ class StadiumApiTest extends TestCase
         $this->assertNotSame($otherInstance->id, $currentInstance->id);
     }
 
+    #[Test]
+    public function it_builds_a_commercial_venue_with_a_mortgage_and_installments(): void
+    {
+        [$instance, $stadium] = $this->createManagedStadium(StadiumType::LOCAL);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $this->mapCategoryToType($category->id, StadiumType::LOCAL);
+
+        $response = $this->apiRequest($instance)->postJson('/api/stadium/construction', [
+            'building_type' => 'commercial_venue',
+            'category_id' => $category->id,
+            'size' => CommercialVenueSize::LARGE->value,
+            'payment_method' => 'mortgage',
+            'length_years' => 2,
+        ]);
+
+        $response->assertOk();
+        $venueId = (int) DB::table('stadium_commercial_venues')->where('stadium_id', $stadium->id)->value('id');
+        $this->assertDatabaseHas('finance_entity_loans', [
+            'stadium_commercial_venue_id' => $venueId,
+            'principal' => 150000,
+            'interest_amount' => 15000,
+            'total_amount' => 165000,
+            'installment_count' => 24,
+        ]);
+        $this->assertDatabaseCount('accounts_debt_lines_entities', 24);
+        $account = Account::query()->where('club_id', $instance->club_id)->firstOrFail();
+        $this->assertSame(1000000, $account->fresh()->balance);
+        $this->assertSame(835000, $account->fresh()->future_balance);
+    }
+
+    #[Test]
+    public function it_builds_a_stand_with_cash_and_deducts_the_construction_cost(): void
+    {
+        [$instance, $stadium] = $this->createManagedStadium(StadiumType::LOCAL);
+        $this->seedStandConstructionData();
+        $stadium->forceFill(['capacity' => 1000, 'active_capacity' => 1000])->saveQuietly();
+        $stand = $stadium->stands()->create(['position' => StadiumStandPosition::NORTH, 'capacity' => 1000, 'status' => StadiumStandStatus::ACTIVE]);
+
+        $response = $this->apiRequest($instance)->postJson('/api/stadium/construction', [
+            'building_type' => 'stand',
+            'stand_id' => $stand->id,
+            'target_capacity' => 2000,
+            'payment_method' => 'cash',
+            'length_years' => 0,
+        ]);
+
+        $response->assertOk();
+        $this->assertSame(625000, Account::query()->where('club_id', $instance->club_id)->firstOrFail()->balance);
+        $this->assertDatabaseHas('stadium_stand_constructions', ['stadium_stand_id' => $stand->id, 'capacity_increase' => 1000]);
+    }
+
+    #[Test]
+    public function it_builds_a_stand_with_a_mortgage_and_installments(): void
+    {
+        [$instance, $stadium] = $this->createManagedStadium(StadiumType::LOCAL);
+        $this->seedStandConstructionData();
+        $stadium->forceFill(['capacity' => 1000, 'active_capacity' => 1000])->saveQuietly();
+        $stand = $stadium->stands()->create(['position' => StadiumStandPosition::NORTH, 'capacity' => 1000, 'status' => StadiumStandStatus::ACTIVE]);
+
+        $response = $this->apiRequest($instance)->postJson('/api/stadium/construction', [
+            'building_type' => 'stand',
+            'stand_id' => $stand->id,
+            'target_capacity' => 2000,
+            'payment_method' => 'mortgage',
+            'length_years' => 2,
+        ]);
+
+        $response->assertOk();
+        $constructionId = (int) DB::table('stadium_stand_constructions')->where('stadium_stand_id', $stand->id)->value('id');
+        $this->assertDatabaseHas('finance_entity_loans', ['stadium_stand_construction_id' => $constructionId, 'principal' => 375000, 'total_amount' => 412500]);
+        $this->assertDatabaseCount('accounts_debt_lines_entities', 24);
+        $account = Account::query()->where('club_id', $instance->club_id)->firstOrFail();
+        $this->assertSame(1000000, $account->fresh()->balance);
+        $this->assertSame(587500, $account->fresh()->future_balance);
+    }
+
+    #[Test]
+    public function it_rolls_back_a_cash_venue_when_the_club_cannot_pay(): void
+    {
+        [$instance] = $this->createManagedStadium(StadiumType::LOCAL);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
+        $this->mapCategoryToType($category->id, StadiumType::LOCAL);
+        Account::query()->where('club_id', $instance->club_id)->update(['balance' => 1000, 'future_balance' => 1000]);
+
+        $response = $this->apiRequest($instance)->postJson('/api/stadium/construction', [
+            'building_type' => 'commercial_venue',
+            'category_id' => $category->id,
+            'size' => CommercialVenueSize::LARGE->value,
+            'payment_method' => 'cash',
+            'length_years' => 0,
+        ]);
+
+        $response->assertUnprocessable()->assertJsonPath('error', 'The club cannot afford this construction.');
+        $this->assertDatabaseCount('stadium_commercial_venues', 0);
+        $this->assertDatabaseCount('finance_transactions_entities', 0);
+    }
+
+    private function seedStandConstructionData(): void
+    {
+        DB::table('base_stadium_expansion_costs')->insert(['stadium_type' => StadiumType::LOCAL->value, 'cost_per_1000_seats' => 250000]);
+        DB::table('base_stadium_stand_capacity_limits')->insert(['stadium_type' => StadiumType::LOCAL->value, 'position' => StadiumStandPosition::NORTH->value, 'maximum_capacity' => 7000]);
+    }
+
     /**
      * @return array{0: Instance, 1: Stadium}
      */
