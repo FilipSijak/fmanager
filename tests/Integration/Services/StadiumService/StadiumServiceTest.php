@@ -13,6 +13,8 @@ use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
 use App\Models\StadiumStandConstruction;
 use App\Services\CommercialService\CommercialVenueSize;
+use App\Services\StadiumService\Domain\StartStandConstruction;
+use App\Services\StadiumService\Operations\BuildCommercialVenue;
 use App\Services\StadiumService\StadiumService;
 use App\Services\StadiumService\StadiumType;
 use App\StadiumStandPosition;
@@ -47,7 +49,7 @@ class StadiumServiceTest extends TestCase
         $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'bar', 'name' => 'Bar']);
         $this->mapCategoryToStadiumType($category->id, StadiumType::LOCAL);
 
-        $venue = app(StadiumService::class)->buildCommercialVenue(
+        $venue = app(BuildCommercialVenue::class)->handle(
             $stadium,
             $category->id,
             CommercialVenueSize::MEDIUM,
@@ -106,7 +108,7 @@ class StadiumServiceTest extends TestCase
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('This commercial category is not available for the stadium type.');
 
-        app(StadiumService::class)->buildCommercialVenue($stadium, $category->id, CommercialVenueSize::SMALL);
+        app(BuildCommercialVenue::class)->handle($stadium, $category->id, CommercialVenueSize::SMALL);
     }
 
     #[Test]
@@ -132,7 +134,7 @@ class StadiumServiceTest extends TestCase
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('The stadium has reached its commercial venue limit.');
 
-        app(StadiumService::class)->buildCommercialVenue($stadium, $newCategory->id, CommercialVenueSize::LARGE);
+        app(BuildCommercialVenue::class)->handle($stadium, $newCategory->id, CommercialVenueSize::LARGE);
     }
 
     #[Test]
@@ -155,7 +157,7 @@ class StadiumServiceTest extends TestCase
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('This commercial venue category has already been built at the stadium.');
 
-        app(StadiumService::class)->buildCommercialVenue($stadium, $category->id, CommercialVenueSize::LARGE);
+        app(BuildCommercialVenue::class)->handle($stadium, $category->id, CommercialVenueSize::LARGE);
     }
 
     #[Test]
@@ -361,11 +363,10 @@ class StadiumServiceTest extends TestCase
         $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 0, 'active_capacity' => 0]);
         $northStand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 0, 'status' => null]);
         $southStand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::SOUTH, 'capacity' => 0, 'status' => null]);
-        $service = app(StadiumService::class);
         $startedAt = CarbonImmutable::parse('2026-09-14');
 
-        $northConstruction = $service->startStandConstruction($northStand, 10000, $startedAt);
-        $southConstruction = $service->startStandConstruction($southStand, 10000, $startedAt);
+        $northConstruction = app(StartStandConstruction::class)->handle($northStand, 10000, $startedAt);
+        $southConstruction = app(StartStandConstruction::class)->handle($southStand, 10000, $startedAt);
 
         $this->assertSame(10000, $northConstruction->capacity_increase);
         $this->assertSame('2026-11-23', $northConstruction->completes_at->toDateString());
@@ -383,10 +384,9 @@ class StadiumServiceTest extends TestCase
         $secondStadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 3000, 'active_capacity' => 3000]);
         $firstStand = StadiumStand::factory()->create(['stadium_id' => $firstStadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 7000, 'status' => StadiumStandStatus::ACTIVE]);
         $secondStand = StadiumStand::factory()->create(['stadium_id' => $secondStadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 3000, 'status' => StadiumStandStatus::ACTIVE]);
-        $constructionService = app(StadiumService::class);
         $startedAt = CarbonImmutable::parse('2026-09-14');
-        $constructionService->startStandConstruction($firstStand, 10000, $startedAt);
-        $constructionService->startStandConstruction($secondStand, 6000, $startedAt);
+        app(StartStandConstruction::class)->handle($firstStand, 10000, $startedAt);
+        app(StartStandConstruction::class)->handle($secondStand, 6000, $startedAt);
         $firstStadium->forceFill(['active_capacity' => 0])->saveQuietly();
         $secondStadium->forceFill(['active_capacity' => 0])->saveQuietly();
 
@@ -405,7 +405,7 @@ class StadiumServiceTest extends TestCase
         $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'type' => StadiumType::REGIONAL, 'capacity' => 0, 'active_capacity' => 0]);
         $stand = StadiumStand::factory()->create(['stadium_id' => $stadium->id, 'position' => StadiumStandPosition::NORTH, 'capacity' => 0, 'status' => null]);
         $service = app(StadiumService::class);
-        $construction = $service->startStandConstruction($stand, 10000, CarbonImmutable::parse('2026-09-14'));
+        $construction = app(StartStandConstruction::class)->handle($stand, 10000, CarbonImmutable::parse('2026-09-14'));
 
         $completed = $service->completeStandConstructionForInstance($instance, $construction->completes_at);
 
@@ -487,7 +487,7 @@ class StadiumServiceTest extends TestCase
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('This commercial category is not available for the stadium type.');
 
-        app(StadiumService::class)->buildCommercialVenue(
+        app(BuildCommercialVenue::class)->handle(
             $stadium,
             $category->id,
             CommercialVenueSize::SMALL,

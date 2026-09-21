@@ -4,9 +4,7 @@ namespace App\Http\Controllers;
 
 use App\ConstructionPaymentMethod;
 use App\Helpers\ResponseHelper;
-use App\Http\Requests\BuildStadiumCommercialVenueRequest;
 use App\Http\Requests\BuildStadiumRequest;
-use App\Http\Requests\StartStadiumStandConstructionRequest;
 use App\Http\Resources\StadiumCommercialCategoryResource;
 use App\Http\Resources\StadiumCommercialVenueResource;
 use App\Http\Resources\StadiumResource;
@@ -77,26 +75,6 @@ class StadiumController extends Controller
         }
     }
 
-    public function buildCommercialVenue(BuildStadiumCommercialVenueRequest $request): JsonResponse
-    {
-        $data = $request->validated();
-
-        try {
-            $venue = $this->stadiumService->buildCommercialVenue(
-                $this->managedStadium(),
-                (int) $data['category_id'],
-                CommercialVenueSize::from((int) $data['size']),
-            );
-
-            return ResponseHelper::success(
-                (new StadiumCommercialVenueResource($venue->load('category')))->toArray(request()),
-                ResponseHelper::RESPONSE_SUCCESS_CODE,
-            );
-        } catch (DomainException $exception) {
-            return $this->domainError($exception);
-        }
-    }
-
     public function demolishCommercialVenue(int $venueId): JsonResponse
     {
         try {
@@ -108,32 +86,6 @@ class StadiumController extends Controller
             return ResponseHelper::success([
                 'demolition_cost' => $demolitionCost,
             ]);
-        } catch (DomainException $exception) {
-            return $this->domainError($exception);
-        }
-    }
-
-    public function startStandConstruction(
-        StartStadiumStandConstructionRequest $request,
-        int $standId,
-    ): JsonResponse {
-        $data = $request->validated();
-
-        try {
-            $stand = $this->stadiumRepository->standForStadium(
-                $this->managedStadium(),
-                $standId,
-            );
-            $construction = $this->stadiumService->startStandConstruction(
-                $stand,
-                (int) $data['target_capacity'],
-                CarbonImmutable::parse($this->gameContext->instanceDate()),
-            );
-
-            return ResponseHelper::success(
-                (new StadiumStandConstructionResource($construction))->toArray(request()),
-                ResponseHelper::RESPONSE_SUCCESS_CODE,
-            );
         } catch (DomainException $exception) {
             return $this->domainError($exception);
         }

@@ -7,7 +7,6 @@ use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
-use App\Models\StadiumStand;
 use App\Models\StadiumStandConstruction;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\StadiumService\Domain\StadiumCapacityManager;
@@ -79,11 +78,6 @@ class StadiumService
         return $this->stadiumInformation->buildableCommercialCategoriesForStadium($stadium);
     }
 
-    public function buildCommercialVenue(Stadium $stadium, int $categoryId, CommercialVenueSize $size): StadiumCommercialVenue
-    {
-        return $this->stadiumCommercialOperations->build($stadium, $categoryId, $size);
-    }
-
     public function stadiumExpansionCost(Stadium $stadium, int $additionalCapacity): int
     {
         return $this->stadiumInformation->stadiumExpansionCost($stadium, $additionalCapacity);
@@ -111,11 +105,6 @@ class StadiumService
     public function durationInWeeks(int $capacityIncrease): int
     {
         return $this->stadiumConstructionOperations->durationInWeeks($capacityIncrease);
-    }
-
-    public function startStandConstruction(StadiumStand $stadiumStand, int $targetCapacity, CarbonImmutable $startedAt): StadiumStandConstruction
-    {
-        return $this->stadiumConstructionOperations->startStandConstruction($stadiumStand, $targetCapacity, $startedAt);
     }
 
     public function completeStandConstructionForInstance(Instance $instance, CarbonImmutable $asOf): int

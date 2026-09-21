@@ -6,7 +6,6 @@ use App\ConstructionPaymentMethod;
 use App\Models\Instance;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
-use App\Models\StadiumStand;
 use App\Models\StadiumStandConstruction;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\StadiumConstructionType;
@@ -37,11 +36,6 @@ class StadiumConstructionOperations
     public function durationInWeeks(int $capacityIncrease): int
     {
         return $this->startStandConstruction->durationInWeeks($capacityIncrease);
-    }
-
-    public function startStandConstruction(StadiumStand $stadiumStand, int $targetCapacity, CarbonImmutable $startedAt): StadiumStandConstruction
-    {
-        return $this->startStandConstruction->handle($stadiumStand, $targetCapacity, $startedAt);
     }
 
     public function completeForInstance(Instance $instance, CarbonImmutable $asOf): int
