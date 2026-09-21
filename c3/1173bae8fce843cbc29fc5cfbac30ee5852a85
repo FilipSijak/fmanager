@@ -1,0 +1,26 @@
+app/Services/FinanceService/FinanceService.php
+  s_ac64ae811e5ffb::t_0b3b17b2bad888 218
+tests/Feature/FinanceEntityTest.php
+  s_ac64ae811e5ffb::t_0d72eaee5c9205 145-146
+  s_ac64ae811e5ffb::t_e1bbfacf0fe770 108-123
+  s_ac64ae811e5ffb::t_60c935090cc367 107
+app/Services/FinanceService/Domain/CashLoanEligibility.php
+  s_ac64ae811e5ffb::t_0b3b17b2bad888 11
+  s_ac64ae811e5ffb::t_1f6e06be87560c 6,13-16,18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c31173bae8fce843cbc29fc5cfbac30ee5852a85",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
