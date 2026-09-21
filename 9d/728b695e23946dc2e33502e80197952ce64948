@@ -1,0 +1,49 @@
+app/Models/BaseData/BaseFormation.php
+  s_ac64ae811e5ffb::t_66233c4a8114a7 5,16,20
+database/seeders/TacticsSeeder.php
+  s_ac64ae811e5ffb::t_0a3d9b5ca4592e 13,16,19,22
+  s_ac64ae811e5ffb::t_2d07aefb88dbd4 30
+tests/Feature/TacticsApiTest.php
+  s_ac64ae811e5ffb::t_e7fc84967a271a 11,39-41,45,47,54-56,156,158
+  s_ac64ae811e5ffb::t_0b905ecf3e9d25 42-44,46,48-53
+resources/js/pages/Tactics.tsx
+  s_ac64ae811e5ffb::t_258ba5eeb112bc 51
+app/Models/StaffTacticPreference.php
+  s_ac64ae811e5ffb::t_f8f9772cdcc2a5 17,21
+database/migrations/2026_09_21_195221_add_customized_flag_to_staff_tactic_preferences_table.php
+  s_ac64ae811e5ffb::t_f8f9772cdcc2a5 14-15,24-25
+  s_ac64ae811e5ffb::t_3ba20554783fcc 1-13,16-23,26-28
+database/factories/BaseFormationFactory.php
+  s_ac64ae811e5ffb::t_cbc73d3000d496 24
+app/Http/Resources/FormationResource.php
+  s_ac64ae811e5ffb::t_37a84a1317bc15 16
+database/migrations/2026_09_21_194912_add_tactical_tendency_to_base_formations_table.php
+  s_ac64ae811e5ffb::t_7f8efa16c282d2 1-13,16-23,26-28
+  s_ac64ae811e5ffb::t_cbca95b557f8f4 14-15,24-25
+app/Services/TacticsService/TacticsService.php
+  s_ac64ae811e5ffb::t_2d07aefb88dbd4 108-110,113-115,118-120
+  s_ac64ae811e5ffb::t_02a5673901c825 47,103-107,111-112,116-117,121-122
+  s_ac64ae811e5ffb::t_1a1eef87a75a6e 186,197-203
+  s_ac64ae811e5ffb::t_f38313fed98845 33-39,86
+  s_ac64ae811e5ffb::t_291acbf5a452ea 123-124
+app/Services/TacticsService/FormationTendency.php
+  s_ac64ae811e5ffb::t_2d07aefb88dbd4 7-9
+  s_ac64ae811e5ffb::t_cbca95b557f8f4 5
+  s_ac64ae811e5ffb::t_26221ed88a80ab 1-4,6,10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "9d728b695e23946dc2e33502e80197952ce64948",
+  "prompts": {},
+  "sessions": {
+    "s_ac64ae811e5ffb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a0c380-5a95-70e0-8068-b5ecf59795a1",
+        "model": "gpt-5.6-luna"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
