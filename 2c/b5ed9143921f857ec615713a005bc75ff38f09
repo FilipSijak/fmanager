@@ -1,0 +1,77 @@
+app/Http/Resources/PlayerResource.php
+  s_ff08a3617e9ac5::t_4e2c685211cd1d 45-48
+tests/Unit/Services/TransferService/SquadTransferAnalysisTest.php
+  s_ff08a3617e9ac5::t_97bf6064c26b10 22,38
+  s_ff08a3617e9ac5::t_d6a2f9ec89df19 40-60
+  s_ff08a3617e9ac5::t_4b8cc2021311a6 39
+app/Services/PersonService/GeneratePeople/PlayerPosition.php
+  s_ff08a3617e9ac5::t_97bf6064c26b10 15,19,58,64,77
+  s_ff08a3617e9ac5::t_47d492fc3ec94a 38,40-41
+  s_ff08a3617e9ac5::t_3817ba7e986738 36,39,42-43,91
+  s_ff08a3617e9ac5::t_1fbd97858663f6 9,37,44-49
+app/Repositories/PlayerRepository.php
+  s_ff08a3617e9ac5::t_1fbd97858663f6 11,101,167-168
+  s_ff08a3617e9ac5::t_04c9fe6fcfe860 169-170
+tests/Integration/Player/PlayerApiTest.php
+  s_ff08a3617e9ac5::t_d6a2f9ec89df19 55-56,81-82
+app/Services/PersonService/PersonConfig/Player/PlayerFields.php
+  s_ff08a3617e9ac5::t_e85d70fc3fc37f 19-22
+tests/Unit/Person/PlayerAttributesGeneratorTest.php
+  s_ff08a3617e9ac5::t_6f27f17583d5dd 11,21-39
+  s_ff08a3617e9ac5::t_fa783f2551aecd 40
+database/factories/PlayerFactory.php
+  s_ff08a3617e9ac5::t_4e2c685211cd1d 45-46
+tests/Unit/Services/TrainingService/PlayerProgressCalculatorTest.php
+  s_ff08a3617e9ac5::t_e22016001cbdc8 24-25
+  s_ff08a3617e9ac5::t_6f27f17583d5dd 18-23,26-35
+  s_ff08a3617e9ac5::t_4992981e55dad6 17
+app/Services/PersonService/GeneratePeople/PlayerInitialAttributes.php
+  s_ff08a3617e9ac5::t_e85d70fc3fc37f 43
+tests/Unit/Person/InitialPotentialTest.php
+  s_ff08a3617e9ac5::t_d6a2f9ec89df19 32
+tests/Unit/Services/PersonService/GeneratePeople/PlayerPositionTest.php
+  s_ff08a3617e9ac5::t_80b226677e8540 1-4,7-10,12,29-30
+  s_ff08a3617e9ac5::t_80a5588250a8fa 5-6,11,13-28
+app/Services/ClubService/SquadAnalysis/SquadPlayersConfig.php
+  s_ff08a3617e9ac5::t_97bf6064c26b10 7-8,10-12,16-19,21,23-27,31-34,36,38-42
+app/Services/PersonService/PersonService.php
+  s_ff08a3617e9ac5::t_1fbd97858663f6 17,98-103
+  s_ff08a3617e9ac5::t_6f56d424a2e026 104-105
+tests/Unit/Person/PlayerRandomnessTest.php
+  s_ff08a3617e9ac5::t_c2f97e25422044 52-63
+tests/Integration/Instance/CreateInstanceTest.php
+  s_ff08a3617e9ac5::t_d6a2f9ec89df19 240-251
+app/Services/PersonService/PersonConfig/Player/PlayerPositionConfig.php
+  s_ff08a3617e9ac5::t_60cecbd07b03d8 22
+  s_ff08a3617e9ac5::t_e85d70fc3fc37f 26-29,89-92,152-155
+  s_ff08a3617e9ac5::t_97bf6064c26b10 21,30-31,34-35,39,42-43,47,51,54-55,59,62-63,66-67,70-71,74-75,78-79,82-83,93-94,97-98,102,105-106,110,114,117-118,122,125-126,129-130,133-134,137-138,141-142,145-146,156-157,160-161,165,168-169,173,177,180-181,185,188-189,192-193,196-197,200-201,204-205,208-209,219-220
+app/Services/TrainingService/TrainingService.php
+  s_ff08a3617e9ac5::t_20ba171ba9c1d3 50-51
+app/Services/TransferService/TransferService.php
+  s_ff08a3617e9ac5::t_1fbd97858663f6 71
+database/migrations/2026_10_05_183945_add_goalkeeper_attributes_to_players.php
+  s_ff08a3617e9ac5::t_383c85dcdc8a36 1-4,6-11,16,28-31,40-42
+  s_ff08a3617e9ac5::t_c3383230e6e6e1 5,12-15,17-27,32-39
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_ff08a3617e9ac5::t_97bf6064c26b10 198-200
+  s_ff08a3617e9ac5::t_2ff8fde1f604fb 150,160,274,295,298-303
+  s_ff08a3617e9ac5::t_b8fb959a7b4a7e 8,68
+  s_ff08a3617e9ac5::t_47d492fc3ec94a 60,191,197,201-206,208
+  s_ff08a3617e9ac5::t_d6e3995ee4ba0b 304
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2cb5ed9143921f857ec615713a005bc75ff38f09",
+  "prompts": {},
+  "sessions": {
+    "s_ff08a3617e9ac5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10d46-5453-70c3-b272-386823fa9a1e",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
