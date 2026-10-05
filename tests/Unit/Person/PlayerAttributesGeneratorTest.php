@@ -8,6 +8,7 @@ use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\GeneratePeople\PersonDetailsGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerAttributesGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerInitialAttributes;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -16,6 +17,28 @@ use PHPUnit\Framework\TestCase;
 class PlayerAttributesGeneratorTest extends TestCase
 {
     private PlayerAttributesGenerator $playerAttributesGenerator;
+
+    public function test_goalkeepers_receive_goalkeeping_skills_and_outfield_players_do_not(): void
+    {
+        $personDetailsGenerator = $this->createMock(PersonDetailsGenerator::class);
+        $personDetailsGenerator->method('generate')
+            ->willReturn(new PersonInfo('Test', 'Player', 'GB', '2002-01-01'));
+        $generator = new PlayerAttributesGenerator(new PlayerInitialAttributes, $personDetailsGenerator);
+        $potentials = new PotentialByCategoryData(150, 150, 150);
+        $asOfDate = CarbonImmutable::parse('2026-07-01');
+
+        $goalkeeper = $generator->setPlayerDetails(new GeneratedPlayerProfile(150, 'GK', $potentials))
+            ->generateAttributes($asOfDate);
+        $outfieldPlayer = $generator->setPlayerDetails(new GeneratedPlayerProfile(150, 'CB', $potentials))
+            ->generateAttributes($asOfDate);
+
+        foreach (PlayerFields::GOALKEEPING_FIELDS as $field) {
+            $this->assertGreaterThan(1, $goalkeeper->attributes[$field]);
+            $this->assertSame(1, $outfieldPlayer->attributes[$field]);
+        }
+
+        $this->assertGreaterThan(1, $outfieldPlayer->attributes['corners']);
+    }
 
     protected function setUp(): void
     {

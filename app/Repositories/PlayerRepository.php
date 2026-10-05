@@ -8,6 +8,7 @@ use App\Models\Player;
 use App\Repositories\Interfaces\IPlayerRepository;
 use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\PersonService\GeneratePeople\PlayerPosition;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TransferService\TransferStatusTypes;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
@@ -97,7 +98,7 @@ class PlayerRepository implements IPlayerRepository
         foreach ($players as $player) {
 
             $attributes = $player->getAttributes();
-            $positionList = $playerPositionGenerator->getInitialPositionsBasedOnAttributes($attributes);
+            $positionList = $playerPositionGenerator->getInitialPositionsBasedOnAttributes($attributes, $player->position);
             $playerPositions = array_flip(PlayerPositionConfig::PLAYER_POSITIONS);
 
             foreach ($positionList as $position => $grade) {
@@ -161,6 +162,10 @@ class PlayerRepository implements IPlayerRepository
 
         foreach (self::PLAYER_ATTRIBUTE_COLUMNS as $column) {
             $row[$column] = $player->{$column};
+        }
+
+        foreach (PlayerFields::GOALKEEPING_FIELDS as $field) {
+            $row[$field] = $player->{$field};
         }
 
         return $row;

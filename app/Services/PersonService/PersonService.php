@@ -14,6 +14,7 @@ use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
@@ -92,6 +93,14 @@ class PersonService
 
             foreach ($fields as $field) {
                 $player->{$field} = min((int) $player->{$field}, $categoryCeiling);
+            }
+        }
+
+        if ($player->position === 'GK') {
+            $goalkeeperCeiling = $this->playerAttributeCeiling->forPotential($currentCategoryPotentials->technical);
+
+            foreach (PlayerFields::GOALKEEPING_FIELDS as $field) {
+                $player->{$field} = min((int) $player->{$field}, $goalkeeperCeiling);
             }
         }
     }

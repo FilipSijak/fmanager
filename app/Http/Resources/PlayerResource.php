@@ -42,6 +42,10 @@ class PlayerResource extends JsonResource
                 'physical' => collect(PlayerFields::PHYSICAL_FIELDS)
                     ->mapWithKeys(fn ($field) => [$field => $this->{$field}])
                     ->all(),
+
+                'goalkeeping' => collect(PlayerFields::GOALKEEPING_FIELDS)
+                    ->mapWithKeys(fn ($field) => [$field => $this->{$field}])
+                    ->all(),
             ],
         ];
     }

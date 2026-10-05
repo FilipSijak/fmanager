@@ -49,4 +49,16 @@ class PlayerRandomnessTest extends TestCase
 
         $this->assertNotEmpty($lowPotentialAttributes);
     }
+
+    public function test_free_agent_generation_includes_goalkeepers(): void
+    {
+        $generator = new PlayerPotential(new Randomizer(new Xoshiro256StarStar(1234)));
+        $positions = [];
+
+        for ($index = 0; $index < 200; $index++) {
+            $positions[] = $generator->createFreeAgent(150)->position;
+        }
+
+        $this->assertContains('GK', $positions);
+    }
 }

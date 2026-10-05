@@ -19,7 +19,7 @@ class SquadTransferAnalysisTest extends TestCase
     {
         $club = Club::factory()->create(['id' => 1, 'instance_id' => 1]);
 
-        $this->assertTrue((new SquadTransferAnalysis())->positionShortage($club, 'CB'));
+        $this->assertTrue((new SquadTransferAnalysis)->positionShortage($club, 'CB'));
     }
 
     #[Test]
@@ -35,6 +35,28 @@ class SquadTransferAnalysisTest extends TestCase
                 'position' => 'CB',
             ]);
 
-        $this->assertFalse((new SquadTransferAnalysis())->positionShortage($club, 'CB'));
+        $this->assertFalse((new SquadTransferAnalysis)->positionShortage($club, 'CB'));
+    }
+
+    #[Test]
+    public function it_reports_a_goalkeeper_shortage_until_three_are_signed(): void
+    {
+        $club = Club::factory()->create(['id' => 1, 'instance_id' => 1]);
+        Player::factory()->count(2)->create([
+            'club_id' => $club->id,
+            'instance_id' => 1,
+            'position' => 'GK',
+        ]);
+
+        $analysis = new SquadTransferAnalysis;
+        $this->assertTrue($analysis->positionShortage($club, 'GK'));
+
+        Player::factory()->create([
+            'club_id' => $club->id,
+            'instance_id' => 1,
+            'position' => 'GK',
+        ]);
+
+        $this->assertFalse($analysis->positionShortage($club, 'GK'));
     }
 }

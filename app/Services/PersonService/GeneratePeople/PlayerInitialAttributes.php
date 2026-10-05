@@ -8,6 +8,8 @@ use Random\Randomizer;
 
 class PlayerInitialAttributes
 {
+    private const GOALKEEPER_OUTFIELD_TECHNICAL_DIVISOR = 2;
+
     const PRIMARY_ATTRIBUTES = 'primary_attributes';
 
     const SECONDARY_ATTRIBUTES = 'secondary_attributes';
@@ -46,10 +48,19 @@ class PlayerInitialAttributes
         foreach ($mainAttributes as $attributesCategory => $importanceList) {
             $this->setPrimaryAttributes($importanceList['primary'], $attributesCategory);
             $this->setSecondaryAttributes($importanceList['secondary'], $attributesCategory);
-            $this->setOtherAttributes();
         }
 
-        return $this->playerAllAttributes;
+        $this->setOtherAttributes();
+
+        $allAttributeFields = array_merge(
+            PlayerFields::TECHNICAL_FIELDS,
+            PlayerFields::MENTAL_FIELDS,
+            PlayerFields::PHYSICAL_FIELDS,
+            PlayerFields::GOALKEEPING_FIELDS,
+        );
+        $defaultAttributes = array_fill_keys($allAttributeFields, 1);
+
+        return array_replace($defaultAttributes, $this->playerAllAttributes);
     }
 
     /**
@@ -139,39 +150,37 @@ class PlayerInitialAttributes
      */
     protected function setOtherAttributes(): void
     {
-        $attributeCategories = ['technical', 'mental', 'physical'];
+        $fieldsByCategory = [
+            'technical' => PlayerFields::TECHNICAL_FIELDS,
+            'mental' => PlayerFields::MENTAL_FIELDS,
+            'physical' => PlayerFields::PHYSICAL_FIELDS,
+        ];
 
-        $allAbilityAttributes = array_merge(
-            PlayerFields::TECHNICAL_FIELDS,
-            PlayerFields::MENTAL_FIELDS,
-            PlayerFields::PHYSICAL_FIELDS
-        );
+        foreach ($fieldsByCategory as $category => $fields) {
+            $potentialForCategory = $this->playerPotentialByCategory[$category];
+            $reducedPotential = $this->potentialReduction($potentialForCategory, self::OTHER_ATTRIBTUES);
 
-        foreach ($allAbilityAttributes as $field) {
-            foreach ($attributeCategories as $category) {
-                // checks the object if the attribute was already set for primary or secondary value
-                if (! isset($this->playerAllAttributes[$field])) {
-                    $potentialForCategory = $this->playerPotentialByCategory[$category];
-                    $reducedPotential = $this->potentialReduction($potentialForCategory, self::OTHER_ATTRIBTUES);
-                    $minimumAttributeValue = $this->setMinimumAttributeValue($potentialForCategory);
-
-                    if (isset($this->commonAttributes[$field])) {
-                        $minimumAttributeValue = $minimumAttributeValue + 3;
-                    }
-
-                    /*
-                     * After getting a minimal value for an attribute, the value is used as a starting point for rand
-                     * His potential will be reduced so non important attributes don't get too high
-                     * Example: potential = 150  rand (7, (150 - 50) / 10) or rand between 7 and 10
-                     * Players with lower potential will get their potential reduced less
-                     */
-                    $this->playerAllAttributes[$field] = (int) round(
-                        $this->randomizer->getInt(
-                            $minimumAttributeValue,
-                            max($minimumAttributeValue, (int) (($potentialForCategory - $reducedPotential) / 10)),
-                        )
-                    );
+            foreach ($fields as $field) {
+                if (isset($this->playerAllAttributes[$field])) {
+                    continue;
                 }
+
+                $minimumAttributeValue = $this->setMinimumAttributeValue($potentialForCategory);
+
+                if (isset($this->commonAttributes[$field])) {
+                    $minimumAttributeValue += 3;
+                }
+
+                $attributeValue = $this->randomizer->getInt(
+                    $minimumAttributeValue,
+                    max($minimumAttributeValue, (int) (($potentialForCategory - $reducedPotential) / 10)),
+                );
+
+                if ($this->playerPosition === 'GK' && $category === 'technical') {
+                    $attributeValue = max(1, intdiv($attributeValue, self::GOALKEEPER_OUTFIELD_TECHNICAL_DIVISOR));
+                }
+
+                $this->playerAllAttributes[$field] = $attributeValue;
             }
         }
     }

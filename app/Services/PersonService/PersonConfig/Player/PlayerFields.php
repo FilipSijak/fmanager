@@ -16,5 +16,9 @@ abstract class PlayerFields
         'acceleration', 'agility', 'balance', 'jumping', 'natural_fitness', 'pace', 'stamina', 'strength',
     ];
 
+    const GOALKEEPING_FIELDS = [
+        'handling', 'reflexes', 'one_on_ones', 'aerial_reach', 'distribution',
+    ];
+
     const PERSON_ATTRIBUTE_CATEGORIES = ['technical', 'mental', 'physical'];
 }
