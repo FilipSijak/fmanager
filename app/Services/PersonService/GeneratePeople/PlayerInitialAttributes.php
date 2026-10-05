@@ -8,6 +8,8 @@ use Random\Randomizer;
 
 class PlayerInitialAttributes
 {
+    private const GOALKEEPER_OUTFIELD_TECHNICAL_DIVISOR = 2;
+
     const PRIMARY_ATTRIBUTES = 'primary_attributes';
 
     const SECONDARY_ATTRIBUTES = 'secondary_attributes';
@@ -169,10 +171,16 @@ class PlayerInitialAttributes
                     $minimumAttributeValue += 3;
                 }
 
-                $this->playerAllAttributes[$field] = $this->randomizer->getInt(
+                $attributeValue = $this->randomizer->getInt(
                     $minimumAttributeValue,
                     max($minimumAttributeValue, (int) (($potentialForCategory - $reducedPotential) / 10)),
                 );
+
+                if ($this->playerPosition === 'GK' && $category === 'technical') {
+                    $attributeValue = max(1, intdiv($attributeValue, self::GOALKEEPER_OUTFIELD_TECHNICAL_DIVISOR));
+                }
+
+                $this->playerAllAttributes[$field] = $attributeValue;
             }
         }
     }
