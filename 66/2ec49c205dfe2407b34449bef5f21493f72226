@@ -1,0 +1,21 @@
+tests/Unit/Services/PersonService/GeneratePeople/PlayerInitialAttributesTest.php
+  s_ff08a3617e9ac5::t_9b6ed45ee18582 6,30-72
+app/Services/PersonService/GeneratePeople/PlayerInitialAttributes.php
+  s_ff08a3617e9ac5::t_8bcb9ad4652537 11-12,174,178-183
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "662ec49c205dfe2407b34449bef5f21493f72226",
+  "prompts": {},
+  "sessions": {
+    "s_ff08a3617e9ac5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a10d46-5453-70c3-b272-386823fa9a1e",
+        "model": "gpt-6-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
