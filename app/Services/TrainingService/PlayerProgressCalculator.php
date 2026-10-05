@@ -5,6 +5,7 @@ namespace App\Services\TrainingService;
 use App\Domain\PlayerDevelopment\PlayerAttributeCeiling;
 use App\Domain\PlayerDevelopment\PlayerDevelopmentCategory;
 use App\Domain\PlayerDevelopment\TrainingCategory;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TrainingService\Data\TrainingPlayerData;
 use Carbon\CarbonInterface;
@@ -56,7 +57,7 @@ class PlayerProgressCalculator
 
         $playerUpdates = [];
         $progressUpdates = ['last_progressed_at' => $timestamp, 'updated_at' => $timestamp];
-        $conditionCost = $this->conditionCost($schedules);
+        $conditionCost = $this->conditionCost($schedules, $player->position);
         $progressUpdates['condition'] = $conditionCost > 0
             ? max(self::MINIMUM_TRAINING_CONDITION, (int) $player->condition - $conditionCost)
             : min(100, (int) $player->condition + self::TRAINING_CONDITION_RECOVERY);
@@ -64,7 +65,7 @@ class PlayerProgressCalculator
         foreach ($this->fieldsByCategory() as $categoryId => $categoryFields) {
             $schedule = $schedules[$categoryId] ?? null;
 
-            if ($schedule === null || $categoryFields === []) {
+            if ($schedule === null || $categoryFields === [] || ($categoryId === TrainingCategory::Goalkeeping->value && $player->position !== 'GK')) {
                 continue;
             }
 
@@ -146,7 +147,7 @@ class PlayerProgressCalculator
 
     private function categoryPotential(int $categoryId, TrainingPlayerData $player): int
     {
-        $category = PlayerDevelopmentCategory::fromTrainingCategoryId($categoryId);
+        $category = $this->developmentCategoryFor($categoryId);
 
         return $category === null ? 0 : $player->{$category->value};
     }
@@ -156,7 +157,7 @@ class PlayerProgressCalculator
         int $categoryPotential,
         TrainingPlayerData $player
     ): int {
-        $category = PlayerDevelopmentCategory::fromTrainingCategoryId($categoryId);
+        $category = $this->developmentCategoryFor($categoryId);
         $persistedPotential = $category === null
             ? null
             : $player->{$category->currentPotentialProperty()};
@@ -187,18 +188,24 @@ class PlayerProgressCalculator
         };
     }
 
-    private function conditionCost(array $schedules): int
+    private function conditionCost(array $schedules, string $position): int
     {
         if ($schedules === []) {
             return 0;
         }
 
+        $trainedCategories = [
+            TrainingCategory::Physical->value,
+            TrainingCategory::Tactical->value,
+            TrainingCategory::Technical->value,
+        ];
+
+        if ($position === 'GK') {
+            $trainedCategories[] = TrainingCategory::Goalkeeping->value;
+        }
+
         $effort = collect($schedules)
-            ->whereIn('category.value', [
-                TrainingCategory::Physical->value,
-                TrainingCategory::Tactical->value,
-                TrainingCategory::Technical->value,
-            ])
+            ->whereIn('category.value', $trainedCategories)
             ->sum(fn ($schedule): int => $this->effortForIntensity(
                 $schedule->intensity
             ));
@@ -264,7 +271,7 @@ class PlayerProgressCalculator
             return $points;
         }
 
-        $positionCategory = PlayerDevelopmentCategory::fromTrainingCategoryId($categoryId)?->value;
+        $positionCategory = $this->developmentCategoryFor($categoryId)?->value;
 
         if ($positionCategory === null) {
             return 0;
@@ -285,7 +292,14 @@ class PlayerProgressCalculator
             PlayerDevelopmentCategory::Physical->trainingCategoryId() => PlayerDevelopmentCategory::Physical->fields(),
             PlayerDevelopmentCategory::Mental->trainingCategoryId() => PlayerDevelopmentCategory::Mental->fields(),
             PlayerDevelopmentCategory::Technical->trainingCategoryId() => PlayerDevelopmentCategory::Technical->fields(),
-            TrainingCategory::Goalkeeping->value => [],
+            TrainingCategory::Goalkeeping->value => PlayerFields::GOALKEEPING_FIELDS,
         ];
+    }
+
+    private function developmentCategoryFor(int $categoryId): ?PlayerDevelopmentCategory
+    {
+        return $categoryId === TrainingCategory::Goalkeeping->value
+            ? PlayerDevelopmentCategory::Technical
+            : PlayerDevelopmentCategory::fromTrainingCategoryId($categoryId);
     }
 }

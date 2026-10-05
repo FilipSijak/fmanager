@@ -237,6 +237,18 @@ class CreateInstanceTest extends TestCase
         $this->assertNotNull($players->first()->person);
         $this->assertNotEmpty($players->first()->first_name);
 
+        $goalkeepers = $players->where('position', 'GK');
+        $this->assertCount(3, $goalkeepers);
+        $this->assertSame(
+            3,
+            DB::table('player_position')
+                ->whereIn('player_id', $goalkeepers->pluck('id'))
+                ->where('position_id', 15)
+                ->count()
+        );
+        $this->assertTrue($goalkeepers->every(fn (Player $player): bool => $player->handling > 1 && $player->reflexes > 1));
+        $this->assertSame(200, Player::where('instance_id', $instance->id)->whereNull('club_id')->count());
+
         $coachingStaff = StaffCoaching::where('club_id', $club->id)->get();
         $physios = StaffPhysio::where('club_id', $club->id)->get();
         $scouts = StaffScout::where('club_id', $club->id)->get();

@@ -52,6 +52,8 @@ class PlayerApiTest extends TestCase
             'corners' => 11,
             'decisions' => 12,
             'pace' => 13,
+            'handling' => 17,
+            'reflexes' => 18,
         ]);
 
         $response = $this
@@ -76,6 +78,8 @@ class PlayerApiTest extends TestCase
             ->assertJsonPath('data.attributes.technical.corners', 11)
             ->assertJsonPath('data.attributes.mental.decisions', 12)
             ->assertJsonPath('data.attributes.physical.pace', 13)
+            ->assertJsonPath('data.attributes.goalkeeping.handling', 17)
+            ->assertJsonPath('data.attributes.goalkeeping.reflexes', 18)
             ->assertJsonMissingPath('data.potential')
             ->assertJsonMissingPath('data.max_potential');
 

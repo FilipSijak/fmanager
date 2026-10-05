@@ -29,5 +29,6 @@ class InitialPotentialTest extends TestCase
         $this->assertContainsOnlyInstancesOf(GeneratedPlayerProfile::class, $playerList);
         $this->assertEquals(count($cbs), SquadPlayersConfig::POSITION_COUNT['CB']);
         $this->assertEquals(count($st), SquadPlayersConfig::POSITION_COUNT['ST']);
+        $this->assertCount(3, array_filter($playerList, fn (GeneratedPlayerProfile $player): bool => $player->position === 'GK'));
     }
 }

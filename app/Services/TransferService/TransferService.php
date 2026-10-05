@@ -68,7 +68,7 @@ class TransferService extends BaseService
                 ! $deficitPositions &&
                 (($clubBudget > self::LUXURY_TRANSFER_BALANCE && $randomChanceForLuxury == 1) || $this->forceLuxuryBids)
             ) {
-                $position = PlayerPositionConfig::PLAYER_POSITIONS[rand(1, 14)];
+                $position = PlayerPositionConfig::PLAYER_POSITIONS[array_rand(PlayerPositionConfig::PLAYER_POSITIONS)];
 
                 $this->transferServiceHandler->luxuryTransferAttempt($club, $clubBudget, $position);
 

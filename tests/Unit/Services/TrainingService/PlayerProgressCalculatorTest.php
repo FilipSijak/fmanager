@@ -15,6 +15,25 @@ use Tests\TestCase;
 class PlayerProgressCalculatorTest extends TestCase
 {
     #[Test]
+    public function goalkeeping_training_improves_a_goalkeeper_without_training_an_outfield_player(): void
+    {
+        $fields = PlayerFields::GOALKEEPING_FIELDS;
+        $attributes = array_fill_keys($fields, 10);
+        $progress = array_fill_keys($fields, 99);
+        $schedule = $this->schedules([TrainingCategory::Goalkeeping->value => TrainingIntensity::Medium]);
+        $goalkeeper = new TrainingPlayerData(1, 120, 150, 150, 100, 100, 'GK', false, 100, $attributes, $progress);
+        $outfieldPlayer = new TrainingPlayerData(2, 120, 150, 150, 100, 100, 'CB', false, 100, $attributes, $progress);
+        $calculator = new PlayerProgressCalculator;
+
+        $goalkeeperUpdates = $calculator->forTrainingSession($goalkeeper, $schedule, $fields, CarbonImmutable::parse('2027-06-10'));
+        $outfieldUpdates = $calculator->forTrainingSession($outfieldPlayer, $schedule, $fields, CarbonImmutable::parse('2027-06-10'));
+
+        $this->assertSame(11, $goalkeeperUpdates->player['handling']);
+        $this->assertSame([], $outfieldUpdates->player);
+        $this->assertSame(100, $outfieldUpdates->progress['condition']);
+    }
+
+    #[Test]
     public function an_injured_player_loses_accumulated_progress_without_player_updates(): void
     {
         $timestamp = CarbonImmutable::parse('2027-06-10');

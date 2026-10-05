@@ -47,7 +47,8 @@ class TrainingService
         $trainingFields = array_merge(
             PlayerFields::TECHNICAL_FIELDS,
             PlayerFields::MENTAL_FIELDS,
-            PlayerFields::PHYSICAL_FIELDS
+            PlayerFields::PHYSICAL_FIELDS,
+            PlayerFields::GOALKEEPING_FIELDS
         );
 
         $this->trainingRepository->transaction(function () use ($club, $trainingDate, $trainingFields): void {

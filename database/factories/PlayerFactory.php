@@ -42,7 +42,8 @@ class PlayerFactory extends Factory
                 'potential' => random_int(20, 200),
                 'position' => 'CB',
             ],
-            $playerFieldsValues
+            $playerFieldsValues,
+            array_fill_keys(PlayerFields::GOALKEEPING_FIELDS, 1)
         );
     }
 }

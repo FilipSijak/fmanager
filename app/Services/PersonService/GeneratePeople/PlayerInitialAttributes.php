@@ -40,7 +40,7 @@ class PlayerInitialAttributes
 
     public function initAllAttributes(): array
     {
-        $this->playerAllAttributes = [];
+        $this->playerAllAttributes = array_fill_keys(PlayerFields::GOALKEEPING_FIELDS, 1);
         $mainAttributes = PlayerPositionConfig::getPositionMainAttributes($this->playerPosition);
 
         foreach ($mainAttributes as $attributesCategory => $importanceList) {

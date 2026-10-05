@@ -6,17 +6,17 @@ use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 
 class PlayerPosition
 {
-    public function getInitialPositionsBasedOnAttributes($attributesValues): array
+    public function getInitialPositionsBasedOnAttributes(array $attributesValues, ?string $primaryPosition = null): array
     {
         $positionList = PlayerPositionConfig::PLAYER_POSITIONS;
         $positionListMainAttributes = [];
 
         foreach ($positionList as $position) {
-            if (!isset($positionListMainAttributes[$position]['primary'])) {
+            if (! isset($positionListMainAttributes[$position]['primary'])) {
                 $positionListMainAttributes[$position]['primary'] = [];
             }
 
-            if (!isset($positionListMainAttributes[$position]['secondary'])) {
+            if (! isset($positionListMainAttributes[$position]['secondary'])) {
                 $positionListMainAttributes[$position]['secondary'] = [];
             }
 
@@ -33,28 +33,35 @@ class PlayerPosition
             );
         }
 
-        return $this->getAverageGradeByPosition($positionListMainAttributes, $attributesValues);
+        $allGrades = $this->getAverageGradeByPosition($positionListMainAttributes, $attributesValues);
+
+        if ($primaryPosition !== 'GK') {
+            unset($allGrades['GK']);
+        }
+
+        $grades = array_slice($allGrades, 0, 3);
+
+        if ($primaryPosition !== null && ! array_key_exists($primaryPosition, $grades)) {
+            array_pop($grades);
+            $grades[$primaryPosition] = $allGrades[$primaryPosition];
+        }
+
+        return $grades;
     }
 
-    /**
-     * @param array $positionsWithMainAttributes
-     * @param array $playerAttributeValues
-     *
-     * @return array
-     */
     private function getAverageGradeByPosition(array $positionsWithMainAttributes, array $playerAttributeValues): array
     {
         $averageGradeForPosition = [];
 
         foreach ($positionsWithMainAttributes as $position => $positionAttributes) {
             $averageGradeForPosition[$position] = 0;
-            $count                              = 0;
+            $count = 0;
 
             if (isset($positionAttributes['primary'][0])) {
                 foreach ($positionAttributes['primary'][0] as $attribute) {
                     $count++;
 
-                    if (!isset($playerAttributeValues[$attribute])) {
+                    if (! isset($playerAttributeValues[$attribute])) {
                         echo $attribute;
                     } else {
                         $averageGradeForPosition[$position] += $playerAttributeValues[$attribute] + 8;
@@ -67,7 +74,7 @@ class PlayerPosition
                 foreach ($positionAttributes['secondary'][0] as $attribute) {
                     $count++;
 
-                    if (!isset($playerAttributeValues[$attribute])) {
+                    if (! isset($playerAttributeValues[$attribute])) {
                         echo $attribute;
                     } else {
                         $averageGradeForPosition[$position] += $playerAttributeValues[$attribute] + 5;
@@ -81,6 +88,6 @@ class PlayerPosition
 
         arsort($averageGradeForPosition);
 
-        return array_slice($averageGradeForPosition, 0,3);
+        return $averageGradeForPosition;
     }
 }
