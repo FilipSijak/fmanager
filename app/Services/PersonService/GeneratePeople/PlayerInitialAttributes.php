@@ -46,8 +46,9 @@ class PlayerInitialAttributes
         foreach ($mainAttributes as $attributesCategory => $importanceList) {
             $this->setPrimaryAttributes($importanceList['primary'], $attributesCategory);
             $this->setSecondaryAttributes($importanceList['secondary'], $attributesCategory);
-            $this->setOtherAttributes();
         }
+
+        $this->setOtherAttributes();
 
         $allAttributeFields = array_merge(
             PlayerFields::TECHNICAL_FIELDS,
@@ -147,39 +148,31 @@ class PlayerInitialAttributes
      */
     protected function setOtherAttributes(): void
     {
-        $attributeCategories = ['technical', 'mental', 'physical'];
+        $fieldsByCategory = [
+            'technical' => PlayerFields::TECHNICAL_FIELDS,
+            'mental' => PlayerFields::MENTAL_FIELDS,
+            'physical' => PlayerFields::PHYSICAL_FIELDS,
+        ];
 
-        $allAbilityAttributes = array_merge(
-            PlayerFields::TECHNICAL_FIELDS,
-            PlayerFields::MENTAL_FIELDS,
-            PlayerFields::PHYSICAL_FIELDS
-        );
+        foreach ($fieldsByCategory as $category => $fields) {
+            $potentialForCategory = $this->playerPotentialByCategory[$category];
+            $reducedPotential = $this->potentialReduction($potentialForCategory, self::OTHER_ATTRIBTUES);
 
-        foreach ($allAbilityAttributes as $field) {
-            foreach ($attributeCategories as $category) {
-                // checks the object if the attribute was already set for primary or secondary value
-                if (! isset($this->playerAllAttributes[$field])) {
-                    $potentialForCategory = $this->playerPotentialByCategory[$category];
-                    $reducedPotential = $this->potentialReduction($potentialForCategory, self::OTHER_ATTRIBTUES);
-                    $minimumAttributeValue = $this->setMinimumAttributeValue($potentialForCategory);
-
-                    if (isset($this->commonAttributes[$field])) {
-                        $minimumAttributeValue = $minimumAttributeValue + 3;
-                    }
-
-                    /*
-                     * After getting a minimal value for an attribute, the value is used as a starting point for rand
-                     * His potential will be reduced so non important attributes don't get too high
-                     * Example: potential = 150  rand (7, (150 - 50) / 10) or rand between 7 and 10
-                     * Players with lower potential will get their potential reduced less
-                     */
-                    $this->playerAllAttributes[$field] = (int) round(
-                        $this->randomizer->getInt(
-                            $minimumAttributeValue,
-                            max($minimumAttributeValue, (int) (($potentialForCategory - $reducedPotential) / 10)),
-                        )
-                    );
+            foreach ($fields as $field) {
+                if (isset($this->playerAllAttributes[$field])) {
+                    continue;
                 }
+
+                $minimumAttributeValue = $this->setMinimumAttributeValue($potentialForCategory);
+
+                if (isset($this->commonAttributes[$field])) {
+                    $minimumAttributeValue += 3;
+                }
+
+                $this->playerAllAttributes[$field] = $this->randomizer->getInt(
+                    $minimumAttributeValue,
+                    max($minimumAttributeValue, (int) (($potentialForCategory - $reducedPotential) / 10)),
+                );
             }
         }
     }
