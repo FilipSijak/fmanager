@@ -36,6 +36,8 @@ class PlayerAttributesGeneratorTest extends TestCase
             $this->assertGreaterThan(1, $goalkeeper->attributes[$field]);
             $this->assertSame(1, $outfieldPlayer->attributes[$field]);
         }
+
+        $this->assertGreaterThan(1, $outfieldPlayer->attributes['corners']);
     }
 
     protected function setUp(): void
