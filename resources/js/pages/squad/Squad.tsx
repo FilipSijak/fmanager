@@ -31,6 +31,7 @@ export default function Squad() {
         assignChipToPlayer,
         togglePlayerBox,
         saveLineup,
+        clearLineup,
         isSaving,
         saveError,
     } = useLineupBoard();
@@ -105,8 +106,9 @@ export default function Squad() {
                     ))}
                     <button
                         type="button"
-                        disabled
-                        className="ml-auto rounded border border-slate-500 bg-[#8a8a8d] px-4 py-1.5 text-sm font-semibold text-slate-300"
+                        disabled={isSaving}
+                        onClick={clearLineup}
+                        className="ml-auto rounded border border-red-600 bg-red-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         Clear Squad
                     </button>

@@ -117,12 +117,25 @@ export function useLineupBoard() {
             .finally(() => setIsSaving(false));
     }
 
+    /** Deselects every player and saves the now-empty lineup. */
+    function clearLineup() {
+        setAssignments({});
+        setIsSaving(true);
+        setSaveError(null);
+
+        return api
+            .post(storeLineup.url(), { assignments: [] })
+            .catch((error) => setSaveError(extractErrorMessage(error)))
+            .finally(() => setIsSaving(false));
+    }
+
     return {
         chipIdForPlayer,
         playerIdForChip,
         assignChipToPlayer,
         togglePlayerBox,
         saveLineup,
+        clearLineup,
         isSaving,
         saveError,
     };
