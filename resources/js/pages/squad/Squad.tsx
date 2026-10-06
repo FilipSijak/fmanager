@@ -1,6 +1,7 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
 import GameLayout from '@/layouts/GameLayout';
+import { tactics } from '@/routes';
 import PlayerRow from './components/PlayerRow';
 import { useLineupBoard } from './useLineupBoard';
 import { useSquad } from './useSquad';
@@ -15,11 +16,11 @@ const tabs = [
 ] as const;
 
 const bottomTabs = [
-    'Tactics',
-    'Training',
-    'Last Match',
-    'Premier League',
-    'History',
+    { label: 'Tactics', href: tactics.url() },
+    { label: 'Training' },
+    { label: 'Last Match' },
+    { label: 'Premier League' },
+    { label: 'History' },
 ] as const;
 
 export default function Squad() {
@@ -223,16 +224,30 @@ export default function Squad() {
             </div>
 
             <div className="flex bg-[#200064] text-sm font-bold text-white">
-                {bottomTabs.map((tab) => (
-                    <button
-                        key={tab}
-                        type="button"
-                        className="flex flex-1 items-center justify-center gap-1 border-r border-white/10 py-3 last:border-r-0 hover:bg-white/5"
-                    >
-                        {tab}
-                        <ChevronDown size={12} className="-rotate-90" />
-                    </button>
-                ))}
+                {bottomTabs.map((tab) => {
+                    const className =
+                        'flex flex-1 items-center justify-center gap-1 border-r border-white/10 py-3 last:border-r-0 hover:bg-white/5';
+
+                    return 'href' in tab ? (
+                        <Link
+                            key={tab.label}
+                            href={tab.href}
+                            className={className}
+                        >
+                            {tab.label}
+                            <ChevronDown size={12} className="-rotate-90" />
+                        </Link>
+                    ) : (
+                        <button
+                            key={tab.label}
+                            type="button"
+                            className={className}
+                        >
+                            {tab.label}
+                            <ChevronDown size={12} className="-rotate-90" />
+                        </button>
+                    );
+                })}
             </div>
         </GameLayout>
     );
