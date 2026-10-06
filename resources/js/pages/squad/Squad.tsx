@@ -1,39 +1,8 @@
 import { Head } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
 import GameLayout from '@/layouts/GameLayout';
-
-type Player = {
-    name: string;
-    position: string;
-    marker?: 'international';
-    keyPlayer?: boolean;
-};
-
-const leftColumn: Player[] = [
-    { name: 'Begovic, A', position: 'GK' },
-    { name: 'Azpilicueta, C', position: 'D RLC' },
-    { name: 'Alonso, M', position: 'D/DM L' },
-    { name: 'Cahill, G', position: 'D C' },
-    { name: 'Terry, J', position: 'D C' },
-    { name: 'Kanté, N', position: 'DM C', keyPlayer: true },
-    { name: 'Fàbregas, C', position: 'M C' },
-    { name: 'Moses, V', position: 'AM RL' },
-    { name: 'Angban, V', position: 'AM C' },
-    { name: 'Batshuayi, M', position: 'S C' },
-];
-
-const rightColumn: Player[] = [
-    { name: 'Courtois, T', position: 'GK' },
-    { name: 'Zouma, K', position: 'D/DM RC' },
-    { name: 'Baba, A', position: 'D L' },
-    { name: 'David Luiz', position: 'D/DM C' },
-    { name: 'Chalobah, N', position: 'DM C' },
-    { name: 'Matic, N', position: 'DM C' },
-    { name: 'Hazard, E', position: 'AM/F RLC', keyPlayer: true },
-    { name: 'Willian', position: 'AM/F RLC', marker: 'international' },
-    { name: 'Pedro', position: 'F RLC' },
-    { name: 'Diego Costa', position: 'S C', keyPlayer: true },
-];
+import PlayerRow from './components/PlayerRow';
+import { useSquad } from './useSquad';
 
 const positionChips = [
     'GK',
@@ -72,33 +41,47 @@ const bottomTabs = [
     'History',
 ] as const;
 
-function PlayerRow({ player }: { player: Player }) {
-    return (
-        <div className="flex items-center gap-2 py-1.5">
-            <span className="size-5 shrink-0 rounded-sm bg-[#0000a5]" />
-            {player.marker === 'international' && (
-                <span className="rounded-sm bg-[#0000a5] px-1.5 py-0.5 text-[10px] font-bold text-white">
-                    Int
-                </span>
-            )}
-            <span className="flex-1 truncate text-[15px] font-bold text-white">
-                {player.name}
-                {player.keyPlayer ? '*' : ''}
-            </span>
-            <span className="shrink-0 text-sm font-bold text-[#f5f000]">
-                {player.position}
-            </span>
-        </div>
-    );
-}
-
 export default function Squad() {
+    const { clubName, players, loadError } = useSquad();
+
+    if (loadError) {
+        return (
+            <GameLayout active="Nations & Clubs">
+                <Head title="Squad" />
+                <main className="flex min-h-screen flex-1 items-center justify-center bg-[#0c0c14]">
+                    <p className="text-sm font-bold text-red-400">
+                        {loadError}
+                    </p>
+                </main>
+            </GameLayout>
+        );
+    }
+
+    if (players === null) {
+        return (
+            <GameLayout active="Nations & Clubs">
+                <Head title="Squad" />
+                <main className="flex min-h-screen flex-1 items-center justify-center bg-[#0c0c14]">
+                    <p className="text-sm font-bold text-white">
+                        Loading squad...
+                    </p>
+                </main>
+            </GameLayout>
+        );
+    }
+
+    const half = Math.ceil(players.length / 2);
+    const leftColumn = players.slice(0, half);
+    const rightColumn = players.slice(half);
+
     return (
         <GameLayout active="Nations & Clubs">
-            <Head title="Chelsea - Squad" />
+            <Head title={`${clubName ?? 'Squad'} - Squad`} />
 
             <header className="flex h-[92px] items-center justify-center border-b border-black bg-[#0031a5] px-6">
-                <h1 className="text-3xl font-bold text-white">Chelsea</h1>
+                <h1 className="text-3xl font-bold text-white">
+                    {clubName ?? 'Squad'}
+                </h1>
             </header>
 
             <div className="flex bg-[#200064]">
@@ -161,18 +144,30 @@ export default function Squad() {
                 </div>
 
                 <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-2 pb-4">
-                    <div className="grid grid-cols-2 gap-x-10">
-                        <div className="divide-y divide-white/10">
-                            {leftColumn.map((player) => (
-                                <PlayerRow key={player.name} player={player} />
-                            ))}
+                    {players.length === 0 ? (
+                        <p className="pt-6 text-center text-sm text-white/60">
+                            No players in the squad yet.
+                        </p>
+                    ) : (
+                        <div className="grid grid-cols-2 gap-x-10">
+                            <div className="divide-y divide-white/10">
+                                {leftColumn.map((player) => (
+                                    <PlayerRow
+                                        key={player.id}
+                                        player={player}
+                                    />
+                                ))}
+                            </div>
+                            <div className="divide-y divide-white/10">
+                                {rightColumn.map((player) => (
+                                    <PlayerRow
+                                        key={player.id}
+                                        player={player}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                        <div className="divide-y divide-white/10">
-                            {rightColumn.map((player) => (
-                                <PlayerRow key={player.name} player={player} />
-                            ))}
-                        </div>
-                    </div>
+                    )}
                 </div>
             </div>
 
