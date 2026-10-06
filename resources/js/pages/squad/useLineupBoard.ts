@@ -1,14 +1,37 @@
-import { useState } from 'react';
-import type { LineupAssignments } from './types';
-import { POSITION_CHIPS } from './utils';
+import { useEffect, useState } from 'react';
+import {
+    show as showLineup,
+    store as storeLineup,
+} from '@/actions/App/Http/Controllers/SquadLineupController';
+import api from '@/api';
+import type { LineupAssignments, SquadPlayer } from './types';
+import { extractErrorMessage, POSITION_CHIPS } from './utils';
+
+type SavedSlot = {
+    slot: string;
+    position: string;
+    player_id: number;
+};
 
 /**
  * Tracks which position slot (from POSITION_CHIPS) each player is assigned
- * to. Purely client-side UI state for building a lineup on the squad
- * screen - not persisted anywhere.
+ * to, loaded from and saved to /api/squad/lineup.
  */
 export function useLineupBoard() {
     const [assignments, setAssignments] = useState<LineupAssignments>({});
+    const [isSaving, setIsSaving] = useState(false);
+    const [saveError, setSaveError] = useState<string | null>(null);
+
+    useEffect(() => {
+        api.get(showLineup.url()).then((response) => {
+            const slots = response.data.data as SavedSlot[];
+            setAssignments(
+                Object.fromEntries(
+                    slots.map((slot) => [slot.slot, slot.player_id]),
+                ),
+            );
+        });
+    }, []);
 
     function chipIdForPlayer(playerId: number): string | null {
         return (
@@ -64,10 +87,43 @@ export function useLineupBoard() {
         }
     }
 
+    function saveLineup(players: SquadPlayer[]) {
+        setIsSaving(true);
+        setSaveError(null);
+
+        const playersById = new Map(
+            players.map((player) => [player.id, player]),
+        );
+        const assignmentsPayload = Object.entries(assignments)
+            .map(([slot, playerId]) => {
+                const player = playersById.get(playerId);
+                return player
+                    ? { slot, player_id: playerId, position: player.position }
+                    : null;
+            })
+            .filter(
+                (
+                    entry,
+                ): entry is {
+                    slot: string;
+                    player_id: number;
+                    position: string;
+                } => entry !== null,
+            );
+
+        return api
+            .post(storeLineup.url(), { assignments: assignmentsPayload })
+            .catch((error) => setSaveError(extractErrorMessage(error)))
+            .finally(() => setIsSaving(false));
+    }
+
     return {
         chipIdForPlayer,
         playerIdForChip,
         assignChipToPlayer,
         togglePlayerBox,
+        saveLineup,
+        isSaving,
+        saveError,
     };
 }

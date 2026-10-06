@@ -10,6 +10,7 @@ use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\PlayerSearchController;
+use App\Http\Controllers\SquadLineupController;
 use App\Http\Controllers\StadiumController;
 use App\Http\Controllers\TacticsController;
 use App\Http\Controllers\TransferController;
@@ -42,6 +43,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('tactics')->name('tactics.')->group(function (): void {
             Route::get('/', [TacticsController::class, 'show'])->name('show');
             Route::put('/', [TacticsController::class, 'update'])->name('update');
+        });
+
+        Route::prefix('squad')->group(function (): void {
+            Route::get('/lineup', [SquadLineupController::class, 'show']);
+            Route::post('/lineup', [SquadLineupController::class, 'store']);
         });
 
         Route::post('/game/{gameId}/complete', [GameController::class, 'complete']);

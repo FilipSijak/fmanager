@@ -1,7 +1,19 @@
+import axios from 'axios';
 import type { PositionChip } from './types';
 
 export function formatMoney(value: number): string {
     return `£${Math.round(value).toLocaleString('en-US')}`;
+}
+
+export function extractErrorMessage(error: unknown): string {
+    if (
+        axios.isAxiosError(error) &&
+        typeof error.response?.data?.error === 'string'
+    ) {
+        return error.response.data.error;
+    }
+
+    return 'Something went wrong. Please try again.';
 }
 
 export const POSITION_CHIPS: PositionChip[] = [
@@ -16,13 +28,13 @@ export const POSITION_CHIPS: PositionChip[] = [
     'MC-2',
     'FC-1',
     'FC-2',
-    'SB1',
-    'SB2',
-    'SB3',
-    'SB4',
-    'SB5',
-    'SB6',
-    'SB7',
+    'SUB1',
+    'SUB2',
+    'SUB3',
+    'SUB4',
+    'SUB5',
+    'SUB6',
+    'SUB7',
 ].map((chip) => ({ id: chip, label: chip.replace(/-\d$/, '') }));
 
 /** Drag payload MIME type used when dragging a position chip onto a player's box. */

@@ -16,8 +16,12 @@ return new class extends Migration
             $table->unsignedBigInteger('instance_id');
             $table->unsignedInteger('club_id');
             $table->foreignId('club_tactic_id')->constrained('club_tactics')->cascadeOnDelete();
-            $table->foreignId('base_formation_slot_id')->constrained('base_formation_slots')->cascadeOnDelete();
             $table->unsignedInteger('player_id');
+            // Starting-XI slots store the formation's own slot id (e.g. "1".."11", matching
+            // base_formation_slots.slot for whichever formation the club currently uses).
+            // Substitute slots ("SUB1".."SUB7") are not part of any formation, so this is a
+            // plain string rather than a foreign key to base_formation_slots.
+            $table->string('slot', 10);
             $table->string('position', 20);
             $table->timestamps();
 
@@ -34,7 +38,7 @@ return new class extends Migration
                 ->references(['club_id', 'id'])->on('club_tactics')->cascadeOnDelete();
 
             $table->index('instance_id');
-            $table->unique(['club_tactic_id', 'base_formation_slot_id'], 'ctps_tactic_slot_unique');
+            $table->unique(['club_tactic_id', 'slot'], 'ctps_tactic_slot_unique');
             $table->unique(['club_tactic_id', 'player_id'], 'ctps_tactic_player_unique');
         });
     }

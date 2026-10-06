@@ -29,6 +29,9 @@ export default function Squad() {
         playerIdForChip,
         assignChipToPlayer,
         togglePlayerBox,
+        saveLineup,
+        isSaving,
+        saveError,
     } = useLineupBoard();
 
     if (loadError) {
@@ -113,7 +116,21 @@ export default function Squad() {
                         Filter
                         <ChevronDown size={14} />
                     </button>
+                    <button
+                        type="button"
+                        disabled={isSaving}
+                        onClick={() => saveLineup(players)}
+                        className="rounded border border-emerald-600 bg-emerald-600 px-4 py-1.5 text-sm font-bold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                        {isSaving ? 'Saving...' : 'Save Squad'}
+                    </button>
                 </div>
+
+                {saveError && (
+                    <p className="px-5 pt-2 text-center text-xs font-bold text-red-400">
+                        {saveError}
+                    </p>
+                )}
 
                 <h2 className="mt-3 text-center text-lg font-bold text-[#f5f000]">
                     Position(s)
