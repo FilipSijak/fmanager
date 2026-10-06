@@ -1,55 +1,20 @@
 import { Head } from '@inertiajs/react';
 import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import GameLayout from '@/layouts/GameLayout';
+import AttributeColumn from './components/AttributeColumn';
+import { usePlayerProfile } from './usePlayerProfile';
+import { ageFromDob, formatDob, POSITION_LABELS } from './utils';
 
-type Attribute = {
+type ExtraAttribute = {
     label: string;
-    value: string | number;
-    accent?: boolean;
+    value: string;
 };
 
-const attributeColumns: Attribute[][] = [
-    [
-        { label: 'Acceleration', value: 14 },
-        { label: 'Aggression', value: 18 },
-        { label: 'Agility', value: 9 },
-        { label: 'Anticipation', value: 10 },
-        { label: 'Balance', value: 12 },
-        { label: 'Bravery', value: 18 },
-        { label: 'Creativity', value: 8 },
-        { label: 'Crossing', value: 11 },
-        { label: 'Decisions', value: 11 },
-        { label: 'Determination', value: 16 },
-        { label: 'Dribbling', value: 13 },
-        { label: 'Finishing', value: 11 },
-    ],
-    [
-        { label: 'Flair', value: 13 },
-        { label: 'Handling', value: 1 },
-        { label: 'Heading', value: 10 },
-        { label: 'Influence', value: 14 },
-        { label: 'Jumping', value: 10 },
-        { label: 'Long Shots', value: 10 },
-        { label: 'Marking', value: 12 },
-        { label: 'Off The Ball', value: 10 },
-        { label: 'Pace', value: 16 },
-        { label: 'Passing', value: 11 },
-        { label: 'Positioning', value: 10 },
-        { label: 'Reflexes', value: 3 },
-    ],
-    [
-        { label: 'Set Pieces', value: 8 },
-        { label: 'Stamina', value: 14 },
-        { label: 'Strength', value: 9 },
-        { label: 'Tackling', value: 14 },
-        { label: 'Teamwork', value: 16 },
-        { label: 'Technique', value: 14 },
-        { label: 'Work Rate', value: 14 },
-        { label: 'Preferred Foot', value: 'Right Only', accent: true },
-        { label: 'Form', value: '8-7-7-7', accent: true },
-        { label: 'Morale', value: 'Superb', accent: true },
-        { label: 'Condition', value: '100%', accent: true },
-    ],
+const extraAttributes: ExtraAttribute[] = [
+    { label: 'Preferred Foot', value: 'Right Only' },
+    { label: 'Form', value: '8-7-7-7' },
+    { label: 'Morale', value: 'Superb' },
+    { label: 'Condition', value: '100%' },
 ];
 
 type StatRow = {
@@ -146,10 +111,43 @@ const statColumns = [
     'Av R',
 ] as const;
 
-export default function PlayerProfile() {
+export default function PlayerProfile({ playerId }: { playerId: number }) {
+    const { player, instanceDate, loadError } = usePlayerProfile(playerId);
+
+    if (loadError) {
+        return (
+            <GameLayout active="Nations & Clubs">
+                <Head title="Player Profile" />
+                <main className="flex min-h-screen flex-1 items-center justify-center bg-[#0c0c14]">
+                    <p className="text-sm font-bold text-red-400">
+                        {loadError}
+                    </p>
+                </main>
+            </GameLayout>
+        );
+    }
+
+    if (player === null) {
+        return (
+            <GameLayout active="Nations & Clubs">
+                <Head title="Player Profile" />
+                <main className="flex min-h-screen flex-1 items-center justify-center bg-[#0c0c14]">
+                    <p className="text-sm font-bold text-white">
+                        Loading player...
+                    </p>
+                </main>
+            </GameLayout>
+        );
+    }
+
+    const age = ageFromDob(player.dob, instanceDate);
+    const positionLabel = POSITION_LABELS[player.position] ?? player.position;
+
     return (
         <GameLayout active="Nations & Clubs">
-            <Head title="Pa Modou Kah - Profile" />
+            <Head
+                title={`${player.first_name} ${player.last_name} - Profile`}
+            />
 
             <header className="flex h-[92px] items-center justify-between border-b border-slate-300 bg-white px-6">
                 <button
@@ -160,7 +158,8 @@ export default function PlayerProfile() {
                     <ChevronRight size={18} />
                 </button>
                 <h1 className="text-2xl font-bold text-[#1b3fa0]">
-                    Pa Modou Kah (Rushden)
+                    {player.first_name} {player.last_name}
+                    {player.club ? ` (${player.club.name})` : ''}
                 </h1>
                 <button
                     type="button"
@@ -198,27 +197,44 @@ export default function PlayerProfile() {
 
                 <div className="relative min-h-0 flex-1 overflow-y-auto px-8 py-5">
                     <h2 className="mb-4 text-center text-lg font-bold text-[#f5f000]">
-                        Born 30.7.80 (Age 21). Norwegian (1 cap).
+                        Born {formatDob(player.dob)}
+                        {age !== null ? ` (Age ${age})` : ''}.{' '}
+                        {player.country_code ?? 'Unknown nationality'}.
                     </h2>
 
-                    <div className="grid grid-cols-3 gap-x-8 gap-y-1">
-                        {attributeColumns.map((column) => (
-                            <div key={column[0].label} className="space-y-1">
-                                {column.map((attribute) => (
-                                    <div
-                                        key={attribute.label}
-                                        className="flex items-center justify-between border-b border-white/10 py-1 text-sm"
-                                    >
-                                        <span className="font-semibold text-white">
-                                            {attribute.label}
-                                        </span>
-                                        <span
-                                            className={`font-bold ${attribute.accent ? 'text-orange-400' : 'text-[#f5f000]'}`}
-                                        >
-                                            {attribute.value}
-                                        </span>
-                                    </div>
-                                ))}
+                    <div className="grid grid-cols-2 gap-x-8 gap-y-4 lg:grid-cols-4">
+                        <AttributeColumn
+                            title="Technical"
+                            attributes={player.attributes.technical}
+                        />
+                        <AttributeColumn
+                            title="Mental"
+                            attributes={player.attributes.mental}
+                        />
+                        <AttributeColumn
+                            title="Physical"
+                            attributes={player.attributes.physical}
+                        />
+                        {player.position === 'GK' && (
+                            <AttributeColumn
+                                title="Goalkeeping"
+                                attributes={player.attributes.goalkeeping}
+                            />
+                        )}
+                    </div>
+
+                    <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-4">
+                        {extraAttributes.map((attribute) => (
+                            <div
+                                key={attribute.label}
+                                className="flex items-center justify-between border-b border-white/10 py-1 text-sm"
+                            >
+                                <span className="font-semibold text-white">
+                                    {attribute.label}
+                                </span>
+                                <span className="font-bold text-orange-400">
+                                    {attribute.value}
+                                </span>
                             </div>
                         ))}
                     </div>
@@ -293,7 +309,7 @@ export default function PlayerProfile() {
                 </div>
 
                 <p className="relative border-t border-white/10 bg-black/20 py-3 text-center text-base font-bold text-cyan-300">
-                    Defender/Defensive Midfielder/Forward (Right/Centre)
+                    {positionLabel}
                 </p>
             </div>
 

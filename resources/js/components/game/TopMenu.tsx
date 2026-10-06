@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { Image as ImageIcon } from 'lucide-react';
-import { finance, stadium } from '@/routes';
+import { finance, squad, stadium } from '@/routes';
 
 type MenuItem = {
     label: string;
@@ -25,7 +25,7 @@ const menuItems: MenuItem[] = [
     { label: 'Data' },
     { label: 'Trans' },
     { label: 'Mngr' },
-    { label: 'Squad' },
+    { label: 'Squad', href: squad.url() },
     { label: 'Match' },
     { label: 'Help' },
 ];

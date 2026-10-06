@@ -27,7 +27,7 @@ class AuthenticationTest extends TestCase
     {
         $this->get('/login')->assertInertia(fn (Assert $page) => $page->component('Auth')->where('registering', false));
         $this->get('/register')->assertInertia(fn (Assert $page) => $page->component('Auth')->where('registering', true));
-        foreach (['/', '/setup-game', '/squad', '/player-profile', '/league-table'] as $path) {
+        foreach (['/', '/setup-game', '/squad', '/player-profile/1', '/league-table'] as $path) {
             $this->get($path)->assertRedirect('/login');
         }
     }
