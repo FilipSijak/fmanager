@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Services\TacticsService;
+namespace App\Services\SquadLineupService;
 
 use App\Models\Club;
 use App\Models\ClubTacticPlayerSlot;
 use App\Models\Player;
+use App\Services\TacticsService\TacticsService;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;

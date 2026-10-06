@@ -7,7 +7,7 @@ use App\Http\Requests\SaveSquadLineupRequest;
 use App\Http\Resources\ClubTacticPlayerSlotResource;
 use App\Models\Club;
 use App\Models\Instance;
-use App\Services\TacticsService\SquadLineupService;
+use App\Services\SquadLineupService\SquadLineupService;
 use App\Support\GameContext;
 use DomainException;
 use Illuminate\Http\JsonResponse;
