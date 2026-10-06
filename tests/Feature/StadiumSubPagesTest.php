@@ -14,7 +14,7 @@ class StadiumSubPagesTest extends TestCase
         $this->withoutVite();
 
         $this->get('/stadium/construction')
-            ->assertInertia(fn (Assert $page) => $page->component('StadiumConstruction'));
+            ->assertInertia(fn (Assert $page) => $page->component('stadium-construction/StadiumConstruction'));
     }
 
     #[Test]
