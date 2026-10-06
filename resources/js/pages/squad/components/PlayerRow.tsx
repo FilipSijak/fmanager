@@ -1,3 +1,5 @@
+import { Link } from '@inertiajs/react';
+import { playerProfile } from '@/routes';
 import type { SortOption, SquadPlayer } from '../types';
 import { formatMoney, LINEUP_CHIP_DRAG_TYPE } from '../utils';
 
@@ -51,13 +53,20 @@ export default function PlayerRow({
             >
                 {assignedChipId?.replace('-', '')}
             </button>
-            <span className="flex-1 truncate text-[15px] font-bold text-white">
-                {player.first_name} {player.last_name}
-            </span>
-            <span className="shrink-0 text-xs text-[#9aa0c0]">{metric}</span>
-            <span className="shrink-0 text-sm font-bold text-[#f5f000]">
-                {player.position}
-            </span>
+            <Link
+                href={playerProfile.url(player.id)}
+                className="flex min-w-0 flex-1 items-center gap-2 hover:opacity-80"
+            >
+                <span className="flex-1 truncate text-[15px] font-bold text-white">
+                    {player.first_name} {player.last_name}
+                </span>
+                <span className="shrink-0 text-xs text-[#9aa0c0]">
+                    {metric}
+                </span>
+                <span className="shrink-0 text-sm font-bold text-[#f5f000]">
+                    {player.position}
+                </span>
+            </Link>
         </div>
     );
 }

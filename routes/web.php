@@ -28,7 +28,7 @@ Route::middleware('auth')->group(function () {
 $templateRoutes = function () {
     Route::get('/league-table', fn () => Inertia::render('LeagueTable'))->name('league-table');
     Route::get('/squad', fn () => Inertia::render('squad/Squad'))->name('squad');
-    Route::get('/player-profile', fn () => Inertia::render('PlayerProfile'))->name('player-profile');
+    Route::get('/player-profile/{playerId}', fn (int $playerId) => Inertia::render('player-profile/PlayerProfile', ['playerId' => $playerId]))->name('player-profile');
     Route::get('/tactics', fn () => Inertia::render('Tactics'))->name('tactics');
     Route::get('/office', fn () => Inertia::render('Office'))->name('office');
     Route::get('/finance', fn () => Inertia::render('Finance'))->name('finance');
