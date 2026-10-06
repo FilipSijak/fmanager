@@ -40,11 +40,12 @@ export default function BuildVenueModal({
 }) {
     const category = categories?.[index] ?? null;
     const availableSizes = category ? availableSizesForCategory(category) : [];
+    const selectedSizeKey = SIZE_OPTIONS.find(
+        (o) => o.value === selectedSize,
+    )?.key;
     const cost =
-        category && selectedSize
-            ? category.costs[
-                  SIZE_OPTIONS.find((o) => o.value === selectedSize)!.key
-              ]
+        category && selectedSizeKey
+            ? category.costs[selectedSizeKey]
             : undefined;
 
     return (
