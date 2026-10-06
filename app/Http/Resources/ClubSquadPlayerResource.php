@@ -20,8 +20,10 @@ class ClubSquadPlayerResource extends JsonResource
             'last_name' => $this->person->last_name,
             'position' => $this->position,
             'country_code' => $this->person->country_code,
+            'dob' => $this->person->dob?->toDateString(),
             'value' => $this->value,
             'salary' => $this->contract?->salary,
+            'contract_end' => $this->contract?->contract_end,
         ];
     }
 }

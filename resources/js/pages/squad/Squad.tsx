@@ -1,11 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 import GameLayout from '@/layouts/GameLayout';
 import { tactics } from '@/routes';
 import PlayerRow from './components/PlayerRow';
+import SortByMenu from './components/SortByMenu';
+import type { SortOption } from './types';
 import { useLineupBoard } from './useLineupBoard';
 import { useSquad } from './useSquad';
-import { LINEUP_CHIP_DRAG_TYPE, POSITION_CHIPS } from './utils';
+import { LINEUP_CHIP_DRAG_TYPE, POSITION_CHIPS, sortPlayers } from './utils';
 
 const tabs = [
     'Squad',
@@ -24,7 +27,7 @@ const bottomTabs = [
 ] as const;
 
 export default function Squad() {
-    const { clubName, players, loadError } = useSquad();
+    const { clubName, instanceDate, players, loadError } = useSquad();
     const {
         chipIdForPlayer,
         playerIdForChip,
@@ -35,6 +38,7 @@ export default function Squad() {
         isSaving,
         saveError,
     } = useLineupBoard();
+    const [sortBy, setSortBy] = useState<SortOption>('position');
 
     if (loadError) {
         return (
@@ -62,9 +66,10 @@ export default function Squad() {
         );
     }
 
-    const half = Math.ceil(players.length / 2);
-    const leftColumn = players.slice(0, half);
-    const rightColumn = players.slice(half);
+    const sortedPlayers = sortPlayers(players, sortBy, instanceDate);
+    const half = Math.ceil(sortedPlayers.length / 2);
+    const leftColumn = sortedPlayers.slice(0, half);
+    const rightColumn = sortedPlayers.slice(half);
 
     return (
         <GameLayout active="Nations & Clubs">
@@ -94,16 +99,14 @@ export default function Squad() {
 
             <div className="flex flex-1 flex-col overflow-hidden bg-[#0c0c14]">
                 <div className="flex flex-wrap gap-2 px-5 pt-4">
-                    {['View', 'Sort By'].map((label) => (
-                        <button
-                            key={label}
-                            type="button"
-                            className="flex items-center gap-2 rounded border border-slate-400 bg-[#c9c9cc] px-4 py-1.5 text-sm font-semibold text-slate-800 hover:bg-slate-300"
-                        >
-                            {label}
-                            <ChevronDown size={14} />
-                        </button>
-                    ))}
+                    <button
+                        type="button"
+                        className="flex items-center gap-2 rounded border border-slate-400 bg-[#c9c9cc] px-4 py-1.5 text-sm font-semibold text-slate-800 hover:bg-slate-300"
+                    >
+                        View
+                        <ChevronDown size={14} />
+                    </button>
+                    <SortByMenu value={sortBy} onChange={setSortBy} />
                     <button
                         type="button"
                         disabled={isSaving}

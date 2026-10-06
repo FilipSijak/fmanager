@@ -86,13 +86,14 @@ class ClubApiTest extends TestCase
             'instance_hash' => 'other-instance',
         ]);
 
-        $firstContract = PlayerContract::factory()->create(['salary' => 200]);
+        $firstContract = PlayerContract::factory()->create(['salary' => 200, 'contract_end' => '2027-06-30']);
         $secondContract = PlayerContract::factory()->create(['salary' => 400]);
         $firstPerson = Person::factory()->create([
             'instance_id' => $instance->id,
             'first_name' => 'Alpha',
             'last_name' => 'Midfielder',
             'country_code' => 'GB',
+            'dob' => '2001-05-12',
         ]);
         $secondPerson = Person::factory()->create([
             'instance_id' => $instance->id,
@@ -149,8 +150,10 @@ class ClubApiTest extends TestCase
             ->assertJsonPath('data.0.last_name', 'Midfielder')
             ->assertJsonPath('data.0.position', 'CM')
             ->assertJsonPath('data.0.country_code', 'GB')
+            ->assertJsonPath('data.0.dob', '2001-05-12')
             ->assertJsonPath('data.0.value', 1000)
             ->assertJsonPath('data.0.salary', 200)
+            ->assertJsonPath('data.0.contract_end', '2027-06-30')
             ->assertJsonPath('data.1.id', $secondPlayer->id);
 
         $playerFirstNames = collect($response->json('data'))->pluck('first_name')->all();

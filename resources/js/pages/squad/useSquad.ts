@@ -6,6 +6,7 @@ import type { SquadPlayer } from './types';
 
 export function useSquad() {
     const [clubName, setClubName] = useState<string | null>(null);
+    const [instanceDate, setInstanceDate] = useState<string | null>(null);
     const [players, setPlayers] = useState<SquadPlayer[] | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -16,7 +17,11 @@ export function useSquad() {
                     id: number;
                     name: string;
                 };
+                const instance = response.data.data.instance as {
+                    date: string;
+                };
                 setClubName(club.name);
+                setInstanceDate(instance.date);
 
                 return api.get(fetchSquad.url(club.id));
             })
@@ -26,5 +31,5 @@ export function useSquad() {
             .catch(() => setLoadError('Unable to load the squad.'));
     }, []);
 
-    return { clubName, players, loadError };
+    return { clubName, instanceDate, players, loadError };
 }

@@ -4,9 +4,19 @@ export type SquadPlayer = {
     last_name: string;
     position: string;
     country_code: string | null;
+    dob: string | null;
     value: number;
     salary: number | null;
+    contract_end: string | null;
 };
+
+export type SortOption =
+    | 'position'
+    | 'value'
+    | 'age'
+    | 'name'
+    | 'contract_expiry'
+    | 'salary';
 
 export type PositionChip = {
     id: string;
