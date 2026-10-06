@@ -191,6 +191,7 @@ export default function Squad() {
                                         assignedChipId={chipIdForPlayer(
                                             player.id,
                                         )}
+                                        sortBy={sortBy}
                                         onBoxClick={() =>
                                             togglePlayerBox(player.id)
                                         }
@@ -211,6 +212,7 @@ export default function Squad() {
                                         assignedChipId={chipIdForPlayer(
                                             player.id,
                                         )}
+                                        sortBy={sortBy}
                                         onBoxClick={() =>
                                             togglePlayerBox(player.id)
                                         }

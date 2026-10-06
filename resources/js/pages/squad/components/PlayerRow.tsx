@@ -1,17 +1,23 @@
-import type { SquadPlayer } from '../types';
+import type { SortOption, SquadPlayer } from '../types';
 import { formatMoney, LINEUP_CHIP_DRAG_TYPE } from '../utils';
 
 export default function PlayerRow({
     player,
     assignedChipId,
+    sortBy,
     onBoxClick,
     onDropChip,
 }: {
     player: SquadPlayer;
     assignedChipId: string | null;
+    sortBy: SortOption;
     onBoxClick: () => void;
     onDropChip: (chipId: string) => void;
 }) {
+    const metric =
+        sortBy === 'contract_expiry'
+            ? (player.contract_end ?? 'No contract')
+            : formatMoney(player.value);
     return (
         <div className="flex items-center gap-2 py-1.5">
             <button
@@ -48,9 +54,7 @@ export default function PlayerRow({
             <span className="flex-1 truncate text-[15px] font-bold text-white">
                 {player.first_name} {player.last_name}
             </span>
-            <span className="shrink-0 text-xs text-[#9aa0c0]">
-                {formatMoney(player.value)}
-            </span>
+            <span className="shrink-0 text-xs text-[#9aa0c0]">{metric}</span>
             <span className="shrink-0 text-sm font-bold text-[#f5f000]">
                 {player.position}
             </span>
