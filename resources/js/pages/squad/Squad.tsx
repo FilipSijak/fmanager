@@ -2,28 +2,9 @@ import { Head } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
 import GameLayout from '@/layouts/GameLayout';
 import PlayerRow from './components/PlayerRow';
+import { useLineupBoard } from './useLineupBoard';
 import { useSquad } from './useSquad';
-
-const positionChips = [
-    'GK',
-    'DL',
-    'DR',
-    'DC-1',
-    'DC-2',
-    'ML',
-    'MR',
-    'MC-1',
-    'MC-2',
-    'FC-1',
-    'FC-2',
-    'SB1',
-    'SB2',
-    'SB3',
-    'SB4',
-    'SB5',
-    'SB6',
-    'SB7',
-].map((chip) => ({ id: chip, label: chip.replace(/-\d$/, '') }));
+import { LINEUP_CHIP_DRAG_TYPE, POSITION_CHIPS } from './utils';
 
 const tabs = [
     'Squad',
@@ -43,6 +24,12 @@ const bottomTabs = [
 
 export default function Squad() {
     const { clubName, players, loadError } = useSquad();
+    const {
+        chipIdForPlayer,
+        playerIdForChip,
+        assignChipToPlayer,
+        togglePlayerBox,
+    } = useLineupBoard();
 
     if (loadError) {
         return (
@@ -133,14 +120,37 @@ export default function Squad() {
                 </h2>
 
                 <div className="flex flex-wrap justify-center gap-1 px-5 py-2">
-                    {positionChips.map((chip) => (
-                        <span
-                            key={chip.id}
-                            className="rounded-sm bg-[#123a10] px-2 py-1 text-xs font-bold text-emerald-300"
-                        >
-                            {chip.label}
-                        </span>
-                    ))}
+                    {POSITION_CHIPS.map((chip) => {
+                        const assignedPlayer = players.find(
+                            (player) => player.id === playerIdForChip(chip.id),
+                        );
+
+                        return (
+                            <button
+                                key={chip.id}
+                                type="button"
+                                draggable
+                                onDragStart={(event) =>
+                                    event.dataTransfer.setData(
+                                        LINEUP_CHIP_DRAG_TYPE,
+                                        chip.id,
+                                    )
+                                }
+                                title={
+                                    assignedPlayer
+                                        ? `${assignedPlayer.first_name} ${assignedPlayer.last_name} - drag onto another player to reassign`
+                                        : 'Drag onto a player to assign this position'
+                                }
+                                className={`cursor-grab rounded-sm px-2 py-1 text-xs font-bold ${
+                                    assignedPlayer
+                                        ? 'bg-emerald-700 text-white'
+                                        : 'bg-[#123a10] text-emerald-300'
+                                }`}
+                            >
+                                {chip.label}
+                            </button>
+                        );
+                    })}
                 </div>
 
                 <div className="min-h-0 flex-1 overflow-y-auto px-6 pt-2 pb-4">
@@ -155,6 +165,18 @@ export default function Squad() {
                                     <PlayerRow
                                         key={player.id}
                                         player={player}
+                                        assignedChipId={chipIdForPlayer(
+                                            player.id,
+                                        )}
+                                        onBoxClick={() =>
+                                            togglePlayerBox(player.id)
+                                        }
+                                        onDropChip={(chipId) =>
+                                            assignChipToPlayer(
+                                                chipId,
+                                                player.id,
+                                            )
+                                        }
                                     />
                                 ))}
                             </div>
@@ -163,6 +185,18 @@ export default function Squad() {
                                     <PlayerRow
                                         key={player.id}
                                         player={player}
+                                        assignedChipId={chipIdForPlayer(
+                                            player.id,
+                                        )}
+                                        onBoxClick={() =>
+                                            togglePlayerBox(player.id)
+                                        }
+                                        onDropChip={(chipId) =>
+                                            assignChipToPlayer(
+                                                chipId,
+                                                player.id,
+                                            )
+                                        }
                                     />
                                 ))}
                             </div>
