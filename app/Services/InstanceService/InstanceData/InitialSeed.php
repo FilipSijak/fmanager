@@ -137,8 +137,8 @@ class InitialSeed
             $stadiumId = DB::table('stadiums')->insertGetId([
                 'name' => $baseStadium->name,
                 'instance_id' => $instanceId,
-                'country_code' => $baseStadium->countryCode,
-                'city_id' => $baseStadium->cityId,
+                'country_code' => $baseStadium->country_code,
+                'city_id' => $baseStadium->city_id,
                 'capacity' => $capacity,
                 'active_capacity' => $capacity,
                 'type' => $stadiumType->value,

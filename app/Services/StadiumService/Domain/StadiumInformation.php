@@ -6,6 +6,8 @@ use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Repositories\StadiumRepository;
+use App\Services\CommercialService\CommercialVenueSize;
+use App\Services\CommercialService\VenueConstructionCostCalculator;
 use App\Services\StadiumService\StadiumExpansionCostCalculator;
 use App\Services\StadiumService\StadiumType;
 use App\StadiumStandPosition;
@@ -16,6 +18,7 @@ class StadiumInformation
     public function __construct(
         private readonly StadiumRepository $stadiumRepository,
         private readonly StadiumExpansionCostCalculator $stadiumExpansionCostCalculator,
+        private readonly VenueConstructionCostCalculator $venueConstructionCostCalculator,
         private readonly StadiumBuildValidator $stadiumBuildValidator,
         private readonly StadiumStandValidator $stadiumStandValidator,
     ) {}
@@ -75,5 +78,10 @@ class StadiumInformation
     public function stadiumExpansionCost(Stadium $stadium, int $additionalCapacity): int
     {
         return $this->stadiumExpansionCostCalculator->calculate($stadium, $additionalCapacity);
+    }
+
+    public function venueConstructionCost(Stadium $stadium, BaseCommercialCategory $category, CommercialVenueSize $size): int
+    {
+        return $this->venueConstructionCostCalculator->calculate($stadium, $category, $size);
     }
 }

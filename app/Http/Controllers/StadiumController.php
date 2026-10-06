@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\ConstructionPaymentMethod;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\BuildStadiumRequest;
+use App\Http\Requests\StartStadiumStandConstructionRequest;
 use App\Http\Resources\StadiumCommercialCategoryResource;
 use App\Http\Resources\StadiumCommercialVenueResource;
 use App\Http\Resources\StadiumResource;
 use App\Http\Resources\StadiumStandConstructionResource;
+use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\Stadium;
 use App\Models\StadiumStandConstruction;
 use App\Repositories\StadiumRepository;
@@ -38,11 +40,53 @@ class StadiumController extends Controller
 
     public function buildableCommercialCategories(): JsonResponse
     {
+        $stadium = $this->managedStadium();
+
         return ResponseHelper::success(
-            StadiumCommercialCategoryResource::collection(
-                $this->stadiumService->buildableCommercialCategoriesForStadium($this->managedStadium()),
-            )->resolve(request()),
+            $this->stadiumService->buildableCommercialCategoriesForStadium($stadium)
+                ->map(fn (BaseCommercialCategory $category): array => [
+                    ...(new StadiumCommercialCategoryResource($category))->resolve(request()),
+                    'costs' => $this->venueCostsBySize($stadium, $category),
+                ])
+                ->all(),
         );
+    }
+
+    public function standExpansionCost(int $standId, StartStadiumStandConstructionRequest $request): JsonResponse
+    {
+        $stadium = $this->managedStadium();
+        $stand = $this->stadiumRepository->standForStadium($stadium, $standId);
+        $targetCapacity = (int) $request->validated('target_capacity');
+        $capacityIncrease = $targetCapacity - (int) $stand->capacity;
+
+        try {
+            return ResponseHelper::success([
+                'capacity_increase' => $capacityIncrease,
+                'maximum_capacity' => $this->stadiumService->maximumCapacityForStand($stadium, $stand->position),
+                'cost' => $capacityIncrease > 0 ? $this->stadiumService->stadiumExpansionCost($stadium, $capacityIncrease) : 0,
+                'duration_weeks' => $capacityIncrease > 0 && $capacityIncrease % 1000 === 0
+                    ? $this->stadiumService->durationInWeeks($capacityIncrease)
+                    : 0,
+            ]);
+        } catch (DomainException $exception) {
+            return $this->domainError($exception);
+        }
+    }
+
+    /** @return array<string, int> */
+    private function venueCostsBySize(Stadium $stadium, BaseCommercialCategory $category): array
+    {
+        $costs = [];
+
+        foreach (CommercialVenueSize::cases() as $size) {
+            try {
+                $costs[strtolower($size->name)] = $this->stadiumService->venueConstructionCost($stadium, $category, $size);
+            } catch (DomainException) {
+                // No cost configured for this size at this category; omit it.
+            }
+        }
+
+        return $costs;
     }
 
     public function build(BuildStadiumRequest $request): JsonResponse

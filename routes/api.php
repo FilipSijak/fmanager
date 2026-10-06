@@ -34,6 +34,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::prefix('stadium')->group(function (): void {
             Route::get('/', [StadiumController::class, 'show']);
             Route::get('/commercial-categories', [StadiumController::class, 'buildableCommercialCategories']);
+            Route::get('/stands/{standId}/expansion-cost', [StadiumController::class, 'standExpansionCost']);
             Route::post('/construction', [StadiumController::class, 'build']);
             Route::delete('/commercial-venues/{venueId}', [StadiumController::class, 'demolishCommercialVenue']);
         });
