@@ -83,6 +83,11 @@ class StadiumService
         return $this->stadiumInformation->stadiumExpansionCost($stadium, $additionalCapacity);
     }
 
+    public function venueConstructionCost(Stadium $stadium, BaseCommercialCategory $category, CommercialVenueSize $size): int
+    {
+        return $this->stadiumInformation->venueConstructionCost($stadium, $category, $size);
+    }
+
     public function demolishCommercialVenue(Stadium $stadium, int $venueId): int
     {
         return $this->stadiumCommercialOperations->demolish($stadium, $venueId);

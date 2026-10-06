@@ -93,7 +93,43 @@ class StadiumApiTest extends TestCase
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $available->id)
-            ->assertJsonPath('data.0.slug', 'bar');
+            ->assertJsonPath('data.0.slug', 'bar')
+            ->assertJsonPath('data.0.costs.small', 150000)
+            ->assertJsonPath('data.0.costs.medium', 150000)
+            ->assertJsonPath('data.0.costs.large', 150000);
+    }
+
+    #[Test]
+    public function it_returns_the_expansion_cost_and_duration_for_a_stand(): void
+    {
+        [$instance, $stadium] = $this->createManagedStadium(StadiumType::LOCAL);
+        $this->seedStandConstructionData();
+        $stand = $stadium->stands()->create(['position' => StadiumStandPosition::NORTH, 'capacity' => 1000, 'status' => StadiumStandStatus::ACTIVE]);
+
+        $response = $this->apiRequest($instance)->getJson("/api/stadium/stands/{$stand->id}/expansion-cost?target_capacity=2000");
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.capacity_increase', 1000)
+            ->assertJsonPath('data.maximum_capacity', 7000)
+            ->assertJsonPath('data.cost', 375000)
+            ->assertJsonPath('data.duration_weeks', 1);
+    }
+
+    #[Test]
+    public function it_returns_a_zero_cost_preview_when_the_target_capacity_has_not_increased(): void
+    {
+        [$instance, $stadium] = $this->createManagedStadium(StadiumType::LOCAL);
+        $this->seedStandConstructionData();
+        $stand = $stadium->stands()->create(['position' => StadiumStandPosition::NORTH, 'capacity' => 1000, 'status' => StadiumStandStatus::ACTIVE]);
+
+        $response = $this->apiRequest($instance)->getJson("/api/stadium/stands/{$stand->id}/expansion-cost?target_capacity=1000");
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.capacity_increase', 0)
+            ->assertJsonPath('data.cost', 0)
+            ->assertJsonPath('data.duration_weeks', 0);
     }
 
     #[Test]
