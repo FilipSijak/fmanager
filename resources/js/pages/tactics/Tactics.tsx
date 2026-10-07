@@ -1,13 +1,13 @@
 import { Head, Link } from '@inertiajs/react';
 import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 import GameLayout from '@/layouts/GameLayout';
 import { squad } from '@/routes';
 import { useSquad } from '../squad/useSquad';
-import OptionMenu from './components/OptionMenu';
 import PlayerListRow from './components/PlayerListRow';
+import TeamInstructionsModal from './components/TeamInstructionsModal';
 import { useTactics } from './useTactics';
 import {
-    formatOptionLabel,
     lineupPlayersForSlots,
     pitchPlayersForFormation,
     STARTER_SLOT_IDS,
@@ -34,6 +34,7 @@ export default function Tactics() {
         isSaving,
         saveError,
     } = useTactics();
+    const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
     const loadError = tacticsLoadError ?? squadLoadError;
 
     if (loadError) {
@@ -94,42 +95,13 @@ export default function Tactics() {
 
             <div className="flex flex-1 flex-col overflow-hidden bg-[#0c0c14]">
                 <div className="flex flex-wrap items-center gap-2 px-5 pt-4">
-                    <OptionMenu
-                        label="Tactics"
-                        value={draft.formationId}
-                        options={tactics.formations.map((formation) => ({
-                            value: formation.id,
-                            label: formation.name,
-                        }))}
-                        onChange={(formationId) => updateDraft({ formationId })}
-                    />
-                    <OptionMenu
-                        label={`Mentality: ${formatOptionLabel(draft.mentality)}`}
-                        value={draft.mentality}
-                        options={tactics.options.mentalities.map((option) => ({
-                            value: option,
-                            label: formatOptionLabel(option),
-                        }))}
-                        onChange={(mentality) => updateDraft({ mentality })}
-                    />
-                    <OptionMenu
-                        label={`Pressing: ${formatOptionLabel(draft.pressing)}`}
-                        value={draft.pressing}
-                        options={tactics.options.pressing.map((option) => ({
-                            value: option,
-                            label: formatOptionLabel(option),
-                        }))}
-                        onChange={(pressing) => updateDraft({ pressing })}
-                    />
-                    <OptionMenu
-                        label={`Passing: ${formatOptionLabel(draft.passing)}`}
-                        value={draft.passing}
-                        options={tactics.options.passing.map((option) => ({
-                            value: option,
-                            label: formatOptionLabel(option),
-                        }))}
-                        onChange={(passing) => updateDraft({ passing })}
-                    />
+                    <button
+                        type="button"
+                        onClick={() => setIsInstructionsOpen(true)}
+                        className="rounded border border-slate-400 bg-[#c9c9cc] px-4 py-1.5 text-sm font-semibold text-slate-800 hover:bg-slate-300"
+                    >
+                        Team Instructions
+                    </button>
                     {toolbarControls.map((label) => (
                         <button
                             key={label}
@@ -273,6 +245,14 @@ export default function Tactics() {
                     {isSaving ? 'Saving...' : 'Ok'}
                 </button>
             </div>
+            {isInstructionsOpen && (
+                <TeamInstructionsModal
+                    tactics={tactics}
+                    draft={draft}
+                    onApply={updateDraft}
+                    onClose={() => setIsInstructionsOpen(false)}
+                />
+            )}
         </GameLayout>
     );
 }
