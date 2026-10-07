@@ -1,5 +1,8 @@
 import { useEffect, useState } from 'react';
-import { show as showLineup } from '@/actions/App/Http/Controllers/SquadLineupController';
+import {
+    show as showLineup,
+    store as storeLineup,
+} from '@/actions/App/Http/Controllers/SquadLineupController';
 import {
     show as showTactics,
     update as updateTactics,
@@ -7,7 +10,11 @@ import {
 import api from '@/api';
 import type { LineupAssignments } from '../squad/types';
 import type { Tactic, TacticsData, TacticsDraft } from './types';
-import { extractErrorMessage } from './utils';
+import {
+    extractErrorMessage,
+    lineupPositionForSlot,
+    swapSlotAssignments,
+} from './utils';
 
 type SavedSlot = {
     slot: string;
@@ -25,6 +32,7 @@ export function useTactics() {
     const [loadError, setLoadError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [lineupError, setLineupError] = useState<string | null>(null);
 
     useEffect(() => {
         api.get(showTactics.url())
@@ -75,9 +83,46 @@ export function useTactics() {
             .finally(() => setIsSaving(false));
     }
 
+    /**
+     * Exchanges the players in two lineup slots and saves the whole lineup,
+     * restoring the previous lineup if the save fails.
+     */
+    function swapLineupSlots(fromSlotId: string, toSlotId: string) {
+        if (fromSlotId === toSlotId || !tactics) {
+            return;
+        }
+
+        const previousAssignments = assignments;
+        const nextAssignments = swapSlotAssignments(
+            assignments,
+            fromSlotId,
+            toSlotId,
+        );
+        setAssignments(nextAssignments);
+        setLineupError(null);
+
+        api.post(storeLineup.url(), {
+            assignments: Object.entries(nextAssignments).map(
+                ([slot, playerId]) => ({
+                    slot,
+                    player_id: playerId,
+                    position: lineupPositionForSlot(
+                        slot,
+                        tactics.tactic.formation,
+                    ),
+                }),
+            ),
+        }).catch((error) => {
+            setAssignments(previousAssignments);
+            setLineupError(extractErrorMessage(error));
+        });
+    }
+
     return {
         tactics,
         assignments,
+        swapLineupSlots,
+        lineupError,
         loadError,
         saveTactics,
         isSaving,

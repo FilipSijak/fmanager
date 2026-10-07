@@ -24,6 +24,8 @@ export default function Tactics() {
     const {
         tactics,
         assignments,
+        swapLineupSlots,
+        lineupError,
         loadError: tacticsLoadError,
         saveTactics,
         isSaving,
@@ -59,16 +61,19 @@ export default function Tactics() {
         );
     }
 
+    const selectedFormation = tactics.tactic.formation;
     const startingEleven = lineupPlayersForSlots(
         STARTER_SLOT_IDS,
         assignments,
         players,
+        selectedFormation,
         1,
     );
     const substitutes = lineupPlayersForSlots(
         SUBSTITUTE_SLOT_IDS,
         assignments,
         players,
+        selectedFormation,
         STARTER_SLOT_IDS.length + 1,
     );
     const starterIds = new Set(
@@ -78,7 +83,6 @@ export default function Tactics() {
         ...startingEleven.map((lineupPlayer) => lineupPlayer.player),
         ...players.filter((player) => !starterIds.has(player.id)),
     ];
-    const selectedFormation = tactics.tactic.formation;
     const pitchPlayers = pitchPlayersForFormation(
         selectedFormation,
         assignments,
@@ -149,6 +153,12 @@ export default function Tactics() {
                     </div>
                 </div>
 
+                {lineupError && (
+                    <p className="px-5 pb-2 text-center text-xs font-bold text-red-400">
+                        {lineupError}
+                    </p>
+                )}
+
                 <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">
                     <div className="grid grid-cols-[minmax(0,320px)_1fr] gap-4">
                         <div className="overflow-hidden rounded border border-white/10">
@@ -171,6 +181,12 @@ export default function Tactics() {
                                                 key={lineupPlayer.player.id}
                                                 lineupPlayer={lineupPlayer}
                                                 isStarter
+                                                onSwap={(fromSlotId) =>
+                                                    swapLineupSlots(
+                                                        fromSlotId,
+                                                        lineupPlayer.slotId,
+                                                    )
+                                                }
                                             />
                                         ))}
                                     </div>
@@ -181,6 +197,12 @@ export default function Tactics() {
                                                 key={lineupPlayer.player.id}
                                                 lineupPlayer={lineupPlayer}
                                                 isStarter={false}
+                                                onSwap={(fromSlotId) =>
+                                                    swapLineupSlots(
+                                                        fromSlotId,
+                                                        lineupPlayer.slotId,
+                                                    )
+                                                }
                                             />
                                         ))}
                                     </div>

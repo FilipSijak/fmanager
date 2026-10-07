@@ -58,7 +58,10 @@ export type TacticsDraft = TeamInstructions & {
 
 /** A squad player placed in one of the lineup slots saved from the Squad page. */
 export type LineupPlayer = {
+    slotId: string;
     number: number;
+    /** The position the player was picked for (the formation slot's position, or SUB). */
+    lineupPosition: string;
     player: SquadPlayer;
 };
 
