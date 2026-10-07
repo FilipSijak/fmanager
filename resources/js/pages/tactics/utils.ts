@@ -1,5 +1,5 @@
 import type { SquadPlayer } from '../squad/types';
-import { POSITION_CHIPS } from '../squad/utils';
+import { SUBSTITUTE_POSITION_LABEL, SUBSTITUTE_SLOT_IDS } from '../squad/utils';
 import type {
     Formation,
     LineupPlayer,
@@ -9,39 +9,29 @@ import type {
 } from './types';
 
 export { extractErrorMessage } from '../squad/utils';
+export { SUBSTITUTE_SLOT_IDS };
 
-const STARTER_COUNT = 11;
-
-/** Lineup slot ids saved by the Squad page, in formation order (GK first). */
-export const STARTER_SLOT_IDS = POSITION_CHIPS.slice(0, STARTER_COUNT).map(
-    (chip) => chip.id,
-);
-
-export const SUBSTITUTE_SLOT_IDS = POSITION_CHIPS.slice(STARTER_COUNT).map(
-    (chip) => chip.id,
-);
+/** Starters are saved under the formation's own slot ids, in formation order (GK first). */
+export function starterSlotIds(formation: Formation | undefined): string[] {
+    return formation?.slots.map((slot) => slot.slot) ?? [];
+}
 
 export function formatOptionLabel(option: string): string {
     return option.charAt(0).toUpperCase() + option.slice(1);
 }
 
-export const SUBSTITUTE_POSITION_LABEL = 'SUB';
+function formationSlot(formation: Formation | undefined, slotId: string) {
+    return formation?.slots.find((slot) => slot.slot === slotId);
+}
 
-/**
- * The position each lineup slot is picked for: starters take the formation
- * slot at the same index, substitutes are labelled SUB.
- */
+/** The position a lineup slot is picked for: the formation slot's position, or SUB for the bench. */
 export function lineupPositionForSlot(
     slotId: string,
     formation: Formation | undefined,
 ): string {
-    const starterIndex = STARTER_SLOT_IDS.indexOf(slotId);
-
-    if (starterIndex === -1) {
-        return SUBSTITUTE_POSITION_LABEL;
-    }
-
-    return formation?.slots[starterIndex]?.position ?? slotId;
+    return (
+        formationSlot(formation, slotId)?.position ?? SUBSTITUTE_POSITION_LABEL
+    );
 }
 
 /** Resolves each slot id to its assigned squad player, numbering them from firstNumber. */
@@ -99,7 +89,7 @@ export function sortByLineupPosition(
     formation: Formation | undefined,
 ): LineupPlayer[] {
     function pitchX(slotId: string): number {
-        return formation?.slots[STARTER_SLOT_IDS.indexOf(slotId)]?.x ?? 0;
+        return formationSlot(formation, slotId)?.x ?? 0;
     }
 
     function rank(lineupPlayer: LineupPlayer): number {
@@ -139,7 +129,7 @@ export function swapSlotAssignments(
 /** Drag payload MIME type used when dragging a player row onto another row. */
 export const LINEUP_SLOT_DRAG_TYPE = 'application/x-lineup-slot';
 
-/** Places the starting eleven onto the formation's slots by order, falling back to the slot's position label. */
+/** Places the starting eleven onto their formation slots, falling back to the slot's position label. */
 export function pitchPlayersForFormation(
     formation: Formation | undefined,
     assignments: Record<string, number>,
@@ -149,9 +139,7 @@ export function pitchPlayersForFormation(
 
     return (
         formation?.slots.map((slot, index) => {
-            const player = playersById.get(
-                assignments[STARTER_SLOT_IDS[index]],
-            );
+            const player = playersById.get(assignments[slot.slot]);
 
             return {
                 key: slot.slot,

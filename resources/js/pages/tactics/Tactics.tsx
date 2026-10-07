@@ -11,7 +11,7 @@ import {
     lineupPlayersForSlots,
     pitchPlayersForFormation,
     sortByLineupPosition,
-    STARTER_SLOT_IDS,
+    starterSlotIds,
     SUBSTITUTE_SLOT_IDS,
 } from './utils';
 
@@ -65,7 +65,7 @@ export default function Tactics() {
     const selectedFormation = tactics.tactic.formation;
     const startingEleven = sortByLineupPosition(
         lineupPlayersForSlots(
-            STARTER_SLOT_IDS,
+            starterSlotIds(selectedFormation),
             assignments,
             players,
             selectedFormation,
@@ -78,7 +78,7 @@ export default function Tactics() {
         assignments,
         players,
         selectedFormation,
-        STARTER_SLOT_IDS.length + 1,
+        selectedFormation.slots.length + 1,
     );
     const starterIds = new Set(
         startingEleven.map((lineupPlayer) => lineupPlayer.player.id),

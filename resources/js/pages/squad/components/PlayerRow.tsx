@@ -5,13 +5,14 @@ import { formatMoney, LINEUP_CHIP_DRAG_TYPE } from '../utils';
 
 export default function PlayerRow({
     player,
-    assignedChipId,
+    assignedPosition,
     sortBy,
     onBoxClick,
     onDropChip,
 }: {
     player: SquadPlayer;
-    assignedChipId: string | null;
+    /** Position label of the chip the player holds, e.g. "CB" or "SUB". */
+    assignedPosition: string | null;
     sortBy: SortOption;
     onBoxClick: () => void;
     onDropChip: (chipId: string) => void;
@@ -36,22 +37,22 @@ export default function PlayerRow({
                     }
                 }}
                 title={
-                    assignedChipId
-                        ? `Assigned to ${assignedChipId} - click to clear`
+                    assignedPosition
+                        ? `Assigned to ${assignedPosition} - click to clear`
                         : 'Click to assign the next free position, or drag a position here'
                 }
                 aria-label={
-                    assignedChipId
-                        ? `Position ${assignedChipId} assigned to ${player.first_name} ${player.last_name}`
+                    assignedPosition
+                        ? `Position ${assignedPosition} assigned to ${player.first_name} ${player.last_name}`
                         : `Assign a position to ${player.first_name} ${player.last_name}`
                 }
                 className={`flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-sm text-[8px] font-bold text-white ${
-                    assignedChipId
+                    assignedPosition
                         ? 'bg-emerald-600 hover:bg-emerald-500'
                         : 'bg-[#0000a5] hover:bg-[#0000d0]'
                 }`}
             >
-                {assignedChipId?.replace('-', '')}
+                {assignedPosition}
             </button>
             <Link
                 href={playerProfile.url(player.id)}

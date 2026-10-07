@@ -8,7 +8,7 @@ import SortByMenu from './components/SortByMenu';
 import type { SortOption } from './types';
 import { useLineupBoard } from './useLineupBoard';
 import { useSquad } from './useSquad';
-import { LINEUP_CHIP_DRAG_TYPE, POSITION_CHIPS, sortPlayers } from './utils';
+import { LINEUP_CHIP_DRAG_TYPE, sortPlayers } from './utils';
 
 const tabs = [
     'Squad',
@@ -29,7 +29,8 @@ const bottomTabs = [
 export default function Squad() {
     const { clubName, instanceDate, players, loadError } = useSquad();
     const {
-        chipIdForPlayer,
+        positionChips,
+        chipLabelForPlayer,
         playerIdForChip,
         assignChipToPlayer,
         togglePlayerBox,
@@ -125,7 +126,7 @@ export default function Squad() {
                     <button
                         type="button"
                         disabled={isSaving}
-                        onClick={() => saveLineup(players)}
+                        onClick={saveLineup}
                         className="rounded border border-emerald-600 bg-emerald-600 px-4 py-1.5 text-sm font-bold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         {isSaving ? 'Saving...' : 'Save Squad'}
@@ -143,7 +144,7 @@ export default function Squad() {
                 </h2>
 
                 <div className="flex flex-wrap justify-center gap-1 px-5 py-2">
-                    {POSITION_CHIPS.map((chip) => {
+                    {positionChips.map((chip) => {
                         const assignedPlayer = players.find(
                             (player) => player.id === playerIdForChip(chip.id),
                         );
@@ -188,7 +189,7 @@ export default function Squad() {
                                     <PlayerRow
                                         key={player.id}
                                         player={player}
-                                        assignedChipId={chipIdForPlayer(
+                                        assignedPosition={chipLabelForPlayer(
                                             player.id,
                                         )}
                                         sortBy={sortBy}
@@ -209,7 +210,7 @@ export default function Squad() {
                                     <PlayerRow
                                         key={player.id}
                                         player={player}
-                                        assignedChipId={chipIdForPlayer(
+                                        assignedPosition={chipLabelForPlayer(
                                             player.id,
                                         )}
                                         sortBy={sortBy}

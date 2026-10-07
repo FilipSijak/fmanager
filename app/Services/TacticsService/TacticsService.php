@@ -21,7 +21,7 @@ class TacticsService
     {
         return BaseFormation::query()
             ->where('is_active', true)
-            ->with(['slots' => fn ($query) => $query->orderBy('id')])
+            ->with('slots')
             ->orderBy('id')
             ->get();
     }
