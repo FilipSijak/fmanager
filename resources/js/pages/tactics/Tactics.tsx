@@ -23,16 +23,12 @@ export default function Tactics() {
     const { clubName, players, loadError: squadLoadError } = useSquad();
     const {
         tactics,
-        draft,
-        selectedFormation,
         assignments,
         loadError: tacticsLoadError,
-        hasChanges,
-        updateDraft,
-        resetDraft,
         saveTactics,
         isSaving,
         saveError,
+        clearSaveError,
     } = useTactics();
     const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
     const loadError = tacticsLoadError ?? squadLoadError;
@@ -50,7 +46,7 @@ export default function Tactics() {
         );
     }
 
-    if (tactics === null || draft === null || players === null) {
+    if (tactics === null || players === null) {
         return (
             <GameLayout active="Nations & Clubs">
                 <Head title="Tactics" />
@@ -82,13 +78,13 @@ export default function Tactics() {
         ...startingEleven.map((lineupPlayer) => lineupPlayer.player),
         ...players.filter((player) => !starterIds.has(player.id)),
     ];
+    const selectedFormation = tactics.tactic.formation;
     const pitchPlayers = pitchPlayersForFormation(
         selectedFormation,
         assignments,
         players,
     );
-    const formationName =
-        selectedFormation?.name ?? selectedFormation?.code ?? '';
+    const formationName = selectedFormation.name ?? selectedFormation.code;
 
     return (
         <GameLayout active="Nations & Clubs">
@@ -132,16 +128,9 @@ export default function Tactics() {
                     ))}
                 </div>
 
-                {saveError && (
-                    <p className="px-5 pt-2 text-center text-xs font-bold text-red-400">
-                        {saveError}
-                    </p>
-                )}
-
                 <div className="flex items-center justify-between px-5 py-3">
                     <h2 className="text-lg font-bold text-[#f5f000]">
                         {formationName}
-                        {hasChanges ? ' (unsaved)' : ''}
                     </h2>
                     <div className="flex overflow-hidden rounded border border-white/10">
                         {pitchTabs.map((tab) => (
@@ -237,28 +226,28 @@ export default function Tactics() {
             <div className="flex bg-[#86888a]">
                 <button
                     type="button"
-                    disabled={!hasChanges || isSaving}
-                    onClick={resetDraft}
-                    className="flex-1 border-r border-slate-400 py-4 text-lg font-bold text-slate-900 hover:bg-slate-400/40 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex-1 border-r border-slate-400 py-4 text-lg font-bold text-slate-900 hover:bg-slate-400/40"
                 >
                     Cancel
                 </button>
                 <button
                     type="button"
-                    disabled={!hasChanges || isSaving}
-                    onClick={saveTactics}
-                    className="flex-1 py-4 text-lg font-bold text-slate-900 hover:bg-slate-400/40 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="flex-1 py-4 text-lg font-bold text-slate-900 hover:bg-slate-400/40"
                 >
-                    {isSaving ? 'Saving...' : 'Ok'}
+                    Ok
                 </button>
             </div>
             {isInstructionsOpen && (
                 <TeamInstructionsModal
                     tactics={tactics}
-                    draft={draft}
                     players={rolePlayers}
-                    onApply={updateDraft}
-                    onClose={() => setIsInstructionsOpen(false)}
+                    isSaving={isSaving}
+                    saveError={saveError}
+                    onSave={saveTactics}
+                    onClose={() => {
+                        clearSaveError();
+                        setIsInstructionsOpen(false);
+                    }}
                 />
             )}
         </GameLayout>

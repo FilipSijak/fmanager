@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { SquadPlayer } from '../../squad/types';
 import type { TacticsData, TacticsDraft } from '../types';
-import { formatOptionLabel } from '../utils';
+import { draftFromTactic, formatOptionLabel } from '../utils';
 
 type ChoiceRow = {
     kind: 'choice';
@@ -47,24 +47,36 @@ const PLAYER_ROLE_ROWS: { field: PlayerRoleField; label: string }[] = [
 ];
 
 /**
- * Edits a local copy of the tactic draft; Ok hands the copy back via onApply,
- * Cancel throws it away.
+ * Edits a copy of the saved tactic. Ok saves it and closes only once the
+ * save succeeds; Cancel discards it.
  */
 export default function TeamInstructionsModal({
     tactics,
-    draft,
     players,
-    onApply,
+    isSaving,
+    saveError,
+    onSave,
     onClose,
 }: {
     tactics: TacticsData;
-    draft: TacticsDraft;
     /** Players offered for set pieces and playmaker. */
     players: SquadPlayer[];
-    onApply: (draft: TacticsDraft) => void;
+    isSaving: boolean;
+    saveError: string | null;
+    onSave: (instructions: TacticsDraft) => Promise<boolean>;
     onClose: () => void;
 }) {
-    const [instructions, setInstructions] = useState<TacticsDraft>(draft);
+    const [instructions, setInstructions] = useState<TacticsDraft>(() =>
+        draftFromTactic(tactics.tactic),
+    );
+
+    function save() {
+        onSave(instructions).then((isSaved) => {
+            if (isSaved) {
+                onClose();
+            }
+        });
+    }
 
     function updateInstructions(changes: Partial<TacticsDraft>) {
         setInstructions((current) => ({ ...current, ...changes }));
@@ -205,23 +217,28 @@ export default function TeamInstructionsModal({
                     ))}
                 </div>
 
+                {saveError && (
+                    <p className="mt-3 text-center text-sm font-bold text-red-200">
+                        {saveError}
+                    </p>
+                )}
+
                 <div className="mt-4 flex gap-1">
                     <button
                         type="button"
+                        disabled={isSaving}
                         onClick={onClose}
-                        className="flex-1 bg-slate-200 py-2 text-lg font-bold text-slate-500 hover:bg-white"
+                        className="flex-1 bg-slate-200 py-2 text-lg font-bold text-slate-500 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                     >
                         Cancel
                     </button>
                     <button
                         type="button"
-                        onClick={() => {
-                            onApply(instructions);
-                            onClose();
-                        }}
-                        className="flex-1 bg-slate-200 py-2 text-lg font-bold text-slate-500 hover:bg-white"
+                        disabled={isSaving}
+                        onClick={save}
+                        className="flex-1 bg-slate-200 py-2 text-lg font-bold text-slate-500 hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                        Ok
+                        {isSaving ? 'Saving...' : 'Ok'}
                     </button>
                 </div>
             </div>

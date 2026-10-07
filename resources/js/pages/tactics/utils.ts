@@ -1,6 +1,12 @@
 import type { SquadPlayer } from '../squad/types';
 import { POSITION_CHIPS } from '../squad/utils';
-import type { Formation, LineupPlayer, PitchPlayer } from './types';
+import type {
+    Formation,
+    LineupPlayer,
+    PitchPlayer,
+    Tactic,
+    TacticsDraft,
+} from './types';
 
 export { extractErrorMessage } from '../squad/utils';
 
@@ -59,4 +65,23 @@ export function pitchPlayersForFormation(
             };
         }) ?? []
     );
+}
+
+/** The editable instructions of a saved tactic, as the Team Instructions modal starts them. */
+export function draftFromTactic(tactic: Tactic): TacticsDraft {
+    return {
+        formationId: tactic.formation.id,
+        mentality: tactic.mentality,
+        pressing: tactic.pressing,
+        passing: tactic.passing,
+        tackling: tactic.tackling,
+        offside_trap: tactic.offside_trap,
+        counter_attack: tactic.counter_attack,
+        men_behind_ball: tactic.men_behind_ball,
+        free_kicks_left_player_id: tactic.free_kicks_left_player_id,
+        free_kicks_right_player_id: tactic.free_kicks_right_player_id,
+        corners_left_player_id: tactic.corners_left_player_id,
+        corners_right_player_id: tactic.corners_right_player_id,
+        playmaker_player_id: tactic.playmaker_player_id,
+    };
 }

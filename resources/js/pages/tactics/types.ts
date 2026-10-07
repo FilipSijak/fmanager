@@ -51,7 +51,7 @@ export type TacticsData = {
     options: TacticsOptions;
 };
 
-/** The editable part of a tactic, held locally until the user presses Ok. */
+/** The editable part of a tactic, as edited in the Team Instructions modal and sent to PUT /api/tactics. */
 export type TacticsDraft = TeamInstructions & {
     formationId: number;
 };

@@ -15,31 +15,12 @@ type SavedSlot = {
     player_id: number;
 };
 
-function draftFromTactic(tactic: Tactic): TacticsDraft {
-    return {
-        formationId: tactic.formation.id,
-        mentality: tactic.mentality,
-        pressing: tactic.pressing,
-        passing: tactic.passing,
-        tackling: tactic.tackling,
-        offside_trap: tactic.offside_trap,
-        counter_attack: tactic.counter_attack,
-        men_behind_ball: tactic.men_behind_ball,
-        free_kicks_left_player_id: tactic.free_kicks_left_player_id,
-        free_kicks_right_player_id: tactic.free_kicks_right_player_id,
-        corners_left_player_id: tactic.corners_left_player_id,
-        corners_right_player_id: tactic.corners_right_player_id,
-        playmaker_player_id: tactic.playmaker_player_id,
-    };
-}
-
 /**
- * Loads the club's tactic and saved lineup, and keeps an editable draft of
- * the tactic that is only persisted to /api/tactics when saveTactics() runs.
+ * Loads the club's tactic and saved lineup. Team instructions are saved
+ * straight to /api/tactics by saveTactics(); the page keeps no unsaved copy.
  */
 export function useTactics() {
     const [tactics, setTactics] = useState<TacticsData | null>(null);
-    const [draft, setDraft] = useState<TacticsDraft | null>(null);
     const [assignments, setAssignments] = useState<LineupAssignments>({});
     const [loadError, setLoadError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
@@ -48,9 +29,7 @@ export function useTactics() {
     useEffect(() => {
         api.get(showTactics.url())
             .then((response) => {
-                const data = response.data.data as TacticsData;
-                setTactics(data);
-                setDraft(draftFromTactic(data.tactic));
+                setTactics(response.data.data as TacticsData);
             })
             .catch(() => setLoadError('Unable to load tactics.'));
 
@@ -64,34 +43,12 @@ export function useTactics() {
         });
     }, []);
 
-    const selectedFormation =
-        tactics?.formations.find(
-            (formation) => formation.id === draft?.formationId,
-        ) ?? tactics?.tactic.formation;
-
-    const hasChanges =
-        tactics !== null &&
-        draft !== null &&
-        JSON.stringify(draft) !==
-            JSON.stringify(draftFromTactic(tactics.tactic));
-
-    function updateDraft(changes: Partial<TacticsDraft>) {
-        setDraft((current) => (current ? { ...current, ...changes } : current));
-    }
-
-    /** Discards unsaved changes, reverting the draft to the last saved tactic. */
-    function resetDraft() {
-        if (tactics) {
-            setDraft(draftFromTactic(tactics.tactic));
-        }
+    function clearSaveError() {
         setSaveError(null);
     }
 
-    function saveTactics() {
-        if (!draft) {
-            return;
-        }
-
+    /** Persists the given instructions; resolves to whether the save succeeded. */
+    function saveTactics(draft: TacticsDraft): Promise<boolean> {
         setIsSaving(true);
         setSaveError(null);
 
@@ -107,23 +64,24 @@ export function useTactics() {
                 setTactics((current) =>
                     current ? { ...current, tactic } : current,
                 );
-                setDraft(draftFromTactic(tactic));
+
+                return true;
             })
-            .catch((error) => setSaveError(extractErrorMessage(error)))
+            .catch((error) => {
+                setSaveError(extractErrorMessage(error));
+
+                return false;
+            })
             .finally(() => setIsSaving(false));
     }
 
     return {
         tactics,
-        draft,
-        selectedFormation,
         assignments,
         loadError,
-        hasChanges,
-        updateDraft,
-        resetDraft,
         saveTactics,
         isSaving,
         saveError,
+        clearSaveError,
     };
 }
