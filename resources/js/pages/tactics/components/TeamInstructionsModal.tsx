@@ -1,13 +1,50 @@
 import { useState } from 'react';
+import type { SquadPlayer } from '../../squad/types';
 import type { TacticsData, TacticsDraft } from '../types';
 import { formatOptionLabel } from '../utils';
 
-type InstructionRow = {
+type ChoiceRow = {
+    kind: 'choice';
     label: string;
-    options: { value: string | number; label: string }[];
-    value: string | number;
-    onChange: (value: string | number) => void;
+    options: { value: string | number | boolean; label: string }[];
+    value: string | number | boolean;
+    onChange: (value: string | number | boolean) => void;
 };
+
+type PlayerRow = {
+    kind: 'player';
+    label: string;
+    value: number | null;
+    onChange: (playerId: number | null) => void;
+};
+
+type PlayerRoleField =
+    | 'free_kicks_left_player_id'
+    | 'free_kicks_right_player_id'
+    | 'corners_left_player_id'
+    | 'corners_right_player_id'
+    | 'playmaker_player_id';
+
+type ToggleField = 'offside_trap' | 'counter_attack' | 'men_behind_ball';
+
+const YES_NO_OPTIONS = [
+    { value: false, label: 'No' },
+    { value: true, label: 'Yes' },
+];
+
+const TOGGLE_ROWS: { field: ToggleField; label: string }[] = [
+    { field: 'offside_trap', label: 'Offside Trap' },
+    { field: 'counter_attack', label: 'Counter Attack' },
+    { field: 'men_behind_ball', label: 'Men Behind Ball' },
+];
+
+const PLAYER_ROLE_ROWS: { field: PlayerRoleField; label: string }[] = [
+    { field: 'free_kicks_left_player_id', label: 'Free Kicks (L)' },
+    { field: 'free_kicks_right_player_id', label: 'Free Kicks (R)' },
+    { field: 'corners_left_player_id', label: 'Corners (L)' },
+    { field: 'corners_right_player_id', label: 'Corners (R)' },
+    { field: 'playmaker_player_id', label: 'Playmaker' },
+];
 
 /**
  * Edits a local copy of the tactic draft; Ok hands the copy back via onApply,
@@ -16,11 +53,14 @@ type InstructionRow = {
 export default function TeamInstructionsModal({
     tactics,
     draft,
+    players,
     onApply,
     onClose,
 }: {
     tactics: TacticsData;
     draft: TacticsDraft;
+    /** Players offered for set pieces and playmaker. */
+    players: SquadPlayer[];
     onApply: (draft: TacticsDraft) => void;
     onClose: () => void;
 }) {
@@ -30,15 +70,26 @@ export default function TeamInstructionsModal({
         setInstructions((current) => ({ ...current, ...changes }));
     }
 
-    function toOptions(values: string[]) {
-        return values.map((value) => ({
-            value,
-            label: formatOptionLabel(value),
-        }));
+    function choiceRow(
+        label: string,
+        values: string[],
+        field: 'mentality' | 'passing' | 'tackling' | 'pressing',
+    ): ChoiceRow {
+        return {
+            kind: 'choice',
+            label,
+            options: values.map((value) => ({
+                value,
+                label: formatOptionLabel(value),
+            })),
+            value: instructions[field],
+            onChange: (value) => updateInstructions({ [field]: String(value) }),
+        };
     }
 
-    const rows: InstructionRow[] = [
+    const rows: (ChoiceRow | PlayerRow)[] = [
         {
+            kind: 'choice',
             label: 'Formation',
             options: tactics.formations.map((formation) => ({
                 value: formation.id,
@@ -48,26 +99,24 @@ export default function TeamInstructionsModal({
             onChange: (value) =>
                 updateInstructions({ formationId: Number(value) }),
         },
-        {
-            label: 'Mentality',
-            options: toOptions(tactics.options.mentalities),
-            value: instructions.mentality,
+        choiceRow('Mentality', tactics.options.mentalities, 'mentality'),
+        choiceRow('Passing', tactics.options.passing, 'passing'),
+        choiceRow('Tackling', tactics.options.tackling, 'tackling'),
+        choiceRow('Pressing', tactics.options.pressing, 'pressing'),
+        ...TOGGLE_ROWS.map(({ field, label }): ChoiceRow => ({
+            kind: 'choice',
+            label,
+            options: YES_NO_OPTIONS,
+            value: instructions[field],
             onChange: (value) =>
-                updateInstructions({ mentality: String(value) }),
-        },
-        {
-            label: 'Passing',
-            options: toOptions(tactics.options.passing),
-            value: instructions.passing,
-            onChange: (value) => updateInstructions({ passing: String(value) }),
-        },
-        {
-            label: 'Pressing',
-            options: toOptions(tactics.options.pressing),
-            value: instructions.pressing,
-            onChange: (value) =>
-                updateInstructions({ pressing: String(value) }),
-        },
+                updateInstructions({ [field]: value === true }),
+        })),
+        ...PLAYER_ROLE_ROWS.map(({ field, label }): PlayerRow => ({
+            kind: 'player',
+            label,
+            value: instructions[field],
+            onChange: (playerId) => updateInstructions({ [field]: playerId }),
+        })),
     ];
 
     return (
@@ -76,7 +125,7 @@ export default function TeamInstructionsModal({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="team-instructions-title"
-                className="w-full max-w-2xl border-4 border-emerald-500 bg-emerald-600 p-3 shadow-2xl"
+                className="flex max-h-full w-full max-w-2xl flex-col border-4 border-emerald-500 bg-emerald-600 p-3 shadow-2xl"
             >
                 <div className="border-t-2 border-l-2 border-blue-600 bg-[#0c0c14] py-3">
                     <h2
@@ -87,7 +136,7 @@ export default function TeamInstructionsModal({
                     </h2>
                 </div>
 
-                <div className="mt-4 border-2 border-emerald-300/60 bg-gradient-to-b from-emerald-500 to-emerald-600 p-2">
+                <div className="mt-4 min-h-0 overflow-y-auto border-2 border-emerald-300/60 bg-gradient-to-b from-emerald-500 to-emerald-600 p-2">
                     {rows.map((row) => (
                         <div
                             key={row.label}
@@ -96,30 +145,62 @@ export default function TeamInstructionsModal({
                             <span className="pl-2 text-lg font-bold text-white">
                                 {row.label}
                             </span>
-                            <div className="grid grid-cols-4 gap-1">
-                                {row.options.map((option) => {
-                                    const isSelected =
-                                        option.value === row.value;
+                            {row.kind === 'choice' ? (
+                                <div className="grid grid-cols-4 gap-1">
+                                    {row.options.map((option) => {
+                                        const isSelected =
+                                            option.value === row.value;
 
-                                    return (
-                                        <button
-                                            key={option.value}
-                                            type="button"
-                                            aria-pressed={isSelected}
-                                            onClick={() =>
-                                                row.onChange(option.value)
-                                            }
-                                            className={`border-2 px-2 py-1 text-sm font-bold ${
-                                                isSelected
-                                                    ? 'border-[#f5f000] bg-emerald-600 text-[#f5f000]'
-                                                    : 'border-transparent text-lime-200 hover:border-lime-200/40'
-                                            }`}
+                                        return (
+                                            <button
+                                                key={String(option.value)}
+                                                type="button"
+                                                aria-pressed={isSelected}
+                                                onClick={() =>
+                                                    row.onChange(option.value)
+                                                }
+                                                className={`border-2 px-2 py-1 text-sm font-bold ${
+                                                    isSelected
+                                                        ? 'border-[#f5f000] bg-emerald-600 text-[#f5f000]'
+                                                        : 'border-transparent text-lime-200 hover:border-lime-200/40'
+                                                }`}
+                                            >
+                                                {option.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <select
+                                    aria-label={row.label}
+                                    value={row.value ?? ''}
+                                    onChange={(event) =>
+                                        row.onChange(
+                                            event.target.value === ''
+                                                ? null
+                                                : Number(event.target.value),
+                                        )
+                                    }
+                                    className="w-56 cursor-pointer border-2 border-transparent bg-transparent px-2 py-1 text-sm font-bold text-lime-200 hover:border-lime-200/40 focus:border-[#f5f000] focus:outline-none"
+                                >
+                                    <option
+                                        value=""
+                                        className="bg-[#0c0c14] text-white"
+                                    >
+                                        —
+                                    </option>
+                                    {players.map((player) => (
+                                        <option
+                                            key={player.id}
+                                            value={player.id}
+                                            className="bg-[#0c0c14] text-white"
                                         >
-                                            {option.label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                                            {player.first_name.charAt(0)}.{' '}
+                                            {player.last_name}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
                         </div>
                     ))}
                 </div>

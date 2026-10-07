@@ -75,6 +75,13 @@ export default function Tactics() {
         players,
         STARTER_SLOT_IDS.length + 1,
     );
+    const starterIds = new Set(
+        startingEleven.map((lineupPlayer) => lineupPlayer.player.id),
+    );
+    const rolePlayers = [
+        ...startingEleven.map((lineupPlayer) => lineupPlayer.player),
+        ...players.filter((player) => !starterIds.has(player.id)),
+    ];
     const pitchPlayers = pitchPlayersForFormation(
         selectedFormation,
         assignments,
@@ -249,6 +256,7 @@ export default function Tactics() {
                 <TeamInstructionsModal
                     tactics={tactics}
                     draft={draft}
+                    players={rolePlayers}
                     onApply={updateDraft}
                     onClose={() => setIsInstructionsOpen(false)}
                 />
