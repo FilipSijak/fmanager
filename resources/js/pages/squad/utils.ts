@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { Formation } from '../tactics/types';
 import type { PositionChip, SortOption, SquadPlayer } from './types';
 
 export function formatMoney(value: number): string {
@@ -16,18 +17,8 @@ export function extractErrorMessage(error: unknown): string {
     return 'Something went wrong. Please try again.';
 }
 
-export const POSITION_CHIPS: PositionChip[] = [
-    'GK',
-    'DL',
-    'DR',
-    'DC-1',
-    'DC-2',
-    'ML',
-    'MR',
-    'MC-1',
-    'MC-2',
-    'FC-1',
-    'FC-2',
+/** Bench slot ids; starters use the formation's own slot ids instead. */
+export const SUBSTITUTE_SLOT_IDS = [
     'SUB1',
     'SUB2',
     'SUB3',
@@ -35,7 +26,25 @@ export const POSITION_CHIPS: PositionChip[] = [
     'SUB5',
     'SUB6',
     'SUB7',
-].map((chip) => ({ id: chip, label: chip.replace(/-\d$/, '') }));
+];
+
+export const SUBSTITUTE_POSITION_LABEL = 'SUB';
+
+/** One chip per formation slot (labelled by its position), then the bench. */
+export function positionChipsForFormation(
+    formation: Formation | null,
+): PositionChip[] {
+    return [
+        ...(formation?.slots.map((slot) => ({
+            id: slot.slot,
+            label: slot.position,
+        })) ?? []),
+        ...SUBSTITUTE_SLOT_IDS.map((id) => ({
+            id,
+            label: SUBSTITUTE_POSITION_LABEL,
+        })),
+    ];
+}
 
 /** Drag payload MIME type used when dragging a position chip onto a player's box. */
 export const LINEUP_CHIP_DRAG_TYPE = 'text/plain';

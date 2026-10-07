@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\BaseData\BaseFormation;
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Player;
 use App\Models\StaffCoaching;
 use App\Models\StaffTacticPreference;
 use App\Services\PersonService\PersonConfig\PersonTypes;
@@ -94,10 +95,13 @@ class TacticsApiTest extends TestCase
         $formation = $this->createFormation('4-3-3');
 
         $response = $this->apiRequest($instance)->putJson('/api/tactics', [
-            'formation_id' => $formation->id,
+            ...$this->instructionsPayload($formation),
             'mentality' => 'attacking',
             'pressing' => 'high',
-            'passing' => 'short',
+            'passing' => 'long',
+            'tackling' => 'hard',
+            'offside_trap' => true,
+            'men_behind_ball' => true,
         ]);
 
         $response
@@ -105,14 +109,22 @@ class TacticsApiTest extends TestCase
             ->assertJsonPath('data.formation.code', '4-3-3')
             ->assertJsonPath('data.mentality', 'attacking')
             ->assertJsonPath('data.pressing', 'high')
-            ->assertJsonPath('data.passing', 'short');
+            ->assertJsonPath('data.passing', 'long')
+            ->assertJsonPath('data.tackling', 'hard')
+            ->assertJsonPath('data.offside_trap', true)
+            ->assertJsonPath('data.counter_attack', false)
+            ->assertJsonPath('data.men_behind_ball', true);
 
         $this->assertDatabaseHas('staff_tactic_preferences', [
             'staff_coaching_id' => StaffCoaching::query()->where('club_id', $club->id)->value('id'),
             'base_formation_id' => $formation->id,
             'mentality' => 'attacking',
             'pressing' => 'high',
-            'passing' => 'short',
+            'passing' => 'long',
+            'tackling' => 'hard',
+            'offside_trap' => true,
+            'counter_attack' => false,
+            'men_behind_ball' => true,
         ]);
 
         $this->assertDatabaseHas('club_tactics', [
@@ -120,8 +132,76 @@ class TacticsApiTest extends TestCase
             'base_formation_id' => $formation->id,
             'mentality' => 'attacking',
             'pressing' => 'high',
-            'passing' => 'short',
+            'passing' => 'long',
+            'tackling' => 'hard',
+            'offside_trap' => true,
+            'counter_attack' => false,
+            'men_behind_ball' => true,
         ]);
+    }
+
+    #[Test]
+    public function it_stores_player_roles_on_the_club_tactic(): void
+    {
+        [$instance, $club] = $this->createManagedClub();
+        $formation = $this->createFormation('4-4-2');
+        $setPieceTaker = $this->createPlayer($instance, $club);
+        $playmaker = $this->createPlayer($instance, $club);
+
+        $response = $this->apiRequest($instance)->putJson('/api/tactics', [
+            ...$this->instructionsPayload($formation),
+            'free_kicks_left_player_id' => $setPieceTaker->id,
+            'free_kicks_right_player_id' => $setPieceTaker->id,
+            'corners_left_player_id' => $setPieceTaker->id,
+            'corners_right_player_id' => null,
+            'playmaker_player_id' => $playmaker->id,
+        ]);
+
+        $response
+            ->assertOk()
+            ->assertJsonPath('data.free_kicks_left_player_id', $setPieceTaker->id)
+            ->assertJsonPath('data.corners_right_player_id', null)
+            ->assertJsonPath('data.playmaker_player_id', $playmaker->id);
+
+        $this->assertDatabaseHas('club_tactics', [
+            'club_id' => $club->id,
+            'free_kicks_left_player_id' => $setPieceTaker->id,
+            'free_kicks_right_player_id' => $setPieceTaker->id,
+            'corners_left_player_id' => $setPieceTaker->id,
+            'corners_right_player_id' => null,
+            'playmaker_player_id' => $playmaker->id,
+        ]);
+    }
+
+    #[Test]
+    public function it_rejects_a_player_role_for_a_player_from_another_club(): void
+    {
+        [$instance, $club] = $this->createManagedClub();
+        $formation = $this->createFormation('4-4-2');
+        $otherClub = Club::factory()->create(['instance_id' => $instance->id]);
+        $outsider = $this->createPlayer($instance, $otherClub);
+
+        $response = $this->apiRequest($instance)->putJson('/api/tactics', [
+            ...$this->instructionsPayload($formation),
+            'playmaker_player_id' => $outsider->id,
+        ]);
+
+        $response->assertUnprocessable()->assertJsonPath('error', 'One or more selected players do not belong to this club.');
+        $this->assertDatabaseMissing('club_tactics', ['playmaker_player_id' => $outsider->id]);
+    }
+
+    #[Test]
+    public function it_requires_every_team_instruction(): void
+    {
+        [$instance] = $this->createManagedClub();
+        $formation = $this->createFormation('4-4-2');
+
+        $this->apiRequest($instance)->putJson('/api/tactics', [
+            'formation_id' => $formation->id,
+            'mentality' => 'balanced',
+            'pressing' => 'medium',
+            'passing' => 'mixed',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['tackling', 'offside_trap', 'counter_attack', 'men_behind_ball']);
     }
 
     #[Test]
@@ -130,12 +210,9 @@ class TacticsApiTest extends TestCase
         [$instance] = $this->createManagedClub();
         $formation = $this->createFormation('4-4-2', false);
 
-        $this->apiRequest($instance)->putJson('/api/tactics', [
-            'formation_id' => $formation->id,
-            'mentality' => 'balanced',
-            'pressing' => 'medium',
-            'passing' => 'mixed',
-        ])->assertUnprocessable()->assertJsonValidationErrors('formation_id');
+        $this->apiRequest($instance)->putJson('/api/tactics', $this->instructionsPayload($formation))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('formation_id');
     }
 
     /**  array{0: Instance, 1: Club} */
@@ -159,6 +236,30 @@ class TacticsApiTest extends TestCase
         $formation->slots()->create(['slot' => '1', 'position' => 'GK', 'x' => 50, 'y' => 90]);
 
         return $formation;
+    }
+
+    /** @return array<string, mixed> */
+    private function instructionsPayload(BaseFormation $formation): array
+    {
+        return [
+            'formation_id' => $formation->id,
+            'mentality' => 'balanced',
+            'pressing' => 'medium',
+            'passing' => 'mixed',
+            'tackling' => 'normal',
+            'offside_trap' => false,
+            'counter_attack' => false,
+            'men_behind_ball' => false,
+        ];
+    }
+
+    private function createPlayer(Instance $instance, Club $club): Player
+    {
+        return Player::factory()->create([
+            'instance_id' => $instance->id,
+            'club_id' => $club->id,
+            'is_retired' => false,
+        ]);
     }
 
     private function apiRequest(Instance $instance): self

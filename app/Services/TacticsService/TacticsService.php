@@ -5,9 +5,11 @@ namespace App\Services\TacticsService;
 use App\Models\BaseData\BaseFormation;
 use App\Models\Club;
 use App\Models\ClubTactic;
+use App\Models\Player;
 use App\Models\StaffCoaching;
 use App\Models\StaffTacticPreference;
 use App\Services\PersonService\PersonConfig\PersonTypes;
+use App\Services\TacticsService\Data\TeamInstructionsData;
 use DomainException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +21,7 @@ class TacticsService
     {
         return BaseFormation::query()
             ->where('is_active', true)
-            ->with(['slots' => fn ($query) => $query->orderBy('id')])
+            ->with('slots')
             ->orderBy('id')
             ->get();
     }
@@ -59,14 +61,9 @@ class TacticsService
         });
     }
 
-    public function saveForClub(
-        Club $club,
-        int $formationId,
-        Mentality $mentality,
-        PressingIntensity $pressing,
-        PassingStyle $passing,
-    ): ClubTactic {
-        return DB::transaction(function () use ($club, $formationId, $mentality, $pressing, $passing): ClubTactic {
+    public function saveForClub(Club $club, int $formationId, TeamInstructionsData $instructions): ClubTactic
+    {
+        return DB::transaction(function () use ($club, $formationId, $instructions): ClubTactic {
             $formation = BaseFormation::query()
                 ->whereKey($formationId)
                 ->where('is_active', true)
@@ -76,27 +73,31 @@ class TacticsService
                 throw new DomainException('The selected tactics formation is not available.');
             }
 
+            $this->validatePlayersBelongToClub($club, $instructions->playerRoleAttributes());
+
             $manager = $this->managerForClub($club);
             $preference = $this->ensureDefaultForStaff($manager);
             $preference->update([
                 'base_formation_id' => $formation->id,
-                'mentality' => $mentality,
-                'pressing' => $pressing,
-                'passing' => $passing,
+                ...$instructions->styleAttributes(),
                 'is_customized' => true,
             ]);
 
-            return $this->syncClubTactic($club, $preference->fresh());
+            $tactic = $this->syncClubTactic($club, $preference->fresh());
+            $tactic->update($instructions->playerRoleAttributes());
+
+            return $tactic;
         });
     }
 
-    /** @return array{mentalities:list<string>,pressing:list<string>,passing:list<string>} */
+    /** @return array{mentalities:list<string>,pressing:list<string>,passing:list<string>,tackling:list<string>} */
     public function options(): array
     {
         return [
             'mentalities' => array_map(fn (Mentality $option): string => $option->value, Mentality::cases()),
             'pressing' => array_map(fn (PressingIntensity $option): string => $option->value, PressingIntensity::cases()),
             'passing' => array_map(fn (PassingStyle $option): string => $option->value, PassingStyle::cases()),
+            'tackling' => array_map(fn (TacklingStyle $option): string => $option->value, TacklingStyle::cases()),
         ];
     }
 
@@ -148,6 +149,27 @@ class TacticsService
         return $formation;
     }
 
+    /** @param array<string, ?int> $playerRoles */
+    private function validatePlayersBelongToClub(Club $club, array $playerRoles): void
+    {
+        $playerIds = array_values(array_unique(array_filter($playerRoles, fn (?int $playerId): bool => $playerId !== null)));
+
+        if ($playerIds === []) {
+            return;
+        }
+
+        $belongingCount = Player::query()
+            ->where('instance_id', $club->instance_id)
+            ->where('club_id', $club->id)
+            ->where('is_retired', false)
+            ->whereIn('id', $playerIds)
+            ->count();
+
+        if ($belongingCount !== count($playerIds)) {
+            throw new DomainException('One or more selected players do not belong to this club.');
+        }
+    }
+
     private function managerForClub(Club $club): StaffCoaching
     {
         $manager = StaffCoaching::query()
@@ -173,6 +195,10 @@ class TacticsService
                 'mentality' => $preference->mentality,
                 'pressing' => $preference->pressing,
                 'passing' => $preference->passing,
+                'tackling' => $preference->tackling,
+                'offside_trap' => $preference->offside_trap,
+                'counter_attack' => $preference->counter_attack,
+                'men_behind_ball' => $preference->men_behind_ball,
             ],
         );
 

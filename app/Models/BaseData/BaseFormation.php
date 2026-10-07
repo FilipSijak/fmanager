@@ -20,8 +20,9 @@ class BaseFormation extends Model
         return ['is_active' => 'boolean', 'tactical_tendency' => FormationTendency::class];
     }
 
+    /** Slots in their seeded order (GK first); `slot` is a string, so it can't be sorted on directly. */
     public function slots(): HasMany
     {
-        return $this->hasMany(BaseFormationSlot::class);
+        return $this->hasMany(BaseFormationSlot::class)->orderBy('id');
     }
 }

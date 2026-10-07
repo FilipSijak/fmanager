@@ -8,9 +8,11 @@ use App\Http\Resources\FormationResource;
 use App\Http\Resources\TacticsResource;
 use App\Models\Club;
 use App\Models\Instance;
+use App\Services\TacticsService\Data\TeamInstructionsData;
 use App\Services\TacticsService\Mentality;
 use App\Services\TacticsService\PassingStyle;
 use App\Services\TacticsService\PressingIntensity;
+use App\Services\TacticsService\TacklingStyle;
 use App\Services\TacticsService\TacticsService;
 use App\Support\GameContext;
 use DomainException;
@@ -42,9 +44,20 @@ class TacticsController extends Controller
             $tactic = $this->tacticsService->saveForClub(
                 $this->managedClub(),
                 (int) $data['formation_id'],
-                Mentality::from($data['mentality']),
-                PressingIntensity::from($data['pressing']),
-                PassingStyle::from($data['passing']),
+                new TeamInstructionsData(
+                    mentality: Mentality::from($data['mentality']),
+                    pressing: PressingIntensity::from($data['pressing']),
+                    passing: PassingStyle::from($data['passing']),
+                    tackling: TacklingStyle::from($data['tackling']),
+                    offsideTrap: (bool) $data['offside_trap'],
+                    counterAttack: (bool) $data['counter_attack'],
+                    menBehindBall: (bool) $data['men_behind_ball'],
+                    freeKicksLeftPlayerId: $this->optionalPlayerId($data, 'free_kicks_left_player_id'),
+                    freeKicksRightPlayerId: $this->optionalPlayerId($data, 'free_kicks_right_player_id'),
+                    cornersLeftPlayerId: $this->optionalPlayerId($data, 'corners_left_player_id'),
+                    cornersRightPlayerId: $this->optionalPlayerId($data, 'corners_right_player_id'),
+                    playmakerPlayerId: $this->optionalPlayerId($data, 'playmaker_player_id'),
+                ),
             );
 
             return ResponseHelper::success(
@@ -54,6 +67,12 @@ class TacticsController extends Controller
         } catch (DomainException $exception) {
             return ResponseHelper::error($exception->getMessage(), '', 422);
         }
+    }
+
+    /** @param array<string, mixed> $data */
+    private function optionalPlayerId(array $data, string $field): ?int
+    {
+        return isset($data[$field]) ? (int) $data[$field] : null;
     }
 
     private function managedClub(): Club

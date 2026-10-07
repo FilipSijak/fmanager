@@ -3,9 +3,11 @@ import {
     show as showLineup,
     store as storeLineup,
 } from '@/actions/App/Http/Controllers/SquadLineupController';
+import { show as showTactics } from '@/actions/App/Http/Controllers/TacticsController';
 import api from '@/api';
-import type { LineupAssignments, SquadPlayer } from './types';
-import { extractErrorMessage, POSITION_CHIPS } from './utils';
+import type { Formation, TacticsData } from '../tactics/types';
+import type { LineupAssignments } from './types';
+import { extractErrorMessage, positionChipsForFormation } from './utils';
 
 type SavedSlot = {
     slot: string;
@@ -14,15 +16,22 @@ type SavedSlot = {
 };
 
 /**
- * Tracks which position slot (from POSITION_CHIPS) each player is assigned
- * to, loaded from and saved to /api/squad/lineup.
+ * Tracks which position slot of the club's current formation (or bench slot)
+ * each player is assigned to, loaded from and saved to /api/squad/lineup.
  */
 export function useLineupBoard() {
+    const [formation, setFormation] = useState<Formation | null>(null);
     const [assignments, setAssignments] = useState<LineupAssignments>({});
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
 
+    const positionChips = positionChipsForFormation(formation);
+
     useEffect(() => {
+        api.get(showTactics.url()).then((response) => {
+            setFormation((response.data.data as TacticsData).tactic.formation);
+        });
+
         api.get(showLineup.url()).then((response) => {
             const slots = response.data.data as SavedSlot[];
             setAssignments(
@@ -43,6 +52,13 @@ export function useLineupBoard() {
 
     function playerIdForChip(chipId: string): number | undefined {
         return assignments[chipId];
+    }
+
+    /** The position label of the chip a player holds, e.g. "CB" or "SUB". */
+    function chipLabelForPlayer(playerId: number): string | null {
+        const chipId = chipIdForPlayer(playerId);
+
+        return positionChips.find((chip) => chip.id === chipId)?.label ?? null;
     }
 
     function unassignPlayer(playerId: number) {
@@ -73,12 +89,16 @@ export function useLineupBoard() {
 
     /** Click handler for a player's box: assigns the next free slot, or clears their current one. */
     function togglePlayerBox(playerId: number) {
+        if (formation === null) {
+            return;
+        }
+
         if (chipIdForPlayer(playerId) !== null) {
             unassignPlayer(playerId);
             return;
         }
 
-        const nextChip = POSITION_CHIPS.find(
+        const nextChip = positionChips.find(
             (chip) => assignments[chip.id] === undefined,
         );
 
@@ -87,29 +107,19 @@ export function useLineupBoard() {
         }
     }
 
-    function saveLineup(players: SquadPlayer[]) {
+    function saveLineup() {
         setIsSaving(true);
         setSaveError(null);
 
-        const playersById = new Map(
-            players.map((player) => [player.id, player]),
+        const assignmentsPayload = Object.entries(assignments).map(
+            ([slot, playerId]) => ({
+                slot,
+                player_id: playerId,
+                position:
+                    positionChips.find((chip) => chip.id === slot)?.label ??
+                    slot,
+            }),
         );
-        const assignmentsPayload = Object.entries(assignments)
-            .map(([slot, playerId]) => {
-                const player = playersById.get(playerId);
-                return player
-                    ? { slot, player_id: playerId, position: player.position }
-                    : null;
-            })
-            .filter(
-                (
-                    entry,
-                ): entry is {
-                    slot: string;
-                    player_id: number;
-                    position: string;
-                } => entry !== null,
-            );
 
         return api
             .post(storeLineup.url(), { assignments: assignmentsPayload })
@@ -130,7 +140,8 @@ export function useLineupBoard() {
     }
 
     return {
-        chipIdForPlayer,
+        positionChips,
+        chipLabelForPlayer,
         playerIdForChip,
         assignChipToPlayer,
         togglePlayerBox,
