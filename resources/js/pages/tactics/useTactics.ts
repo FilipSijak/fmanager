@@ -21,6 +21,15 @@ function draftFromTactic(tactic: Tactic): TacticsDraft {
         mentality: tactic.mentality,
         pressing: tactic.pressing,
         passing: tactic.passing,
+        tackling: tactic.tackling,
+        offside_trap: tactic.offside_trap,
+        counter_attack: tactic.counter_attack,
+        men_behind_ball: tactic.men_behind_ball,
+        free_kicks_left_player_id: tactic.free_kicks_left_player_id,
+        free_kicks_right_player_id: tactic.free_kicks_right_player_id,
+        corners_left_player_id: tactic.corners_left_player_id,
+        corners_right_player_id: tactic.corners_right_player_id,
+        playmaker_player_id: tactic.playmaker_player_id,
     };
 }
 
@@ -86,12 +95,12 @@ export function useTactics() {
         setIsSaving(true);
         setSaveError(null);
 
+        const { formationId, ...instructions } = draft;
+
         return api
             .put(updateTactics.url(), {
-                formation_id: draft.formationId,
-                mentality: draft.mentality,
-                pressing: draft.pressing,
-                passing: draft.passing,
+                formation_id: formationId,
+                ...instructions,
             })
             .then((response) => {
                 const tactic = response.data.data as Tactic;

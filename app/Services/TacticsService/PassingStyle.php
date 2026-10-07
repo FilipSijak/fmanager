@@ -7,4 +7,5 @@ enum PassingStyle: string
     case SHORT = 'short';
     case MIXED = 'mixed';
     case DIRECT = 'direct';
+    case LONG = 'long';
 }

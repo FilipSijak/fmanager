@@ -16,19 +16,33 @@ export type Formation = {
     slots: FormationSlot[];
 };
 
-export type Tactic = {
-    id: number;
-    name: string;
-    formation: Formation;
+/** Instructions the PUT /api/tactics payload carries alongside the formation, in its snake_case shape. */
+export type TeamInstructions = {
     mentality: string;
     pressing: string;
     passing: string;
+    tackling: string;
+    offside_trap: boolean;
+    counter_attack: boolean;
+    men_behind_ball: boolean;
+    free_kicks_left_player_id: number | null;
+    free_kicks_right_player_id: number | null;
+    corners_left_player_id: number | null;
+    corners_right_player_id: number | null;
+    playmaker_player_id: number | null;
+};
+
+export type Tactic = TeamInstructions & {
+    id: number;
+    name: string;
+    formation: Formation;
 };
 
 export type TacticsOptions = {
     mentalities: string[];
     pressing: string[];
     passing: string[];
+    tackling: string[];
 };
 
 export type TacticsData = {
@@ -38,11 +52,8 @@ export type TacticsData = {
 };
 
 /** The editable part of a tactic, held locally until the user presses Ok. */
-export type TacticsDraft = {
+export type TacticsDraft = TeamInstructions & {
     formationId: number;
-    mentality: string;
-    pressing: string;
-    passing: string;
 };
 
 /** A squad player placed in one of the lineup slots saved from the Squad page. */
