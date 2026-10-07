@@ -10,6 +10,7 @@ import { useTactics } from './useTactics';
 import {
     lineupPlayersForSlots,
     pitchPlayersForFormation,
+    sortByLineupPosition,
     STARTER_SLOT_IDS,
     SUBSTITUTE_SLOT_IDS,
 } from './utils';
@@ -62,12 +63,15 @@ export default function Tactics() {
     }
 
     const selectedFormation = tactics.tactic.formation;
-    const startingEleven = lineupPlayersForSlots(
-        STARTER_SLOT_IDS,
-        assignments,
-        players,
+    const startingEleven = sortByLineupPosition(
+        lineupPlayersForSlots(
+            STARTER_SLOT_IDS,
+            assignments,
+            players,
+            selectedFormation,
+            1,
+        ),
         selectedFormation,
-        1,
     );
     const substitutes = lineupPlayersForSlots(
         SUBSTITUTE_SLOT_IDS,

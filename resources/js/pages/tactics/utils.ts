@@ -70,6 +70,49 @@ export function lineupPlayersForSlots(
     });
 }
 
+/**
+ * Defensive-to-attacking rank of each formation position. Positions sharing a
+ * rank are the same line of the team and are ordered left to right instead.
+ */
+const POSITION_RANKS: Record<string, number> = {
+    GK: 0,
+    LB: 1,
+    CB: 1,
+    RB: 1,
+    LWB: 2,
+    RWB: 2,
+    DM: 3,
+    LM: 4,
+    CM: 4,
+    RM: 4,
+    AM: 5,
+    LW: 6,
+    RW: 6,
+    ST: 7,
+};
+
+const UNKNOWN_POSITION_RANK = Object.keys(POSITION_RANKS).length;
+
+/** Orders starters from goalkeeper to attack, then left to right within the same line. */
+export function sortByLineupPosition(
+    lineupPlayers: LineupPlayer[],
+    formation: Formation | undefined,
+): LineupPlayer[] {
+    function pitchX(slotId: string): number {
+        return formation?.slots[STARTER_SLOT_IDS.indexOf(slotId)]?.x ?? 0;
+    }
+
+    function rank(lineupPlayer: LineupPlayer): number {
+        return (
+            POSITION_RANKS[lineupPlayer.lineupPosition] ?? UNKNOWN_POSITION_RANK
+        );
+    }
+
+    return [...lineupPlayers].sort(
+        (a, b) => rank(a) - rank(b) || pitchX(a.slotId) - pitchX(b.slotId),
+    );
+}
+
 /** Returns new assignments with the players in the two slots exchanged. */
 export function swapSlotAssignments(
     assignments: Record<string, number>,
