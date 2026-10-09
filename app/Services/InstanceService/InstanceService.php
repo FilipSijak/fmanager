@@ -47,9 +47,9 @@ class InstanceService implements IInstanceService
         return Instance::findOrFail($this->gameContext->instanceId());
     }
 
-    public function createNewInstance(User $user): Instance
+    public function createNewInstance(User $user, int $baseClubId): Instance
     {
-        return DB::transaction(fn (): Instance => $this->createInstance->instanceInit($user));
+        return DB::transaction(fn (): Instance => $this->createInstance->instanceInit($user, $baseClubId));
     }
 
     public function nextDay()

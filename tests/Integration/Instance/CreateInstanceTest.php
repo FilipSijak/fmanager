@@ -50,17 +50,17 @@ class CreateInstanceTest extends TestCase
         (new DatabaseSeeder)->run();
         Instance::factory()->create(['id' => 1, 'user_id' => $this->userId]);
         Season::factory()->create(['id' => 1, 'instance_id' => 1]);
-        $response = $this->withHeader('Origin', 'http://localhost')->postJson('/api/startNewGame', ['user_id' => 1])->assertCreated();
+        $response = $this->withHeader('Origin', 'http://localhost')->postJson('/api/startNewGame', ['user_id' => 1, 'league_id' => 1, 'club_id' => 2])->assertCreated();
         $response->assertSessionHas('active_instance_hash', $response->json('data.instance_hash'));
         $this->assertSame(2, User::findOrFail($this->userId)->instances()->count());
         $instance = Instance::findOrFail($response->json('data.id'));
         $this->assertNotSame(1, $instance->id);
-        $arsenal = Club::query()->where('instance_id', $instance->id)->where('base_club_id', 1)->firstOrFail();
+        $managedClub = Club::query()->where('instance_id', $instance->id)->where('base_club_id', 2)->firstOrFail();
         $manager = StaffCoaching::query()->findOrFail($instance->manager_id);
         $this->assertDatabaseHas('staff_coaching', [
             'id' => $manager->id,
             'instance_id' => $instance->id,
-            'club_id' => $arsenal->id,
+            'club_id' => $managedClub->id,
             'type' => 'MANAGER',
             'attacking' => 1,
             'defending' => 1,
@@ -87,7 +87,7 @@ class CreateInstanceTest extends TestCase
             User::findOrFail($this->userId)->name,
             trim($manager->person->first_name.' '.$manager->person->last_name)
         );
-        $this->assertSame(StadiumType::GLOBAL, $arsenal->stadium->type);
+        $this->assertSame(StadiumType::GLOBAL, $managedClub->stadium->type);
         $this->assertSame($instance->instance_hash, $response->json('data.instance_hash'));
         $tournament = Competition::where('type', 'tournament')->where('groups', 0)->first();
         $tournamentGroup = Competition::where('type', 'tournament')->where('groups', 1)->first();
@@ -104,7 +104,7 @@ class CreateInstanceTest extends TestCase
             'instances',
             [
                 'id' => $instance->id,
-                'club_id' => $arsenal->id,
+                'club_id' => $managedClub->id,
                 'user_id' => $this->userId,
                 'manager_id' => $manager->id,
             ]

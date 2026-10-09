@@ -1,4 +1,5 @@
 import { Head, router } from '@inertiajs/react';
+import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import {
     select,
@@ -16,8 +17,26 @@ const menuRows: [string, string][] = [
 ];
 
 type SavedGame = { id: number; club_name: string | null; date: string };
+type League = {
+    id: number;
+    name: string;
+    country_code: string;
+    clubs: { id: number; name: string }[];
+};
 
-export default function GameStart({ instances }: { instances: SavedGame[] }) {
+export default function GameStart({
+    instances,
+    leagues,
+}: {
+    instances: SavedGame[];
+    leagues: League[];
+}) {
+    const [choosingClub, setChoosingClub] = useState(false);
+    const [leagueId, setLeagueId] = useState('');
+    const [clubId, setClubId] = useState('');
+    const selectedLeague = leagues.find(
+        (league) => String(league.id) === leagueId,
+    );
     const [selecting, setSelecting] = useState<number | null>(null);
     const [processing, setProcessing] = useState(false);
     const [created, setCreated] = useState(false);
@@ -34,18 +53,30 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
     }, [processing]);
 
     async function createGame() {
-        if (starting.current) return;
+        if (starting.current || !leagueId || !clubId) return;
         starting.current = true;
         setProcessing(true);
         setError(null);
         setCreated(false);
 
         try {
-            await api.post(startNewGame.url());
+            await api.post(startNewGame.url(), {
+                league_id: Number(leagueId),
+                club_id: Number(clubId),
+            });
             setCreated(true);
             router.visit(start.url());
-        } catch {
-            setError('Unable to start a new game. Please try again.');
+        } catch (failure) {
+            const validationErrors = axios.isAxiosError<{
+                errors?: Record<string, string[]>;
+            }>(failure)
+                ? failure.response?.data.errors
+                : undefined;
+            setError(
+                validationErrors?.league_id?.[0] ??
+                    validationErrors?.club_id?.[0] ??
+                    'Unable to start a new game. Please try again.',
+            );
             starting.current = false;
             setProcessing(false);
         }
@@ -105,7 +136,10 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
                                 }
                                 onClick={
                                     label === 'Start New Game'
-                                        ? createGame
+                                        ? () => {
+                                              setChoosingClub(true);
+                                              setError(null);
+                                          }
                                         : label === 'Restore Saved Game'
                                           ? () =>
                                                 document
@@ -122,6 +156,92 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
                         )),
                     )}
                 </div>
+
+                {choosingClub && (
+                    <form
+                        className="flex w-full max-w-2xl flex-col gap-4 rounded border border-[#3355dd] bg-black/30 p-6 text-white"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            void createGame();
+                        }}
+                    >
+                        <h2 className="text-xl font-bold text-[#f5f000]">
+                            Choose your club
+                        </h2>
+                        <label htmlFor="league">League</label>
+                        <select
+                            id="league"
+                            required
+                            value={leagueId}
+                            disabled={processing || selecting !== null}
+                            onChange={(event) => {
+                                setLeagueId(event.target.value);
+                                setClubId('');
+                                setError(null);
+                            }}
+                            className="rounded border border-[#3355dd] bg-[#101358] px-4 py-3 text-white"
+                        >
+                            <option value="">Select a league</option>
+                            {leagues.map((league) => (
+                                <option key={league.id} value={league.id}>
+                                    {league.name} ({league.country_code})
+                                </option>
+                            ))}
+                        </select>
+                        <label htmlFor="club">Club</label>
+                        <select
+                            id="club"
+                            required
+                            value={clubId}
+                            disabled={
+                                !selectedLeague ||
+                                processing ||
+                                selecting !== null
+                            }
+                            onChange={(event) => {
+                                setClubId(event.target.value);
+                                setError(null);
+                            }}
+                            className="rounded border border-[#3355dd] bg-[#101358] px-4 py-3 text-white disabled:opacity-50"
+                        >
+                            <option value="">
+                                {selectedLeague
+                                    ? 'Select a club'
+                                    : 'Select a league first'}
+                            </option>
+                            {selectedLeague?.clubs.map((club) => (
+                                <option key={club.id} value={club.id}>
+                                    {club.name}
+                                </option>
+                            ))}
+                        </select>
+                        {leagues.length === 0 && (
+                            <p>No leagues are available to start a game.</p>
+                        )}
+                        <div className="flex gap-3">
+                            <button
+                                type="submit"
+                                disabled={
+                                    !clubId || processing || selecting !== null
+                                }
+                                className="rounded border border-[#3355dd] px-4 py-2 font-semibold text-[#f5f000] hover:bg-white/10 disabled:opacity-50"
+                            >
+                                {processing ? 'Creating…' : 'Start Game'}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={processing}
+                                onClick={() => {
+                                    setChoosingClub(false);
+                                    setError(null);
+                                }}
+                                className="rounded border border-[#3355dd] px-4 py-2 hover:bg-white/10 disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                )}
 
                 <section
                     id="my-games"

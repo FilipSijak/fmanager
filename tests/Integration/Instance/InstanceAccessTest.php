@@ -7,9 +7,11 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Models\User;
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Inertia\Testing\AssertableInertia as Assert;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -62,6 +64,55 @@ class InstanceAccessTest extends TestCase
 
         $this->post("/instances/{$other->id}/select")->assertNotFound();
         $this->assertSame($games[1]->instance_hash, session('active_instance_hash'));
+    }
+
+    #[Test]
+    public function setup_lists_leagues_with_their_own_clubs(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $this->actingAs(User::factory()->create())->get('/setup-game')
+            ->assertInertia(fn (Assert $page) => $page->component('GameStart')
+                ->where('leagues', function ($leagues): bool {
+                    $premierLeague = collect($leagues)->firstWhere('id', 1);
+                    $bundesliga = collect($leagues)->firstWhere('id', 2);
+
+                    return $premierLeague['name'] === 'Premier League'
+                        && count($premierLeague['clubs']) === 20
+                        && collect($premierLeague['clubs'])->contains('name', 'Arsenal')
+                        && ! collect($bundesliga['clubs'])->contains('name', 'Arsenal')
+                        && ! collect($leagues)->contains('id', 6);
+                }));
+    }
+
+    #[Test]
+    #[DataProvider('invalidGameSelections')]
+    public function invalid_selections_do_not_create_a_game(array $selection, array $errors): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $this->actingAs(User::factory()->create())
+            ->withHeader('Origin', 'http://localhost')
+            ->postJson('/api/startNewGame', $selection)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors($errors)
+            ->assertSessionMissing('active_instance_hash');
+
+        $this->assertDatabaseCount('instances', 0);
+        $this->assertDatabaseCount('staff_coaching', 0);
+    }
+
+    public static function invalidGameSelections(): array
+    {
+        return [
+            'missing selection' => [[], ['league_id' => 'Choose a league.', 'club_id' => 'Choose a club.']],
+            'unknown league' => [['league_id' => 99999, 'club_id' => 1], ['league_id' => 'Choose a valid league.']],
+            'tournament' => [['league_id' => 6, 'club_id' => 1], ['league_id' => 'Choose a valid league.']],
+            'club from another league' => [['league_id' => 2, 'club_id' => 1], ['club_id' => 'Choose a club from the selected league.']],
+            'unknown club' => [['league_id' => 1, 'club_id' => 99999], ['club_id' => 'Choose a club from the selected league.']],
+            'invalid league value' => [['league_id' => 'invalid', 'club_id' => 1], ['league_id' => 'Choose a valid league.']],
+            'invalid club value' => [['league_id' => 1, 'club_id' => 'invalid'], ['club_id' => 'Choose a club from the selected league.']],
+        ];
     }
 
     #[Test]
