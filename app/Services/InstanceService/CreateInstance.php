@@ -6,10 +6,12 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
 use App\Models\Season;
+use App\Models\StaffCoaching;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
+use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\Carbon;
@@ -46,7 +48,7 @@ class CreateInstance
     public function instanceInit(User $user): Instance
     {
         $init = new InitialSeed;
-        // @todo select a club and manager
+        // @todo select a club
         $this->storeInstance($user->id, null, null, null);
         $init->seedFromBaseTables($this->instance->id);
         $this->startFirstSeason();
@@ -60,9 +62,39 @@ class CreateInstance
         $this->mapInitialCompetitionsToSeasonsWithClubs();
         $this->setCompetitionsForTheFirstSeason();
         $this->assignPeopleToClubs();
+        $this->assignUserManager($user);
         $this->generateFreeAgents();
 
         return $this->instance;
+    }
+
+    private function assignUserManager(User $user): void
+    {
+        $manager = StaffCoaching::query()
+            ->forInstance($this->instance->id)
+            ->where('club_id', $this->instance->club_id)
+            ->where('type', PersonTypes::MANAGER)
+            ->firstOrFail();
+
+        foreach ([
+            'attacking', 'defending', 'fitness', 'mental', 'tactical', 'technical',
+            'working_with_youngsters', 'adaptability', 'determination', 'discipline',
+            'man_management', 'motivating', 'judging_player_potential', 'judging_player_ability',
+            'judging_staff_ability', 'negotiating', 'tactics', 'distribution', 'handling', 'shot_stopping',
+        ] as $attribute) {
+            $manager->{$attribute} = 1;
+        }
+
+        $manager->save();
+
+        $nameParts = explode(' ', trim($user->name), 2);
+        $person = $manager->person;
+        $person->first_name = $nameParts[0];
+        $person->last_name = $nameParts[1] ?? '';
+        $person->save();
+
+        $this->instance->manager_id = $manager->id;
+        $this->instance->save();
     }
 
     protected function storeInstance(int $userId, ?int $managerId, ?int $seasonId, ?int $clubId): Instance

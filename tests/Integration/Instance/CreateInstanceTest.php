@@ -38,7 +38,6 @@ class CreateInstanceTest extends TestCase
     {
         parent::setUp();
 
-        $this->managerId = null;
         $user = User::factory()->create(['id' => 99]);
         $this->userId = $user->id;
         $this->actingAs($user);
@@ -57,6 +56,37 @@ class CreateInstanceTest extends TestCase
         $instance = Instance::findOrFail($response->json('data.id'));
         $this->assertNotSame(1, $instance->id);
         $arsenal = Club::query()->where('instance_id', $instance->id)->where('base_club_id', 1)->firstOrFail();
+        $manager = StaffCoaching::query()->findOrFail($instance->manager_id);
+        $this->assertDatabaseHas('staff_coaching', [
+            'id' => $manager->id,
+            'instance_id' => $instance->id,
+            'club_id' => $arsenal->id,
+            'type' => 'MANAGER',
+            'attacking' => 1,
+            'defending' => 1,
+            'fitness' => 1,
+            'mental' => 1,
+            'tactical' => 1,
+            'technical' => 1,
+            'working_with_youngsters' => 1,
+            'adaptability' => 1,
+            'determination' => 1,
+            'discipline' => 1,
+            'man_management' => 1,
+            'motivating' => 1,
+            'judging_player_potential' => 1,
+            'judging_player_ability' => 1,
+            'judging_staff_ability' => 1,
+            'negotiating' => 1,
+            'tactics' => 1,
+            'distribution' => 1,
+            'handling' => 1,
+            'shot_stopping' => 1,
+        ]);
+        $this->assertSame(
+            User::findOrFail($this->userId)->name,
+            trim($manager->person->first_name.' '.$manager->person->last_name)
+        );
         $this->assertSame(StadiumType::GLOBAL, $arsenal->stadium->type);
         $this->assertSame($instance->instance_hash, $response->json('data.instance_hash'));
         $tournament = Competition::where('type', 'tournament')->where('groups', 0)->first();
@@ -76,7 +106,7 @@ class CreateInstanceTest extends TestCase
                 'id' => $instance->id,
                 'club_id' => $arsenal->id,
                 'user_id' => $this->userId,
-                'manager_id' => $this->managerId,
+                'manager_id' => $manager->id,
             ]
         );
 
