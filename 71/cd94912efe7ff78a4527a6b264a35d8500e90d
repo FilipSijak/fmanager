@@ -1,0 +1,33 @@
+tests/Integration/Instance/InstanceAccessTest.php
+  s_25fa6b19db5390::t_93e7ebe1a1049e 10,14,69-116
+  s_25fa6b19db5390::t_3d3b498c2e3977 117
+app/Http/Controllers/InstanceController.php
+  s_25fa6b19db5390::t_23fb0a3bef24da 6-7,12,33-43,46,69-73,75-87
+resources/js/pages/GameStart.tsx
+  s_25fa6b19db5390::t_23fb0a3bef24da 2,20-25,34-36,56,63-66,69,73-74,160-162,167,171-176,182-185,189-195,205-206,212,216-217,221,229,241-244
+  s_25fa6b19db5390::t_40d6c0f1d5ad88 27-33,37-39,70-72,75-79,139-142,163-166,168-170,177-181,186-188,196-204,207-211,213-215,218-220,222-228,230-240
+  s_25fa6b19db5390::t_d0c100d1299568 245
+tests/Integration/Instance/CreateInstanceTest.php
+  s_25fa6b19db5390::t_23fb0a3bef24da 53
+  s_25fa6b19db5390::t_0d7ee4791f3dd5 58,63,90,107
+app/Services/InstanceService/InstanceService.php
+  s_25fa6b19db5390::t_23fb0a3bef24da 50,52
+app/Services/InstanceService/CreateInstance.php
+  s_25fa6b19db5390::t_23fb0a3bef24da 48,57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "71cd94912efe7ff78a4527a6b264a35d8500e90d",
+  "prompts": {},
+  "sessions": {
+    "s_25fa6b19db5390": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a120cd-0086-7dd2-b323-c74db8f61ef1",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
