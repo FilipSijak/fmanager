@@ -1,0 +1,22 @@
+tests/Integration/Instance/CreateInstanceTest.php
+  s_25fa6b19db5390::t_ddb30620d228b4 59-89,109
+app/Services/InstanceService/CreateInstance.php
+  s_25fa6b19db5390::t_ddb30620d228b4 9,14,51,65,71-97
+  s_25fa6b19db5390::t_b4aaa74098ce68 98-99
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d7a6e72dd0d50b95c1140966390aedf8722b266d",
+  "prompts": {},
+  "sessions": {
+    "s_25fa6b19db5390": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a120cd-0086-7dd2-b323-c74db8f61ef1",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
