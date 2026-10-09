@@ -43,34 +43,21 @@ class CreateInstance
         $this->competitionRepository = $competitionRepository;
     }
 
-    public function instanceInit(User $user, int $baseClubId): Instance
+    public function instanceInit(User $user): Instance
     {
         $init = new InitialSeed;
         $this->storeInstance($user->id, null, null, null);
         $init->seedFromBaseTables($this->instance->id);
         $this->startFirstSeason();
         $this->instance->season_id = $this->season->id;
-        $this->instance->club_id = Club::query()
-            ->forInstance($this->instance->id)
-            ->where('base_club_id', $baseClubId)
-            ->firstOrFail()->id;
         $this->instance->save();
         app(GameContext::class)->set($this->instance->id, $this->season->id, (string) $this->instance->instance_date);
         $this->mapInitialCompetitionsToSeasonsWithClubs();
         $this->setCompetitionsForTheFirstSeason();
         $this->assignPeopleToClubs();
-        $this->assignUserManager($user);
         $this->generateFreeAgents();
 
         return $this->instance;
-    }
-
-    private function assignUserManager(User $user): void
-    {
-        $manager = $this->personService->assignUserManager($this->instance->club, $user);
-
-        $this->instance->manager_id = $manager->id;
-        $this->instance->save();
     }
 
     protected function storeInstance(int $userId, ?int $managerId, ?int $seasonId, ?int $clubId): Instance

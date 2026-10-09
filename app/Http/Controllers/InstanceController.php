@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\ResponseHelper;
-use App\Models\BaseData\BaseClubs;
-use App\Models\BaseData\BaseCompetitions;
+use App\Models\Club;
+use App\Models\Competition;
 use App\Services\InstanceService\InstanceService;
+use App\Services\PersonService\PersonService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,24 +32,8 @@ class InstanceController extends Controller
 
     public function startNewGame(Request $request): JsonResponse
     {
-        $validated = $request->validate([
-            'league_id' => ['required', 'integer', Rule::exists('base_competitions', 'id')->where('type', 'league')],
-            'club_id' => ['required', 'integer', Rule::exists('base_clubs', 'id')->where('competition_id', $request->integer('league_id'))],
-        ], [
-            'league_id.required' => 'Choose a league.',
-            'league_id.integer' => 'Choose a valid league.',
-            'league_id.exists' => 'Choose a valid league.',
-            'club_id.required' => 'Choose a club.',
-            'club_id.integer' => 'Choose a club from the selected league.',
-            'club_id.exists' => 'Choose a club from the selected league.',
-        ]);
-
         try {
-            $instance = $this->instanceService->createNewInstance($request->user(), (int) $validated['club_id']);
-
-            if ($request->hasSession()) {
-                $request->session()->put('active_instance_hash', $instance->instance_hash);
-            }
+            $instance = $this->instanceService->createNewInstance($request->user());
 
             return ResponseHelper::success(
                 $instance->toArray(),
@@ -66,25 +52,28 @@ class InstanceController extends Controller
 
     public function setup(Request $request): Response
     {
-        $clubsByLeague = BaseClubs::query()
-            ->orderBy('name')->orderBy('id')
-            ->get(['id', 'name', 'competition_id'])
-            ->groupBy('competition_id');
+        $pendingInstance = $request->filled('instance_id')
+            ? $request->user()->instances()->whereNull('club_id')->findOrFail($request->integer('instance_id'))
+            : null;
+        $leagues = $pendingInstance === null ? collect() : Competition::query()
+            ->forInstance($pendingInstance->id)
+            ->where('type', 'league')
+            ->whereHas('clubs', fn ($query) => $query->where('clubs.instance_id', $pendingInstance->id)->where('competition_season.season_id', $pendingInstance->season_id))
+            ->with(['clubs' => fn ($query) => $query->where('clubs.instance_id', $pendingInstance->id)
+                ->where('competition_season.season_id', $pendingInstance->season_id)
+                ->orderBy('clubs.name')->orderBy('clubs.id')])
+            ->orderBy('country_code')->orderBy('name')->orderBy('id')->get();
 
         return Inertia::render('GameStart', [
-            'leagues' => BaseCompetitions::query()
-                ->where('type', 'league')
-                ->whereIn('id', $clubsByLeague->keys())
-                ->orderBy('country_code')->orderBy('name')->orderBy('id')
-                ->get(['id', 'name', 'country_code'])
-                ->map(fn (BaseCompetitions $league): array => [
-                    'id' => $league->id,
-                    'name' => $league->name,
-                    'country_code' => $league->country_code,
-                    'clubs' => $clubsByLeague->get($league->id)
-                        ->map(fn (BaseClubs $club): array => ['id' => $club->id, 'name' => $club->name])
-                        ->values()->all(),
-                ]),
+            'pending_instance_id' => $pendingInstance?->id,
+            'leagues' => $leagues->map(fn (Competition $league): array => [
+                'id' => $league->id,
+                'name' => $league->name,
+                'country_code' => $league->country_code,
+                'clubs' => $league->clubs
+                    ->map(fn (Club $club): array => ['id' => $club->id, 'name' => $club->name])
+                    ->values()->all(),
+            ]),
             'instances' => $request->user()->instances()
                 ->with('club:id,name')
                 ->orderByDesc('id')
@@ -97,9 +86,35 @@ class InstanceController extends Controller
         ]);
     }
 
+    public function takeOver(Request $request, int $instanceId, PersonService $personService): JsonResponse
+    {
+        $instance = $request->user()->instances()->findOrFail($instanceId);
+        abort_if($instance->club_id !== null || $instance->manager_id !== null, 409, 'A club has already been selected for this game.');
+        $validated = $request->validate([
+            'league_id' => ['required', 'integer', Rule::exists('competitions', 'id')->where('instance_id', $instance->id)->where('type', 'league')],
+            'club_id' => ['required', 'integer', Rule::exists('clubs', 'id')->where('instance_id', $instance->id)
+                ->whereIn('id', DB::table('competition_season')->where('instance_id', $instance->id)
+                    ->where('season_id', $instance->season_id)->where('competition_id', $request->integer('league_id'))->pluck('club_id')->all())],
+        ], [
+            'league_id.required' => 'Choose a league.',
+            'league_id.integer' => 'Choose a valid league.',
+            'league_id.exists' => 'Choose a valid league.',
+            'club_id.required' => 'Choose a club.',
+            'club_id.integer' => 'Choose a club from the selected league.',
+            'club_id.exists' => 'Choose a club from the selected league.',
+        ]);
+        $instance = $this->instanceService->takeOverClub($request->user(), $instance->id, (int) $validated['club_id'], $personService);
+        $request->session()->put('active_instance_hash', $instance->instance_hash);
+
+        return ResponseHelper::success($instance->toArray());
+    }
+
     public function select(Request $request, int $instanceId): RedirectResponse
     {
         $instance = $request->user()->instances()->findOrFail($instanceId);
+        if ($instance->club_id === null) {
+            return redirect()->route('setup-game', ['instance_id' => $instance->id]);
+        }
         $request->session()->put('active_instance_hash', $instance->instance_hash);
 
         return redirect()->route('start');

@@ -4,10 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import {
     select,
     startNewGame,
+    takeOver,
 } from '@/actions/App/Http/Controllers/InstanceController';
 import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
-import { start } from '@/routes';
+import { setupGame, start } from '@/routes';
 
 const menuRows: [string, string][] = [
     ['Start New Game', 'Quick Start Game'],
@@ -27,11 +28,12 @@ type League = {
 export default function GameStart({
     instances,
     leagues,
+    pending_instance_id: pendingInstanceId,
 }: {
     instances: SavedGame[];
     leagues: League[];
+    pending_instance_id: number | null;
 }) {
-    const [choosingClub, setChoosingClub] = useState(false);
     const [leagueId, setLeagueId] = useState('');
     const [clubId, setClubId] = useState('');
     const selectedLeague = leagues.find(
@@ -39,6 +41,7 @@ export default function GameStart({
     );
     const [selecting, setSelecting] = useState<number | null>(null);
     const [processing, setProcessing] = useState(false);
+    const [takingOver, setTakingOver] = useState(false);
     const [created, setCreated] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const starting = useRef(false);
@@ -53,19 +56,26 @@ export default function GameStart({
     }, [processing]);
 
     async function createGame() {
-        if (starting.current || !leagueId || !clubId) return;
+        if (starting.current) return;
         starting.current = true;
         setProcessing(true);
         setError(null);
         setCreated(false);
 
         try {
-            await api.post(startNewGame.url(), {
-                league_id: Number(leagueId),
-                club_id: Number(clubId),
-            });
+            const response = await api.post(startNewGame.url());
             setCreated(true);
-            router.visit(start.url());
+            router.visit(
+                setupGame.url({
+                    query: { instance_id: response.data.data.id },
+                }),
+                {
+                    onFinish: () => {
+                        starting.current = false;
+                        setProcessing(false);
+                    },
+                },
+            );
         } catch (failure) {
             const validationErrors = axios.isAxiosError<{
                 errors?: Record<string, string[]>;
@@ -79,6 +89,32 @@ export default function GameStart({
             );
             starting.current = false;
             setProcessing(false);
+        }
+    }
+
+    async function chooseClub() {
+        if (takingOver || !pendingInstanceId || !leagueId || !clubId) return;
+        setTakingOver(true);
+        setError(null);
+
+        try {
+            await api.post(takeOver.url(pendingInstanceId), {
+                league_id: Number(leagueId),
+                club_id: Number(clubId),
+            });
+            router.visit(start.url());
+        } catch (failure) {
+            const validationErrors = axios.isAxiosError<{
+                errors?: Record<string, string[]>;
+            }>(failure)
+                ? failure.response?.data.errors
+                : undefined;
+            setError(
+                validationErrors?.league_id?.[0] ??
+                    validationErrors?.club_id?.[0] ??
+                    'Unable to take over this club. Please try again.',
+            );
+            setTakingOver(false);
         }
     }
 
@@ -104,8 +140,8 @@ export default function GameStart({
                     </h2>
                     <p id="setup-dialog-description" role="status">
                         {created
-                            ? 'Your game has been set up successfully. Opening Dashboard…'
-                            : 'Your game is currently being set up. You will be taken to Dashboard when it is finished. Please keep this page open.'}
+                            ? 'Your game world is ready. Choose a league and club next.'
+                            : 'Creating clubs, players, staff, and fixtures. You will choose your league and club when the game world is ready. Please keep this page open.'}
                     </p>
                 </div>
             </dialog>
@@ -128,6 +164,7 @@ export default function GameStart({
                                 type="button"
                                 disabled={
                                     processing ||
+                                    takingOver ||
                                     selecting !== null ||
                                     ![
                                         'Start New Game',
@@ -136,10 +173,7 @@ export default function GameStart({
                                 }
                                 onClick={
                                     label === 'Start New Game'
-                                        ? () => {
-                                              setChoosingClub(true);
-                                              setError(null);
-                                          }
+                                        ? createGame
                                         : label === 'Restore Saved Game'
                                           ? () =>
                                                 document
@@ -157,23 +191,29 @@ export default function GameStart({
                     )}
                 </div>
 
-                {choosingClub && (
+                {pendingInstanceId !== null && (
                     <form
                         className="flex w-full max-w-2xl flex-col gap-4 rounded border border-[#3355dd] bg-black/30 p-6 text-white"
                         onSubmit={(event) => {
                             event.preventDefault();
-                            void createGame();
+                            void chooseClub();
                         }}
                     >
                         <h2 className="text-xl font-bold text-[#f5f000]">
                             Choose your club
                         </h2>
+                        <p>
+                            Your game world is ready. Select a league and a club
+                            to manage.
+                        </p>
                         <label htmlFor="league">League</label>
                         <select
                             id="league"
                             required
                             value={leagueId}
-                            disabled={processing || selecting !== null}
+                            disabled={
+                                processing || takingOver || selecting !== null
+                            }
                             onChange={(event) => {
                                 setLeagueId(event.target.value);
                                 setClubId('');
@@ -196,6 +236,7 @@ export default function GameStart({
                             disabled={
                                 !selectedLeague ||
                                 processing ||
+                                takingOver ||
                                 selecting !== null
                             }
                             onChange={(event) => {
@@ -222,18 +263,20 @@ export default function GameStart({
                             <button
                                 type="submit"
                                 disabled={
-                                    !clubId || processing || selecting !== null
+                                    !clubId ||
+                                    processing ||
+                                    takingOver ||
+                                    selecting !== null
                                 }
                                 className="rounded border border-[#3355dd] px-4 py-2 font-semibold text-[#f5f000] hover:bg-white/10 disabled:opacity-50"
                             >
-                                {processing ? 'Creating…' : 'Start Game'}
+                                {takingOver ? 'Taking over…' : 'Take Over Club'}
                             </button>
                             <button
                                 type="button"
-                                disabled={processing}
+                                disabled={processing || takingOver}
                                 onClick={() => {
-                                    setChoosingClub(false);
-                                    setError(null);
+                                    router.visit(setupGame.url());
                                 }}
                                 className="rounded border border-[#3355dd] px-4 py-2 hover:bg-white/10 disabled:opacity-50"
                             >
@@ -265,12 +308,17 @@ export default function GameStart({
                             className="flex items-center justify-between gap-4 rounded border border-[#3355dd] bg-black/30 p-4 text-white"
                         >
                             <p>
-                                {instance.club_name ?? 'Game'} — {instance.date}{' '}
-                                (#{instance.id})
+                                {instance.club_name ??
+                                    'Awaiting club selection'}{' '}
+                                — {instance.date} (#{instance.id})
                             </p>
                             <button
                                 type="button"
-                                disabled={processing || selecting !== null}
+                                disabled={
+                                    processing ||
+                                    takingOver ||
+                                    selecting !== null
+                                }
                                 onClick={() => {
                                     setSelecting(instance.id);
                                     setError(null);
@@ -278,6 +326,7 @@ export default function GameStart({
                                         select.url(instance.id),
                                         {},
                                         {
+                                            preserveState: false,
                                             onError: () =>
                                                 setError(
                                                     'Unable to open this game. Please try again.',
@@ -290,7 +339,9 @@ export default function GameStart({
                             >
                                 {selecting === instance.id
                                     ? 'Opening…'
-                                    : 'Resume'}
+                                    : instance.club_name === null
+                                      ? 'Choose Club'
+                                      : 'Resume'}
                             </button>
                         </div>
                     ))}

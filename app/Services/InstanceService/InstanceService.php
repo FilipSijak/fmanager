@@ -6,12 +6,14 @@ use App\Events\MonthlyUpdate;
 use App\Events\NextDay;
 use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
+use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionScheduleRepository;
 use App\Services\GameService\CompleteGameService;
 use App\Services\GameService\MatchSimulationEngine;
+use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -47,9 +49,24 @@ class InstanceService implements IInstanceService
         return Instance::findOrFail($this->gameContext->instanceId());
     }
 
-    public function createNewInstance(User $user, int $baseClubId): Instance
+    public function createNewInstance(User $user): Instance
     {
-        return DB::transaction(fn (): Instance => $this->createInstance->instanceInit($user, $baseClubId));
+        return DB::transaction(fn (): Instance => $this->createInstance->instanceInit($user));
+    }
+
+    public function takeOverClub(User $user, int $instanceId, int $clubId, PersonService $personService): Instance
+    {
+        return DB::transaction(function () use ($user, $instanceId, $clubId, $personService): Instance {
+            $instance = $user->instances()->lockForUpdate()->findOrFail($instanceId);
+            abort_if($instance->club_id !== null || $instance->manager_id !== null, 409, 'A club has already been selected for this game.');
+            $club = Club::query()->forInstance($instance->id)->findOrFail($clubId);
+            $manager = $personService->assignUserManager($club, $user);
+            $instance->club_id = $club->id;
+            $instance->manager_id = $manager->id;
+            $instance->save();
+
+            return $instance;
+        });
     }
 
     public function nextDay()

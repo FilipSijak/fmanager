@@ -21,6 +21,11 @@ class SetGameContext
             $instance = $request->user()->instances()
                 ->where('instance_hash', $instanceHash)
                 ->firstOrFail();
+            if ($instance->club_id === null) {
+                return $request->expectsJson()
+                    ? response()->json(['message' => 'Choose a club to finish setting up this game.'], 422)
+                    : redirect()->route('setup-game', ['instance_id' => $instance->id]);
+            }
             $this->gameContext->set($instance->id, $instance->season_id, (string) $instance->instance_date);
         }
 

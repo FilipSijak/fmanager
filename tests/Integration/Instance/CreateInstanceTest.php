@@ -30,6 +30,7 @@ use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\TacticsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -53,12 +54,33 @@ class CreateInstanceTest extends TestCase
         (new DatabaseSeeder)->run();
         Instance::factory()->create(['id' => 1, 'user_id' => $this->userId]);
         Season::factory()->create(['id' => 1, 'instance_id' => 1]);
-        $response = $this->withHeader('Origin', 'http://localhost')->postJson('/api/startNewGame', ['user_id' => 1, 'league_id' => 1, 'club_id' => 2])->assertCreated();
-        $response->assertSessionHas('active_instance_hash', $response->json('data.instance_hash'));
+        $response = $this->withHeader('Origin', 'http://localhost')->postJson('/api/startNewGame', ['user_id' => 1])->assertCreated();
+        $response->assertSessionMissing('active_instance_hash');
         $this->assertSame(2, User::findOrFail($this->userId)->instances()->count());
         $instance = Instance::findOrFail($response->json('data.id'));
         $this->assertNotSame(1, $instance->id);
         $managedClub = Club::query()->where('instance_id', $instance->id)->where('base_club_id', 2)->firstOrFail();
+        $this->assertNull($instance->club_id);
+        $this->assertNull($instance->manager_id);
+        $this->assertSame(200, Player::query()->forInstance($instance->id)->whereNull('club_id')->count());
+        $this->assertNotNull(Game::query()->where('instance_id', $instance->id)->first());
+        $previousManager = StaffCoaching::query()->where('club_id', $managedClub->id)->where('type', 'MANAGER')->firstOrFail();
+        $this->withoutVite();
+        $this->get('/setup-game?instance_id='.$instance->id)->assertInertia(fn (Assert $page) => $page
+            ->component('GameStart')->where('pending_instance_id', $instance->id)
+            ->where('leagues', function ($leagues) use ($managedClub): bool {
+                $league = collect($leagues)->firstWhere('name', 'Premier League');
+
+                return count($league['clubs']) === 20 && collect($league['clubs'])->contains('id', $managedClub->id)
+                    && ! collect($leagues)->contains('name', 'Champions League');
+            }));
+        $league = Competition::query()->forInstance($instance->id)->where('base_competition_id', 1)->firstOrFail();
+        $this->postJson('/instances/'.$instance->id.'/take-over', ['league_id' => $league->id, 'club_id' => $managedClub->id])
+            ->assertOk()->assertSessionHas('active_instance_hash', $instance->instance_hash);
+        $instance->refresh();
+        $this->assertDatabaseHas('staff_coaching', ['id' => $previousManager->id, 'club_id' => null, 'contract_id' => null]);
+        $this->postJson('/instances/'.$instance->id.'/take-over', ['league_id' => $league->id, 'club_id' => $managedClub->id])
+            ->assertConflict();
         $manager = StaffCoaching::query()->findOrFail($instance->manager_id);
         $this->assertDatabaseHas('staff_coaching', [
             'id' => $manager->id,
