@@ -9,6 +9,7 @@ use App\Models\Instance;
 use App\Models\Player;
 use App\Models\Season;
 use App\Models\StaffCoaching;
+use App\Models\StaffContract;
 use App\Models\StaffPhysio;
 use App\Models\StaffScout;
 use App\Models\User;
@@ -22,9 +23,11 @@ use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\PersonService;
 use App\Services\StadiumService\StadiumType;
+use App\Services\TacticsService\TacticsService;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\TacticsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
@@ -306,11 +309,56 @@ class CreateInstanceTest extends TestCase
             + StaffScout::where('instance_id', $instance->id)->whereNull('club_id')->count();
 
         $this->assertSame($clubCount * 20, $assignedStaffCount);
-        $this->assertSame($clubCount * 5, $freeStaffCount);
-        $this->assertSame(0.2, $freeStaffCount / ($assignedStaffCount + $freeStaffCount));
+        $this->assertSame($clubCount * 5 + 1, $freeStaffCount);
         $this->assertSame($freeStaffCount, StaffCoaching::whereNull('club_id')->whereNull('contract_id')->count()
             + StaffPhysio::whereNull('club_id')->whereNull('contract_id')->count()
             + StaffScout::whereNull('club_id')->whereNull('contract_id')->count());
+    }
+
+    #[Test]
+    public function taking_over_a_club_preserves_its_previous_manager_as_free_staff(): void
+    {
+        $this->seed(TacticsSeeder::class);
+        $club = Club::factory()->create(['instance_id' => 1]);
+        $contract = StaffContract::query()->create([
+            'contract_start' => '2026-07-01',
+            'contract_end' => '2027-07-01',
+            'salary' => 5000,
+        ]);
+        $previousManager = StaffCoaching::factory()->create([
+            'instance_id' => $club->instance_id,
+            'club_id' => $club->id,
+            'contract_id' => $contract->id,
+            'attacking' => 15,
+            'coaching_potential' => 160,
+        ]);
+        $previousPerson = $previousManager->person->getAttributes();
+        $previousAttributes = $previousManager->getAttributes();
+        $preference = app(TacticsService::class)->ensureDefaultForStaff($previousManager);
+        $user = User::findOrFail($this->userId);
+
+        $manager = app(PersonService::class)->assignUserManager($club, $user);
+
+        $this->assertDatabaseHas('staff_coaching', array_merge($previousAttributes, [
+            'club_id' => null,
+            'contract_id' => null,
+            'is_retired' => false,
+        ]));
+        $this->assertDatabaseHas('people', $previousPerson);
+        $this->assertNotSame($previousManager->id, $manager->id);
+        $this->assertNotSame($previousManager->person_id, $manager->person_id);
+        $this->assertDatabaseHas('staff_coaching', [
+            'id' => $manager->id,
+            'instance_id' => $club->instance_id,
+            'club_id' => $club->id,
+            'type' => 'MANAGER',
+            'contract_id' => $contract->id,
+            'attacking' => 1,
+        ]);
+        $this->assertSame($user->name, trim($manager->person->first_name.' '.$manager->person->last_name));
+        $this->assertSame(1, StaffCoaching::query()->where('club_id', $club->id)->where('type', 'MANAGER')->count());
+        $this->assertSame($preference->base_formation_id, $manager->tacticPreference->base_formation_id);
+        $this->assertModelExists($preference);
     }
 
     protected function getNewInstance(): CreateInstance

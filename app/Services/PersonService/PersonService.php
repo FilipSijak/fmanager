@@ -7,6 +7,8 @@ use App\Domain\PlayerDevelopment\PlayerDevelopmentCategory;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
+use App\Models\StaffCoaching;
+use App\Models\User;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
@@ -14,6 +16,7 @@ use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
+use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
@@ -154,6 +157,52 @@ class PersonService
             $club,
             $staffMembers
         );
+    }
+
+    public function assignUserManager(Club $club, User $user): StaffCoaching
+    {
+        return DB::transaction(function () use ($club, $user): StaffCoaching {
+            $previousManager = StaffCoaching::query()
+                ->forInstance($club->instance_id)
+                ->where('club_id', $club->id)
+                ->where('type', PersonTypes::MANAGER)
+                ->active()
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $nameParts = explode(' ', trim($user->name), 2);
+            $person = $previousManager->person->replicate();
+            $person->first_name = $nameParts[0];
+            $person->last_name = $nameParts[1] ?? '';
+            $person->save();
+
+            $manager = $previousManager->replicate();
+            $manager->setRelations([]);
+            $manager->person_id = $person->id;
+
+            foreach ([
+                'attacking', 'defending', 'fitness', 'mental', 'tactical', 'technical',
+                'working_with_youngsters', 'adaptability', 'determination', 'discipline',
+                'man_management', 'motivating', 'judging_player_potential', 'judging_player_ability',
+                'judging_staff_ability', 'negotiating', 'tactics', 'distribution', 'handling', 'shot_stopping',
+            ] as $attribute) {
+                $manager->{$attribute} = 1;
+            }
+
+            $manager->save();
+
+            if ($previousManager->tacticPreference !== null) {
+                $preference = $previousManager->tacticPreference->replicate();
+                $preference->staff_coaching_id = $manager->id;
+                $preference->save();
+            }
+
+            $previousManager->club_id = null;
+            $previousManager->contract_id = null;
+            $previousManager->save();
+
+            return $manager;
+        });
     }
 
     public function generateFreeStaff(int $count): void
