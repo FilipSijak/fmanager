@@ -19,7 +19,7 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * @return array{has_club: bool}|null
+     * @return array{date: string|null, has_club: bool}|null
      */
     private function gameState(): ?array
     {
@@ -30,6 +30,7 @@ class HandleInertiaRequests extends Middleware
         }
 
         return [
+            'date' => $gameContext->hasInstanceDate() ? $gameContext->instanceDate() : null,
             'has_club' => Instance::query()->whereKey($gameContext->instanceId())->whereNotNull('club_id')->exists(),
         ];
     }

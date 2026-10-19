@@ -31,8 +31,10 @@ class DashboardService
                 'games.*',
                 'home_team.name as home_team_name',
                 'away_team.name as away_team_name',
+                'competitions.name as competition_name',
             ])
             ->join('clubs as home_team', 'games.hometeam_id', '=', 'home_team.id')
+            ->leftJoin('competitions', 'games.competition_id', '=', 'competitions.id')
             ->join('clubs as away_team', 'games.awayteam_id', '=', 'away_team.id')
             ->where('games.instance_id', $instance->id)
             ->where('games.match_start', '>=', $instance->instance_date)

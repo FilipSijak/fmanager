@@ -26,9 +26,11 @@ class InstanceController extends Controller
         $this->instanceService = $instanceService;
     }
 
-    public function nextDay(): void
+    public function nextDay(): JsonResponse
     {
-        $this->instanceService->nextDay();
+        $instance = $this->instanceService->nextDay();
+
+        return ResponseHelper::success(['date' => $instance->instance_date]);
     }
 
     public function startNewGame(Request $request): JsonResponse

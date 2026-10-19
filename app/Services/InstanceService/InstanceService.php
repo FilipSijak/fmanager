@@ -2,6 +2,7 @@
 
 namespace App\Services\InstanceService;
 
+use App\Events\MatchDayCompleted;
 use App\Events\MonthlyUpdate;
 use App\Events\NextDay;
 use App\Events\SeasonCompleted;
@@ -94,7 +95,7 @@ class InstanceService implements IInstanceService
         });
     }
 
-    public function nextDay()
+    public function nextDay(): Instance
     {
         $instance = $this->getInstance();
         $this->season = Season::findOrFail($instance->season_id);
@@ -129,6 +130,8 @@ class InstanceService implements IInstanceService
         if ($isMonthlyUpdate) {
             event(new MonthlyUpdate($instance));
         }
+
+        return $instance;
     }
 
     private function simulateGames()
@@ -136,14 +139,20 @@ class InstanceService implements IInstanceService
         $instance = $this->getInstance();
         $games = $this->competitionRepository->scheduledFor($instance);
 
+        $completedGames = collect();
+
         foreach ($games as $game) {
             $result = $this->matchSimulationEngine->simulate($game);
-            $this->completeGameService->complete(
+            $completedGames->push($this->completeGameService->complete(
                 $game->id,
                 $result->homeGoals,
                 $result->awayGoals,
                 $result->summary
-            );
+            ));
+        }
+
+        if ($completedGames->isNotEmpty()) {
+            event(new MatchDayCompleted($instance, $completedGames));
         }
     }
 

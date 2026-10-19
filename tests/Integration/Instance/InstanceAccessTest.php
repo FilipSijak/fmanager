@@ -219,7 +219,7 @@ class InstanceAccessTest extends TestCase
         Event::fake([NextDay::class]);
 
         $this->actingAs($user)->withHeader('instanceHash', $instance->instance_hash)
-            ->postJson('/api/instance/next-day')->assertOk();
+            ->postJson('/api/instance/next-day')->assertOk()->assertJsonPath('data.date', '2024-03-03');
 
         $this->assertSame('2024-03-03', $instance->fresh()->instance_date);
         $this->assertSame('2024-03-02', $other->fresh()->instance_date);
