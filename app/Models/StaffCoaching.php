@@ -41,6 +41,16 @@ class StaffCoaching extends Model
         return $this->hasOne(StaffTacticPreference::class, 'staff_coaching_id');
     }
 
+    public function userManager(): HasOne
+    {
+        return $this->hasOne(Manager::class);
+    }
+
+    public function scopeAiControlled(Builder $query): Builder
+    {
+        return $query->whereDoesntHave('userManager');
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_retired', false);
