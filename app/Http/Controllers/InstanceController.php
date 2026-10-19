@@ -8,7 +8,6 @@ use App\Models\Competition;
 use App\Services\InstanceService\InstanceService;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
-use DomainException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -114,11 +113,7 @@ class InstanceController extends Controller
 
     public function resign(Request $request, GameContext $gameContext, PersonService $personService): JsonResponse
     {
-        try {
-            $instance = $this->instanceService->resignFromClub($request->user(), $gameContext->instanceId(), $personService);
-        } catch (DomainException $exception) {
-            return response()->json(['message' => $exception->getMessage()], 409);
-        }
+        $instance = $this->instanceService->resignFromClub($request->user(), $gameContext->instanceId(), $personService);
 
         return ResponseHelper::success($instance->toArray());
     }

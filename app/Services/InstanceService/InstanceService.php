@@ -79,15 +79,14 @@ class InstanceService implements IInstanceService
     }
 
     /**
-     * The user leaves their club but keeps playing the game as an unemployed manager following the club's league.
+     * The user leaves their club, which becomes vacant, and keeps playing as an unemployed manager following the club's league.
      */
     public function resignFromClub(User $user, int $instanceId, PersonService $personService): Instance
     {
         return DB::transaction(function () use ($user, $instanceId, $personService): Instance {
             $instance = $user->instances()->lockForUpdate()->findOrFail($instanceId);
             abort_if($instance->club_id === null, 409, 'You are not managing a club in this game.');
-            $club = Club::query()->forInstance($instance->id)->findOrFail($instance->club_id);
-            $personService->releaseUserManager($club, StaffCoaching::query()->findOrFail($instance->manager_id));
+            $personService->releaseUserManager(StaffCoaching::query()->findOrFail($instance->manager_id));
             $instance->club_id = null;
             $instance->save();
 

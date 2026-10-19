@@ -45,6 +45,14 @@ class Club extends Model
         return $this->hasOne(ClubTactic::class);
     }
 
+    /**
+     * The manager reputation the club looks for, on the same 30-200 scale as staff reputation.
+     */
+    public function managerReputationTarget(): int
+    {
+        return max(30, min(200, (int) $this->rank * 10));
+    }
+
     public function scopeRatedTop(Builder $query)
     {
         return $query->with('players', function ($query) {

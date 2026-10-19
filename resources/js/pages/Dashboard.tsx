@@ -1,9 +1,10 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
 import { useState } from 'react';
 import { resign } from '@/actions/App/Http/Controllers/InstanceController';
 import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
+import { jobs } from '@/routes';
 
 type NewsItem = {
     id: number;
@@ -101,6 +102,14 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
                             ? `Manager: ${dashboard.manager.name}`
                             : `${dashboard.manager.name} — without a club`}
                     </p>
+                )}
+                {!dashboard.club && (
+                    <Link
+                        href={jobs.url()}
+                        className="text-xs font-semibold text-[#f5f000] underline hover:text-white"
+                    >
+                        Find a job
+                    </Link>
                 )}
                 {dashboard.club && !confirmingResign && (
                     <button
@@ -223,15 +232,25 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
             </div>
 
             <div className="flex bg-[#200061] text-sm font-bold text-white">
-                {bottomTabs.map((tab) => (
-                    <button
-                        key={tab}
-                        type="button"
-                        className="flex-1 border-r border-white/10 py-3 last:border-r-0 hover:bg-white/5"
-                    >
-                        {tab}
-                    </button>
-                ))}
+                {bottomTabs.map((tab) =>
+                    tab === 'Jobs' ? (
+                        <Link
+                            key={tab}
+                            href={jobs.url()}
+                            className="flex-1 border-r border-white/10 py-3 text-center last:border-r-0 hover:bg-white/5"
+                        >
+                            {tab}
+                        </Link>
+                    ) : (
+                        <button
+                            key={tab}
+                            type="button"
+                            className="flex-1 border-r border-white/10 py-3 last:border-r-0 hover:bg-white/5"
+                        >
+                            {tab}
+                        </button>
+                    ),
+                )}
             </div>
 
             <div className="flex bg-[#86888a]">

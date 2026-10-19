@@ -61,10 +61,8 @@ class UnemployedManagerTest extends TestCase
     }
 
     #[Test]
-    public function resigning_hands_the_club_and_contract_to_the_best_free_manager(): void
+    public function resigning_leaves_the_club_vacant_and_ends_the_contract(): void
     {
-        $this->freeManager(['coaching_potential' => 90]);
-        $bestFreeManager = $this->freeManager(['coaching_potential' => 150]);
         $contractId = $this->userManager->contract_id;
 
         $this->postJson('/api/instance/resign')->assertOk();
@@ -76,26 +74,15 @@ class UnemployedManagerTest extends TestCase
             'followed_competition_id' => $this->league->id,
         ]);
         $this->assertDatabaseHas('staff_coaching', ['id' => $this->userManager->id, 'club_id' => null, 'contract_id' => null, 'is_retired' => false]);
-        $this->assertDatabaseHas('staff_coaching', ['id' => $bestFreeManager->id, 'club_id' => $this->club->id, 'contract_id' => $contractId]);
+        $this->assertDatabaseMissing('staff_contracts', ['id' => $contractId]);
+        $this->assertSame(0, StaffCoaching::query()->where('club_id', $this->club->id)->where('type', 'MANAGER')->count());
         $this->assertDatabaseHas('managers', ['instance_id' => $this->instance->id, 'staff_coaching_id' => $this->userManager->id]);
         $this->postJson('/api/instance/resign')->assertForbidden();
     }
 
     #[Test]
-    public function resigning_is_refused_when_no_free_manager_can_take_over(): void
-    {
-        $this->postJson('/api/instance/resign')
-            ->assertConflict()
-            ->assertJsonPath('message', 'No free manager is available to take over the club.');
-
-        $this->assertDatabaseHas('instances', ['id' => $this->instance->id, 'club_id' => $this->club->id]);
-        $this->assertDatabaseHas('staff_coaching', ['id' => $this->userManager->id, 'club_id' => $this->club->id]);
-    }
-
-    #[Test]
     public function unemployed_managers_follow_their_league_without_club_management(): void
     {
-        $this->freeManager();
         $this->postJson('/api/instance/resign')->assertOk();
         $this->news(['title' => 'League news', 'competition_id' => $this->league->id]);
         $this->news(['title' => 'Former club news', 'club_id' => $this->club->id]);
@@ -111,18 +98,6 @@ class UnemployedManagerTest extends TestCase
         $this->getJson('/api/squad/lineup')->assertForbidden();
         $this->get('/squad')->assertRedirect('/');
         $this->post('/instances/'.$this->instance->id.'/select')->assertRedirect('/');
-    }
-
-    /**
-     * @param  array<string, mixed>  $attributes
-     */
-    private function freeManager(array $attributes = []): StaffCoaching
-    {
-        return StaffCoaching::factory()->create(array_merge([
-            'instance_id' => $this->instance->id,
-            'club_id' => null,
-            'contract_id' => null,
-        ], $attributes));
     }
 
     /**

@@ -25,7 +25,6 @@ class ManagerFactory extends Factory
             'user_id' => $instance->user_id,
             'instance_id' => $instance->id,
             'staff_coaching_id' => StaffCoaching::factory()->create(['instance_id' => $instance->id])->id,
-            'reputation' => random_int(10, 200),
         ];
     }
 }

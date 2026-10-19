@@ -21,7 +21,6 @@ use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use DomainException;
 use Illuminate\Support\Facades\DB;
 
 class PersonService
@@ -180,6 +179,7 @@ class PersonService
             $manager = $previousManager->replicate();
             $manager->setRelations([]);
             $manager->person_id = $person->id;
+            $manager->reputation = $club->managerReputationTarget();
 
             foreach ([
                 'attacking', 'defending', 'fitness', 'mental', 'tactical', 'technical',
@@ -207,37 +207,19 @@ class PersonService
     }
 
     /**
-     * Free the user's manager from the club and hand the club, with the user's contract, to the best free AI manager.
-     *
-     * @throws DomainException when no free AI manager can take over the club
+     * Free the user's manager from their club and end the contract, leaving the club vacant for the next appointment.
      */
-    public function releaseUserManager(Club $club, StaffCoaching $userManager): StaffCoaching
+    public function releaseUserManager(StaffCoaching $userManager): void
     {
-        return DB::transaction(function () use ($club, $userManager): StaffCoaching {
-            $replacement = StaffCoaching::query()
-                ->forInstance($club->instance_id)
-                ->whereNull('club_id')
-                ->where('type', PersonTypes::MANAGER)
-                ->active()
-                ->aiControlled()
-                ->orderByDesc('coaching_potential')
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->first();
-
-            if ($replacement === null) {
-                throw new DomainException('No free manager is available to take over the club.');
-            }
-
-            $replacement->club_id = $club->id;
-            $replacement->contract_id = $userManager->contract_id;
-            $replacement->save();
-
+        DB::transaction(function () use ($userManager): void {
+            $contractId = $userManager->contract_id;
             $userManager->club_id = null;
             $userManager->contract_id = null;
             $userManager->save();
 
-            return $replacement;
+            if ($contractId !== null) {
+                DB::table('staff_contracts')->where('id', $contractId)->delete();
+            }
         });
     }
 

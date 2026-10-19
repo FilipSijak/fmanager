@@ -170,12 +170,17 @@ class TacticsService
         }
     }
 
+    /**
+     * The club's manager, or its assistant manager acting as caretaker while the manager job is vacant.
+     */
     private function managerForClub(Club $club): StaffCoaching
     {
         $manager = StaffCoaching::query()
             ->where('club_id', $club->id)
-            ->where('type', PersonTypes::MANAGER)
+            ->whereIn('type', [PersonTypes::MANAGER, PersonTypes::ASSISTANT_MANAGER])
             ->active()
+            ->orderByRaw('type = ? desc', [PersonTypes::MANAGER])
+            ->orderBy('id')
             ->first();
 
         if ($manager === null) {

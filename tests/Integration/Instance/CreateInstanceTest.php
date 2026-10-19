@@ -88,8 +88,8 @@ class CreateInstanceTest extends TestCase
             'user_id' => $this->userId,
             'instance_id' => $instance->id,
             'staff_coaching_id' => $manager->id,
-            'reputation' => 50,
         ]);
+        $this->assertSame($managedClub->managerReputationTarget(), $manager->reputation);
         $this->assertSame(1, Manager::query()->where('instance_id', $instance->id)->count());
         $this->assertDatabaseHas('staff_coaching', [
             'id' => $manager->id,
@@ -319,6 +319,7 @@ class CreateInstanceTest extends TestCase
 
         $this->assertCount(11, $coachingStaff);
         $this->assertCount(1, $coachingStaff->where('type', 'MANAGER'));
+        $this->assertTrue($coachingStaff->every(fn (StaffCoaching $staff): bool => $staff->reputation === $staff->coaching_potential));
         $this->assertCount(1, $coachingStaff->where('type', 'ASSISTANT_MANAGER'));
         $this->assertCount(6, $coachingStaff->where('type', 'COACH'));
         $this->assertCount(3, $coachingStaff->where('type', 'YOUTH_COACH'));

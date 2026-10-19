@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstanceController;
+use App\Http\Controllers\ManagerJobController;
 use App\Http\Middleware\EnsureGameIsValid;
 use App\Http\Middleware\EnsureUserHasClub;
 use App\Http\Middleware\SetGameContext;
@@ -24,6 +25,8 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware([SetGameContext::class, EnsureGameIsValid::class])->group(function () {
         Route::get('/', [DashboardController::class, 'show'])->name('start');
+        Route::get('/jobs', [ManagerJobController::class, 'index'])->name('jobs');
+        Route::post('/jobs/{clubId}/apply', [ManagerJobController::class, 'apply'])->name('jobs.apply');
     });
 });
 
