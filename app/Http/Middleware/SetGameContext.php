@@ -15,7 +15,8 @@ class SetGameContext
     {
         $this->gameContext->set(null, null);
         $instanceHash = $request->header('instanceHash')
-            ?? ($request->hasSession() ? $request->session()->get('active_instance_hash') : null);
+            ?? ($request->hasSession() ? $request->session()->get('active_instance_hash') : null)
+            ?? $this->defaultInstanceHash($request);
 
         if ($instanceHash !== null) {
             $instance = $request->user()->instances()
@@ -30,5 +31,27 @@ class SetGameContext
         }
 
         return $next($request);
+    }
+
+    /**
+     * Resume the user's most recently created managed game when the session has no active game.
+     */
+    private function defaultInstanceHash(Request $request): ?string
+    {
+        if ($request->user() === null || ! $request->hasSession()) {
+            return null;
+        }
+
+        $instanceHash = $request->user()->managers()
+            ->join('instances', 'instances.id', '=', 'managers.instance_id')
+            ->whereNotNull('instances.club_id')
+            ->latest('managers.id')
+            ->value('instances.instance_hash');
+
+        if ($instanceHash !== null) {
+            $request->session()->put('active_instance_hash', $instanceHash);
+        }
+
+        return $instanceHash;
     }
 }

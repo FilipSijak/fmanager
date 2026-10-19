@@ -32,6 +32,10 @@ class DashboardResource extends JsonResource
                 'rank_training' => $dashboard->club->rank_training,
                 'financial_rank' => $dashboard->club->financial_rank,
             ],
+            'manager' => $dashboard->manager ? [
+                'id' => $dashboard->manager->id,
+                'name' => trim($dashboard->manager->person->first_name.' '.$dashboard->manager->person->last_name),
+            ] : null,
             'account' => [
                 'balance' => $dashboard->account?->balance,
                 'future_balance' => $dashboard->account?->future_balance,

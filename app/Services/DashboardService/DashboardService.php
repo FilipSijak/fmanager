@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Club;
 use App\Models\Game;
 use App\Models\Instance;
+use App\Models\StaffCoaching;
 use App\Services\NewsService\NewsService;
 use App\Support\GameContext;
 
@@ -14,15 +15,14 @@ class DashboardService
     public function __construct(
         private readonly GameContext $gameContext,
         private readonly NewsService $newsService,
-    )
-    {
-    }
+    ) {}
 
     public function getDashboard(): DashboardData
     {
         $instance = Instance::findOrFail($this->gameContext->instanceId());
         $club = Club::findOrFail($instance->club_id);
-        $account  = Account::where('club_id', $instance->club_id)->first();
+        $manager = StaffCoaching::query()->with('person')->find($instance->manager_id);
+        $account = Account::where('club_id', $instance->club_id)->first();
         $news = $this->newsService->getInboxNews($club->id);
         $nextGame = Game::query()
             ->select([
@@ -41,6 +41,7 @@ class DashboardService
         return new DashboardData(
             instance: $instance,
             club: $club,
+            manager: $manager,
             account: $account,
             news: $news,
             nextGame: $nextGame,

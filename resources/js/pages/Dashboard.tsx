@@ -13,6 +13,7 @@ type NewsItem = {
 
 type DashboardData = {
     club: { name: string };
+    manager: { id: number; name: string } | null;
     news: Array<{
         id: number;
         title: string;
@@ -61,10 +62,15 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
         <GameLayout active="Continue Game">
             <Head title="Manager Dashboard" />
 
-            <header className="flex h-[92px] items-center justify-center border-b border-black bg-black px-6">
+            <header className="flex h-[92px] flex-col items-center justify-center border-b border-black bg-black px-6">
                 <h1 className="text-3xl font-black tracking-tight text-[#3355dd]">
                     {dashboard.club.name} News
                 </h1>
+                {dashboard.manager && (
+                    <p className="text-sm font-semibold text-white">
+                        Manager: {dashboard.manager.name}
+                    </p>
+                )}
             </header>
 
             <div className="flex bg-[#200061]">
