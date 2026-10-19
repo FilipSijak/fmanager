@@ -34,18 +34,17 @@ class SetGameContext
     }
 
     /**
-     * Resume the user's most recently created managed game when the session has no active game.
+     * Resume the user's only game when the session has no active game; users with several games pick one themselves.
      */
     private function defaultInstanceHash(Request $request): ?string
     {
-        if ($request->user() === null || ! $request->hasSession()) {
+        if ($request->user() === null || ! $request->hasSession() || $request->user()->instances()->count() !== 1) {
             return null;
         }
 
         $instanceHash = $request->user()->managers()
             ->join('instances', 'instances.id', '=', 'managers.instance_id')
             ->whereNotNull('instances.club_id')
-            ->latest('managers.id')
             ->value('instances.instance_hash');
 
         if ($instanceHash !== null) {
