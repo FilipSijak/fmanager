@@ -19,6 +19,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     Route::get('/setup-game', [InstanceController::class, 'setup'])->name('setup-game');
     Route::post('/instances/{instanceId}/select', [InstanceController::class, 'select'])->name('instances.select');
+    Route::post('/instances/{instanceId}/take-over', [InstanceController::class, 'takeOver'])->name('instances.take-over');
 
     Route::middleware([SetGameContext::class, EnsureGameIsValid::class])->group(function () {
         Route::get('/', [DashboardController::class, 'show'])->name('start');

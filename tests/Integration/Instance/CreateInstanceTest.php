@@ -9,6 +9,7 @@ use App\Models\Instance;
 use App\Models\Player;
 use App\Models\Season;
 use App\Models\StaffCoaching;
+use App\Models\StaffContract;
 use App\Models\StaffPhysio;
 use App\Models\StaffScout;
 use App\Models\User;
@@ -22,11 +23,14 @@ use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\PersonService;
 use App\Services\StadiumService\StadiumType;
+use App\Services\TacticsService\TacticsService;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
+use Database\Seeders\TacticsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -38,7 +42,6 @@ class CreateInstanceTest extends TestCase
     {
         parent::setUp();
 
-        $this->managerId = null;
         $user = User::factory()->create(['id' => 99]);
         $this->userId = $user->id;
         $this->actingAs($user);
@@ -52,12 +55,64 @@ class CreateInstanceTest extends TestCase
         Instance::factory()->create(['id' => 1, 'user_id' => $this->userId]);
         Season::factory()->create(['id' => 1, 'instance_id' => 1]);
         $response = $this->withHeader('Origin', 'http://localhost')->postJson('/api/startNewGame', ['user_id' => 1])->assertCreated();
-        $response->assertSessionHas('active_instance_hash', $response->json('data.instance_hash'));
+        $response->assertSessionMissing('active_instance_hash');
         $this->assertSame(2, User::findOrFail($this->userId)->instances()->count());
         $instance = Instance::findOrFail($response->json('data.id'));
         $this->assertNotSame(1, $instance->id);
-        $arsenal = Club::query()->where('instance_id', $instance->id)->where('base_club_id', 1)->firstOrFail();
-        $this->assertSame(StadiumType::GLOBAL, $arsenal->stadium->type);
+        $managedClub = Club::query()->where('instance_id', $instance->id)->where('base_club_id', 2)->firstOrFail();
+        $this->assertNull($instance->club_id);
+        $this->assertNull($instance->manager_id);
+        $this->assertSame(200, Player::query()->forInstance($instance->id)->whereNull('club_id')->count());
+        $this->assertNotNull(Game::query()->where('instance_id', $instance->id)->first());
+        $previousManager = StaffCoaching::query()->where('club_id', $managedClub->id)->where('type', 'MANAGER')->firstOrFail();
+        $this->withoutVite();
+        $this->get('/setup-game?instance_id='.$instance->id)->assertInertia(fn (Assert $page) => $page
+            ->component('GameStart')->where('pending_instance_id', $instance->id)
+            ->where('leagues', function ($leagues) use ($managedClub): bool {
+                $league = collect($leagues)->firstWhere('name', 'Premier League');
+
+                return count($league['clubs']) === 20 && collect($league['clubs'])->contains('id', $managedClub->id)
+                    && ! collect($leagues)->contains('name', 'Champions League');
+            }));
+        $league = Competition::query()->forInstance($instance->id)->where('base_competition_id', 1)->firstOrFail();
+        $this->postJson('/instances/'.$instance->id.'/take-over', ['league_id' => $league->id, 'club_id' => $managedClub->id])
+            ->assertOk()->assertSessionHas('active_instance_hash', $instance->instance_hash);
+        $instance->refresh();
+        $this->assertDatabaseHas('staff_coaching', ['id' => $previousManager->id, 'club_id' => null, 'contract_id' => null]);
+        $this->postJson('/instances/'.$instance->id.'/take-over', ['league_id' => $league->id, 'club_id' => $managedClub->id])
+            ->assertConflict();
+        $manager = StaffCoaching::query()->findOrFail($instance->manager_id);
+        $this->assertDatabaseHas('staff_coaching', [
+            'id' => $manager->id,
+            'instance_id' => $instance->id,
+            'club_id' => $managedClub->id,
+            'type' => 'MANAGER',
+            'attacking' => 1,
+            'defending' => 1,
+            'fitness' => 1,
+            'mental' => 1,
+            'tactical' => 1,
+            'technical' => 1,
+            'working_with_youngsters' => 1,
+            'adaptability' => 1,
+            'determination' => 1,
+            'discipline' => 1,
+            'man_management' => 1,
+            'motivating' => 1,
+            'judging_player_potential' => 1,
+            'judging_player_ability' => 1,
+            'judging_staff_ability' => 1,
+            'negotiating' => 1,
+            'tactics' => 1,
+            'distribution' => 1,
+            'handling' => 1,
+            'shot_stopping' => 1,
+        ]);
+        $this->assertSame(
+            User::findOrFail($this->userId)->name,
+            trim($manager->person->first_name.' '.$manager->person->last_name)
+        );
+        $this->assertSame(StadiumType::GLOBAL, $managedClub->stadium->type);
         $this->assertSame($instance->instance_hash, $response->json('data.instance_hash'));
         $tournament = Competition::where('type', 'tournament')->where('groups', 0)->first();
         $tournamentGroup = Competition::where('type', 'tournament')->where('groups', 1)->first();
@@ -74,9 +129,9 @@ class CreateInstanceTest extends TestCase
             'instances',
             [
                 'id' => $instance->id,
-                'club_id' => $arsenal->id,
+                'club_id' => $managedClub->id,
                 'user_id' => $this->userId,
-                'manager_id' => $this->managerId,
+                'manager_id' => $manager->id,
             ]
         );
 
@@ -276,11 +331,56 @@ class CreateInstanceTest extends TestCase
             + StaffScout::where('instance_id', $instance->id)->whereNull('club_id')->count();
 
         $this->assertSame($clubCount * 20, $assignedStaffCount);
-        $this->assertSame($clubCount * 5, $freeStaffCount);
-        $this->assertSame(0.2, $freeStaffCount / ($assignedStaffCount + $freeStaffCount));
+        $this->assertSame($clubCount * 5 + 1, $freeStaffCount);
         $this->assertSame($freeStaffCount, StaffCoaching::whereNull('club_id')->whereNull('contract_id')->count()
             + StaffPhysio::whereNull('club_id')->whereNull('contract_id')->count()
             + StaffScout::whereNull('club_id')->whereNull('contract_id')->count());
+    }
+
+    #[Test]
+    public function taking_over_a_club_preserves_its_previous_manager_as_free_staff(): void
+    {
+        $this->seed(TacticsSeeder::class);
+        $club = Club::factory()->create(['instance_id' => 1]);
+        $contract = StaffContract::query()->create([
+            'contract_start' => '2026-07-01',
+            'contract_end' => '2027-07-01',
+            'salary' => 5000,
+        ]);
+        $previousManager = StaffCoaching::factory()->create([
+            'instance_id' => $club->instance_id,
+            'club_id' => $club->id,
+            'contract_id' => $contract->id,
+            'attacking' => 15,
+            'coaching_potential' => 160,
+        ]);
+        $previousPerson = $previousManager->person->getAttributes();
+        $previousAttributes = $previousManager->getAttributes();
+        $preference = app(TacticsService::class)->ensureDefaultForStaff($previousManager);
+        $user = User::findOrFail($this->userId);
+
+        $manager = app(PersonService::class)->assignUserManager($club, $user);
+
+        $this->assertDatabaseHas('staff_coaching', array_merge($previousAttributes, [
+            'club_id' => null,
+            'contract_id' => null,
+            'is_retired' => false,
+        ]));
+        $this->assertDatabaseHas('people', $previousPerson);
+        $this->assertNotSame($previousManager->id, $manager->id);
+        $this->assertNotSame($previousManager->person_id, $manager->person_id);
+        $this->assertDatabaseHas('staff_coaching', [
+            'id' => $manager->id,
+            'instance_id' => $club->instance_id,
+            'club_id' => $club->id,
+            'type' => 'MANAGER',
+            'contract_id' => $contract->id,
+            'attacking' => 1,
+        ]);
+        $this->assertSame($user->name, trim($manager->person->first_name.' '.$manager->person->last_name));
+        $this->assertSame(1, StaffCoaching::query()->where('club_id', $club->id)->where('type', 'MANAGER')->count());
+        $this->assertSame($preference->base_formation_id, $manager->tacticPreference->base_formation_id);
+        $this->assertModelExists($preference);
     }
 
     protected function getNewInstance(): CreateInstance

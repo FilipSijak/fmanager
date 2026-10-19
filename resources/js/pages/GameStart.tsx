@@ -1,12 +1,14 @@
 import { Head, router } from '@inertiajs/react';
+import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import {
     select,
     startNewGame,
+    takeOver,
 } from '@/actions/App/Http/Controllers/InstanceController';
 import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
-import { start } from '@/routes';
+import { setupGame, start } from '@/routes';
 
 const menuRows: [string, string][] = [
     ['Start New Game', 'Quick Start Game'],
@@ -16,10 +18,30 @@ const menuRows: [string, string][] = [
 ];
 
 type SavedGame = { id: number; club_name: string | null; date: string };
+type League = {
+    id: number;
+    name: string;
+    country_code: string;
+    clubs: { id: number; name: string }[];
+};
 
-export default function GameStart({ instances }: { instances: SavedGame[] }) {
+export default function GameStart({
+    instances,
+    leagues,
+    pending_instance_id: pendingInstanceId,
+}: {
+    instances: SavedGame[];
+    leagues: League[];
+    pending_instance_id: number | null;
+}) {
+    const [leagueId, setLeagueId] = useState('');
+    const [clubId, setClubId] = useState('');
+    const selectedLeague = leagues.find(
+        (league) => String(league.id) === leagueId,
+    );
     const [selecting, setSelecting] = useState<number | null>(null);
     const [processing, setProcessing] = useState(false);
+    const [takingOver, setTakingOver] = useState(false);
     const [created, setCreated] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const starting = useRef(false);
@@ -41,13 +63,58 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
         setCreated(false);
 
         try {
-            await api.post(startNewGame.url());
+            const response = await api.post(startNewGame.url());
             setCreated(true);
-            router.visit(start.url());
-        } catch {
-            setError('Unable to start a new game. Please try again.');
+            router.visit(
+                setupGame.url({
+                    query: { instance_id: response.data.data.id },
+                }),
+                {
+                    onFinish: () => {
+                        starting.current = false;
+                        setProcessing(false);
+                    },
+                },
+            );
+        } catch (failure) {
+            const validationErrors = axios.isAxiosError<{
+                errors?: Record<string, string[]>;
+            }>(failure)
+                ? failure.response?.data.errors
+                : undefined;
+            setError(
+                validationErrors?.league_id?.[0] ??
+                    validationErrors?.club_id?.[0] ??
+                    'Unable to start a new game. Please try again.',
+            );
             starting.current = false;
             setProcessing(false);
+        }
+    }
+
+    async function chooseClub() {
+        if (takingOver || !pendingInstanceId || !leagueId || !clubId) return;
+        setTakingOver(true);
+        setError(null);
+
+        try {
+            await api.post(takeOver.url(pendingInstanceId), {
+                league_id: Number(leagueId),
+                club_id: Number(clubId),
+            });
+            router.visit(start.url());
+        } catch (failure) {
+            const validationErrors = axios.isAxiosError<{
+                errors?: Record<string, string[]>;
+            }>(failure)
+                ? failure.response?.data.errors
+                : undefined;
+            setError(
+                validationErrors?.league_id?.[0] ??
+                    validationErrors?.club_id?.[0] ??
+                    'Unable to take over this club. Please try again.',
+            );
+            setTakingOver(false);
         }
     }
 
@@ -73,8 +140,8 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
                     </h2>
                     <p id="setup-dialog-description" role="status">
                         {created
-                            ? 'Your game has been set up successfully. Opening Dashboard…'
-                            : 'Your game is currently being set up. You will be taken to Dashboard when it is finished. Please keep this page open.'}
+                            ? 'Your game world is ready. Choose a league and club next.'
+                            : 'Creating clubs, players, staff, and fixtures. You will choose your league and club when the game world is ready. Please keep this page open.'}
                     </p>
                 </div>
             </dialog>
@@ -97,6 +164,7 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
                                 type="button"
                                 disabled={
                                     processing ||
+                                    takingOver ||
                                     selecting !== null ||
                                     ![
                                         'Start New Game',
@@ -123,6 +191,101 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
                     )}
                 </div>
 
+                {pendingInstanceId !== null && (
+                    <form
+                        className="flex w-full max-w-2xl flex-col gap-4 rounded border border-[#3355dd] bg-black/30 p-6 text-white"
+                        onSubmit={(event) => {
+                            event.preventDefault();
+                            void chooseClub();
+                        }}
+                    >
+                        <h2 className="text-xl font-bold text-[#f5f000]">
+                            Choose your club
+                        </h2>
+                        <p>
+                            Your game world is ready. Select a league and a club
+                            to manage.
+                        </p>
+                        <label htmlFor="league">League</label>
+                        <select
+                            id="league"
+                            required
+                            value={leagueId}
+                            disabled={
+                                processing || takingOver || selecting !== null
+                            }
+                            onChange={(event) => {
+                                setLeagueId(event.target.value);
+                                setClubId('');
+                                setError(null);
+                            }}
+                            className="rounded border border-[#3355dd] bg-[#101358] px-4 py-3 text-white"
+                        >
+                            <option value="">Select a league</option>
+                            {leagues.map((league) => (
+                                <option key={league.id} value={league.id}>
+                                    {league.name} ({league.country_code})
+                                </option>
+                            ))}
+                        </select>
+                        <label htmlFor="club">Club</label>
+                        <select
+                            id="club"
+                            required
+                            value={clubId}
+                            disabled={
+                                !selectedLeague ||
+                                processing ||
+                                takingOver ||
+                                selecting !== null
+                            }
+                            onChange={(event) => {
+                                setClubId(event.target.value);
+                                setError(null);
+                            }}
+                            className="rounded border border-[#3355dd] bg-[#101358] px-4 py-3 text-white disabled:opacity-50"
+                        >
+                            <option value="">
+                                {selectedLeague
+                                    ? 'Select a club'
+                                    : 'Select a league first'}
+                            </option>
+                            {selectedLeague?.clubs.map((club) => (
+                                <option key={club.id} value={club.id}>
+                                    {club.name}
+                                </option>
+                            ))}
+                        </select>
+                        {leagues.length === 0 && (
+                            <p>No leagues are available to start a game.</p>
+                        )}
+                        <div className="flex gap-3">
+                            <button
+                                type="submit"
+                                disabled={
+                                    !clubId ||
+                                    processing ||
+                                    takingOver ||
+                                    selecting !== null
+                                }
+                                className="rounded border border-[#3355dd] px-4 py-2 font-semibold text-[#f5f000] hover:bg-white/10 disabled:opacity-50"
+                            >
+                                {takingOver ? 'Taking over…' : 'Take Over Club'}
+                            </button>
+                            <button
+                                type="button"
+                                disabled={processing || takingOver}
+                                onClick={() => {
+                                    router.visit(setupGame.url());
+                                }}
+                                className="rounded border border-[#3355dd] px-4 py-2 hover:bg-white/10 disabled:opacity-50"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                )}
+
                 <section
                     id="my-games"
                     className="flex w-full max-w-2xl flex-col gap-3"
@@ -145,12 +308,17 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
                             className="flex items-center justify-between gap-4 rounded border border-[#3355dd] bg-black/30 p-4 text-white"
                         >
                             <p>
-                                {instance.club_name ?? 'Game'} — {instance.date}{' '}
-                                (#{instance.id})
+                                {instance.club_name ??
+                                    'Awaiting club selection'}{' '}
+                                — {instance.date} (#{instance.id})
                             </p>
                             <button
                                 type="button"
-                                disabled={processing || selecting !== null}
+                                disabled={
+                                    processing ||
+                                    takingOver ||
+                                    selecting !== null
+                                }
                                 onClick={() => {
                                     setSelecting(instance.id);
                                     setError(null);
@@ -158,6 +326,7 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
                                         select.url(instance.id),
                                         {},
                                         {
+                                            preserveState: false,
                                             onError: () =>
                                                 setError(
                                                     'Unable to open this game. Please try again.',
@@ -170,7 +339,9 @@ export default function GameStart({ instances }: { instances: SavedGame[] }) {
                             >
                                 {selecting === instance.id
                                     ? 'Opening…'
-                                    : 'Resume'}
+                                    : instance.club_name === null
+                                      ? 'Choose Club'
+                                      : 'Resume'}
                             </button>
                         </div>
                     ))}

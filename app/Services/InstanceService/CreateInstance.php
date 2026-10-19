@@ -46,15 +46,10 @@ class CreateInstance
     public function instanceInit(User $user): Instance
     {
         $init = new InitialSeed;
-        // @todo select a club and manager
         $this->storeInstance($user->id, null, null, null);
         $init->seedFromBaseTables($this->instance->id);
         $this->startFirstSeason();
         $this->instance->season_id = $this->season->id;
-        $this->instance->club_id = Club::query()
-            ->forInstance($this->instance->id)
-            ->where('base_club_id', 1)
-            ->firstOrFail()->id;
         $this->instance->save();
         app(GameContext::class)->set($this->instance->id, $this->season->id, (string) $this->instance->instance_date);
         $this->mapInitialCompetitionsToSeasonsWithClubs();
