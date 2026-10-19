@@ -99,6 +99,19 @@ class MatchDayNewsTest extends TestCase
         $this->assertSame(0, DB::table('news')->count());
     }
 
+    #[Test]
+    public function unemployed_managers_get_the_round_up_of_the_league_they_follow(): void
+    {
+        $this->instance->club_id = null;
+        $this->instance->followed_competition_id = $this->league->id;
+        $this->instance->save();
+
+        event(new MatchDayCompleted($this->instance, collect([$this->game($this->userClub, $this->clubIn($this->league, 'Chelsea'), 1, 1)])));
+
+        $this->assertSame([['club_id' => null, 'title' => 'Premier League round-up', 'content' => 'Arsenal 1-1 Chelsea']],
+            DB::table('news')->get(['club_id', 'title', 'content'])->map(fn ($news): array => (array) $news)->all());
+    }
+
     private function clubIn(Competition $competition, string $name): Club
     {
         $club = Club::factory()->create(['instance_id' => 1, 'name' => $name]);

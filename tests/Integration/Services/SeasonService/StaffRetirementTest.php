@@ -4,6 +4,7 @@ namespace Tests\Integration\Services\SeasonService;
 
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Manager;
 use App\Models\Person;
 use App\Models\StaffCoaching;
 use App\Models\StaffContract;
@@ -67,6 +68,34 @@ class StaffRetirementTest extends TestCase
                 'contract_end' => '2028-06-30',
             ]);
         }
+    }
+
+    #[Test]
+    public function it_never_retires_a_user_controlled_manager(): void
+    {
+        $instance = Instance::factory()->create([
+            'id' => 1,
+            'instance_date' => '2027-06-16',
+        ]);
+        $club = Club::factory()->create(['instance_id' => $instance->id]);
+        $userManager = $this->staffMember(StaffCoaching::class, $club, CarbonImmutable::parse($instance->instance_date)->subYears(80));
+        Manager::factory()->create([
+            'user_id' => $instance->user_id,
+            'instance_id' => $instance->id,
+            'staff_coaching_id' => $userManager->id,
+        ]);
+
+        $service = new StaffRetirement(
+            app(StaffRepository::class),
+            new StaffRetirementDecision(fn (): int => 1)
+        );
+
+        $this->assertSame(0, $service->retireEligibleStaff($instance));
+        $this->assertDatabaseHas('staff_coaching', [
+            'id' => $userManager->id,
+            'is_retired' => false,
+            'club_id' => $club->id,
+        ]);
     }
 
     private function staffMember(string $model, Club $club, CarbonImmutable $dob)

@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { Image as ImageIcon } from 'lucide-react';
 import { finance, squad, stadium } from '@/routes';
 
@@ -7,30 +7,40 @@ type MenuItem = {
     /** Path to a real icon asset (3:2 ratio). Falls back to a mock icon when unset. */
     icon?: string;
     href?: string;
+    /** Only available while the user manages a club. */
+    clubOnly?: boolean;
 };
 
 const menuItems: MenuItem[] = [
     { label: 'File' },
     {
         label: 'Stad',
+        clubOnly: true,
         icon: '/game-assets/menu/menu-stadium.png',
         href: stadium.url(),
     },
     {
         label: 'Finance',
+        clubOnly: true,
         icon: '/game-assets/menu/menu-finances.png',
         href: finance.url(),
     },
-    { label: 'Chair' },
+    { label: 'Chair', clubOnly: true },
     { label: 'Data' },
-    { label: 'Trans' },
+    { label: 'Trans', clubOnly: true },
     { label: 'Mngr' },
-    { label: 'Squad', href: squad.url() },
-    { label: 'Match' },
+    { label: 'Squad', href: squad.url(), clubOnly: true },
+    { label: 'Match', clubOnly: true },
     { label: 'Help' },
 ];
 
 export default function TopMenu() {
+    const { game } = usePage<{ game: { has_club: boolean } | null }>().props;
+    const hasClub = game?.has_club ?? true;
+    const visibleMenuItems = menuItems.filter(
+        (item) => hasClub || !item.clubOnly,
+    );
+
     return (
         <div
             className="group absolute inset-x-0 top-0 z-50 -translate-y-1/2 transition-transform duration-300 ease-out hover:translate-y-0 focus-within:translate-y-0"
@@ -45,7 +55,7 @@ export default function TopMenu() {
                     }}
                 />
 
-                {menuItems.map((item) => {
+                {visibleMenuItems.map((item) => {
                     const itemContent = (
                         <>
                             <span className="text-sm font-bold tracking-wide text-[#f5f000] uppercase [text-shadow:0_0_5px_rgba(245,240,0,0.6)]">

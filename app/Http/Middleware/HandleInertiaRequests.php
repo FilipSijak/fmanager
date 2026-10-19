@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Instance;
 use App\Support\GameContext;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -18,12 +19,19 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * @return array{date: string}|null
+     * @return array{date: string|null, has_club: bool}|null
      */
     private function gameState(): ?array
     {
         $gameContext = app(GameContext::class);
 
-        return $gameContext->hasInstanceDate() ? ['date' => $gameContext->instanceDate()] : null;
+        if (! $gameContext->hasInstanceId()) {
+            return null;
+        }
+
+        return [
+            'date' => $gameContext->hasInstanceDate() ? $gameContext->instanceDate() : null,
+            'has_club' => Instance::query()->whereKey($gameContext->instanceId())->whereNotNull('club_id')->exists(),
+        ];
     }
 }

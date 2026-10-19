@@ -16,14 +16,15 @@ use Illuminate\Support\Facades\DB;
 class MatchNews
 {
     /**
-     * News for the user's own match and a round-up of their league's results on a match day.
+     * News for the user's own match and a round-up of their league's results on a match day. Unemployed managers get
+     * the round-up for the league they follow.
      *
      * @param  Collection<int, Game>  $games
      * @return list<NewsItem>
      */
     public function forMatchDay(Instance $instance, Collection $games): array
     {
-        if ($instance->club_id === null || $games->isEmpty()) {
+        if ($games->isEmpty()) {
             return [];
         }
 
@@ -31,13 +32,13 @@ class MatchNews
             ->whereKey($games->pluck('hometeam_id')->merge($games->pluck('awayteam_id'))->unique())
             ->pluck('name', 'id');
         $competitionNames = Competition::query()->whereKey($games->pluck('competition_id')->unique())->pluck('name', 'id');
-        $items = $games
+        $items = $instance->club_id === null ? [] : $games
             ->filter(fn (Game $game): bool => in_array($instance->club_id, [$game->hometeam_id, $game->awayteam_id], true))
             ->map(fn (Game $game): NewsItem => $this->clubResult($instance, $game, $clubNames, $competitionNames))
             ->values()
             ->all();
 
-        $leagueId = $this->leagueIdForClub($instance);
+        $leagueId = $instance->club_id === null ? $instance->followed_competition_id : $this->leagueIdForClub($instance);
         $leagueGames = $games->where('competition_id', $leagueId)->values();
 
         if ($leagueId !== null && $leagueGames->isNotEmpty()) {

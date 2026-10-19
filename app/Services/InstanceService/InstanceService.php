@@ -9,7 +9,9 @@ use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Manager;
 use App\Models\Season;
+use App\Models\StaffCoaching;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionScheduleRepository;
 use App\Services\GameService\CompleteGameService;
@@ -55,15 +57,38 @@ class InstanceService implements IInstanceService
         return DB::transaction(fn (): Instance => $this->createInstance->instanceInit($user));
     }
 
-    public function takeOverClub(User $user, int $instanceId, int $clubId, PersonService $personService): Instance
+    public function takeOverClub(User $user, int $instanceId, int $clubId, int $leagueId, PersonService $personService): Instance
     {
-        return DB::transaction(function () use ($user, $instanceId, $clubId, $personService): Instance {
+        return DB::transaction(function () use ($user, $instanceId, $clubId, $leagueId, $personService): Instance {
             $instance = $user->instances()->lockForUpdate()->findOrFail($instanceId);
             abort_if($instance->club_id !== null || $instance->manager_id !== null, 409, 'A club has already been selected for this game.');
             $club = Club::query()->forInstance($instance->id)->findOrFail($clubId);
             $manager = $personService->assignUserManager($club, $user);
             $instance->club_id = $club->id;
             $instance->manager_id = $manager->id;
+            $instance->followed_competition_id = $leagueId;
+            $instance->save();
+
+            $userManager = new Manager;
+            $userManager->user_id = $user->id;
+            $userManager->instance_id = $instance->id;
+            $userManager->staff_coaching_id = $manager->id;
+            $userManager->save();
+
+            return $instance;
+        });
+    }
+
+    /**
+     * The user leaves their club, which becomes vacant, and keeps playing as an unemployed manager following the club's league.
+     */
+    public function resignFromClub(User $user, int $instanceId, PersonService $personService): Instance
+    {
+        return DB::transaction(function () use ($user, $instanceId, $personService): Instance {
+            $instance = $user->instances()->lockForUpdate()->findOrFail($instanceId);
+            abort_if($instance->club_id === null, 409, 'You are not managing a club in this game.');
+            $personService->releaseUserManager(StaffCoaching::query()->findOrFail($instance->manager_id));
+            $instance->club_id = null;
             $instance->save();
 
             return $instance;

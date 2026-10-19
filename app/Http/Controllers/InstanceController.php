@@ -7,6 +7,7 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Services\InstanceService\InstanceService;
 use App\Services\PersonService\PersonService;
+use App\Support\GameContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -55,7 +56,7 @@ class InstanceController extends Controller
     public function setup(Request $request): Response
     {
         $pendingInstance = $request->filled('instance_id')
-            ? $request->user()->instances()->whereNull('club_id')->findOrFail($request->integer('instance_id'))
+            ? $request->user()->instances()->whereNull('manager_id')->findOrFail($request->integer('instance_id'))
             : null;
         $leagues = $pendingInstance === null ? collect() : Competition::query()
             ->forInstance($pendingInstance->id)
@@ -79,10 +80,11 @@ class InstanceController extends Controller
             'instances' => $request->user()->instances()
                 ->with('club:id,name')
                 ->orderByDesc('id')
-                ->get(['id', 'club_id', 'instance_date'])
+                ->get(['id', 'club_id', 'manager_id', 'instance_date'])
                 ->map(fn ($instance): array => [
                     'id' => $instance->id,
                     'club_name' => $instance->club?->name,
+                    'awaiting_club_selection' => $instance->isAwaitingClubSelection(),
                     'date' => $instance->instance_date,
                 ]),
         ]);
@@ -105,8 +107,15 @@ class InstanceController extends Controller
             'club_id.integer' => 'Choose a club from the selected league.',
             'club_id.exists' => 'Choose a club from the selected league.',
         ]);
-        $instance = $this->instanceService->takeOverClub($request->user(), $instance->id, (int) $validated['club_id'], $personService);
+        $instance = $this->instanceService->takeOverClub($request->user(), $instance->id, (int) $validated['club_id'], (int) $validated['league_id'], $personService);
         $request->session()->put('active_instance_hash', $instance->instance_hash);
+
+        return ResponseHelper::success($instance->toArray());
+    }
+
+    public function resign(Request $request, GameContext $gameContext, PersonService $personService): JsonResponse
+    {
+        $instance = $this->instanceService->resignFromClub($request->user(), $gameContext->instanceId(), $personService);
 
         return ResponseHelper::success($instance->toArray());
     }
@@ -114,7 +123,7 @@ class InstanceController extends Controller
     public function select(Request $request, int $instanceId): RedirectResponse
     {
         $instance = $request->user()->instances()->findOrFail($instanceId);
-        if ($instance->club_id === null) {
+        if ($instance->isAwaitingClubSelection()) {
             return redirect()->route('setup-game', ['instance_id' => $instance->id]);
         }
         $request->session()->put('active_instance_hash', $instance->instance_hash);

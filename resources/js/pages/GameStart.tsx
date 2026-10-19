@@ -17,7 +17,12 @@ const menuRows: [string, string][] = [
     ['Hall Of Fame', 'Game Credits'],
 ];
 
-type SavedGame = { id: number; club_name: string | null; date: string };
+type SavedGame = {
+    id: number;
+    club_name: string | null;
+    awaiting_club_selection: boolean;
+    date: string;
+};
 type League = {
     id: number;
     name: string;
@@ -308,8 +313,9 @@ export default function GameStart({
                             className="flex items-center justify-between gap-4 rounded border border-[#3355dd] bg-black/30 p-4 text-white"
                         >
                             <p>
-                                {instance.club_name ??
-                                    'Awaiting club selection'}{' '}
+                                {instance.awaiting_club_selection
+                                    ? 'Awaiting club selection'
+                                    : (instance.club_name ?? 'Unemployed')}{' '}
                                 — {instance.date} (#{instance.id})
                             </p>
                             <button
@@ -339,7 +345,7 @@ export default function GameStart({
                             >
                                 {selecting === instance.id
                                     ? 'Opening…'
-                                    : instance.club_name === null
+                                    : instance.awaiting_club_selection
                                       ? 'Choose Club'
                                       : 'Resume'}
                             </button>

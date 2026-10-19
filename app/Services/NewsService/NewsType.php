@@ -6,4 +6,5 @@ enum NewsType: string
 {
     case Transfer = 'transfer';
     case Match = 'match';
+    case Job = 'job';
 }

@@ -6,6 +6,7 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
+use App\Models\Manager;
 use App\Models\Player;
 use App\Models\Season;
 use App\Models\StaffCoaching;
@@ -78,10 +79,18 @@ class CreateInstanceTest extends TestCase
         $this->postJson('/instances/'.$instance->id.'/take-over', ['league_id' => $league->id, 'club_id' => $managedClub->id])
             ->assertOk()->assertSessionHas('active_instance_hash', $instance->instance_hash);
         $instance->refresh();
+        $this->assertSame($league->id, $instance->followed_competition_id);
         $this->assertDatabaseHas('staff_coaching', ['id' => $previousManager->id, 'club_id' => null, 'contract_id' => null]);
         $this->postJson('/instances/'.$instance->id.'/take-over', ['league_id' => $league->id, 'club_id' => $managedClub->id])
             ->assertConflict();
         $manager = StaffCoaching::query()->findOrFail($instance->manager_id);
+        $this->assertDatabaseHas('managers', [
+            'user_id' => $this->userId,
+            'instance_id' => $instance->id,
+            'staff_coaching_id' => $manager->id,
+        ]);
+        $this->assertSame($managedClub->managerReputationTarget(), $manager->reputation);
+        $this->assertSame(1, Manager::query()->where('instance_id', $instance->id)->count());
         $this->assertDatabaseHas('staff_coaching', [
             'id' => $manager->id,
             'instance_id' => $instance->id,
@@ -310,6 +319,7 @@ class CreateInstanceTest extends TestCase
 
         $this->assertCount(11, $coachingStaff);
         $this->assertCount(1, $coachingStaff->where('type', 'MANAGER'));
+        $this->assertTrue($coachingStaff->every(fn (StaffCoaching $staff): bool => $staff->reputation === $staff->coaching_potential));
         $this->assertCount(1, $coachingStaff->where('type', 'ASSISTANT_MANAGER'));
         $this->assertCount(6, $coachingStaff->where('type', 'COACH'));
         $this->assertCount(3, $coachingStaff->where('type', 'YOUTH_COACH'));
