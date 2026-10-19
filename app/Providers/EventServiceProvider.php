@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\MatchDayCompleted;
 use App\Events\MonthlyUpdate;
 use App\Events\NextDay;
 use App\Events\PostMatch;
@@ -11,6 +12,7 @@ use App\Events\Transfers\TransferEvent;
 use App\Listeners\CompleteSeason;
 use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
+use App\Listeners\News\CreateMatchNews;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\PayContinentalMatchPrizes;
@@ -59,6 +61,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         TransferEvent::class => [
             CreateTransferNews::class,
+        ],
+        MatchDayCompleted::class => [
+            CreateMatchNews::class,
         ],
     ];
 

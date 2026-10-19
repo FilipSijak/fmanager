@@ -17,6 +17,7 @@ class DashboardGameResource extends JsonResource
         return [
             'id' => $this->id,
             'match_start' => $this->match_start,
+            'competition_name' => $this->competition_name,
             'home_team' => [
                 'id' => $this->hometeam_id,
                 'name' => $this->home_team_name,

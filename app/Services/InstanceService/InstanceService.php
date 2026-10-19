@@ -2,6 +2,7 @@
 
 namespace App\Services\InstanceService;
 
+use App\Events\MatchDayCompleted;
 use App\Events\MonthlyUpdate;
 use App\Events\NextDay;
 use App\Events\SeasonCompleted;
@@ -113,14 +114,20 @@ class InstanceService implements IInstanceService
         $instance = $this->getInstance();
         $games = $this->competitionRepository->scheduledFor($instance);
 
+        $completedGames = collect();
+
         foreach ($games as $game) {
             $result = $this->matchSimulationEngine->simulate($game);
-            $this->completeGameService->complete(
+            $completedGames->push($this->completeGameService->complete(
                 $game->id,
                 $result->homeGoals,
                 $result->awayGoals,
                 $result->summary
-            );
+            ));
+        }
+
+        if ($completedGames->isNotEmpty()) {
+            event(new MatchDayCompleted($instance, $completedGames));
         }
     }
 

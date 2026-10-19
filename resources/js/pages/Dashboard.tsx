@@ -13,6 +13,13 @@ type NewsItem = {
 
 type DashboardData = {
     club: { name: string };
+    next_game: {
+        id: number;
+        match_start: string;
+        competition_name: string;
+        home_team: { id: number; name: string };
+        away_team: { id: number; name: string };
+    } | null;
     news: Array<{
         id: number;
         title: string;
@@ -43,6 +50,14 @@ function formatNewsDate(date: string): string {
     }).format(new Date(date));
 }
 
+function formatMatchDate(matchStart: string): string {
+    return new Intl.DateTimeFormat('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+    }).format(new Date(matchStart.replace(' ', 'T')));
+}
+
 export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
     const newsItems: NewsItem[] = dashboard.news.map((item) => ({
         id: item.id,
@@ -50,7 +65,7 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
         type: item.type,
         date: formatNewsDate(item.published_at),
         headline: item.title,
-        body: [item.content],
+        body: item.content.split('\n'),
     }));
     const [activeTab, setActiveTab] =
         useState<(typeof newsTabs)[number]>('All');
@@ -66,6 +81,22 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
                     {dashboard.club.name} News
                 </h1>
             </header>
+
+            <div className="flex items-center justify-center gap-2 bg-[#101358] px-4 py-2 text-sm font-semibold text-white">
+                {dashboard.next_game ? (
+                    <>
+                        <span className="text-[#f5f000]">Next match:</span>
+                        <span>
+                            {formatMatchDate(dashboard.next_game.match_start)} —{' '}
+                            {dashboard.next_game.home_team.name} v{' '}
+                            {dashboard.next_game.away_team.name} (
+                            {dashboard.next_game.competition_name})
+                        </span>
+                    </>
+                ) : (
+                    <span>No upcoming matches.</span>
+                )}
+            </div>
 
             <div className="flex bg-[#200061]">
                 {newsTabs.map((tab) => (

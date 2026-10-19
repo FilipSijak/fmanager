@@ -14,23 +14,23 @@ class DashboardService
     public function __construct(
         private readonly GameContext $gameContext,
         private readonly NewsService $newsService,
-    )
-    {
-    }
+    ) {}
 
     public function getDashboard(): DashboardData
     {
         $instance = Instance::findOrFail($this->gameContext->instanceId());
         $club = Club::findOrFail($instance->club_id);
-        $account  = Account::where('club_id', $instance->club_id)->first();
+        $account = Account::where('club_id', $instance->club_id)->first();
         $news = $this->newsService->getInboxNews($club->id);
         $nextGame = Game::query()
             ->select([
                 'games.*',
                 'home_team.name as home_team_name',
                 'away_team.name as away_team_name',
+                'competitions.name as competition_name',
             ])
             ->join('clubs as home_team', 'games.hometeam_id', '=', 'home_team.id')
+            ->leftJoin('competitions', 'games.competition_id', '=', 'competitions.id')
             ->join('clubs as away_team', 'games.awayteam_id', '=', 'away_team.id')
             ->where('games.instance_id', $instance->id)
             ->where('games.match_start', '>=', $instance->instance_date)
