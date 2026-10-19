@@ -2,11 +2,13 @@
 
 namespace Database\Factories;
 
-use App\Models\User;
+use App\Models\Instance;
+use App\Models\Manager;
+use App\Models\StaffCoaching;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Manager>
+ * @extends Factory<Manager>
  */
 class ManagerFactory extends Factory
 {
@@ -17,9 +19,13 @@ class ManagerFactory extends Factory
      */
     public function definition()
     {
+        $instance = Instance::factory()->create();
+
         return [
-            'user_id' => User::factory()->create()->id,
-            'reputation' => random_int(10, 200)
+            'user_id' => $instance->user_id,
+            'instance_id' => $instance->id,
+            'staff_coaching_id' => StaffCoaching::factory()->create(['instance_id' => $instance->id])->id,
+            'reputation' => random_int(10, 200),
         ];
     }
 }

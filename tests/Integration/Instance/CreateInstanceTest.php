@@ -6,6 +6,7 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
+use App\Models\Manager;
 use App\Models\Player;
 use App\Models\Season;
 use App\Models\StaffCoaching;
@@ -82,6 +83,13 @@ class CreateInstanceTest extends TestCase
         $this->postJson('/instances/'.$instance->id.'/take-over', ['league_id' => $league->id, 'club_id' => $managedClub->id])
             ->assertConflict();
         $manager = StaffCoaching::query()->findOrFail($instance->manager_id);
+        $this->assertDatabaseHas('managers', [
+            'user_id' => $this->userId,
+            'instance_id' => $instance->id,
+            'staff_coaching_id' => $manager->id,
+            'reputation' => 50,
+        ]);
+        $this->assertSame(1, Manager::query()->where('instance_id', $instance->id)->count());
         $this->assertDatabaseHas('staff_coaching', [
             'id' => $manager->id,
             'instance_id' => $instance->id,

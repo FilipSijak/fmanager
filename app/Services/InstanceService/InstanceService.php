@@ -8,6 +8,7 @@ use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Models\Club;
 use App\Models\Instance;
+use App\Models\Manager;
 use App\Models\Season;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionScheduleRepository;
@@ -64,6 +65,12 @@ class InstanceService implements IInstanceService
             $instance->club_id = $club->id;
             $instance->manager_id = $manager->id;
             $instance->save();
+
+            $userManager = new Manager;
+            $userManager->user_id = $user->id;
+            $userManager->instance_id = $instance->id;
+            $userManager->staff_coaching_id = $manager->id;
+            $userManager->save();
 
             return $instance;
         });
