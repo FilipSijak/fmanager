@@ -69,7 +69,7 @@ class InstanceService implements IInstanceService
         });
     }
 
-    public function nextDay()
+    public function nextDay(): Instance
     {
         $instance = $this->getInstance();
         $this->season = Season::findOrFail($instance->season_id);
@@ -104,6 +104,8 @@ class InstanceService implements IInstanceService
         if ($isMonthlyUpdate) {
             event(new MonthlyUpdate($instance));
         }
+
+        return $instance;
     }
 
     private function simulateGames()

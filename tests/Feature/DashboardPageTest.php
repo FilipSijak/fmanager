@@ -40,6 +40,7 @@ class DashboardPageTest extends TestCase
             ->get('/')
             ->assertInertia(fn (Assert $page) => $page
                 ->component('Dashboard')
+                ->where('game.date', $instance->fresh()->instance_date)
                 ->where('dashboard.club.name', 'Managed FC')
                 ->where('dashboard.news.0.title', 'Welcome news'));
     }
