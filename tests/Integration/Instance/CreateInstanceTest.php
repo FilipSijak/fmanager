@@ -79,6 +79,7 @@ class CreateInstanceTest extends TestCase
         $this->postJson('/instances/'.$instance->id.'/take-over', ['league_id' => $league->id, 'club_id' => $managedClub->id])
             ->assertOk()->assertSessionHas('active_instance_hash', $instance->instance_hash);
         $instance->refresh();
+        $this->assertSame($league->id, $instance->followed_competition_id);
         $this->assertDatabaseHas('staff_coaching', ['id' => $previousManager->id, 'club_id' => null, 'contract_id' => null]);
         $this->postJson('/instances/'.$instance->id.'/take-over', ['league_id' => $league->id, 'club_id' => $managedClub->id])
             ->assertConflict();

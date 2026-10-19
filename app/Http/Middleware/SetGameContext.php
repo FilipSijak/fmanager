@@ -22,7 +22,7 @@ class SetGameContext
             $instance = $request->user()->instances()
                 ->where('instance_hash', $instanceHash)
                 ->firstOrFail();
-            if ($instance->club_id === null) {
+            if ($instance->isAwaitingClubSelection()) {
                 return $request->expectsJson()
                     ? response()->json(['message' => 'Choose a club to finish setting up this game.'], 422)
                     : redirect()->route('setup-game', ['instance_id' => $instance->id]);
@@ -44,7 +44,6 @@ class SetGameContext
 
         $instanceHash = $request->user()->managers()
             ->join('instances', 'instances.id', '=', 'managers.instance_id')
-            ->whereNotNull('instances.club_id')
             ->value('instances.instance_hash');
 
         if ($instanceHash !== null) {

@@ -9,9 +9,7 @@ class NewsService
 {
     public function __construct(
         private readonly GameContext $gameContext,
-    )
-    {
-    }
+    ) {}
 
     public function publish(NewsItem $item): News
     {
@@ -44,6 +42,23 @@ class NewsService
         return $query->limit($limit)->get();
     }
 
+    /**
+     * Inbox for a manager without a club: general news plus news about the league they follow.
+     */
+    public function getCompetitionInboxNews(?int $competitionId, int $limit = 30)
+    {
+        $query = News::query()
+            ->forInstance($this->gameContext->instanceId())
+            ->whereNull('club_id')
+            ->where(function ($query) use ($competitionId) {
+                $query->whereNull('competition_id')
+                    ->when($competitionId !== null, fn ($query) => $query->orWhere('competition_id', $competitionId));
+            })
+            ->inboxOrder();
+
+        return $query->limit($limit)->get();
+    }
+
     public function markAsRead(int $newsId): News
     {
         $news = News::query()
@@ -57,5 +72,4 @@ class NewsService
 
         return $news;
     }
-
 }

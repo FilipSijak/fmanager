@@ -21,6 +21,7 @@ use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use DomainException;
 use Illuminate\Support\Facades\DB;
 
 class PersonService
@@ -202,6 +203,41 @@ class PersonService
             $previousManager->save();
 
             return $manager;
+        });
+    }
+
+    /**
+     * Free the user's manager from the club and hand the club, with the user's contract, to the best free AI manager.
+     *
+     * @throws DomainException when no free AI manager can take over the club
+     */
+    public function releaseUserManager(Club $club, StaffCoaching $userManager): StaffCoaching
+    {
+        return DB::transaction(function () use ($club, $userManager): StaffCoaching {
+            $replacement = StaffCoaching::query()
+                ->forInstance($club->instance_id)
+                ->whereNull('club_id')
+                ->where('type', PersonTypes::MANAGER)
+                ->active()
+                ->aiControlled()
+                ->orderByDesc('coaching_potential')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->first();
+
+            if ($replacement === null) {
+                throw new DomainException('No free manager is available to take over the club.');
+            }
+
+            $replacement->club_id = $club->id;
+            $replacement->contract_id = $userManager->contract_id;
+            $replacement->save();
+
+            $userManager->club_id = null;
+            $userManager->contract_id = null;
+            $userManager->save();
+
+            return $replacement;
         });
     }
 

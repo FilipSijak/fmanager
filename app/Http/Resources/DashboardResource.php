@@ -24,14 +24,18 @@ class DashboardResource extends JsonResource
                 'date' => $dashboard->instance->instance_date,
                 'season_id' => $dashboard->instance->season_id,
             ],
-            'club' => [
+            'club' => $dashboard->club ? [
                 'id' => $dashboard->club->id,
                 'name' => $dashboard->club->name,
                 'rank' => $dashboard->club->rank,
                 'rank_academy' => $dashboard->club->rank_academy,
                 'rank_training' => $dashboard->club->rank_training,
                 'financial_rank' => $dashboard->club->financial_rank,
-            ],
+            ] : null,
+            'followed_competition' => $dashboard->followedCompetition ? [
+                'id' => $dashboard->followedCompetition->id,
+                'name' => $dashboard->followedCompetition->name,
+            ] : null,
             'manager' => $dashboard->manager ? [
                 'id' => $dashboard->manager->id,
                 'name' => trim($dashboard->manager->person->first_name.' '.$dashboard->manager->person->last_name),
