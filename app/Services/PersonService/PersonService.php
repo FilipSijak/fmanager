@@ -179,6 +179,7 @@ class PersonService
             $manager = $previousManager->replicate();
             $manager->setRelations([]);
             $manager->person_id = $person->id;
+            $manager->reputation = $club->managerReputationTarget();
 
             foreach ([
                 'attacking', 'defending', 'fitness', 'mental', 'tactical', 'technical',
@@ -202,6 +203,23 @@ class PersonService
             $previousManager->save();
 
             return $manager;
+        });
+    }
+
+    /**
+     * Free the user's manager from their club and end the contract, leaving the club vacant for the next appointment.
+     */
+    public function releaseUserManager(StaffCoaching $userManager): void
+    {
+        DB::transaction(function () use ($userManager): void {
+            $contractId = $userManager->contract_id;
+            $userManager->club_id = null;
+            $userManager->contract_id = null;
+            $userManager->save();
+
+            if ($contractId !== null) {
+                DB::table('staff_contracts')->where('id', $contractId)->delete();
+            }
         });
     }
 

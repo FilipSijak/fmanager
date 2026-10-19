@@ -15,6 +15,7 @@ use App\Http\Controllers\StadiumController;
 use App\Http\Controllers\TacticsController;
 use App\Http\Controllers\TransferController;
 use App\Http\Middleware\EnsureGameIsValid;
+use App\Http\Middleware\EnsureUserHasClub;
 use App\Http\Middleware\SetGameContext;
 use Illuminate\Support\Facades\Route;
 
@@ -28,26 +29,30 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/news/{newsId}/read', [NewsController::class, 'markAsRead']);
 
         Route::get('/dashboard', [DashboardController::class, 'index']);
-        Route::get('/finance', [FinanceController::class, 'show']);
-        Route::get('/finance/loans', [FinanceLoanController::class, 'index']);
-        Route::post('/finance/loans', [FinanceLoanController::class, 'store']);
 
-        Route::prefix('stadium')->group(function (): void {
-            Route::get('/', [StadiumController::class, 'show']);
-            Route::get('/commercial-categories', [StadiumController::class, 'buildableCommercialCategories']);
-            Route::get('/stands/{standId}/expansion-cost', [StadiumController::class, 'standExpansionCost']);
-            Route::post('/construction', [StadiumController::class, 'build']);
-            Route::delete('/commercial-venues/{venueId}', [StadiumController::class, 'demolishCommercialVenue']);
-        });
+        Route::middleware(EnsureUserHasClub::class)->group(function (): void {
+            Route::post('/instance/resign', [InstanceController::class, 'resign']);
+            Route::get('/finance', [FinanceController::class, 'show']);
+            Route::get('/finance/loans', [FinanceLoanController::class, 'index']);
+            Route::post('/finance/loans', [FinanceLoanController::class, 'store']);
 
-        Route::prefix('tactics')->name('tactics.')->group(function (): void {
-            Route::get('/', [TacticsController::class, 'show'])->name('show');
-            Route::put('/', [TacticsController::class, 'update'])->name('update');
-        });
+            Route::prefix('stadium')->group(function (): void {
+                Route::get('/', [StadiumController::class, 'show']);
+                Route::get('/commercial-categories', [StadiumController::class, 'buildableCommercialCategories']);
+                Route::get('/stands/{standId}/expansion-cost', [StadiumController::class, 'standExpansionCost']);
+                Route::post('/construction', [StadiumController::class, 'build']);
+                Route::delete('/commercial-venues/{venueId}', [StadiumController::class, 'demolishCommercialVenue']);
+            });
 
-        Route::prefix('squad')->group(function (): void {
-            Route::get('/lineup', [SquadLineupController::class, 'show']);
-            Route::post('/lineup', [SquadLineupController::class, 'store']);
+            Route::prefix('tactics')->name('tactics.')->group(function (): void {
+                Route::get('/', [TacticsController::class, 'show'])->name('show');
+                Route::put('/', [TacticsController::class, 'update'])->name('update');
+            });
+
+            Route::prefix('squad')->group(function (): void {
+                Route::get('/lineup', [SquadLineupController::class, 'show']);
+                Route::post('/lineup', [SquadLineupController::class, 'store']);
+            });
         });
 
         Route::post('/game/{gameId}/complete', [GameController::class, 'complete']);

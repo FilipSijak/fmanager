@@ -106,6 +106,7 @@ class StaffRepository
                 yield from $staffModel::query()
                     ->forInstance($instanceId)
                     ->active()
+                    ->when($staffModel === StaffCoaching::class, fn ($query) => $query->aiControlled())
                     ->whereHas('person', function ($query) use ($date): void {
                         $query->whereNotNull('dob')->whereDate('dob', '<=', $date);
                     })
@@ -183,6 +184,7 @@ class StaffRepository
             'mental_potential' => $staff->potential,
             'goalkeeping_potential' => $staff->potential,
             'knowledge_potential' => $staff->potential,
+            'reputation' => min(200, $staff->potential),
         ], $staff->attributes));
 
         if (BaseFormation::query()->where('is_active', true)->exists()) {

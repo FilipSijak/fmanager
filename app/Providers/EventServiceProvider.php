@@ -11,6 +11,7 @@ use App\Events\Transfers\TransferEvent;
 use App\Listeners\CompleteSeason;
 use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
+use App\Listeners\FillManagerVacancies;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\PayContinentalMatchPrizes;
@@ -44,6 +45,7 @@ class EventServiceProvider extends ServiceProvider
             ProcessFinanceEntityLoanInstallments::class,
             ProcessTransfers::class,
             RunDailyTraining::class,
+            FillManagerVacancies::class,
         ],
         MonthlyUpdate::class => [
             DispatchMonthlyPlayerReindex::class,

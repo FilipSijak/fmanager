@@ -90,7 +90,7 @@ class AuthenticationTest extends TestCase
         $this->withSession(['active_instance_hash' => 'old-game']);
         $oldSessionId = session()->getId();
         $response = $this->post('/login', ['email' => $user->email, 'password' => 'secure-password'])
-            ->assertRedirect('/setup-game')->assertSessionMissing('active_instance_hash');
+            ->assertRedirect('/')->assertSessionMissing('active_instance_hash');
         $this->assertNotSame($oldSessionId, session()->getId());
         $sessionId = $response->getCookie(config('session.cookie'))->getValue();
         $this->assertDatabaseCount('personal_access_tokens', 0);

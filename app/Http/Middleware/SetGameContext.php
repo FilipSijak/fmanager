@@ -15,13 +15,14 @@ class SetGameContext
     {
         $this->gameContext->set(null, null);
         $instanceHash = $request->header('instanceHash')
-            ?? ($request->hasSession() ? $request->session()->get('active_instance_hash') : null);
+            ?? ($request->hasSession() ? $request->session()->get('active_instance_hash') : null)
+            ?? $this->defaultInstanceHash($request);
 
         if ($instanceHash !== null) {
             $instance = $request->user()->instances()
                 ->where('instance_hash', $instanceHash)
                 ->firstOrFail();
-            if ($instance->club_id === null) {
+            if ($instance->isAwaitingClubSelection()) {
                 return $request->expectsJson()
                     ? response()->json(['message' => 'Choose a club to finish setting up this game.'], 422)
                     : redirect()->route('setup-game', ['instance_id' => $instance->id]);
@@ -30,5 +31,25 @@ class SetGameContext
         }
 
         return $next($request);
+    }
+
+    /**
+     * Resume the user's only game when the session has no active game; users with several games pick one themselves.
+     */
+    private function defaultInstanceHash(Request $request): ?string
+    {
+        if ($request->user() === null || ! $request->hasSession() || $request->user()->instances()->count() !== 1) {
+            return null;
+        }
+
+        $instanceHash = $request->user()->managers()
+            ->join('instances', 'instances.id', '=', 'managers.instance_id')
+            ->value('instances.instance_hash');
+
+        if ($instanceHash !== null) {
+            $request->session()->put('active_instance_hash', $instanceHash);
+        }
+
+        return $instanceHash;
     }
 }

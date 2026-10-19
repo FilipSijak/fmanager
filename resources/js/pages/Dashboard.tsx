@@ -1,6 +1,10 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import axios from 'axios';
 import { useState } from 'react';
+import { resign } from '@/actions/App/Http/Controllers/InstanceController';
+import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
+import { jobs } from '@/routes';
 
 type NewsItem = {
     id: number;
@@ -12,7 +16,9 @@ type NewsItem = {
 };
 
 type DashboardData = {
-    club: { name: string };
+    club: { name: string } | null;
+    followed_competition: { id: number; name: string } | null;
+    manager: { id: number; name: string } | null;
     news: Array<{
         id: number;
         title: string;
@@ -56,15 +62,90 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
         useState<(typeof newsTabs)[number]>('All');
     const [selectedIndex, setSelectedIndex] = useState(0);
     const selected = newsItems[selectedIndex] ?? newsItems[0];
+    const [confirmingResign, setConfirmingResign] = useState(false);
+    const [resigning, setResigning] = useState(false);
+    const [resignError, setResignError] = useState<string | null>(null);
+    const headerTitle =
+        dashboard.club?.name ??
+        dashboard.followed_competition?.name ??
+        'Unemployed';
+
+    async function resignFromClub() {
+        if (resigning) return;
+        setResigning(true);
+        setResignError(null);
+
+        try {
+            await api.post(resign.url());
+            router.reload();
+        } catch (failure) {
+            setResignError(
+                (axios.isAxiosError<{ message?: string }>(failure)
+                    ? failure.response?.data.message
+                    : undefined) ?? 'Unable to resign. Please try again.',
+            );
+            setResigning(false);
+        }
+    }
 
     return (
         <GameLayout active="Continue Game">
             <Head title="Manager Dashboard" />
 
-            <header className="flex h-[92px] items-center justify-center border-b border-black bg-black px-6">
+            <header className="flex h-[92px] flex-col items-center justify-center border-b border-black bg-black px-6">
                 <h1 className="text-3xl font-black tracking-tight text-[#3355dd]">
-                    {dashboard.club.name} News
+                    {headerTitle} News
                 </h1>
+                {dashboard.manager && (
+                    <p className="text-sm font-semibold text-white">
+                        {dashboard.club
+                            ? `Manager: ${dashboard.manager.name}`
+                            : `${dashboard.manager.name} — without a club`}
+                    </p>
+                )}
+                {!dashboard.club && (
+                    <Link
+                        href={jobs.url()}
+                        className="text-xs font-semibold text-[#f5f000] underline hover:text-white"
+                    >
+                        Find a job
+                    </Link>
+                )}
+                {dashboard.club && !confirmingResign && (
+                    <button
+                        type="button"
+                        onClick={() => setConfirmingResign(true)}
+                        className="text-xs font-semibold text-[#f5f000] underline hover:text-white"
+                    >
+                        Resign
+                    </button>
+                )}
+                {dashboard.club && confirmingResign && (
+                    <div className="flex items-center gap-2 text-xs font-semibold text-white">
+                        <span>Leave {dashboard.club.name}?</span>
+                        <button
+                            type="button"
+                            disabled={resigning}
+                            onClick={() => void resignFromClub()}
+                            className="text-[#f5f000] underline hover:text-white disabled:opacity-50"
+                        >
+                            {resigning ? 'Resigning…' : 'Confirm'}
+                        </button>
+                        <button
+                            type="button"
+                            disabled={resigning}
+                            onClick={() => setConfirmingResign(false)}
+                            className="underline hover:text-[#f5f000] disabled:opacity-50"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
+                {resignError && (
+                    <p role="alert" className="text-xs text-red-400">
+                        {resignError}
+                    </p>
+                )}
             </header>
 
             <div className="flex bg-[#200061]">
@@ -151,15 +232,25 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
             </div>
 
             <div className="flex bg-[#200061] text-sm font-bold text-white">
-                {bottomTabs.map((tab) => (
-                    <button
-                        key={tab}
-                        type="button"
-                        className="flex-1 border-r border-white/10 py-3 last:border-r-0 hover:bg-white/5"
-                    >
-                        {tab}
-                    </button>
-                ))}
+                {bottomTabs.map((tab) =>
+                    tab === 'Jobs' ? (
+                        <Link
+                            key={tab}
+                            href={jobs.url()}
+                            className="flex-1 border-r border-white/10 py-3 text-center last:border-r-0 hover:bg-white/5"
+                        >
+                            {tab}
+                        </Link>
+                    ) : (
+                        <button
+                            key={tab}
+                            type="button"
+                            className="flex-1 border-r border-white/10 py-3 last:border-r-0 hover:bg-white/5"
+                        >
+                            {tab}
+                        </button>
+                    ),
+                )}
             </div>
 
             <div className="flex bg-[#86888a]">

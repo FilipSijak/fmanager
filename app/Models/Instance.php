@@ -27,4 +27,25 @@ class Instance extends Model
     {
         return $this->belongsTo(Club::class);
     }
+
+    public function followedCompetition(): BelongsTo
+    {
+        return $this->belongsTo(Competition::class, 'followed_competition_id');
+    }
+
+    /**
+     * The game world exists but the user has not taken over a club yet.
+     */
+    public function isAwaitingClubSelection(): bool
+    {
+        return $this->manager_id === null;
+    }
+
+    /**
+     * The user has a manager in this game but no club, after resigning or being sacked.
+     */
+    public function isManagerUnemployed(): bool
+    {
+        return $this->manager_id !== null && $this->club_id === null;
+    }
 }

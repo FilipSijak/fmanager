@@ -49,7 +49,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $request->session()->forget('active_instance_hash');
 
-        return redirect()->route('setup-game');
+        return redirect()->route('start');
     }
 
     public function logout(Request $request): RedirectResponse
