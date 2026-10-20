@@ -1,3 +1,5 @@
+import { Link } from '@inertiajs/react';
+import { show as showMatch } from '@/routes/matches';
 import type { CompetitionMatch } from './types';
 
 export function matchDate(value: string | null): string {
@@ -46,7 +48,11 @@ export default function MatchList({
                         >
                             {match.home_team}
                         </span>
-                        <span className="text-center font-bold tabular-nums">
+                        <Link
+                            href={showMatch.url(match.id)}
+                            aria-label={`View ${match.home_team} versus ${match.away_team}`}
+                            className="text-center font-bold underline decoration-white/40 underline-offset-4 tabular-nums hover:text-[#f5f000]"
+                        >
                             {completed
                                 ? `${match.home_team_goals ?? '–'} – ${match.away_team_goals ?? '–'}`
                                 : ['cancelled', 'abandoned'].includes(
@@ -54,7 +60,7 @@ export default function MatchList({
                                     )
                                   ? '—'
                                   : match.match_start?.slice(11, 16) || 'v'}
-                        </span>
+                        </Link>
                         <span
                             className={
                                 match.awayteam_id === clubId

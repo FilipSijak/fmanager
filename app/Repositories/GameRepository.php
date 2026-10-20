@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use App\Repositories\Interfaces\IGameRepository;
 use App\Support\GameContext;
+use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
 class GameRepository implements IGameRepository
@@ -33,6 +34,30 @@ class GameRepository implements IGameRepository
             ->where('c2.instance_id', $instanceId)
             ->where('g.id', $gameId)
             ->first();
+
+        return $game === null ? null : (array) $game;
+    }
+
+    /** @return array<string, mixed>|null */
+    public function details(int $gameId): ?array
+    {
+        $instanceId = $this->gameContext->instanceId();
+        $game = DB::table('games AS g')
+            ->join('clubs AS home', 'home.id', '=', 'g.hometeam_id')
+            ->join('clubs AS away', 'away.id', '=', 'g.awayteam_id')
+            ->join('competitions AS competition', 'competition.id', '=', 'g.competition_id')
+            ->join('seasons AS season', 'season.id', '=', 'g.season_id')
+            ->leftJoin('stadiums AS stadium', function (JoinClause $join): void {
+                $join->on('stadium.id', '=', 'g.stadium_id')->on('stadium.instance_id', '=', 'g.instance_id');
+            })
+            ->where('g.id', $gameId)->where('g.instance_id', $instanceId)
+            ->where('home.instance_id', $instanceId)->where('away.instance_id', $instanceId)
+            ->where('competition.instance_id', $instanceId)->where('season.instance_id', $instanceId)
+            ->first(['g.id', 'g.season_id', 'g.competition_id', 'g.match_start', 'g.status',
+                'g.hometeam_id', 'g.awayteam_id', 'home.name AS home_team', 'away.name AS away_team',
+                'g.home_team_goals', 'g.away_team_goals', 'g.attendance', 'g.leg_number', 'g.match_summary',
+                'competition.name AS competition_name', 'stadium.name AS stadium_name',
+                'season.start_date AS season_start', 'season.end_date AS season_end']);
 
         return $game === null ? null : (array) $game;
     }
