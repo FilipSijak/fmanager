@@ -1,0 +1,33 @@
+tests/Integration/Player/PlayerSearchApiTest.php
+  s_c21e586ff9747b::t_1a18e04effe854 76-83,85-88
+  s_c21e586ff9747b::t_f68dfac9f54959 84
+  s_c21e586ff9747b::t_a015c892b4bc35 75
+tests/Feature/PlayerSearchPageTest.php
+  s_c21e586ff9747b::t_576566955e2b4d 35-36,46
+  s_c21e586ff9747b::t_1a18e04effe854 5-6,8-9,14-34,37-45,47-56,58-59,61-62
+  s_c21e586ff9747b::t_2930bf87c7be8d 1-4,7,10-13,57,60,63-64
+routes/web.php
+  s_c21e586ff9747b::t_ab6c0ef9c259ea 31
+resources/js/pages/player-search/PlayerSearch.tsx
+  s_c21e586ff9747b::t_9a3eda10ad4ca5 53,66
+  s_c21e586ff9747b::t_043bba2018731e 26-29,50-52,54-55,58-61,63-65,67,71-81,92-97,100-103,105-135,137-143,147-254
+  s_c21e586ff9747b::t_ab6c0ef9c259ea 1-25,30-49,56-57,62,68-70,82-91,98-99,104,136,144-146,255-259
+resources/js/components/game/Sidebar.tsx
+  s_c21e586ff9747b::t_ab6c0ef9c259ea 7,21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "03d9b025c33ec555e659032502c295fa293a25d9",
+  "prompts": {},
+  "sessions": {
+    "s_c21e586ff9747b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1587e-6ed4-7091-a359-dad6ac32730f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
