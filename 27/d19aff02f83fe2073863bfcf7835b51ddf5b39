@@ -1,0 +1,30 @@
+resources/js/pages/competitions/types.ts
+  s_c21e586ff9747b::t_87448aeec4ece0 22-26
+resources/js/pages/competitions/StandingsTable.tsx
+  s_c21e586ff9747b::t_87448aeec4ece0 3-9,24
+  s_c21e586ff9747b::t_955bd8eb9b9ec4 70-74,124-144,149-154
+app/Repositories/Competition/CompetitionStandingsRepository.php
+  s_c21e586ff9747b::t_87448aeec4ece0 24,38
+app/Http/Controllers/CompetitionPageController.php
+  s_c21e586ff9747b::t_87448aeec4ece0 10,22,59-69,77,79,87,93-100
+tests/Feature/CompetitionPageTest.php
+  s_c21e586ff9747b::t_25df957e569596 160-165,181
+  s_c21e586ff9747b::t_8c9b5c0acc9e43 7,92,127-159,166-180,182-183,204,345-355
+  s_c21e586ff9747b::t_07d8d3a259dde8 356
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "27d19aff02f83fe2073863bfcf7835b51ddf5b39",
+  "prompts": {},
+  "sessions": {
+    "s_c21e586ff9747b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1587e-6ed4-7091-a359-dad6ac32730f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
