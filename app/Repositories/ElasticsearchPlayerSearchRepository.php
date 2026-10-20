@@ -6,6 +6,7 @@ use App\Models\Player;
 use App\Support\GameContext;
 use Elastic\Elasticsearch\Client;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 final class ElasticsearchPlayerSearchRepository
 {
@@ -14,13 +15,16 @@ final class ElasticsearchPlayerSearchRepository
         private readonly GameContext $gameContext,
     ) {}
 
-    /** @return Collection<int, Player> */
-    public function searchByName(string $query, int $limit = 20): Collection
+    /** @return LengthAwarePaginator<int, Player> */
+    public function searchByName(string $query, int $limit = 20, int $page = 1): LengthAwarePaginator
     {
         $response = $this->client->search([
             'index' => config('elasticsearch.player_index'),
             'body' => [
                 'size' => $limit,
+                'from' => ($page - 1) * $limit,
+                'track_total_hits' => true,
+                'sort' => [['_score' => 'desc'], ['id' => 'asc']],
                 '_source' => ['id'],
                 'query' => [
                     'bool' => [
@@ -43,13 +47,9 @@ final class ElasticsearchPlayerSearchRepository
             ->map(fn (array $hit): int => (int) $hit['_source']['id'])
             ->all();
 
-        if ($ids === []) {
-            return new Collection;
-        }
-
         $rank = array_flip($ids);
 
-        return Player::query()
+        $players = $ids === [] ? new Collection : Player::query()
             ->with(['person', 'club', 'contract'])
             ->forInstance($this->gameContext->instanceId())
             ->active()
@@ -57,5 +57,7 @@ final class ElasticsearchPlayerSearchRepository
             ->get()
             ->sortBy(fn (Player $player): int => $rank[$player->id])
             ->values();
+
+        return new LengthAwarePaginator($players, (int) ($response['hits']['total']['value'] ?? 0), $limit, $page);
     }
 }

@@ -28,6 +28,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware([SetGameContext::class, EnsureGameIsValid::class])->group(function () {
         Route::get('/', [DashboardController::class, 'show'])->name('start');
+        Route::get('/find', fn () => Inertia::render('player-search/PlayerSearch'))->name('player-search');
         Route::get('/competitions', [CompetitionPageController::class, 'index'])->name('competitions.index');
         Route::get('/competitions/{competitionId}', [CompetitionPageController::class, 'show'])->whereNumber('competitionId')->name('competitions.show');
         Route::get('/matches/{gameId}', [MatchPageController::class, 'show'])->whereNumber('gameId')->name('matches.show');

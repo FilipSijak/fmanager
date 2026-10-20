@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { logout } from '@/actions/App/Http/Controllers/AuthController';
 import { nextDay } from '@/actions/App/Http/Controllers/InstanceController';
 import api from '@/api';
-import { setupGame, start } from '@/routes';
+import { playerSearch, setupGame, start } from '@/routes';
 import { index as competitions } from '@/routes/competitions';
 
 type NavItem = {
@@ -18,7 +18,7 @@ const navItems: NavItem[] = [
     { label: 'Fantasy Champ Man', accent: 'cyan' },
     { label: 'Competitions', href: competitions.url() },
     { label: 'Nations & Clubs' },
-    { label: 'Find' },
+    { label: 'Find', href: playerSearch.url() },
     { label: 'Game Options', accent: 'yellow' },
 ];
 
