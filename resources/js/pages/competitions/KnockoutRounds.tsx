@@ -11,10 +11,12 @@ export default function KnockoutRounds({
     rounds,
     matches,
     clubId,
+    seasonId,
 }: {
     rounds: KnockoutRound[];
     matches: CompetitionMatch[];
     clubId: number | null;
+    seasonId?: number;
 }) {
     if (rounds.length === 0) {
         return (
@@ -88,8 +90,13 @@ export default function KnockoutRounds({
                                                             : ''
                                                     }
                                                 >
-                                                    {tie.home_team ??
-                                                        'To be decided'}
+                                                    <ClubLink
+                                                        clubId={
+                                                            tie.home_club_id
+                                                        }
+                                                        name={tie.home_team}
+                                                        seasonId={seasonId}
+                                                    />
                                                 </span>
                                                 <span className="px-3 text-white/50">
                                                     v
@@ -103,8 +110,13 @@ export default function KnockoutRounds({
                                                             : ''
                                                     }
                                                 >
-                                                    {tie.away_team ??
-                                                        'To be decided'}
+                                                    <ClubLink
+                                                        clubId={
+                                                            tie.away_club_id
+                                                        }
+                                                        name={tie.away_team}
+                                                        seasonId={seasonId}
+                                                    />
                                                 </span>
                                             </p>
                                             <p className="text-white/70">
@@ -133,3 +145,5 @@ export default function KnockoutRounds({
         </div>
     );
 }
+
+import ClubLink from '@/components/game/ClubLink';

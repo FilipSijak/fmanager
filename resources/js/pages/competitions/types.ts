@@ -28,6 +28,9 @@ export type Standing = {
 
 export type CompetitionMatch = {
     id: number;
+    season_id: number;
+    competition_id: number;
+    competition_name: string;
     match_start: string | null;
     status: string;
     hometeam_id: number;

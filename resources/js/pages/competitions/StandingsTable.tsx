@@ -1,3 +1,4 @@
+import ClubLink from '@/components/game/ClubLink';
 import type { Standing } from './types';
 
 const outcomeLabels = {
@@ -11,10 +12,12 @@ export default function StandingsTable({
     rows,
     clubId,
     provisional = true,
+    seasonId,
 }: {
     rows: Standing[];
     clubId: number | null;
     provisional?: boolean;
+    seasonId?: number;
 }) {
     if (rows.length === 0) {
         return (
@@ -91,7 +94,11 @@ export default function StandingsTable({
                                 scope="row"
                                 className="px-3 py-2 text-left whitespace-nowrap"
                             >
-                                {row.club_name}
+                                <ClubLink
+                                    clubId={row.club_id}
+                                    name={row.club_name}
+                                    seasonId={seasonId}
+                                />
                                 {row.club_id === clubId && (
                                     <span className="sr-only">
                                         {' '}

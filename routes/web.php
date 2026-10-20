@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClubPageController;
 use App\Http\Controllers\CompetitionPageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstanceController;
@@ -30,6 +31,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/competitions', [CompetitionPageController::class, 'index'])->name('competitions.index');
         Route::get('/competitions/{competitionId}', [CompetitionPageController::class, 'show'])->whereNumber('competitionId')->name('competitions.show');
         Route::get('/matches/{gameId}', [MatchPageController::class, 'show'])->whereNumber('gameId')->name('matches.show');
+        Route::get('/clubs/{clubId}', [ClubPageController::class, 'show'])->whereNumber('clubId')->name('clubs.show');
         Route::get('/league-table', [CompetitionPageController::class, 'index'])->name('league-table');
         Route::get('/jobs', [ManagerJobController::class, 'index'])->name('jobs');
         Route::post('/jobs/{clubId}/apply', [ManagerJobController::class, 'apply'])->name('jobs.apply');

@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import ClubLink from '@/components/game/ClubLink';
 import { show as showMatch } from '@/routes/matches';
 import type { CompetitionMatch } from './types';
 
@@ -16,10 +17,12 @@ export default function MatchList({
     matches,
     clubId,
     emptyMessage,
+    showCompetition = false,
 }: {
     matches: CompetitionMatch[];
     clubId: number | null;
     emptyMessage: string;
+    showCompetition?: boolean;
 }) {
     if (matches.length === 0) {
         return <p className="p-8 text-center text-white/70">{emptyMessage}</p>;
@@ -46,7 +49,11 @@ export default function MatchList({
                         <span
                             className={`text-right ${match.hometeam_id === clubId ? 'font-bold text-[#f5f000]' : ''}`}
                         >
-                            {match.home_team}
+                            <ClubLink
+                                clubId={match.hometeam_id}
+                                name={match.home_team}
+                                seasonId={match.season_id}
+                            />
                         </span>
                         <Link
                             href={showMatch.url(match.id)}
@@ -68,9 +75,18 @@ export default function MatchList({
                                     : ''
                             }
                         >
-                            {match.away_team}
+                            <ClubLink
+                                clubId={match.awayteam_id}
+                                name={match.away_team}
+                                seasonId={match.season_id}
+                            />
                         </span>
                         <span className="text-right text-xs text-white/60 capitalize">
+                            {showCompetition && (
+                                <span className="block normal-case">
+                                    {match.competition_name}
+                                </span>
+                            )}
                             {match.status.replaceAll('_', ' ')}
                             {match.leg_number !== null &&
                                 ` · Leg ${match.leg_number}`}

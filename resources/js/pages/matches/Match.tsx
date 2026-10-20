@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import ClubLink from '@/components/game/ClubLink';
 import GameLayout from '@/layouts/GameLayout';
 import { show as showCompetition } from '@/routes/competitions';
 import { matchDate } from '../competitions/MatchList';
@@ -51,7 +52,17 @@ export default function Match({
                     {match.season_end.slice(2, 4)}
                 </Link>
                 <h1 className="mt-5 text-3xl font-black text-[#3355dd]">
-                    {heading}
+                    <ClubLink
+                        clubId={match.hometeam_id}
+                        name={match.home_team}
+                        seasonId={match.season_id}
+                    />
+                    {' v '}
+                    <ClubLink
+                        clubId={match.awayteam_id}
+                        name={match.away_team}
+                        seasonId={match.season_id}
+                    />
                 </h1>
                 <p className="mt-4 text-4xl font-black tabular-nums">
                     {completed

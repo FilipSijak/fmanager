@@ -165,9 +165,7 @@ function CompetitionScreen({
                     </select>
                 </div>
                 {historical && (
-                    <p className="mt-3 text-xs text-white/60">
-                        Season archive
-                    </p>
+                    <p className="mt-3 text-xs text-white/60">Season archive</p>
                 )}
             </header>
 
@@ -200,6 +198,7 @@ function CompetitionScreen({
                                 rows={table}
                                 clubId={clubId}
                                 provisional={!historical}
+                                seasonId={season?.id}
                             />
                         )}
                         {activeTab === 'Groups' &&
@@ -222,6 +221,7 @@ function CompetitionScreen({
                                                 rows={group.table}
                                                 clubId={clubId}
                                                 provisional={!historical}
+                                                seasonId={season?.id}
                                             />
                                         </section>
                                     ))}
@@ -232,6 +232,7 @@ function CompetitionScreen({
                                 rounds={rounds}
                                 matches={matches}
                                 clubId={clubId}
+                                seasonId={season?.id}
                             />
                         )}
                         {(activeTab === 'Results' ||

@@ -4,6 +4,7 @@ namespace App\Repositories\Competition;
 
 use App\Models\Competition;
 use App\Support\GameContext;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -39,11 +40,12 @@ final class CompetitionReadRepository
             ->get(['id', 'name', 'type', 'country_code', 'competition_scope', 'groups']);
     }
 
-    public function matches(int $competitionId, ?int $seasonId = null): Collection
+    public function matches(?int $competitionId, ?int $seasonId = null, ?int $clubId = null): Collection
     {
         return DB::table('games AS g')
             ->join('clubs AS home', 'home.id', '=', 'g.hometeam_id')
             ->join('clubs AS away', 'away.id', '=', 'g.awayteam_id')
+            ->join('competitions AS competition', 'competition.id', '=', 'g.competition_id')
             ->leftJoin('competition_season AS membership', function (JoinClause $join): void {
                 $join->on('membership.club_id', '=', 'g.hometeam_id')
                     ->on('membership.competition_id', '=', 'g.competition_id')
@@ -52,11 +54,14 @@ final class CompetitionReadRepository
             })
             ->where('g.instance_id', $this->gameContext->instanceId())
             ->where('g.season_id', $seasonId ?? $this->gameContext->seasonId())
-            ->where('g.competition_id', $competitionId)
+            ->when($competitionId !== null, fn (Builder $query): Builder => $query->where('g.competition_id', $competitionId))
+            ->when($clubId !== null, fn (Builder $query): Builder => $query->where(fn (Builder $clubs): Builder => $clubs
+                ->where('g.hometeam_id', $clubId)->orWhere('g.awayteam_id', $clubId)))
             ->where('home.instance_id', $this->gameContext->instanceId())
             ->where('away.instance_id', $this->gameContext->instanceId())
+            ->where('competition.instance_id', $this->gameContext->instanceId())
             ->orderBy('g.match_start')->orderBy('g.id')
-            ->get(['g.id', 'g.match_start', 'g.status', 'g.hometeam_id', 'g.awayteam_id',
+            ->get(['g.id', 'g.season_id', 'g.competition_id', 'competition.name AS competition_name', 'g.match_start', 'g.status', 'g.hometeam_id', 'g.awayteam_id',
                 'home.name AS home_team', 'away.name AS away_team', 'g.home_team_goals',
                 'g.away_team_goals', 'g.knockout_tie_id', 'g.leg_number', 'membership.group_id'])
             ->map(function ($game): object {
