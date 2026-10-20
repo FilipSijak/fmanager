@@ -73,6 +73,20 @@ final class PlayerSearchApiTest extends TestCase
     }
 
     #[Test]
+    public function it_returns_an_empty_list_when_no_players_match(): void
+    {
+        $instance = Instance::factory()->create();
+        $searchService = Mockery::mock(SearchService::class);
+        $searchService->shouldReceive('searchPlayersByName')->once()->with('Unknown', 20)
+            ->andReturn(new Collection);
+        $this->app->instance(SearchService::class, $searchService);
+
+        $this->actingAs($instance->user)->withHeaders(['instanceHash' => $instance->instance_hash])
+            ->getJson('/api/player/search?q=Unknown')
+            ->assertOk()->assertJsonPath('data', []);
+    }
+
+    #[Test]
     public function it_returns_service_unavailable_when_elasticsearch_fails(): void
     {
         Instance::factory()->create([
