@@ -1,0 +1,55 @@
+resources/js/pages/Dashboard.tsx
+  s_c21e586ff9747b::t_972b7d01b32965 8,122-125
+  s_c21e586ff9747b::t_9cb6f999ee5de8 126-131
+app/Repositories/Competition/CompetitionReadRepository.php
+  s_c21e586ff9747b::t_20d94bf3e11e55 5-6,9,16,33-46,48-97
+  s_c21e586ff9747b::t_972b7d01b32965 7,47
+routes/web.php
+  s_c21e586ff9747b::t_20d94bf3e11e55 4,29-31
+resources/js/pages/competitions/StandingsTable.tsx
+  s_c21e586ff9747b::t_4d8f7b10548198 1-31,34-43
+  s_c21e586ff9747b::t_972b7d01b32965 32-33
+  s_c21e586ff9747b::t_872b5880b29e68 44-117
+resources/js/pages/competitions/types.ts
+  s_c21e586ff9747b::t_4d8f7b10548198 1-68
+resources/js/components/game/Sidebar.tsx
+  s_c21e586ff9747b::t_972b7d01b32965 8,13,19,104-112,114,130
+  s_c21e586ff9747b::t_7409b5a7d1e309 113,115-129,131-137
+resources/js/pages/competitions/Competition.tsx
+  s_c21e586ff9747b::t_fa1a8095938949 11-13,16-25,28-41,44-74,76-78,84,87-89,92-94,96-105,107-118,124-145,147-170,172-263
+  s_c21e586ff9747b::t_44c97dff339526 85-86
+  s_c21e586ff9747b::t_4d8f7b10548198 1,4-8,10,14,26-27,42-43,75,82-83,91,119,121,123,265
+app/Http/Controllers/CompetitionPageController.php
+  s_c21e586ff9747b::t_20d94bf3e11e55 5-14,18-81
+  s_c21e586ff9747b::t_65e73de1ed38a1 1-4,15-17,82
+resources/js/pages/competitions/KnockoutRounds.tsx
+  s_c21e586ff9747b::t_fa1a8095938949 5-7,10-14,20-24,29-32,38-45,47-84,87-99,102-125,127-129
+  s_c21e586ff9747b::t_44c97dff339526 85-86,100-101
+  s_c21e586ff9747b::t_4d8f7b10548198 1-4,8-9,15-19,25-28,33-37,46,126,130-135
+resources/js/pages/competitions/MatchList.tsx
+  s_c21e586ff9747b::t_fa1a8095938949 5-10,13-17,30-32,34-48,50-51,55,57-72
+  s_c21e586ff9747b::t_44c97dff339526 52-54,56
+  s_c21e586ff9747b::t_4d8f7b10548198 1-4,11-12,18-29,33,49,73-79
+tests/Feature/CompetitionPageTest.php
+  s_c21e586ff9747b::t_87008d15fd0acf 43-44,161-171,174-197,201-203,207-208,251-253
+  s_c21e586ff9747b::t_4b84b0bdb002f7 49-53,66,88-95,116-122,142-146,157,213,223-224
+  s_c21e586ff9747b::t_ea2368632c6123 1-4,10,15-18,278,284,300-301
+  s_c21e586ff9747b::t_ebab1fa109060b 5-9,11-14,19-42,45-48,54-65,67-87,96-115,123-141,147-156,158-160,204-206,209-212,214-222,225-250,254-277,279-283,285-299
+  s_c21e586ff9747b::t_62b7bd83414fa8 172-173,198-200
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f714eafab78e955e33509594b1390933349e53e0",
+  "prompts": {},
+  "sessions": {
+    "s_c21e586ff9747b": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1587e-6ed4-7091-a359-dad6ac32730f",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
