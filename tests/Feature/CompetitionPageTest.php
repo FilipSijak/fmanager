@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Club;
 use App\Models\Competition;
+use App\Models\CompetitionProgressionRule;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
@@ -88,6 +89,7 @@ class CompetitionPageTest extends TestCase
             ->has('table', 2)->where('table.0.club_name', 'Rivals')
             ->where('table.0.position', 1)->where('table.1.position', 2)
             ->where('table.1.goal_difference', 1)->where('table.1.points', 3)
+            ->has('table.0.outcomes', 0)
             ->has('matches', 2)->where('matches.0.id', $earlier->id)
             ->where('matches.0.home_team', 'Rivals')->where('matches.0.away_team_goals', 2)
             ->where('matches.1.id', $later->id)->where('matches.1.status', 'postponed')
@@ -123,6 +125,63 @@ class CompetitionPageTest extends TestCase
     }
 
     #[Test]
+    public function standings_mark_promotion_relegation_and_qualification_using_the_progression_rules(): void
+    {
+        $instance = $this->gameWorld();
+        $league = $this->progressionCompetition($instance, 'Our League');
+        $upper = $this->progressionCompetition($instance, 'Upper League');
+        $lower = $this->progressionCompetition($instance, 'Lower League');
+        $continental = $this->progressionCompetition($instance, 'Champions Cup', 'tournament');
+        $middle = Club::factory()->create(['instance_id' => $instance->id]);
+        $bottom = Club::factory()->create(['instance_id' => $instance->id]);
+        $this->membership($instance, $league, $instance->club_id, ['points' => 10]);
+        $this->membership($instance, $league, $middle->id, ['points' => 5]);
+        $this->membership($instance, $league, $bottom->id, ['points' => 1]);
+        CompetitionProgressionRule::create([
+            'source_base_competition_id' => $league->base_competition_id,
+            'target_base_competition_id' => $upper->base_competition_id,
+            'progression_type' => 'promotion', 'selector_type' => 'position_range',
+            'position_from' => 1, 'position_to' => 1,
+        ]);
+        CompetitionProgressionRule::create([
+            'source_base_competition_id' => $league->base_competition_id,
+            'target_base_competition_id' => $lower->base_competition_id,
+            'progression_type' => 'relegation', 'selector_type' => 'bottom_positions', 'places' => 1,
+        ]);
+        CompetitionProgressionRule::create([
+            'source_base_competition_id' => $league->base_competition_id,
+            'target_base_competition_id' => $continental->base_competition_id,
+            'progression_type' => 'continental', 'selector_type' => 'position_range',
+            'position_from' => 1, 'position_to' => 1, 'entry_stage' => 'group_stage',
+        ]);
+
+        $this->actingAs($instance->user)->withSession(['active_instance_hash' => $instance->instance_hash])
+            ->get('/competitions/'.$league->id)->assertInertia(fn (Assert $page) => $page
+            ->has('table.0.outcomes', 2)->where('table.0.outcomes.0.type', 'promotion')
+            ->where('table.0.outcomes.0.target_name', 'Upper League')
+            ->where('table.0.outcomes.1.target_name', 'Champions Cup')
+            ->where('table.0.outcomes.1.entry_stage', 'group_stage')
+            ->has('table.1.outcomes', 0)->where('table.2.outcomes.0.type', 'relegation')
+            ->where('table.2.outcomes.0.target_name', 'Lower League'));
+    }
+
+    #[Test]
+    public function tied_standings_use_the_same_club_order_as_progression_calculations(): void
+    {
+        $instance = $this->gameWorld();
+        $instance->club->name = 'Zebra FC';
+        $instance->club->save();
+        $league = Competition::factory()->create(['instance_id' => $instance->id]);
+        $rival = Club::factory()->create(['instance_id' => $instance->id, 'name' => 'Alpha FC']);
+        $this->membership($instance, $league, $instance->club_id);
+        $this->membership($instance, $league, $rival->id);
+
+        $this->actingAs($instance->user)->withSession(['active_instance_hash' => $instance->instance_hash])
+            ->get('/competitions/'.$league->id)->assertInertia(fn (Assert $page) => $page
+            ->where('table.0.club_name', 'Zebra FC')->where('table.1.club_name', 'Alpha FC'));
+    }
+
+    #[Test]
     public function group_tables_remain_available_after_the_knockout_phase_begins(): void
     {
         $instance = $this->gameWorld();
@@ -142,6 +201,7 @@ class CompetitionPageTest extends TestCase
             ->has('table', 0)->has('groups', 2)->has('rounds', 1)
             ->where('groups.0.id', 1)->where('groups.0.table.0.club_name', 'Group Leader')
             ->where('groups.0.table.0.position', 1)->where('groups.0.table.1.position', 2)
+            ->where('groups.0.table.0.outcomes.0.type', 'knockout')
             ->where('groups.1.id', 2)->where('groups.1.table.0.position', 1)
             ->where('matches.0.group_id', 1)->where('matches.1.group_id', null));
     }
@@ -279,6 +339,18 @@ class CompetitionPageTest extends TestCase
         return DB::table('tournament_knockout')->insertGetId([
             'instance_id' => $instance->id, 'season_id' => $instance->season_id,
             'competition_id' => $competition->id, 'participant_count' => 4, 'bracket_size' => 4,
+        ]);
+    }
+
+    private function progressionCompetition(Instance $instance, string $name, string $type = 'league'): Competition
+    {
+        $baseId = DB::table('base_competitions')->insertGetId([
+            'name' => $name, 'type' => $type, 'country_code' => 'GBR', 'rank' => 100, 'clubs_number' => 20,
+        ]);
+
+        return Competition::factory()->create([
+            'instance_id' => $instance->id, 'base_competition_id' => $baseId,
+            'name' => $name, 'type' => $type,
         ]);
     }
 

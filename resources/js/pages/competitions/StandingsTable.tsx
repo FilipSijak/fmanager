@@ -1,5 +1,12 @@
 import type { Standing } from './types';
 
+const outcomeLabels = {
+    promotion: 'Promotion',
+    relegation: 'Relegation',
+    continental: 'Qualification',
+    knockout: 'Qualification',
+};
+
 export default function StandingsTable({
     rows,
     clubId,
@@ -14,6 +21,7 @@ export default function StandingsTable({
             </p>
         );
     }
+    const hasOutcomes = rows.some((row) => row.outcomes.length > 0);
 
     return (
         <div className="overflow-x-auto">
@@ -59,6 +67,11 @@ export default function StandingsTable({
                                 </abbr>
                             </th>
                         ))}
+                        {hasOutcomes && (
+                            <th scope="col" className="px-3 py-3 text-left">
+                                Places
+                            </th>
+                        )}
                     </tr>
                 </thead>
                 <tbody>
@@ -108,10 +121,37 @@ export default function StandingsTable({
                             <td className="px-3 py-2 font-black tabular-nums">
                                 {row.points}
                             </td>
+                            {hasOutcomes && (
+                                <td className="px-3 py-2 text-left">
+                                    <div className="flex flex-wrap gap-1">
+                                        {row.outcomes.map((outcome) => (
+                                            <span
+                                                key={`${outcome.type}-${outcome.target_name}`}
+                                                className={`inline-block rounded px-2 py-1 text-xs font-bold whitespace-nowrap ${outcome.type === 'relegation' ? 'bg-red-100 text-red-900' : outcome.type === 'promotion' ? 'bg-emerald-100 text-emerald-900' : 'bg-sky-100 text-sky-900'}`}
+                                                title={outcome.entry_stage?.replaceAll(
+                                                    '_',
+                                                    ' ',
+                                                )}
+                                            >
+                                                {outcomeLabels[outcome.type]} ·{' '}
+                                                {outcome.target_name}
+                                                {outcome.entry_stage &&
+                                                    ` (${outcome.entry_stage.replaceAll('_', ' ')})`}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </td>
+                            )}
                         </tr>
                     ))}
                 </tbody>
             </table>
+            {hasOutcomes && (
+                <p className="bg-[#101358] px-4 py-3 text-left text-xs text-white/70">
+                    Promotion and qualification places are provisional until the
+                    competition finishes.
+                </p>
+            )}
         </div>
     );
 }

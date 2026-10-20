@@ -19,6 +19,11 @@ export type Standing = {
     goals_against: number;
     goal_difference: number;
     points: number;
+    outcomes: {
+        type: 'promotion' | 'relegation' | 'continental' | 'knockout';
+        target_name: string;
+        entry_stage: string | null;
+    }[];
 };
 
 export type CompetitionMatch = {

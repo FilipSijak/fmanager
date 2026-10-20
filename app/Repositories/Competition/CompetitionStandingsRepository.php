@@ -21,7 +21,7 @@ final class CompetitionStandingsRepository
             ->where('clubs.instance_id', $this->gameContext->instanceId())
             ->where('competition_id', $competitionId)->whereNull('cs.group_id')
             ->orderByDesc('cs.points')->orderByRaw('(cs.goals_for - cs.goals_against) DESC')
-            ->orderByDesc('cs.goals_for')->orderBy('clubs.name')->get();
+            ->orderByDesc('cs.goals_for')->orderBy('clubs.id')->get();
     }
 
     public function groupTables(int $competitionId): Collection
@@ -35,7 +35,7 @@ final class CompetitionStandingsRepository
             ->where('clubs.instance_id', $this->gameContext->instanceId())
             ->whereNotNull('cs.group_id')->orderBy('cs.group_id')->orderByDesc('cs.points')
             ->orderByRaw('(cs.goals_for - cs.goals_against) DESC')->orderByDesc('cs.goals_for')
-            ->orderBy('clubs.name')->get();
+            ->orderBy('clubs.id')->get();
     }
 
     public function update(array $game): void
