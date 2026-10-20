@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CompetitionPageController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\ManagerJobController;
@@ -25,13 +26,15 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware([SetGameContext::class, EnsureGameIsValid::class])->group(function () {
         Route::get('/', [DashboardController::class, 'show'])->name('start');
+        Route::get('/competitions', [CompetitionPageController::class, 'index'])->name('competitions.index');
+        Route::get('/competitions/{competitionId}', [CompetitionPageController::class, 'show'])->whereNumber('competitionId')->name('competitions.show');
+        Route::get('/league-table', [CompetitionPageController::class, 'index'])->name('league-table');
         Route::get('/jobs', [ManagerJobController::class, 'index'])->name('jobs');
         Route::post('/jobs/{clubId}/apply', [ManagerJobController::class, 'apply'])->name('jobs.apply');
     });
 });
 
 $templateRoutes = function () {
-    Route::get('/league-table', fn () => Inertia::render('LeagueTable'))->name('league-table');
     Route::get('/player-profile/{playerId}', fn (int $playerId) => Inertia::render('player-profile/PlayerProfile', ['playerId' => $playerId]))->name('player-profile');
 
     Route::middleware(EnsureUserHasClub::class)->group(function (): void {
