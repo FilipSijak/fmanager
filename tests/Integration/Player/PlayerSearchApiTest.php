@@ -9,8 +9,10 @@ use App\Models\Player;
 use App\Services\SearchService\SearchService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Mockery;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -44,8 +46,8 @@ final class PlayerSearchApiTest extends TestCase
         $searchService = Mockery::mock(SearchService::class);
         $searchService->shouldReceive('searchPlayersByName')
             ->once()
-            ->with('Alpha', 10)
-            ->andReturn(new Collection([$player]));
+            ->with('Alpha', 10, 1)
+            ->andReturn(new LengthAwarePaginator(new Collection([$player]), 25, 10, 1));
         $this->app->instance(SearchService::class, $searchService);
 
         $this->actingAs(Instance::where('instance_hash', 'current-instance')->firstOrFail()->user)
@@ -54,7 +56,8 @@ final class PlayerSearchApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.0.id', $player->id)
             ->assertJsonPath('data.0.first_name', 'Alpha')
-            ->assertJsonPath('data.0.club.name', 'Managed FC');
+            ->assertJsonPath('data.0.club.name', 'Managed FC')
+            ->assertJsonPath('meta', ['current_page' => 1, 'per_page' => 10, 'total' => 25, 'last_page' => 3, 'has_more' => true, 'limited' => false]);
     }
 
     #[Test]
@@ -77,13 +80,71 @@ final class PlayerSearchApiTest extends TestCase
     {
         $instance = Instance::factory()->create();
         $searchService = Mockery::mock(SearchService::class);
-        $searchService->shouldReceive('searchPlayersByName')->once()->with('Unknown', 20)
-            ->andReturn(new Collection);
+        $searchService->shouldReceive('searchPlayersByName')->once()->with('Unknown', 20, 1)
+            ->andReturn(new LengthAwarePaginator(new Collection, 0, 20, 1));
         $this->app->instance(SearchService::class, $searchService);
 
         $this->actingAs($instance->user)->withHeaders(['instanceHash' => $instance->instance_hash])
             ->getJson('/api/player/search?q=Unknown')
-            ->assertOk()->assertJsonPath('data', []);
+            ->assertOk()->assertJsonPath('data', [])->assertJsonPath('meta.total', 0)
+            ->assertJsonPath('meta.last_page', 1)->assertJsonPath('meta.has_more', false);
+    }
+
+    #[Test]
+    public function it_returns_the_requested_page_with_its_pagination_metadata(): void
+    {
+        $instance = Instance::factory()->create();
+        $player = Player::factory()->create(['instance_id' => $instance->id])->load(['person', 'club', 'contract']);
+        $this->mock(SearchService::class)->shouldReceive('searchPlayersByName')->once()->with('Alpha', 20, 2)
+            ->andReturn(new LengthAwarePaginator(new Collection([$player]), 41, 20, 2));
+
+        $this->actingAs($instance->user)->withHeaders(['instanceHash' => $instance->instance_hash])
+            ->getJson('/api/player/search?q=Alpha&page=2')->assertOk()
+            ->assertJsonPath('data.0.id', $player->id)
+            ->assertJsonPath('meta', ['current_page' => 2, 'per_page' => 20, 'total' => 41, 'last_page' => 3, 'has_more' => true, 'limited' => false]);
+    }
+
+    #[Test]
+    public function pages_past_the_last_match_return_an_empty_list_without_a_next_page(): void
+    {
+        $instance = Instance::factory()->create();
+        $this->mock(SearchService::class)->shouldReceive('searchPlayersByName')->once()->with('Alpha', 20, 3)
+            ->andReturn(new LengthAwarePaginator(new Collection, 21, 20, 3));
+
+        $this->actingAs($instance->user)->withHeaders(['instanceHash' => $instance->instance_hash])
+            ->getJson('/api/player/search?q=Alpha&page=3')->assertOk()->assertJsonPath('data', [])
+            ->assertJsonPath('meta.current_page', 3)->assertJsonPath('meta.last_page', 2)
+            ->assertJsonPath('meta.has_more', false);
+    }
+
+    #[Test]
+    #[TestWith(['0'])]
+    #[TestWith(['-1'])]
+    #[TestWith(['abc'])]
+    #[TestWith(['1.5'])]
+    #[TestWith(['501'])]
+    #[TestWith(['201', 50])]
+    public function invalid_or_excessive_pages_are_rejected(string $page, int $limit = 20): void
+    {
+        $instance = Instance::factory()->create();
+        $this->mock(SearchService::class)->shouldNotReceive('searchPlayersByName');
+
+        $this->actingAs($instance->user)->withHeaders(['instanceHash' => $instance->instance_hash])
+            ->getJson('/api/player/search?q=Alpha&page='.$page.'&limit='.$limit)
+            ->assertUnprocessable()->assertJsonValidationErrors('page');
+    }
+
+    #[Test]
+    public function pagination_stops_at_the_search_window_and_marks_the_total_as_limited(): void
+    {
+        $instance = Instance::factory()->create();
+        $this->mock(SearchService::class)->shouldReceive('searchPlayersByName')->once()->with('Alpha', 20, 500)
+            ->andReturn(new LengthAwarePaginator(new Collection, 10001, 20, 500));
+
+        $this->actingAs($instance->user)->withHeaders(['instanceHash' => $instance->instance_hash])
+            ->getJson('/api/player/search?q=Alpha&page=500')->assertOk()
+            ->assertJsonPath('meta.total', 10001)->assertJsonPath('meta.last_page', 500)
+            ->assertJsonPath('meta.has_more', false)->assertJsonPath('meta.limited', true);
     }
 
     #[Test]
