@@ -10,6 +10,7 @@ use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
@@ -39,6 +40,18 @@ class ClubRepository
     public function findOrFail(int $clubId): Club
     {
         return $this->find($clubId) ?? throw (new ModelNotFoundException)->setModel(Club::class, [$clubId]);
+    }
+
+    public function competitionMemberships(int $clubId, int $seasonId): SupportCollection
+    {
+        return DB::table('competition_season AS membership')
+            ->join('competitions AS competition', 'competition.id', '=', 'membership.competition_id')
+            ->where('membership.instance_id', $this->gameContext->instanceId())
+            ->where('competition.instance_id', $this->gameContext->instanceId())
+            ->where('membership.season_id', $seasonId)->where('membership.club_id', $clubId)
+            ->orderBy('competition.name')
+            ->get(['competition.id', 'competition.name', 'competition.type', 'membership.group_id',
+                'membership.played', 'membership.points']);
     }
 
     /** @return Collection<int, Player> */

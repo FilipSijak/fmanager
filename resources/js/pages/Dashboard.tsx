@@ -5,6 +5,7 @@ import { resign } from '@/actions/App/Http/Controllers/InstanceController';
 import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
 import { jobs } from '@/routes';
+import { show as showCompetition } from '@/routes/competitions';
 
 type NewsItem = {
     id: number;
@@ -117,6 +118,16 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
                             ? `Manager: ${dashboard.manager.name}`
                             : `${dashboard.manager.name} — without a club`}
                     </p>
+                )}
+                {dashboard.followed_competition && (
+                    <Link
+                        href={showCompetition.url(
+                            dashboard.followed_competition.id,
+                        )}
+                        className="text-xs font-semibold text-[#f5f000] underline hover:text-white"
+                    >
+                        {dashboard.followed_competition.name}
+                    </Link>
                 )}
                 {!dashboard.club && (
                     <Link
