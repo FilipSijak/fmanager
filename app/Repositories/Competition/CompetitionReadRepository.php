@@ -16,14 +16,14 @@ final class CompetitionReadRepository
         private readonly GameContext $gameContext,
     ) {}
 
-    public function table(int $competitionId): Collection
+    public function table(int $competitionId, ?int $seasonId = null): Collection
     {
-        return $this->standings->table($competitionId);
+        return $this->standings->table($competitionId, $seasonId);
     }
 
-    public function groupTables(int $competitionId): Collection
+    public function groupTables(int $competitionId, ?int $seasonId = null): Collection
     {
-        return $this->standings->groupTables($competitionId);
+        return $this->standings->groupTables($competitionId, $seasonId);
     }
 
     public function knockoutSummary(int $competitionId): string
@@ -39,7 +39,7 @@ final class CompetitionReadRepository
             ->get(['id', 'name', 'type', 'country_code', 'competition_scope', 'groups']);
     }
 
-    public function matches(int $competitionId): Collection
+    public function matches(int $competitionId, ?int $seasonId = null): Collection
     {
         return DB::table('games AS g')
             ->join('clubs AS home', 'home.id', '=', 'g.hometeam_id')
@@ -51,7 +51,7 @@ final class CompetitionReadRepository
                     ->on('membership.instance_id', '=', 'g.instance_id');
             })
             ->where('g.instance_id', $this->gameContext->instanceId())
-            ->where('g.season_id', $this->gameContext->seasonId())
+            ->where('g.season_id', $seasonId ?? $this->gameContext->seasonId())
             ->where('g.competition_id', $competitionId)
             ->where('home.instance_id', $this->gameContext->instanceId())
             ->where('away.instance_id', $this->gameContext->instanceId())
@@ -68,12 +68,12 @@ final class CompetitionReadRepository
             });
     }
 
-    public function knockoutRounds(int $competitionId): Collection
+    public function knockoutRounds(int $competitionId, ?int $seasonId = null): Collection
     {
         $rounds = DB::table('tournament_knockout_rounds AS rounds')
             ->join('tournament_knockout AS knockout', 'knockout.id', '=', 'rounds.tournament_knockout_id')
             ->where('knockout.instance_id', $this->gameContext->instanceId())
-            ->where('knockout.season_id', $this->gameContext->seasonId())
+            ->where('knockout.season_id', $seasonId ?? $this->gameContext->seasonId())
             ->where('knockout.competition_id', $competitionId)
             ->orderBy('rounds.round_number')->orderBy('rounds.bracket_side')
             ->get(['rounds.id', 'rounds.round_number', 'rounds.bracket_side', 'rounds.name',

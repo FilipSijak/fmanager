@@ -64,7 +64,9 @@ export type KnockoutRound = {
 export type CompetitionPageProps = {
     competitions: CompetitionInfo[];
     competition: CompetitionInfo | null;
-    season: { start_date: string; end_date: string } | null;
+    season: { id: number; start_date: string; end_date: string } | null;
+    seasons: { id: number; start_date: string; end_date: string }[];
+    currentSeasonId: number;
     clubId: number | null;
     table: Standing[];
     groups: { id: number; table: Standing[] }[];

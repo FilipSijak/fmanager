@@ -9,7 +9,10 @@ import type { CompetitionPageProps } from './types';
 
 export default function Competition(props: CompetitionPageProps) {
     return (
-        <CompetitionScreen key={props.competition?.id ?? 'empty'} {...props} />
+        <CompetitionScreen
+            key={`${props.competition?.id ?? 'empty'}-${props.season?.id}`}
+            {...props}
+        />
     );
 }
 
@@ -17,6 +20,8 @@ function CompetitionScreen({
     competitions,
     competition,
     season,
+    seasons,
+    currentSeasonId,
     clubId,
     table,
     groups,
@@ -24,6 +29,7 @@ function CompetitionScreen({
     rounds,
 }: CompetitionPageProps) {
     const isLeague = competition?.type === 'league';
+    const historical = season !== null && season.id !== currentSeasonId;
     const hasGroups = groups.length > 0 || competition?.groups === 1;
     const tabs = [
         ...(isLeague
@@ -100,7 +106,11 @@ function CompetitionScreen({
                         value={competition?.id ?? ''}
                         disabled={competitions.length === 0}
                         onChange={(event) =>
-                            router.visit(show.url(Number(event.target.value)))
+                            router.visit(
+                                show.url(Number(event.target.value), {
+                                    query: { season_id: season?.id },
+                                }),
+                            )
                         }
                         className="min-w-0 flex-1 border border-[#3355dd] bg-[#101358] px-3 py-2 text-sm text-white"
                     >
@@ -118,6 +128,47 @@ function CompetitionScreen({
                         ))}
                     </select>
                 </div>
+                <div className="mx-auto mt-3 flex max-w-xl items-center gap-3">
+                    <label
+                        htmlFor="season"
+                        className="text-sm font-bold text-[#f5f000]"
+                    >
+                        Season
+                    </label>
+                    <select
+                        id="season"
+                        value={season?.id ?? ''}
+                        disabled={!competition}
+                        onChange={(event) => {
+                            if (competition)
+                                router.visit(
+                                    show.url(competition.id, {
+                                        query: {
+                                            season_id: Number(
+                                                event.target.value,
+                                            ),
+                                        },
+                                    }),
+                                );
+                        }}
+                        className="min-w-0 flex-1 border border-[#3355dd] bg-[#101358] px-3 py-2 text-sm text-white"
+                    >
+                        {seasons.map((item) => (
+                            <option key={item.id} value={item.id}>
+                                {item.start_date.slice(0, 4)}/
+                                {item.end_date.slice(2, 4)}
+                                {item.id === currentSeasonId
+                                    ? ' · Current season'
+                                    : ''}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                {historical && (
+                    <p className="mt-3 text-xs text-white/60">
+                        Season archive
+                    </p>
+                )}
             </header>
 
             <main className="flex-1 bg-[#0c0c14] text-white">
@@ -145,7 +196,11 @@ function CompetitionScreen({
                         </nav>
 
                         {activeTab === 'Table' && (
-                            <StandingsTable rows={table} clubId={clubId} />
+                            <StandingsTable
+                                rows={table}
+                                clubId={clubId}
+                                provisional={!historical}
+                            />
                         )}
                         {activeTab === 'Groups' &&
                             (groups.length === 0 ? (
@@ -166,6 +221,7 @@ function CompetitionScreen({
                                             <StandingsTable
                                                 rows={group.table}
                                                 clubId={clubId}
+                                                provisional={!historical}
                                             />
                                         </section>
                                     ))}

@@ -8,6 +8,7 @@ use App\Models\CompetitionProgressionRule;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
+use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -301,6 +302,94 @@ class CompetitionPageTest extends TestCase
 
         $this->actingAs($instance->user)->withSession(['active_instance_hash' => $instance->instance_hash])
             ->get('/competitions/999999')->assertNotFound();
+    }
+
+    #[Test]
+    public function previous_seasons_show_their_standings_results_and_recorded_outcomes_without_changing_the_game(): void
+    {
+        $instance = $this->gameWorld();
+        $league = $this->progressionCompetition($instance, 'Our League');
+        $target = $this->progressionCompetition($instance, 'Upper League');
+        $oldSeason = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2025-08-01', 'end_date' => '2026-06-15']);
+        $otherSeason = Season::factory()->create(['instance_id' => $instance->id + 1]);
+        $rival = Club::factory()->create(['instance_id' => $instance->id]);
+        $this->membership($instance, $league, $instance->club_id, ['points' => 10]);
+        $this->membership($instance, $league, $instance->club_id, ['season_id' => $oldSeason->id, 'points' => 3]);
+        $this->match($instance, $league, $instance->club_id, $rival->id);
+        $oldMatch = $this->match($instance, $league, $rival->id, $instance->club_id, ['season_id' => $oldSeason->id, 'status' => 'completed', 'home_team_goals' => 0, 'away_team_goals' => 1]);
+        $rule = CompetitionProgressionRule::create([
+            'source_base_competition_id' => $league->base_competition_id,
+            'target_base_competition_id' => $target->base_competition_id,
+            'progression_type' => 'promotion', 'selector_type' => 'position_range',
+            'position_from' => 1, 'position_to' => 1, 'active' => false,
+        ]);
+        DB::table('club_competition_progressions')->insert([
+            'rule_id' => $rule->id, 'instance_id' => $instance->id, 'source_season_id' => $oldSeason->id,
+            'club_id' => $instance->club_id, 'source_competition_id' => $league->id,
+            'target_competition_id' => $target->id, 'progression_type' => 'promotion', 'status' => 'applied',
+        ]);
+
+        $this->actingAs($instance->user)->withSession(['active_instance_hash' => $instance->instance_hash])
+            ->get('/competitions/'.$league->id.'?season_id='.$oldSeason->id)
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('season.id', $oldSeason->id)->where('currentSeasonId', $instance->season_id)
+                ->has('seasons', 2)->where('seasons.0.id', $instance->season_id)
+                ->where('seasons.1.id', $oldSeason->id)->has('table', 1)->where('table.0.points', 3)
+                ->where('table.0.outcomes.0.type', 'promotion')->where('table.0.outcomes.0.target_name', 'Upper League')
+                ->has('matches', 1)->where('matches.0.id', $oldMatch->id));
+
+        $this->assertSame($instance->season_id, $instance->fresh()->season_id);
+        $this->assertSame($instance->season_id, app(GameContext::class)->seasonId());
+    }
+
+    #[Test]
+    public function historical_cup_group_tables_and_knockout_rounds_come_from_the_selected_season(): void
+    {
+        $instance = $this->gameWorld();
+        $cup = Competition::factory()->create(['instance_id' => $instance->id, 'type' => 'tournament', 'groups' => 1]);
+        $oldSeason = Season::factory()->create(['instance_id' => $instance->id]);
+        $rival = Club::factory()->create(['instance_id' => $instance->id]);
+        $this->membership($instance, $cup, $instance->club_id, ['group_id' => 1, 'points' => 10]);
+        $this->membership($instance, $cup, $instance->club_id, ['season_id' => $oldSeason->id, 'group_id' => 2, 'points' => 4]);
+        $this->round($this->knockout($instance, $cup), 1, 'final', 'current_final', 1);
+        $oldKnockoutId = DB::table('tournament_knockout')->insertGetId([
+            'instance_id' => $instance->id, 'season_id' => $oldSeason->id,
+            'competition_id' => $cup->id, 'participant_count' => 4, 'bracket_size' => 4,
+        ]);
+        $oldRound = $this->round($oldKnockoutId, 1, 'final', 'old_final', 1);
+        $oldTie = $this->tie($oldRound, $instance->club_id, $rival->id, $rival->id);
+        $this->match($instance, $cup, $instance->club_id, $rival->id, ['season_id' => $oldSeason->id, 'knockout_tie_id' => $oldTie, 'leg_number' => 1]);
+
+        $this->actingAs($instance->user)->withSession(['active_instance_hash' => $instance->instance_hash])
+            ->get('/competitions/'.$cup->id.'?season_id='.$oldSeason->id)
+            ->assertInertia(fn (Assert $page) => $page
+                ->has('groups', 1)->where('groups.0.id', 2)->where('groups.0.table.0.points', 4)
+                ->has('rounds', 1)->where('rounds.0.name', 'old_final')
+                ->where('rounds.0.ties.0.winner_club_id', $rival->id)
+                ->has('matches', 1)->where('matches.0.knockout_tie_id', $oldTie));
+    }
+
+    #[Test]
+    #[TestWith(['abc'])]
+    #[TestWith(['-1'])]
+    #[TestWith(['1.5'])]
+    public function invalid_season_filters_are_rejected(string $seasonId): void
+    {
+        $instance = $this->gameWorld();
+
+        $this->actingAs($instance->user)->withSession(['active_instance_hash' => $instance->instance_hash])
+            ->getJson('/competitions?season_id='.$seasonId)
+            ->assertUnprocessable()->assertJsonValidationErrors('season_id');
+    }
+
+    #[Test]
+    public function seasons_in_other_games_are_not_accessible(): void
+    {
+        $instance = $this->gameWorld();
+        $otherSeason = Season::factory()->create(['instance_id' => $instance->id + 1]);
+
+        $this->actingAs($instance->user)->withSession(['active_instance_hash' => $instance->instance_hash])
+            ->get('/competitions?season_id='.$otherSeason->id)->assertNotFound();
     }
 
     private function gameWorld(): Instance

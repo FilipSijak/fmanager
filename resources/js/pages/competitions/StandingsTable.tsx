@@ -10,9 +10,11 @@ const outcomeLabels = {
 export default function StandingsTable({
     rows,
     clubId,
+    provisional = true,
 }: {
     rows: Standing[];
     clubId: number | null;
+    provisional?: boolean;
 }) {
     if (rows.length === 0) {
         return (
@@ -148,8 +150,9 @@ export default function StandingsTable({
             </table>
             {hasOutcomes && (
                 <p className="bg-[#101358] px-4 py-3 text-left text-xs text-white/70">
-                    Promotion and qualification places are provisional until the
-                    competition finishes.
+                    {provisional
+                        ? 'Promotion and qualification places are provisional until the competition finishes.'
+                        : 'Promotion and qualification places for this season.'}
                 </p>
             )}
         </div>
