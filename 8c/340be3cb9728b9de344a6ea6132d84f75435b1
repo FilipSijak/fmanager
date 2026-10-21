@@ -1,0 +1,47 @@
+database/migrations/2026_10_21_144633_add_rejected_on_to_sponsorship_offers_table.php
+  s_1df176e85068b1::t_d4cd169d6089fe 1-10,13-17,20-22
+  s_1df176e85068b1::t_5bda4d876357e7 11-12,18-19
+app/Services/FinanceService/SponsorshipOfferService.php
+  s_1df176e85068b1::t_5bda4d876357e7 28,30-31,96-101,103,158,160-162,198-203,207-208
+  s_1df176e85068b1::t_a4d4abd571eb9d 29
+  s_1df176e85068b1::t_10221de6619082 204-206
+  s_1df176e85068b1::t_8020dc5ad12fb2 209-210
+resources/js/pages/Finance.tsx
+  s_1df176e85068b1::t_f3b8c2da9d0c4a 51-56,65,258-262,284,314-322,351,394-448
+  s_1df176e85068b1::t_1f275a7b88434f 449-457,465,619-620
+tests/Feature/SponsorshipOfferTest.php
+  s_1df176e85068b1::t_cbc0dea7ce7772 122,132,160-196,214-227
+  s_1df176e85068b1::t_10221de6619082 197-213,228
+  s_1df176e85068b1::t_0f1739dc4db675 229
+tests/Feature/SponsorshipOfferApiTest.php
+  s_1df176e85068b1::t_cbc0dea7ce7772 25,31-33,100-141,143-144
+  s_1df176e85068b1::t_10221de6619082 142,145-161
+app/Http/Controllers/FinancePageController.php
+  s_1df176e85068b1::t_5bda4d876357e7 34
+app/Http/Resources/SponsorshipOfferResource.php
+  s_1df176e85068b1::t_5bda4d876357e7 27-29
+  s_1df176e85068b1::t_10221de6619082 6-7,16-18,24
+app/Models/SponsorshipOffer.php
+  s_1df176e85068b1::t_5bda4d876357e7 18,29,38-40
+  s_1df176e85068b1::t_8db48f19a8ef0e 41-42
+app/Http/Controllers/SponsorshipOfferController.php
+  s_1df176e85068b1::t_5bda4d876357e7 26-30
+routes/api.php
+  s_1df176e85068b1::t_5bda4d876357e7 41
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8c340be3cb9728b9de344a6ea6132d84f75435b1",
+  "prompts": {},
+  "sessions": {
+    "s_1df176e85068b1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15d99-464d-73a0-8117-8fdff2966ebd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
