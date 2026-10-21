@@ -1,0 +1,67 @@
+database/factories/BaseGameEntityFactory.php
+  s_1df176e85068b1::t_39a2911513b8a5 5,9,12-13,17-20
+  s_1df176e85068b1::t_70e55f6b4ea725 1-4,6-8,10-11,14-16,21-23
+app/Services/InstanceService/InstanceData/InitialSeed.php
+  s_1df176e85068b1::t_b1c37f70de9107 10,16,36,39-41,49-50,239
+database/seeders/DatabaseSeeder.php
+  s_1df176e85068b1::t_406ccd674f7580 29
+database/migrations/2026_10_21_122422_add_rank_to_game_entities_table.php
+  s_1df176e85068b1::t_686404fda043f0 1-10,13-17,20-22
+  s_1df176e85068b1::t_f16c7a9fe949fb 11-12,18-19
+app/Services/FinanceService/SponsorshipService.php
+  s_1df176e85068b1::t_b1c37f70de9107 21,35,37-42,44-46
+tests/Integration/Instance/InitialSeedTest.php
+  s_1df176e85068b1::t_4b927904ebb9b4 95-96,118-119
+tests/Feature/SponsorshipApiTest.php
+  s_1df176e85068b1::t_b1c37f70de9107 75
+tests/Feature/SponsorshipTest.php
+  s_1df176e85068b1::t_4b927904ebb9b4 58-74
+  s_034f9bf144c45c::t_7567db8d1df203 57
+tests/Feature/GameEntitiesSeederTest.php
+  s_1df176e85068b1::t_0cce728e3196ae 1-4,11,13-16,81,83,89-90
+  s_1df176e85068b1::t_257ae34721df1e 5-10,12,17-80,82,84-88
+app/Models/BaseData/BaseGameEntity.php
+  s_1df176e85068b1::t_8913439ad3e32b 1-4,8-11,27
+  s_1df176e85068b1::t_1d25732a89b041 5-7,12-26
+database/seeders/GameEntitiesSeeder.php
+  s_1df176e85068b1::t_8f35054eff14ec 1-4,6,8-12,59-60
+  s_1df176e85068b1::t_6a0cc751aaa64a 5,7,13-58
+tests/Integration/Instance/CreateInstanceTest.php
+  s_1df176e85068b1::t_4b927904ebb9b4 64,68-69
+database/factories/GameEntityFactory.php
+  s_1df176e85068b1::t_406ccd674f7580 19
+app/Http/Resources/SponsorshipContractResource.php
+  s_1df176e85068b1::t_406ccd674f7580 21
+resources/js/pages/Finance.tsx
+  s_1df176e85068b1::t_b1c37f70de9107 44,355
+  s_1df176e85068b1::t_ac8ff2e0e3d7a8 356-358
+database/migrations/2026_10_21_122419_create_base_game_entities_table.php
+  s_1df176e85068b1::t_8913439ad3e32b 1-10,12,18-25
+  s_1df176e85068b1::t_68c3c223a55b79 11,13-17
+app/Models/GameEntity.php
+  s_1df176e85068b1::t_406ccd674f7580 15,19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a5bec8598200a620467c81f93bdf2a786d70bf32",
+  "prompts": {},
+  "sessions": {
+    "s_034f9bf144c45c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "43e66861-12fa-4830-bc03-19de5e1fbcfb",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    },
+    "s_1df176e85068b1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15d99-464d-73a0-8117-8fdff2966ebd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
