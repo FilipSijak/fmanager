@@ -1,0 +1,92 @@
+app/Http/Requests/NegotiateSponsorshipOfferRequest.php
+  s_1df176e85068b1::t_caceb00e626ca1 1-19
+tests/Feature/SponsorshipOfferTest.php
+  s_1df176e85068b1::t_971e89b5cd406b 1-4,21-24,187,195,197-198
+  s_1df176e85068b1::t_a4b66907dba3c1 5-18,25-34,36,38-44,46-52,54-59,61-63,118-123,125-132,134-137,139-151,153-167,169-179,182,184-185,188-190,194,196
+  s_1df176e85068b1::t_dff4f1c7bcb434 19,45,53,60,64-90,92-103,186,191-192
+  s_1df176e85068b1::t_762dd54cc8e262 35,37,111,124,133,138,152,168,193
+  s_1df176e85068b1::t_d37e7797944399 91
+  s_1df176e85068b1::t_7d1a8d3eb2a1be 20
+  s_1df176e85068b1::t_27ea839f02a1da 104-110,112-117
+  s_1df176e85068b1::t_a70165213fc536 180-181,183
+app/Http/Controllers/FinancePageController.php
+  s_1df176e85068b1::t_8d4a8b4955d813 8,12,20,33
+app/Services/FinanceService/SponsorshipService.php
+  s_1df176e85068b1::t_11a7bd087fef65 15,27,46-51,58
+app/Models/Club.php
+  s_1df176e85068b1::t_8d4a8b4955d813 10,49-51
+  s_1df176e85068b1::t_42437c9916804c 52-53
+database/factories/SponsorshipOfferFactory.php
+  s_1df176e85068b1::t_46b39ecd5885a8 5-6,8,11,17-24,26-27
+  s_1df176e85068b1::t_570948ebc1030e 1-4,7,9-10,12-16,28-30
+  s_1df176e85068b1::t_2a19a0dd59d46e 25
+resources/js/pages/Finance.tsx
+  s_1df176e85068b1::t_b706d30f11d926 5-9,215-217,229-233,235-240,250-252,254,257-269,274-280,286-294,296-314,316-331,333-371,518-533
+  s_1df176e85068b1::t_78afe2ae8da02b 41-52,58,214,218-228,234,241,255-256,270-273,281-285,295,315,332,372-375,382,517,534
+  s_1df176e85068b1::t_01e8728c055881 242-249,253
+  s_1df176e85068b1::t_568e71dd5d8054 535
+tests/Feature/SponsorshipOfferApiTest.php
+  s_1df176e85068b1::t_dff4f1c7bcb434 109
+  s_1df176e85068b1::t_2662307ba0d783 138
+  s_1df176e85068b1::t_9f0c547e3efc8d 7-10,12,14,19-70,72-81,83-97,131-137,140-148
+  s_1df176e85068b1::t_cf04bc70dae879 1-4,15-18,71,82,149-150
+  s_1df176e85068b1::t_762dd54cc8e262 122,126,139
+  s_1df176e85068b1::t_c51e24dd50326b 6
+  s_1df176e85068b1::t_d36c48c03547d7 5,11,111-121,123-125,127-130
+  s_1df176e85068b1::t_8ee8cb14f1576d 13,98-108,110
+routes/api.php
+  s_1df176e85068b1::t_8d4a8b4955d813 14,40-43
+app/Services/NewsService/NewsType.php
+  s_1df176e85068b1::t_8d4a8b4955d813 10
+database/migrations/2026_10_21_125733_create_sponsorship_offers_table.php
+  s_1df176e85068b1::t_5574ff25de5b19 11,13-20,22-32,34-36
+  s_1df176e85068b1::t_570948ebc1030e 1-10,12,33,37-44
+  s_1df176e85068b1::t_fa85e95c7e2e85 21
+tests/Unit/SponsorshipOfferCalculatorTest.php
+  s_1df176e85068b1::t_76a8f2884144c8 1-15,19-21,42-43
+  s_1df176e85068b1::t_2a19a0dd59d46e 16-18,22-35,37-41
+  s_1df176e85068b1::t_dff4f1c7bcb434 36
+tests/Feature/SponsorshipTest.php
+  s_1df176e85068b1::t_11a7bd087fef65 33,52,72,76-104
+  s_1df176e85068b1::t_f9a1978589b35c 105
+app/Services/FinanceService/Domain/SponsorshipOfferCalculator.php
+  s_1df176e85068b1::t_dff21344e959b7 9,20,22,24-25,27,29-33
+  s_1df176e85068b1::t_7afba9216e87aa 1-6,34-35
+  s_1df176e85068b1::t_2a19a0dd59d46e 7-8,10-19,21,23,26,28
+app/Services/FinanceService/SponsorshipOfferService.php
+  s_1df176e85068b1::t_2a19a0dd59d46e 92-93,110-111
+  s_1df176e85068b1::t_d8e4018dec3d73 5-23,26-91,94-109,112-203
+  s_1df176e85068b1::t_f26d4b24d5252d 1-4,24-25,204-205
+app/Http/Controllers/SponsorshipOfferController.php
+  s_1df176e85068b1::t_db33dbb16f37e0 1-4,11-13,44
+  s_1df176e85068b1::t_5b27688c7943d7 5-10,14-43
+app/Providers/EventServiceProvider.php
+  s_1df176e85068b1::t_8d4a8b4955d813 25,48
+app/Listeners/ProcessSponsorshipOffers.php
+  s_1df176e85068b1::t_a2e281af9ba560 6,10,14
+  s_1df176e85068b1::t_e35c4669e85572 1-5,7-9,11-13,15-16
+app/Models/SponsorshipOffer.php
+  s_1df176e85068b1::t_570948ebc1030e 1-4,7-8,10-12,46
+  s_1df176e85068b1::t_40f3db38131c39 5-6,9,13-45
+app/Http/Resources/SponsorshipOfferResource.php
+  s_1df176e85068b1::t_49db5fc5734d6a 1-4,6-8,10-13,23-24
+  s_1df176e85068b1::t_b365cbd9783c56 5,9,14-22
+app/Services/FinanceService/SponsorshipOfferStatus.php
+  s_1df176e85068b1::t_76ce91dff02e8f 1-11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1a16e00529a20410acc668c4b2e32ce6bcc0f7fa",
+  "prompts": {},
+  "sessions": {
+    "s_1df176e85068b1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15d99-464d-73a0-8117-8fdff2966ebd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
