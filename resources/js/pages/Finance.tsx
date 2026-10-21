@@ -1,511 +1,488 @@
-import { Head } from '@inertiajs/react';
-import type { ReactNode } from 'react';
+import { Head, router } from '@inertiajs/react';
+import axios from 'axios';
+import { type FormEvent, type ReactNode, useRef, useState } from 'react';
+import { store as takeOutLoan } from '@/actions/App/Http/Controllers/FinanceLoanController';
+import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
 
-const monoFont = { fontFamily: "'Courier New', ui-monospace, monospace" };
+type FinancialSummary = {
+    balance: number;
+    future_balance: number;
+    allowed_debt: number;
+    transfer_budget: number;
+    annual_salary_budget: number;
+    annual_player_wages: number;
+    remaining_annual_salary_budget: number;
+};
+
+type Loan = {
+    id: number;
+    loan_type: 'cash' | 'mortgage';
+    principal: number;
+    interest_amount: number;
+    total_amount: number;
+    installment_count: number;
+    started_at: string;
+    status: 'active' | 'completed' | 'defaulted' | 'cancelled';
+    installments: {
+        id: number;
+        installment_number: number;
+        amount: number;
+        due_date: string;
+        paid_at: string | null;
+    }[];
+};
+
+type Props = {
+    club: { id: number; name: string };
+    season: { start_date: string; end_date: string };
+    finances: FinancialSummary | null;
+    loans: Loan[];
+    loanOptions: {
+        lender: string;
+        annual_interest_rate: number;
+        maximum_months: number;
+    }[];
+};
 
 function formatMoney(value: number): string {
-    const sign = value < 0 ? '-' : '';
-    return `${sign}£${Math.abs(Math.round(value)).toLocaleString('en-US')}`;
+    return new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'GBP',
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
+    }).format(value);
 }
 
-function Panel({
-    title,
-    children,
-    emphasize = false,
-}: {
-    title: string;
-    children: ReactNode;
-    emphasize?: boolean;
-}) {
+function formatDate(value: string): string {
+    return new Intl.DateTimeFormat('en-GB', { dateStyle: 'medium' }).format(
+        new Date(`${value.slice(0, 10)}T12:00:00`),
+    );
+}
+
+function Panel({ title, children }: { title: string; children: ReactNode }) {
     return (
-        <section
-            className={
-                emphasize
-                    ? 'border-2 border-[#f5f000]/50 bg-[#04120a] shadow-[0_0_20px_rgba(245,240,0,0.15)]'
-                    : 'border border-[#1f3a1f] bg-[#04120a]'
-            }
-        >
-            <header
-                className={`border-b px-4 py-2 ${
-                    emphasize
-                        ? 'border-[#f5f000]/50 bg-[#241f08]'
-                        : 'border-[#1f3a1f] bg-[#08210f]'
-                }`}
-            >
-                <h2
-                    className={`text-sm font-bold tracking-[0.2em] uppercase ${
-                        emphasize
-                            ? 'text-[#f5f000] [text-shadow:0_0_8px_rgba(245,240,0,0.7)]'
-                            : 'text-[#39ff14] [text-shadow:0_0_6px_rgba(57,255,20,0.6)]'
-                    }`}
-                >
-                    {title}
-                </h2>
-            </header>
+        <section className="border border-[#1f3a1f] bg-[#04120a]">
+            <h2 className="border-b border-[#1f3a1f] bg-[#08210f] px-4 py-2 text-sm font-bold tracking-widest text-[#39ff14] uppercase">
+                {title}
+            </h2>
             <div className="p-4">{children}</div>
         </section>
     );
 }
 
-function StatCard({
-    label,
-    value,
-    emphasize = false,
-    negative = false,
-}: {
-    label: string;
-    value: string;
-    emphasize?: boolean;
-    negative?: boolean;
-}) {
+function Stat({ label, value }: { label: string; value: number }) {
     return (
-        <div
-            className={
-                emphasize
-                    ? 'border border-[#f5f000]/40 bg-[#0a0a02] px-3 py-3'
-                    : 'border border-[#1f3a1f] bg-[#020a05] px-3 py-2'
-            }
-        >
-            <p className="text-[10px] tracking-widest text-[#5fae5f] uppercase">
-                {label}
-            </p>
+        <div className="border border-[#1f3a1f] bg-[#020a05] p-3">
+            <p className="text-xs text-[#5fae5f] uppercase">{label}</p>
             <p
-                className={`mt-1 font-bold whitespace-nowrap ${emphasize ? 'text-2xl' : 'text-lg'} ${
-                    negative
-                        ? 'text-[#ff3b3b] [text-shadow:0_0_5px_rgba(255,59,59,0.5)]'
-                        : 'text-[#f5f000] [text-shadow:0_0_5px_rgba(245,240,0,0.5)]'
-                }`}
+                className={`mt-1 text-xl font-bold ${value < 0 ? 'text-red-400' : 'text-[#f5f000]'}`}
             >
-                {value}
+                {formatMoney(value)}
             </p>
         </div>
     );
 }
 
-function Row({
-    label,
-    col2 = '',
-    col3 = '',
-    header = false,
-    zebra = false,
-}: {
-    label: string;
-    col2?: string;
-    col3?: string;
-    header?: boolean;
-    zebra?: boolean;
-}) {
-    return (
-        <div
-            className={`grid grid-cols-4 gap-2 border-b border-[#132a13] px-2 py-1.5 text-xs last:border-b-0 ${
-                header
-                    ? 'text-[#5fae5f] uppercase tracking-wide'
-                    : `text-[#c8ffb0] ${zebra ? 'bg-[#081a08]' : ''}`
-            }`}
-        >
-            <span className="col-span-2 truncate">{label}</span>
-            <span className="border-l border-[#132a13] pl-2 text-right">
-                {col2}
-            </span>
-            <span className="border-l border-[#132a13] pl-2 text-right">
-                {col3}
-            </span>
-        </div>
+function LoanDetails({ loan }: { loan: Loan }) {
+    const installments = [...loan.installments].sort(
+        (a, b) => a.installment_number - b.installment_number,
     );
-}
-
-const seasonProgress = [
-    { month: 'Aug', balance: 2_100_000 },
-    { month: 'Sep', balance: 2_450_000 },
-    { month: 'Oct', balance: 2_300_000 },
-    { month: 'Nov', balance: 2_900_000 },
-    { month: 'Dec', balance: 3_350_000 },
-    { month: 'Jan', balance: 2_800_000 },
-    { month: 'Feb', balance: 3_100_000 },
-    { month: 'Mar', balance: 3_600_000 },
-    { month: 'Apr', balance: 3_950_000 },
-    { month: 'May', balance: 4_235_000 },
-];
-
-const POSITIVE_COLOR = '#39ff14';
-const NEGATIVE_COLOR = '#ff3b3b';
-
-function SeasonChart() {
-    const width = 760;
-    const height = 220;
-    const padding = { top: 16, right: 16, bottom: 28, left: 64 };
-    const plotW = width - padding.left - padding.right;
-    const plotH = height - padding.top - padding.bottom;
-
-    const values = seasonProgress.map((p) => p.balance);
-    const dataMin = Math.min(...values);
-    const dataMax = Math.max(...values);
-    const hasNegative = dataMin < 0;
-
-    // Keep the existing tight auto-scale when every value is positive, but
-    // extend the domain to include zero once a negative value appears so the
-    // baseline (and the pos/neg color split) has somewhere meaningful to sit.
-    const min = hasNegative ? Math.min(dataMin, 0) : dataMin;
-    const max = hasNegative ? Math.max(dataMax, 0) : dataMax;
-    const range = max - min || 1;
-
-    const scaleY = (balance: number) =>
-        padding.top + plotH - ((balance - min) / range) * plotH;
-
-    const points = seasonProgress.map((p, i) => {
-        const x = padding.left + (i / (seasonProgress.length - 1)) * plotW;
-        return { x, y: scaleY(p.balance), ...p };
-    });
-
-    const zeroY = scaleY(0);
-
-    const gridLines = 4;
-
-    return (
-        <svg
-            viewBox={`0 0 ${width} ${height}`}
-            className="w-full"
-            role="img"
-            aria-label="Season balance progress chart"
-        >
-            {Array.from({ length: gridLines + 1 }).map((_, i) => {
-                const y = padding.top + (i / gridLines) * plotH;
-                const value = max - (i / gridLines) * range;
-                return (
-                    // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length gridline set, never reordered
-                    <g key={i}>
-                        <line
-                            x1={padding.left}
-                            y1={y}
-                            x2={width - padding.right}
-                            y2={y}
-                            stroke="#1f3a1f"
-                            strokeDasharray="2,3"
-                        />
-                        <text
-                            x={padding.left - 8}
-                            y={y + 3}
-                            textAnchor="end"
-                            fontSize="9"
-                            fill="#5fae5f"
-                            fontFamily="'Courier New', monospace"
-                        >
-                            £{(value / 1_000_000).toFixed(1)}m
-                        </text>
-                    </g>
-                );
-            })}
-
-            {points.map((p) => (
-                <text
-                    key={`label-${p.month}`}
-                    x={p.x}
-                    y={height - 8}
-                    textAnchor="middle"
-                    fontSize="10"
-                    fill="#5fae5f"
-                    fontFamily="'Courier New', monospace"
-                >
-                    {p.month}
-                </text>
-            ))}
-
-            {hasNegative && (
-                <line
-                    x1={padding.left}
-                    y1={zeroY}
-                    x2={width - padding.right}
-                    y2={zeroY}
-                    stroke="#f5f000"
-                    strokeOpacity="0.5"
-                    strokeWidth="1"
-                />
-            )}
-
-            {/* Each step's plateau is filled down/up to the zero line and colored
-                by that value's sign, instead of one single-color area. */}
-            {points.map((p, i) => {
-                if (i === 0) {
-                    return null;
-                }
-                const prev = points[i - 1];
-                const color =
-                    prev.balance >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR;
-                return (
-                    <rect
-                        key={`area-${p.month}`}
-                        x={prev.x}
-                        y={Math.min(prev.y, zeroY)}
-                        width={p.x - prev.x}
-                        height={Math.abs(zeroY - prev.y)}
-                        fill={color}
-                        fillOpacity="0.12"
-                    />
-                );
-            })}
-
-            {/* Stepped ("step-after") segments instead of smooth diagonals, for an
-                old terminal-plot look, colored per-segment by sign. */}
-            {points.map((p, i) => {
-                if (i === 0) {
-                    return null;
-                }
-                const prev = points[i - 1];
-                const prevColor =
-                    prev.balance >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR;
-                const currColor =
-                    p.balance >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR;
-                return (
-                    <g key={`seg-${p.month}`}>
-                        <line
-                            x1={prev.x}
-                            y1={prev.y}
-                            x2={p.x}
-                            y2={prev.y}
-                            stroke={prevColor}
-                            strokeWidth="2.5"
-                            style={{
-                                filter: `drop-shadow(0 0 4px ${prevColor})`,
-                            }}
-                        />
-                        <line
-                            x1={p.x}
-                            y1={prev.y}
-                            x2={p.x}
-                            y2={p.y}
-                            stroke={currColor}
-                            strokeWidth="2.5"
-                            style={{
-                                filter: `drop-shadow(0 0 4px ${currColor})`,
-                            }}
-                        />
-                    </g>
-                );
-            })}
-            {points.map((p) => {
-                const color = p.balance >= 0 ? POSITIVE_COLOR : NEGATIVE_COLOR;
-                return (
-                    <rect
-                        key={`dot-${p.month}`}
-                        x={p.x - 3}
-                        y={p.y - 3}
-                        width="6"
-                        height="6"
-                        fill={p.balance >= 0 ? '#f5f000' : color}
-                        style={{
-                            filter: `drop-shadow(0 0 3px ${color})`,
-                        }}
-                    />
-                );
-            })}
-        </svg>
+    const unpaid = installments.filter(
+        (installment) => installment.paid_at === null,
     );
-}
+    const outstanding = unpaid.reduce(
+        (total, installment) => total + installment.amount,
+        0,
+    );
 
-function LoanRow({
-    name,
-    rate,
-    repayment,
-    remaining,
-    zebra = false,
-}: {
-    name: string;
-    rate: string;
-    repayment: string;
-    remaining: string;
-    zebra?: boolean;
-}) {
     return (
-        <div
-            className={`border-b border-[#132a13] px-2 py-2 text-xs last:border-b-0 ${zebra ? 'bg-[#081a08]' : ''}`}
-        >
-            <p className="font-bold text-[#c8ffb0]">{name}</p>
-            <div className="mt-1 grid grid-cols-3 text-[#5fae5f]">
-                <span>Rate: {rate}</span>
-                <span className="border-l border-[#132a13] pl-2">
-                    Repayment: {repayment}
-                </span>
-                <span className="border-l border-[#132a13] pl-2">
-                    Remaining: {remaining}
-                </span>
+        <article className="border border-[#1f3a1f] p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <h3 className="font-bold text-[#f5f000]">
+                    {loan.loan_type === 'mortgage'
+                        ? 'Construction mortgage'
+                        : 'Cash loan'}{' '}
+                    #{loan.id}
+                </h3>
+                <span className="text-xs uppercase">{loan.status}</span>
             </div>
-        </div>
+            <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-3">
+                <div>
+                    <dt className="text-[#5fae5f]">Borrowed</dt>
+                    <dd>{formatMoney(loan.principal)}</dd>
+                </div>
+                <div>
+                    <dt className="text-[#5fae5f]">Total Interest</dt>
+                    <dd>{formatMoney(loan.interest_amount)}</dd>
+                </div>
+                <div>
+                    <dt className="text-[#5fae5f]">Total Repayable</dt>
+                    <dd>{formatMoney(loan.total_amount)}</dd>
+                </div>
+                <div>
+                    <dt className="text-[#5fae5f]">Started</dt>
+                    <dd>{formatDate(loan.started_at)}</dd>
+                </div>
+                <div>
+                    <dt className="text-[#5fae5f]">Unpaid Installments</dt>
+                    <dd>
+                        {unpaid.length} / {loan.installment_count}
+                    </dd>
+                </div>
+                <div>
+                    <dt className="text-[#5fae5f]">Unpaid Amount</dt>
+                    <dd>{formatMoney(outstanding)}</dd>
+                </div>
+            </dl>
+            <details className="mt-3 text-sm">
+                <summary className="cursor-pointer text-[#f5f000]">
+                    Repayment schedule
+                </summary>
+                <div className="mt-2 overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                        <thead className="text-[#5fae5f]">
+                            <tr>
+                                <th className="p-2">Installment</th>
+                                <th className="p-2">Due</th>
+                                <th className="p-2">Amount</th>
+                                <th className="p-2">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {installments.map((installment) => (
+                                <tr
+                                    key={installment.id}
+                                    className="border-t border-[#1f3a1f]"
+                                >
+                                    <td className="p-2">
+                                        {installment.installment_number}
+                                    </td>
+                                    <td className="p-2">
+                                        {formatDate(installment.due_date)}
+                                    </td>
+                                    <td className="p-2">
+                                        {formatMoney(installment.amount)}
+                                    </td>
+                                    <td className="p-2">
+                                        {installment.paid_at
+                                            ? 'Paid ' +
+                                              formatDate(installment.paid_at)
+                                            : 'Unpaid'}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </details>
+        </article>
     );
 }
 
-const loans = [
-    {
-        name: 'Stadium Redevelopment Loan',
-        rate: '4.5%',
-        repayment: '£42,000/mo',
-        remaining: '8 years',
-    },
-    {
-        name: 'Training Ground Loan',
-        rate: '3.8%',
-        repayment: '£15,000/mo',
-        remaining: '3 years',
-    },
-];
+const fieldClass =
+    'w-full border border-[#3355dd] bg-black px-3 py-2 text-white focus:outline-2 focus:outline-[#f5f000]';
 
-const sponsors = [
-    { name: 'Volkswagen (Shirt)', value: '£3,200,000/season', expires: '2028' },
-    {
-        name: 'Allianz (Stadium Naming)',
-        value: '£2,000,000/season',
-        expires: '2030',
-    },
-    {
-        name: 'Nike (Training Kit)',
-        value: '£1,800,000/season',
-        expires: '2027',
-    },
-    { name: 'DHL (Sleeve)', value: '£900,000/season', expires: '2026' },
-];
+export default function Finance({
+    club,
+    season,
+    finances,
+    loans,
+    loanOptions,
+}: Props) {
+    const [amount, setAmount] = useState('');
+    const [lengthMonths, setLengthMonths] = useState('12');
+    const [lender, setLender] = useState('bank');
+    const [submitting, setSubmitting] = useState(false);
+    const submittingRef = useRef(false);
+    const [errors, setErrors] = useState<Record<string, string[]>>({});
+    const [loanError, setLoanError] = useState<string | null>(null);
+    const [loanSuccess, setLoanSuccess] = useState<string | null>(null);
+    const selectedOption = loanOptions.find(
+        (option) => option.lender === lender,
+    );
+    const maximumMonths = selectedOption?.maximum_months;
 
-const commercial = [
-    { name: 'Media & Broadcasting', value: '£9,500,000/season' },
-    { name: 'Matchday Merchandise', value: '£680,000/season' },
-    { name: 'Bar & Restaurant Sales', value: '£420,000/season' },
-    { name: 'Shop Sales', value: '£310,000/season' },
-    { name: 'Corporate Hospitality', value: '£1,150,000/season' },
-];
+    async function submitLoan(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (submittingRef.current) return;
+        submittingRef.current = true;
+        setSubmitting(true);
+        setErrors({});
+        setLoanError(null);
+        setLoanSuccess(null);
 
-const stadiumFinance = [
-    { name: 'Ticket Revenue', value: '£11,200,000/season' },
-    { name: 'Average Attendance', value: '38,500' },
-    { name: 'Stadium Capacity', value: '44,000' },
-    { name: 'Maintenance Costs', value: '£1,850,000/season' },
-    { name: 'Loan Repayments', value: '£504,000/season' },
-];
+        try {
+            await api.post(takeOutLoan.url(), {
+                amount: Number(amount),
+                length_months: Number(lengthMonths),
+                lender,
+            });
+        } catch (failure) {
+            const data = axios.isAxiosError<{
+                errors?: Record<string, string[]>;
+                error?: string;
+                message?: string;
+            }>(failure)
+                ? failure.response?.data
+                : undefined;
+            setErrors(data?.errors ?? {});
+            setLoanError(
+                data?.error ??
+                    data?.message ??
+                    'Unable to take out this loan. Please try again.',
+            );
+            submittingRef.current = false;
+            setSubmitting(false);
+            return;
+        }
 
-export default function Finance() {
-    const bankBalance = -1_250_000;
-    const netProfit = -350_000;
+        setAmount('');
+        setLoanSuccess('Loan approved. Updating your finances…');
+        router.reload({
+            only: ['finances', 'loans'],
+            onSuccess: () =>
+                setLoanSuccess('Loan approved and funds received.'),
+            onError: () =>
+                setLoanError(
+                    'The loan was approved, but the figures could not be refreshed. Reload this page to see your balance.',
+                ),
+            onFinish: () => {
+                submittingRef.current = false;
+                setSubmitting(false);
+            },
+        });
+    }
 
     return (
         <GameLayout active="Nations & Clubs">
-            <Head title="AC Milan - Finance" />
+            <Head title={`${club.name} - Finance`} />
             <main
-                className="relative min-h-screen flex-1 overflow-hidden bg-black p-6 text-[#c8ffb0] sm:p-10"
-                style={monoFont}
+                className="min-h-screen flex-1 bg-black p-6 text-[#c8ffb0] sm:p-10"
+                style={{ fontFamily: "'Courier New', ui-monospace, monospace" }}
             >
-                <div
-                    className="pointer-events-none absolute inset-0 opacity-20"
-                    style={{
-                        backgroundImage:
-                            'repeating-linear-gradient(0deg, rgba(255,255,255,0.15) 0px, rgba(255,255,255,0.15) 1px, transparent 1px, transparent 3px)',
-                    }}
-                />
-
-                <div className="relative mx-auto flex max-w-6xl flex-col gap-6">
+                <div className="mx-auto flex max-w-6xl flex-col gap-6">
                     <header className="text-center">
-                        <p className="text-xs tracking-[0.3em] text-[#5fae5f] uppercase">
-                            AC Milan
+                        <p className="text-xs tracking-widest text-[#5fae5f] uppercase">
+                            {club.name}
                         </p>
-                        <h1 className="mt-1 text-2xl font-bold tracking-widest text-[#39ff14] uppercase [text-shadow:0_0_8px_rgba(57,255,20,0.7)]">
+                        <h1 className="mt-1 text-2xl font-bold tracking-widest text-[#39ff14] uppercase">
                             Finance Center
                         </h1>
-                        <p className="mt-1 text-xs tracking-widest text-[#5fae5f] uppercase">
-                            Season 2001/02
+                        <p className="mt-1 text-xs text-[#5fae5f]">
+                            Season {season.start_date.slice(0, 4)}/
+                            {season.end_date.slice(2, 4)}
                         </p>
                     </header>
 
-                    <Panel title="Overall Finances" emphasize>
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                            <StatCard
-                                label="Bank Balance"
-                                value={formatMoney(bankBalance)}
-                                negative={bankBalance < 0}
-                                emphasize
-                            />
-                            <StatCard
-                                label="Transfer Budget"
-                                value={formatMoney(1_500_000)}
-                                emphasize
-                            />
-                            <StatCard
-                                label="Wage Budget"
-                                value="£85,000/wk"
-                                emphasize
-                            />
-                            <StatCard
-                                label="Season Income"
-                                value={formatMoney(28_400_000)}
-                                emphasize
-                            />
-                            <StatCard
-                                label="Season Expenditure"
-                                value={formatMoney(24_150_000)}
-                                emphasize
-                            />
-                            <StatCard
-                                label="Net Profit"
-                                value={formatMoney(netProfit)}
-                                negative={netProfit < 0}
-                                emphasize
-                            />
-                        </div>
+                    {finances ? (
+                        <>
+                            <Panel title="Overall Finances">
+                                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                                    <Stat
+                                        label="Bank Balance"
+                                        value={finances.balance}
+                                    />
+                                    <Stat
+                                        label="Future Balance"
+                                        value={finances.future_balance}
+                                    />
+                                    <Stat
+                                        label="Allowed Debt"
+                                        value={finances.allowed_debt}
+                                    />
+                                    <Stat
+                                        label="Transfer Budget"
+                                        value={finances.transfer_budget}
+                                    />
+                                </div>
+                            </Panel>
+                            <Panel title="Annual Player Wages">
+                                <div className="grid gap-3 sm:grid-cols-3">
+                                    <Stat
+                                        label="Annual Wage Budget"
+                                        value={finances.annual_salary_budget}
+                                    />
+                                    <Stat
+                                        label="Annual Player Wages"
+                                        value={finances.annual_player_wages}
+                                    />
+                                    <Stat
+                                        label="Remaining Annual Budget"
+                                        value={
+                                            finances.remaining_annual_salary_budget
+                                        }
+                                    />
+                                </div>
+                            </Panel>
+                        </>
+                    ) : (
+                        <p role="alert">
+                            Financial information is unavailable for this club.
+                        </p>
+                    )}
+
+                    <Panel title="Loans">
+                        {loans.length === 0 ? (
+                            <p className="text-sm">Your club has no loans.</p>
+                        ) : (
+                            <div className="flex flex-col gap-4">
+                                {loans.map((loan) => (
+                                    <LoanDetails key={loan.id} loan={loan} />
+                                ))}
+                            </div>
+                        )}
                     </Panel>
 
-                    <Panel title="Season Progress">
-                        <SeasonChart />
-                    </Panel>
-
-                    <div className="grid gap-6 lg:grid-cols-2">
-                        <Panel title="Loans">
-                            {loans.map((loan, i) => (
-                                <LoanRow
-                                    key={loan.name}
-                                    zebra={i % 2 === 1}
-                                    {...loan}
-                                />
-                            ))}
+                    {finances && (
+                        <Panel title="Take Out a Cash Loan">
+                            <form
+                                onSubmit={(event) => void submitLoan(event)}
+                                className="flex flex-col gap-4"
+                            >
+                                <fieldset
+                                    disabled={submitting}
+                                    className="grid gap-4 disabled:opacity-60 sm:grid-cols-3"
+                                >
+                                    <label
+                                        htmlFor="loan-amount"
+                                        className="flex flex-col gap-2 text-sm"
+                                    >
+                                        Amount (£)
+                                        <input
+                                            id="loan-amount"
+                                            type="number"
+                                            min="1"
+                                            step="1"
+                                            required
+                                            value={amount}
+                                            onChange={(event) =>
+                                                setAmount(event.target.value)
+                                            }
+                                            aria-invalid={Boolean(
+                                                errors.amount,
+                                            )}
+                                            className={fieldClass}
+                                        />
+                                        {errors.amount && (
+                                            <span className="text-red-400">
+                                                {errors.amount.join(' ')}
+                                            </span>
+                                        )}
+                                    </label>
+                                    <label
+                                        htmlFor="loan-lender"
+                                        className="flex flex-col gap-2 text-sm"
+                                    >
+                                        Lender
+                                        <select
+                                            id="loan-lender"
+                                            value={lender}
+                                            onChange={(event) => {
+                                                setLender(event.target.value);
+                                                const option = loanOptions.find(
+                                                    (option) =>
+                                                        option.lender ===
+                                                        event.target.value,
+                                                );
+                                                if (
+                                                    option &&
+                                                    Number(lengthMonths) >
+                                                        option.maximum_months
+                                                )
+                                                    setLengthMonths(
+                                                        String(
+                                                            option.maximum_months,
+                                                        ),
+                                                    );
+                                            }}
+                                            className={fieldClass}
+                                        >
+                                            {loanOptions.map((option) => (
+                                                <option
+                                                    key={option.lender}
+                                                    value={option.lender}
+                                                >
+                                                    {option.lender === 'bank'
+                                                        ? 'Bank'
+                                                        : 'Loan Sharks'}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {selectedOption && (
+                                            <span className="text-xs text-[#5fae5f]">
+                                                {Math.round(
+                                                    selectedOption.annual_interest_rate *
+                                                        100,
+                                                )}
+                                                % annual interest · up to{' '}
+                                                {maximumMonths} months
+                                            </span>
+                                        )}
+                                        {errors.lender && (
+                                            <span className="text-red-400">
+                                                {errors.lender.join(' ')}
+                                            </span>
+                                        )}
+                                    </label>
+                                    <label
+                                        htmlFor="loan-length"
+                                        className="flex flex-col gap-2 text-sm"
+                                    >
+                                        Length (months)
+                                        <input
+                                            id="loan-length"
+                                            type="number"
+                                            min="1"
+                                            max={maximumMonths}
+                                            step="1"
+                                            required
+                                            value={lengthMonths}
+                                            onChange={(event) =>
+                                                setLengthMonths(
+                                                    event.target.value,
+                                                )
+                                            }
+                                            aria-invalid={Boolean(
+                                                errors.length_months,
+                                            )}
+                                            className={fieldClass}
+                                        />
+                                        {errors.length_months && (
+                                            <span className="text-red-400">
+                                                {errors.length_months.join(' ')}
+                                            </span>
+                                        )}
+                                    </label>
+                                </fieldset>
+                                {loanError && (
+                                    <p
+                                        role="alert"
+                                        className="text-sm text-red-400"
+                                    >
+                                        {loanError}
+                                    </p>
+                                )}
+                                {loanSuccess && (
+                                    <p
+                                        role="status"
+                                        className="text-sm text-[#f5f000]"
+                                    >
+                                        {loanSuccess}
+                                    </p>
+                                )}
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="self-start border border-[#f5f000] px-5 py-2 font-bold text-[#f5f000] hover:bg-[#f5f000]/10 disabled:opacity-60"
+                                >
+                                    {submitting
+                                        ? 'Processing…'
+                                        : 'Take Out Loan'}
+                                </button>
+                            </form>
                         </Panel>
-
-                        <Panel title="Sponsors">
-                            <Row
-                                label="Sponsor"
-                                col2="Value"
-                                col3="Expires"
-                                header
-                            />
-                            {sponsors.map((sponsor, i) => (
-                                <Row
-                                    key={sponsor.name}
-                                    label={sponsor.name}
-                                    col2={sponsor.value}
-                                    col3={sponsor.expires}
-                                    zebra={i % 2 === 1}
-                                />
-                            ))}
-                        </Panel>
-
-                        <Panel title="Commercial">
-                            <Row label="Source" col2="Value" header />
-                            {commercial.map((item, i) => (
-                                <Row
-                                    key={item.name}
-                                    label={item.name}
-                                    col2={item.value}
-                                    zebra={i % 2 === 1}
-                                />
-                            ))}
-                        </Panel>
-
-                        <Panel title="Stadium">
-                            <Row label="Item" col2="Value" header />
-                            {stadiumFinance.map((item, i) => (
-                                <Row
-                                    key={item.name}
-                                    label={item.name}
-                                    col2={item.value}
-                                    zebra={i % 2 === 1}
-                                />
-                            ))}
-                        </Panel>
-                    </div>
+                    )}
                 </div>
             </main>
         </GameLayout>
