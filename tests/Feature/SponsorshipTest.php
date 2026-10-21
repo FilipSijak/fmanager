@@ -55,6 +55,24 @@ class SponsorshipTest extends TestCase
     }
 
     #[Test]
+    public function contracts_select_the_nearest_ranked_sponsor_in_the_same_game(): void
+    {
+        [$instance, $club] = $this->world();
+        $localClub = Club::factory()->create(['instance_id' => $instance->id, 'rank' => 1]);
+        $localEntity = GameEntity::factory()->create(['instance_id' => $instance->id, 'type' => GameEntityType::SPONSOR, 'rank' => 1]);
+        $localSponsor = GameEntityAccount::factory()->create(['instance_id' => $instance->id, 'game_entity_id' => $localEntity->id]);
+        $globalEntity = GameEntity::factory()->create(['instance_id' => $instance->id, 'type' => GameEntityType::SPONSOR, 'rank' => 18]);
+        $globalSponsor = GameEntityAccount::factory()->create(['instance_id' => $instance->id, 'game_entity_id' => $globalEntity->id]);
+        $foreignEntity = GameEntity::factory()->create(['type' => GameEntityType::SPONSOR, 'rank' => 20]);
+        GameEntityAccount::factory()->create(['instance_id' => $foreignEntity->instance_id, 'game_entity_id' => $foreignEntity->id]);
+
+        app(SponsorshipService::class)->createInitialContracts($instance);
+
+        $this->assertDatabaseHas('sponsorship_contracts', ['club_id' => $club->id, 'sponsor_account_id' => $globalSponsor->id, 'annual_amount' => 30000000]);
+        $this->assertDatabaseHas('sponsorship_contracts', ['club_id' => $localClub->id, 'sponsor_account_id' => $localSponsor->id, 'annual_amount' => 3750]);
+    }
+
+    #[Test]
     public function season_start_pays_the_agreed_annual_amount_once_per_season(): void
     {
         [$instance, $club, $sponsor] = $this->world();

@@ -41,6 +41,7 @@ type Props = {
     sponsors: {
         id: number;
         sponsor_name: string;
+        sponsor_rank: number;
         annual_amount: number;
         starts_at: string;
         expires_at: string;
@@ -351,6 +352,10 @@ export default function Finance({
                                         <div className="flex flex-wrap items-center justify-between gap-2">
                                             <h3 className="font-bold text-[#f5f000]">
                                                 {sponsor.sponsor_name}
+                                                <span className="ml-2 text-xs font-normal text-[#5fae5f]">
+                                                    Rank {sponsor.sponsor_rank}
+                                                    /20
+                                                </span>
                                             </h3>
                                             <span className="text-xs uppercase">
                                                 {sponsor.status}

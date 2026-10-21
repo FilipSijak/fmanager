@@ -18,6 +18,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
+use LogicException;
 
 class SponsorshipService
 {
@@ -31,12 +32,18 @@ class SponsorshipService
     {
         $startsAt = CarbonImmutable::parse($instance->instance_date)->startOfDay();
         $maximumDays = (int) $startsAt->diffInDays($startsAt->addYears(5));
-        $sponsorAccount = GameEntityAccount::query()
+        $sponsorAccounts = GameEntityAccount::query()
             ->where('instance_id', $instance->id)
-            ->whereHas('gameEntity', fn (Builder $query) => $query->where('type', GameEntityType::SPONSOR->value))
-            ->firstOrFail();
+            ->whereHas('gameEntity', fn (Builder $query) => $query->where('instance_id', $instance->id)->where('type', GameEntityType::SPONSOR->value))
+            ->with('gameEntity')
+            ->get();
+        if ($sponsorAccounts->isEmpty()) {
+            throw new LogicException('No sponsors are available for this game. Seed the game entity catalogue before creating a game.');
+        }
 
-        Club::query()->forInstance($instance->id)->each(function (Club $club) use ($instance, $startsAt, $maximumDays, $sponsorAccount): void {
+        Club::query()->forInstance($instance->id)->each(function (Club $club) use ($instance, $startsAt, $maximumDays, $sponsorAccounts): void {
+            $nearestRankDistance = $sponsorAccounts->min(fn (GameEntityAccount $account): int => abs($account->gameEntity->rank - (int) $club->rank));
+            $sponsorAccount = $sponsorAccounts->filter(fn (GameEntityAccount $account): bool => abs($account->gameEntity->rank - (int) $club->rank) === $nearestRankDistance)->random();
             SponsorshipContract::query()->firstOrCreate([
                 'club_id' => $club->id,
                 'starts_at' => $startsAt->toDateString(),

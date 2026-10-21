@@ -61,10 +61,12 @@ class CreateInstanceTest extends TestCase
         $response->assertSessionMissing('active_instance_hash');
         $this->assertSame(2, User::findOrFail($this->userId)->instances()->count());
         $instance = Instance::findOrFail($response->json('data.id'));
-        $contracts = SponsorshipContract::query()->where('instance_id', $instance->id)->get();
+        $contracts = SponsorshipContract::query()->where('instance_id', $instance->id)->with(['club', 'sponsorAccount.gameEntity'])->get();
         $this->assertCount(Club::query()->where('instance_id', $instance->id)->count(), $contracts);
         foreach ($contracts as $contract) {
             $this->assertSame($instance->instance_date, $contract->starts_at->toDateString());
+            $this->assertSame((int) $contract->club->rank, $contract->sponsorAccount->gameEntity->rank);
+            $this->assertSame($instance->id, $contract->sponsorAccount->gameEntity->instance_id);
             $this->assertGreaterThanOrEqual($contract->starts_at, $contract->expires_at);
             $this->assertLessThanOrEqual($contract->starts_at->addYears(5), $contract->expires_at);
         }

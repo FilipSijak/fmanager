@@ -16,6 +16,7 @@ class GameEntityFactory extends Factory
             'instance_id' => Instance::factory(),
             'type' => GameEntityType::BANK,
             'name' => 'Game Bank',
+            'rank' => 10,
         ];
     }
 }

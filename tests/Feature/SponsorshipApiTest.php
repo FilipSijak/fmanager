@@ -72,6 +72,7 @@ class SponsorshipApiTest extends TestCase
             ->assertOk()->assertJsonCount(2, 'data')
             ->assertJsonPath('data.0.id', $contract->id)
             ->assertJsonPath('data.0.annual_amount', 15000000)
+            ->assertJsonPath('data.0.sponsor_rank', 10)
             ->assertJsonPath('data.0.starts_at', '2026-07-01')
             ->assertJsonPath('data.0.expires_at', '2031-07-01')
             ->assertJsonPath('data.0.status', 'active')

@@ -7,11 +7,13 @@ use App\Models\Account;
 use App\Models\BaseData\BaseClubs;
 use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\BaseData\BaseCompetitions;
+use App\Models\BaseData\BaseGameEntity;
 use App\Models\BaseData\BaseStadiums;
 use App\Models\BaseData\BaseStadiumStandCapacityLimit;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Stadium;
+use App\Services\CommercialService\CommercialRankingConfig;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\StadiumService\StadiumType;
 use App\StadiumStandStatus;
@@ -31,28 +33,12 @@ class InitialSeed
 
     public function seedGameEntities(int $instanceId): void
     {
-        $balances = [
-            GameEntityType::BANK->value => 50_000_000_000,
-            GameEntityType::LOAN_SHARKS->value => 1_000_000_000,
-            GameEntityType::SPONSOR->value => 10_000_000_000,
-            GameEntityType::LEAGUE->value => 10_000_000_000,
-            GameEntityType::TV_BROADCASTER->value => 10_000_000_000,
-            GameEntityType::COMPETITION->value => 10_000_000_000,
-        ];
-        $names = [
-            GameEntityType::BANK->value => 'Game Bank',
-            GameEntityType::LOAN_SHARKS->value => 'Loan sharks',
-            GameEntityType::SPONSOR->value => 'Sponsors',
-            GameEntityType::LEAGUE->value => 'League Authority',
-            GameEntityType::TV_BROADCASTER->value => 'TV Broadcaster',
-            GameEntityType::COMPETITION->value => 'Competition Authority',
-        ];
-
-        foreach ($balances as $type => $balance) {
+        foreach (BaseGameEntity::query()->orderBy('id')->get() as $baseEntity) {
             $gameEntityId = DB::table('game_entities')->insertGetId([
                 'instance_id' => $instanceId,
-                'type' => $type,
-                'name' => $names[$type],
+                'type' => $baseEntity->type->value,
+                'name' => $baseEntity->name,
+                'rank' => $baseEntity->rank,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -60,8 +46,8 @@ class InitialSeed
             DB::table('accounts_game_entities')->insert([
                 'game_entity_id' => $gameEntityId,
                 'instance_id' => $instanceId,
-                'balance' => $balance,
-                'future_balance' => $balance,
+                'balance' => $baseEntity->starting_balance,
+                'future_balance' => $baseEntity->starting_balance,
                 'allowed_debt' => 0,
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -250,6 +236,7 @@ class InitialSeed
                     'competition_id' => $competition->id,
                     'type' => GameEntityType::COMPETITION->value,
                     'name' => $competition->name,
+                    'rank' => max(1, (int) round(20 * CommercialRankingConfig::normalizeCompetitionRank((int) $competition->rank))),
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);

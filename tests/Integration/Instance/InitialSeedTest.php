@@ -92,7 +92,8 @@ class InitialSeedTest extends TestCase
         $genericAccounts = $accounts->filter(fn (GameEntityAccount $account): bool => $account->gameEntity->competition_id === null);
         $competitionAccounts = $accounts->filter(fn (GameEntityAccount $account): bool => $account->gameEntity->competition_id !== null);
 
-        $this->assertCount(6, $genericAccounts);
+        $this->assertCount(85, $genericAccounts);
+        $this->assertCount(80, $genericAccounts->filter(fn (GameEntityAccount $account): bool => $account->gameEntity->type === GameEntityType::SPONSOR));
         $this->assertCount(Competition::query()->where('instance_id', $instance->id)->count(), $competitionAccounts);
         $this->assertSame(50_000_000_000, $genericAccounts->first(fn (GameEntityAccount $account): bool => $account->gameEntity->type === GameEntityType::BANK)->balance);
         $this->assertSame(1_000_000_000, $genericAccounts->first(fn (GameEntityAccount $account): bool => $account->gameEntity->type === GameEntityType::LOAN_SHARKS)->balance);
@@ -114,6 +115,8 @@ class InitialSeedTest extends TestCase
 
         foreach ($competitionAccounts as $account) {
             $this->assertSame(GameEntityType::COMPETITION, $account->gameEntity->type);
+            $expectedRank = max(1, min(20, (int) round($account->gameEntity->competition->rank / 500)));
+            $this->assertSame($expectedRank, $account->gameEntity->rank);
             $this->assertSame(10_000_000_000, $account->balance);
             $this->assertSame($account->balance, $account->future_balance);
         }

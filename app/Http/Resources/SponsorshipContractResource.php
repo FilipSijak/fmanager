@@ -18,6 +18,7 @@ class SponsorshipContractResource extends JsonResource
         return [
             'id' => $this->id,
             'sponsor_name' => $this->sponsorAccount->gameEntity->name,
+            'sponsor_rank' => $this->sponsorAccount->gameEntity->rank,
             'annual_amount' => $this->annual_amount,
             'starts_at' => $this->starts_at->toDateString(),
             'expires_at' => $this->expires_at->toDateString(),
