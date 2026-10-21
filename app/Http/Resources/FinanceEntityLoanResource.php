@@ -18,7 +18,7 @@ class FinanceEntityLoanResource extends JsonResource
             'installment_count' => $this->installment_count,
             'started_at' => $this->started_at?->toDateString(),
             'status' => $this->status?->value,
-            'installments' => FinanceEntityLoanInstallmentResource::collection($this->whenLoaded('installments')),
+            'installments' => $this->whenLoaded('installments', fn (): array => FinanceEntityLoanInstallmentResource::collection($this->installments)->resolve($request)),
         ];
     }
 }

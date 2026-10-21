@@ -9,6 +9,7 @@ use App\Models\Season;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Services\CompetitionService\CompetitionService;
+use App\Services\FinanceService\SponsorshipService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
@@ -37,6 +38,7 @@ class CreateInstance
         CompetitionService $competitionService,
         PersonService $personService,
         CompetitionSeasonRepository $competitionRepository,
+        private readonly SponsorshipService $sponsorships,
     ) {
         $this->competitionService = $competitionService;
         $this->personService = $personService;
@@ -52,6 +54,7 @@ class CreateInstance
         $this->instance->season_id = $this->season->id;
         $this->instance->save();
         app(GameContext::class)->set($this->instance->id, $this->season->id, (string) $this->instance->instance_date);
+        $this->sponsorships->createInitialContracts($this->instance);
         $this->mapInitialCompetitionsToSeasonsWithClubs();
         $this->setCompetitionsForTheFirstSeason();
         $this->assignPeopleToClubs();
@@ -81,7 +84,7 @@ class CreateInstance
     {
         $this->season = new Season;
         $firstSeasonStartDate = $this->firstSeasonStartDate();
-        $firstSeasonEndDate = $firstSeasonStartDate->copy()->add('1 year');
+        $firstSeasonEndDate = Carbon::create($firstSeasonStartDate->year + 1, 6, 15)->startOfDay();
 
         $this->season->instance_id = $this->instance->id;
         $this->season->start_date = $firstSeasonStartDate;

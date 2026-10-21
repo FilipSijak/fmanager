@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ClubPageController;
 use App\Http\Controllers\CompetitionPageController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FinancePageController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\ManagerJobController;
 use App\Http\Controllers\MatchPageController;
@@ -35,6 +36,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/clubs/{clubId}', [ClubPageController::class, 'show'])->whereNumber('clubId')->name('clubs.show');
         Route::get('/league-table', [CompetitionPageController::class, 'index'])->name('league-table');
         Route::get('/jobs', [ManagerJobController::class, 'index'])->name('jobs');
+        Route::get('/finance', [FinancePageController::class, 'show'])->middleware(EnsureUserHasClub::class)->name('finance');
         Route::post('/jobs/{clubId}/apply', [ManagerJobController::class, 'apply'])->name('jobs.apply');
     });
 });
@@ -46,7 +48,6 @@ $templateRoutes = function () {
         Route::get('/squad', fn () => Inertia::render('squad/Squad'))->name('squad');
         Route::get('/tactics', fn () => Inertia::render('tactics/Tactics'))->name('tactics');
         Route::get('/office', fn () => Inertia::render('Office'))->name('office');
-        Route::get('/finance', fn () => Inertia::render('Finance'))->name('finance');
         Route::get('/stadium', fn () => Inertia::render('Stadium'))->name('stadium');
         Route::get('/stadium/construction', fn () => Inertia::render('stadium-construction/StadiumConstruction'))->name('stadium.construction');
         Route::get('/stadium/restaurants', fn () => Inertia::render('StadiumRestaurants'))->name('stadium.restaurants');

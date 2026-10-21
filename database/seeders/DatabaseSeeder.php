@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
         (new StadiumConstructionSeeder)->run();
         (new TacticsSeeder)->run();
         (new CommercialProductsSeeder)->run();
+        (new GameEntitiesSeeder)->run();
         (new CompetitionsSeeder)->run();
         (new EuropeanClubsSeeder)->run();
         (new TransferStatusSeeder)->run();

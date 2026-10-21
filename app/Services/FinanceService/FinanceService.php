@@ -53,6 +53,16 @@ class FinanceService
         return $this->clubRepository->getTransferBudgetAndBalance($instance->club_id);
     }
 
+    /** @return list<array{lender: string, annual_interest_rate: float, maximum_months: int}> */
+    public function cashLoanOptions(): array
+    {
+        return array_map(fn (GameEntityType $lender): array => [
+            'lender' => $lender->value,
+            'annual_interest_rate' => $this->cashLoanInterestRate($lender),
+            'maximum_months' => $this->cashLoanMaximumLength($lender),
+        ], [GameEntityType::BANK, GameEntityType::LOAN_SHARKS]);
+    }
+
     /**
      * @return Collection<int, FinanceEntityLoan>
      */
