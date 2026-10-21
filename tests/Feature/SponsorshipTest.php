@@ -18,7 +18,6 @@ use App\Models\SponsorshipContract;
 use App\Services\FinanceService\SponsorshipService;
 use App\Services\SeasonService\SeasonService;
 use App\Support\GameContext;
-use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -28,9 +27,9 @@ class SponsorshipTest extends TestCase
     use RefreshDatabase;
 
     #[Test]
-    public function initial_contracts_use_the_instance_date_and_rank_and_random_expiries_within_five_years(): void
+    public function initial_contracts_start_with_the_season_and_end_after_one_to_five_whole_seasons(): void
     {
-        [$instance, $club, $sponsor] = $this->world('2028-02-29');
+        [$instance, $club, $sponsor] = $this->world('2026-07-01');
         Club::factory()->count(10)->create(['instance_id' => $instance->id, 'rank' => 10]);
         Club::factory()->create(['instance_id' => $instance->id + 1]);
         $service = app(SponsorshipService::class);
@@ -45,9 +44,10 @@ class SponsorshipTest extends TestCase
         foreach ($originalContracts as $contract) {
             $this->assertSame($instance->id, $contract->instance_id);
             $this->assertSame($sponsor->id, $contract->sponsor_account_id);
-            $this->assertSame('2028-02-29', $contract->starts_at->toDateString());
-            $this->assertGreaterThanOrEqual($contract->starts_at, $contract->expires_at);
-            $this->assertLessThanOrEqual(CarbonImmutable::parse('2033-03-01'), $contract->expires_at);
+            $this->assertSame('2026-08-15', $contract->starts_at->toDateString());
+            $this->assertContains($contract->expires_at->toDateString(), [
+                '2027-06-15', '2028-06-15', '2029-06-15', '2030-06-15', '2031-06-15',
+            ]);
             $this->assertSame($contract->club_id === $club->id ? 30000000 : 3750000, $contract->annual_amount);
         }
         $this->assertDatabaseCount('sponsorship_payments', 0);
@@ -96,9 +96,14 @@ class SponsorshipTest extends TestCase
         $this->assertSame($contract->id, $transaction->event_id);
         $this->assertSame('2026-08-15', $transaction->transaction_date->toDateString());
 
-        $season = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2027-06-16', 'end_date' => '2028-06-15']);
+        $season = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2027-08-15', 'end_date' => '2028-06-15']);
         $instance->forceFill(['season_id' => $season->id, 'instance_date' => '2027-06-16'])->save();
         event(new SeasonStarted($instance));
+        $this->assertSame(30000000, $club->account->fresh()->balance);
+        $this->assertDatabaseCount('sponsorship_payments', 1);
+
+        $instance->forceFill(['instance_date' => '2027-08-15'])->save();
+        app(PayClubSponsorships::class)->handle(new NextDay($instance));
 
         $this->assertSame(60000000, $club->account->fresh()->balance);
         $this->assertSame(940000000, $sponsor->fresh()->balance);
@@ -127,10 +132,10 @@ class SponsorshipTest extends TestCase
     public function expired_future_zero_value_and_other_instances_contracts_do_not_pay(): void
     {
         [$instance, $club, $sponsor] = $this->world();
-        $this->contract($instance, $club, $sponsor, ['expires_at' => '2026-08-14']);
+        $this->contract($instance, $club, $sponsor, ['expires_at' => '2026-06-15']);
         $futureClub = Club::factory()->create(['instance_id' => $instance->id]);
         Account::factory()->create(['club_id' => $futureClub->id, 'balance' => 0]);
-        $this->contract($instance, $futureClub, $sponsor, ['starts_at' => '2026-08-16']);
+        $this->contract($instance, $futureClub, $sponsor, ['starts_at' => '2027-08-15']);
         $zeroClub = Club::factory()->create(['instance_id' => $instance->id]);
         Account::factory()->create(['club_id' => $zeroClub->id, 'balance' => 0]);
         $this->contract($instance, $zeroClub, $sponsor, ['annual_amount' => 0]);
@@ -146,15 +151,17 @@ class SponsorshipTest extends TestCase
     }
 
     #[Test]
-    public function contracts_are_payable_on_their_expiry_day_but_stop_in_later_seasons(): void
+    public function contracts_pay_for_their_final_season_and_stop_after_its_last_day(): void
     {
         [$instance, $club, $sponsor] = $this->world();
-        $this->contract($instance, $club, $sponsor, ['expires_at' => '2026-08-15']);
+        $this->contract($instance, $club, $sponsor, ['expires_at' => '2027-06-15']);
         $service = app(SponsorshipService::class);
 
         $service->payForSeason($instance);
-        $season = Season::factory()->create(['instance_id' => $instance->id]);
-        $instance->forceFill(['season_id' => $season->id, 'instance_date' => '2027-06-16'])->save();
+        $instance->forceFill(['instance_date' => '2027-06-15'])->save();
+        $service->payForSeason($instance);
+        $season = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2027-08-15', 'end_date' => '2028-06-15']);
+        $instance->forceFill(['season_id' => $season->id, 'instance_date' => '2027-08-15'])->save();
         $service->payForSeason($instance);
 
         $this->assertSame(30000000, $club->account->fresh()->balance);

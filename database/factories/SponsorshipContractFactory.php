@@ -23,8 +23,8 @@ class SponsorshipContractFactory extends Factory
                 'game_entity_id' => GameEntity::factory()->create(['instance_id' => $attributes['instance_id'], 'type' => GameEntityType::SPONSOR])->id,
             ])->id,
             'annual_amount' => 15_000_000,
-            'starts_at' => '2026-07-01',
-            'expires_at' => '2031-07-01',
+            'starts_at' => '2026-08-15',
+            'expires_at' => '2031-06-15',
         ];
     }
 }

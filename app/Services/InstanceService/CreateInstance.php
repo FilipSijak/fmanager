@@ -50,11 +50,11 @@ class CreateInstance
         $init = new InitialSeed;
         $this->storeInstance($user->id, null, null, null);
         $init->seedFromBaseTables($this->instance->id);
-        $this->sponsorships->createInitialContracts($this->instance);
         $this->startFirstSeason();
         $this->instance->season_id = $this->season->id;
         $this->instance->save();
         app(GameContext::class)->set($this->instance->id, $this->season->id, (string) $this->instance->instance_date);
+        $this->sponsorships->createInitialContracts($this->instance);
         $this->mapInitialCompetitionsToSeasonsWithClubs();
         $this->setCompetitionsForTheFirstSeason();
         $this->assignPeopleToClubs();
@@ -84,7 +84,7 @@ class CreateInstance
     {
         $this->season = new Season;
         $firstSeasonStartDate = $this->firstSeasonStartDate();
-        $firstSeasonEndDate = $firstSeasonStartDate->copy()->add('1 year');
+        $firstSeasonEndDate = Carbon::create($firstSeasonStartDate->year + 1, 6, 15)->startOfDay();
 
         $this->season->instance_id = $this->instance->id;
         $this->season->start_date = $firstSeasonStartDate;

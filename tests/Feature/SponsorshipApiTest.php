@@ -61,7 +61,7 @@ class SponsorshipApiTest extends TestCase
         SponsorshipPayment::factory()->create(['sponsorship_contract_id' => $contract->id, 'season_id' => $oldSeason->id]);
         $expired = SponsorshipContract::factory()->create([
             'instance_id' => $instance->id, 'club_id' => $contract->club_id,
-            'sponsor_account_id' => $contract->sponsor_account_id, 'starts_at' => '2025-07-01', 'expires_at' => '2026-08-15',
+            'sponsor_account_id' => $contract->sponsor_account_id, 'starts_at' => '2025-08-15', 'expires_at' => '2026-06-15',
         ]);
         $otherClub = Club::factory()->create(['instance_id' => $instance->id]);
         SponsorshipContract::factory()->create(['instance_id' => $instance->id, 'club_id' => $otherClub->id]);
@@ -73,8 +73,8 @@ class SponsorshipApiTest extends TestCase
             ->assertJsonPath('data.0.id', $contract->id)
             ->assertJsonPath('data.0.annual_amount', 15000000)
             ->assertJsonPath('data.0.sponsor_rank', 10)
-            ->assertJsonPath('data.0.starts_at', '2026-07-01')
-            ->assertJsonPath('data.0.expires_at', '2031-07-01')
+            ->assertJsonPath('data.0.starts_at', '2026-08-15')
+            ->assertJsonPath('data.0.expires_at', '2031-06-15')
             ->assertJsonPath('data.0.status', 'active')
             ->assertJsonPath('data.0.paid_this_season', 15000000)
             ->assertJsonPath('data.0.payment_frequency', 'season_start')
@@ -84,6 +84,21 @@ class SponsorshipApiTest extends TestCase
         $this->get('/finance')->assertInertia(fn (Assert $page) => $page->component('Finance')
             ->has('sponsors', 2)->where('sponsors.0.id', $contract->id)
             ->where('sponsors.0.annual_amount', 15000000)->where('sponsors.0.paid_this_season', 15000000));
+    }
+
+    #[Test]
+    public function contracts_are_upcoming_before_the_first_day_of_the_season(): void
+    {
+        $contract = SponsorshipContract::factory()->create();
+        $instance = Instance::query()->findOrFail($contract->instance_id);
+        $season = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2026-08-15', 'end_date' => '2027-06-15']);
+        $instance->forceFill(['club_id' => $contract->club_id, 'season_id' => $season->id, 'instance_date' => '2026-07-01'])->save();
+
+        $this->actingAs($instance->user)->withHeader('instanceHash', $instance->instance_hash)
+            ->getJson('/api/finance/sponsors')->assertOk()
+            ->assertJsonPath('data.0.status', 'upcoming')
+            ->assertJsonPath('data.0.starts_at', '2026-08-15')
+            ->assertJsonPath('data.0.paid_this_season', 0);
     }
 
     #[Test]

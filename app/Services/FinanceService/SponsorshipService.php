@@ -30,8 +30,9 @@ class SponsorshipService
 
     public function createInitialContracts(Instance $instance): void
     {
-        $startsAt = CarbonImmutable::parse($instance->instance_date)->startOfDay();
-        $maximumDays = (int) $startsAt->diffInDays($startsAt->addYears(5));
+        $season = Season::query()->where('instance_id', $instance->id)->findOrFail($instance->season_id);
+        $startsAt = CarbonImmutable::parse($season->start_date);
+        $firstSeasonEnd = CarbonImmutable::parse($season->end_date);
         $sponsorAccounts = GameEntityAccount::query()
             ->where('instance_id', $instance->id)
             ->whereHas('gameEntity', fn (Builder $query) => $query->where('instance_id', $instance->id)->where('type', GameEntityType::SPONSOR->value))
@@ -41,7 +42,7 @@ class SponsorshipService
             throw new LogicException('No sponsors are available for this game. Seed the game entity catalogue before creating a game.');
         }
 
-        Club::query()->forInstance($instance->id)->each(function (Club $club) use ($instance, $startsAt, $maximumDays, $sponsorAccounts): void {
+        Club::query()->forInstance($instance->id)->each(function (Club $club) use ($instance, $startsAt, $firstSeasonEnd, $sponsorAccounts): void {
             $nearestRankDistance = $sponsorAccounts->min(fn (GameEntityAccount $account): int => abs($account->gameEntity->rank - (int) $club->rank));
             $sponsorAccount = $sponsorAccounts->filter(fn (GameEntityAccount $account): bool => abs($account->gameEntity->rank - (int) $club->rank) === $nearestRankDistance)->random();
             SponsorshipContract::query()->firstOrCreate([
@@ -51,7 +52,7 @@ class SponsorshipService
                 'instance_id' => $instance->id,
                 'sponsor_account_id' => $sponsorAccount->id,
                 'annual_amount' => $this->calculator->annualAmount((int) $club->rank),
-                'expires_at' => $startsAt->addDays(random_int(0, $maximumDays))->toDateString(),
+                'expires_at' => $firstSeasonEnd->addYearsNoOverflow(random_int(0, 4))->toDateString(),
             ]);
         });
     }
@@ -73,8 +74,11 @@ class SponsorshipService
 
     public function payForSeason(Instance $instance): void
     {
-        Season::query()->where('instance_id', $instance->id)->findOrFail($instance->season_id);
+        $season = Season::query()->where('instance_id', $instance->id)->findOrFail($instance->season_id);
         $date = CarbonImmutable::parse($instance->instance_date)->toDateString();
+        if ($date !== $season->start_date) {
+            return;
+        }
 
         SponsorshipContract::query()->forInstance($instance->id)
             ->whereHas('club', fn (Builder $query) => $query->where('instance_id', $instance->id))

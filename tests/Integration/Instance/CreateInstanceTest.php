@@ -61,14 +61,19 @@ class CreateInstanceTest extends TestCase
         $response->assertSessionMissing('active_instance_hash');
         $this->assertSame(2, User::findOrFail($this->userId)->instances()->count());
         $instance = Instance::findOrFail($response->json('data.id'));
+        $initialSeason = Season::query()->findOrFail($instance->season_id);
+        $this->assertSame(date('Y').'-08-15', $initialSeason->start_date);
+        $this->assertSame(((int) date('Y') + 1).'-06-15', $initialSeason->end_date);
         $contracts = SponsorshipContract::query()->where('instance_id', $instance->id)->with(['club', 'sponsorAccount.gameEntity'])->get();
         $this->assertCount(Club::query()->where('instance_id', $instance->id)->count(), $contracts);
         foreach ($contracts as $contract) {
-            $this->assertSame($instance->instance_date, $contract->starts_at->toDateString());
+            $this->assertSame($initialSeason->start_date, $contract->starts_at->toDateString());
             $this->assertSame((int) $contract->club->rank, $contract->sponsorAccount->gameEntity->rank);
             $this->assertSame($instance->id, $contract->sponsorAccount->gameEntity->instance_id);
-            $this->assertGreaterThanOrEqual($contract->starts_at, $contract->expires_at);
-            $this->assertLessThanOrEqual($contract->starts_at->addYears(5), $contract->expires_at);
+            $this->assertContains($contract->expires_at->toDateString(), array_map(
+                fn (int $duration): string => ((int) date('Y') + $duration).'-06-15',
+                range(1, 5),
+            ));
         }
         $this->assertNotSame(1, $instance->id);
         $managedClub = Club::query()->where('instance_id', $instance->id)->where('base_club_id', 2)->firstOrFail();
