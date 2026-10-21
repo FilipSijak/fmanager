@@ -38,6 +38,15 @@ type Props = {
     season: { start_date: string; end_date: string };
     finances: FinancialSummary | null;
     loans: Loan[];
+    sponsors: {
+        id: number;
+        sponsor_name: string;
+        annual_amount: number;
+        starts_at: string;
+        expires_at: string;
+        status: 'active' | 'expired' | 'upcoming';
+        paid_this_season: number;
+    }[];
     loanOptions: {
         lender: string;
         annual_interest_rate: number;
@@ -188,6 +197,7 @@ export default function Finance({
     season,
     finances,
     loans,
+    sponsors,
     loanOptions,
 }: Props) {
     const [amount, setAmount] = useState('');
@@ -321,6 +331,78 @@ export default function Finance({
                             Financial information is unavailable for this club.
                         </p>
                     )}
+
+                    <Panel title="Sponsors">
+                        <p className="mb-4 text-xs text-[#5fae5f]">
+                            Sponsorship is paid once per year at season start
+                            while the contract is active.
+                        </p>
+                        {sponsors.length === 0 ? (
+                            <p className="text-sm">
+                                Your club has no sponsorship contracts.
+                            </p>
+                        ) : (
+                            <div className="flex flex-col gap-4">
+                                {sponsors.map((sponsor) => (
+                                    <article
+                                        key={sponsor.id}
+                                        className="border border-[#1f3a1f] p-3"
+                                    >
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <h3 className="font-bold text-[#f5f000]">
+                                                {sponsor.sponsor_name}
+                                            </h3>
+                                            <span className="text-xs uppercase">
+                                                {sponsor.status}
+                                            </span>
+                                        </div>
+                                        <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-4">
+                                            <div>
+                                                <dt className="text-[#5fae5f]">
+                                                    Annual Value
+                                                </dt>
+                                                <dd>
+                                                    {formatMoney(
+                                                        sponsor.annual_amount,
+                                                    )}
+                                                </dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-[#5fae5f]">
+                                                    Starts
+                                                </dt>
+                                                <dd>
+                                                    {formatDate(
+                                                        sponsor.starts_at,
+                                                    )}
+                                                </dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-[#5fae5f]">
+                                                    Expires
+                                                </dt>
+                                                <dd>
+                                                    {formatDate(
+                                                        sponsor.expires_at,
+                                                    )}
+                                                </dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-[#5fae5f]">
+                                                    Received This Season
+                                                </dt>
+                                                <dd>
+                                                    {formatMoney(
+                                                        sponsor.paid_this_season,
+                                                    )}
+                                                </dd>
+                                            </div>
+                                        </dl>
+                                    </article>
+                                ))}
+                            </div>
+                        )}
+                    </Panel>
 
                     <Panel title="Loans">
                         {loans.length === 0 ? (

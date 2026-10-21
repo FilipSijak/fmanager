@@ -5,6 +5,7 @@ use App\Http\Controllers\CompetitionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\FinanceLoanController;
+use App\Http\Controllers\FinanceSponsorController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\NewsController;
@@ -34,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/instance/resign', [InstanceController::class, 'resign']);
             Route::get('/finance', [FinanceController::class, 'show']);
             Route::get('/finance/loans', [FinanceLoanController::class, 'index']);
+            Route::get('/finance/sponsors', [FinanceSponsorController::class, 'index']);
             Route::post('/finance/loans', [FinanceLoanController::class, 'store']);
 
             Route::prefix('stadium')->group(function (): void {

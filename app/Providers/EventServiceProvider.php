@@ -16,6 +16,7 @@ use App\Listeners\FillManagerVacancies;
 use App\Listeners\News\CreateMatchNews;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
+use App\Listeners\PayClubSponsorships;
 use App\Listeners\PayContinentalMatchPrizes;
 use App\Listeners\PayLeagueCompetitionPrizes;
 use App\Listeners\PayLeagueTvRights;
@@ -43,6 +44,7 @@ class EventServiceProvider extends ServiceProvider
             PayContinentalMatchPrizes::class,
         ],
         NextDay::class => [
+            PayClubSponsorships::class,
             CompleteStadiumStandConstruction::class,
             ProcessFinanceEntityLoanInstallments::class,
             ProcessTransfers::class,
@@ -58,6 +60,7 @@ class EventServiceProvider extends ServiceProvider
             CompleteSeason::class,
         ],
         SeasonStarted::class => [
+            PayClubSponsorships::class,
             PayLeagueTvRights::class,
             StartSeason::class,
         ],

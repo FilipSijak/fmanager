@@ -9,6 +9,7 @@ use App\Models\Instance;
 use App\Models\Manager;
 use App\Models\Player;
 use App\Models\Season;
+use App\Models\SponsorshipContract;
 use App\Models\StaffCoaching;
 use App\Models\StaffContract;
 use App\Models\StaffPhysio;
@@ -21,6 +22,7 @@ use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
+use App\Services\FinanceService\SponsorshipService;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\PersonService;
 use App\Services\StadiumService\StadiumType;
@@ -59,6 +61,13 @@ class CreateInstanceTest extends TestCase
         $response->assertSessionMissing('active_instance_hash');
         $this->assertSame(2, User::findOrFail($this->userId)->instances()->count());
         $instance = Instance::findOrFail($response->json('data.id'));
+        $contracts = SponsorshipContract::query()->where('instance_id', $instance->id)->get();
+        $this->assertCount(Club::query()->where('instance_id', $instance->id)->count(), $contracts);
+        foreach ($contracts as $contract) {
+            $this->assertSame($instance->instance_date, $contract->starts_at->toDateString());
+            $this->assertGreaterThanOrEqual($contract->starts_at, $contract->expires_at);
+            $this->assertLessThanOrEqual($contract->starts_at->addYears(5), $contract->expires_at);
+        }
         $this->assertNotSame(1, $instance->id);
         $managedClub = Club::query()->where('instance_id', $instance->id)->where('base_club_id', 2)->firstOrFail();
         $this->assertNull($instance->club_id);
@@ -408,7 +417,8 @@ class CreateInstanceTest extends TestCase
             new CreateInstance(
                 app()->make(CompetitionService::class),
                 app()->make(PersonService::class),
-                app()->make(CompetitionSeasonRepository::class)
+                app()->make(CompetitionSeasonRepository::class),
+                app()->make(SponsorshipService::class)
             );
     }
 }
