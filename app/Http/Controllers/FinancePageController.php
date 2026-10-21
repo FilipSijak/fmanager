@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ClubFinancialSummaryResource;
 use App\Http\Resources\FinanceEntityLoanResource;
 use App\Http\Resources\SponsorshipContractResource;
+use App\Http\Resources\SponsorshipOfferResource;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Services\FinanceService\FinanceService;
+use App\Services\FinanceService\SponsorshipOfferService;
 use App\Services\FinanceService\SponsorshipService;
 use App\Support\GameContext;
 use Inertia\Inertia;
@@ -15,7 +17,7 @@ use Inertia\Response;
 
 class FinancePageController extends Controller
 {
-    public function show(FinanceService $finances, GameContext $context, SponsorshipService $sponsorships): Response
+    public function show(FinanceService $finances, GameContext $context, SponsorshipService $sponsorships, SponsorshipOfferService $offers): Response
     {
         $instance = Instance::query()->with('club')->findOrFail($context->instanceId());
         $summary = $finances->getClubFinances();
@@ -28,6 +30,7 @@ class FinancePageController extends Controller
             'loans' => $summary === null ? [] : FinanceEntityLoanResource::collection($finances->getClubLoans())->resolve(),
             'loanOptions' => $finances->cashLoanOptions(),
             'sponsors' => SponsorshipContractResource::collection($sponsorships->getClubContracts())->resolve(),
+            'sponsorOffers' => SponsorshipOfferResource::collection($offers->pendingForManagedClub())->resolve(),
         ]);
     }
 }

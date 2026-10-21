@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Club extends Model
@@ -43,6 +44,11 @@ class Club extends Model
     public function tactic(): HasOne
     {
         return $this->hasOne(ClubTactic::class);
+    }
+
+    public function sponsorshipContracts(): HasMany
+    {
+        return $this->hasMany(SponsorshipContract::class);
     }
 
     /**

@@ -30,6 +30,7 @@ class SponsorshipTest extends TestCase
     public function initial_contracts_start_with_the_season_and_end_after_one_to_five_whole_seasons(): void
     {
         [$instance, $club, $sponsor] = $this->world('2026-07-01');
+        $club->forceFill(['rank' => 10])->save();
         Club::factory()->count(10)->create(['instance_id' => $instance->id, 'rank' => 10]);
         Club::factory()->create(['instance_id' => $instance->id + 1]);
         $service = app(SponsorshipService::class);
@@ -48,7 +49,7 @@ class SponsorshipTest extends TestCase
             $this->assertContains($contract->expires_at->toDateString(), [
                 '2027-06-15', '2028-06-15', '2029-06-15', '2030-06-15', '2031-06-15',
             ]);
-            $this->assertSame($contract->club_id === $club->id ? 30000000 : 3750000, $contract->annual_amount);
+            $this->assertSame(3750000, $contract->annual_amount);
         }
         $this->assertDatabaseCount('sponsorship_payments', 0);
         $this->assertSame(0, $club->account->balance);
@@ -68,8 +69,38 @@ class SponsorshipTest extends TestCase
 
         app(SponsorshipService::class)->createInitialContracts($instance);
 
-        $this->assertDatabaseHas('sponsorship_contracts', ['club_id' => $club->id, 'sponsor_account_id' => $globalSponsor->id, 'annual_amount' => 30000000]);
+        $this->assertDatabaseHas('sponsorship_contracts', ['club_id' => $club->id, 'sponsor_account_id' => $globalSponsor->id, 'annual_amount' => 25721250]);
         $this->assertDatabaseHas('sponsorship_contracts', ['club_id' => $localClub->id, 'sponsor_account_id' => $localSponsor->id, 'annual_amount' => 3750]);
+    }
+
+    #[Test]
+    public function initial_contracts_only_use_sponsors_within_three_ranks_and_price_the_combined_rank(): void
+    {
+        [$instance, $club, $sponsor] = $this->world();
+        $sponsor->gameEntity->update(['rank' => 16]);
+        $service = app(SponsorshipService::class);
+
+        $service->createInitialContracts($instance);
+        $this->assertDatabaseCount('sponsorship_contracts', 0);
+
+        $sponsor->gameEntity->update(['rank' => 17]);
+        $service->createInitialContracts($instance);
+        $this->assertDatabaseHas('sponsorship_contracts', ['club_id' => $club->id, 'sponsor_account_id' => $sponsor->id, 'annual_amount' => 21870000]);
+    }
+
+    #[Test]
+    public function initial_contracts_enforce_the_rank_range_when_the_sponsor_is_stronger(): void
+    {
+        [$instance, $club, $sponsor] = $this->world();
+        $club->forceFill(['rank' => 6])->save();
+        $service = app(SponsorshipService::class);
+
+        $service->createInitialContracts($instance);
+        $this->assertDatabaseCount('sponsorship_contracts', 0);
+
+        $club->forceFill(['rank' => 7])->save();
+        $service->createInitialContracts($instance);
+        $this->assertDatabaseHas('sponsorship_contracts', ['club_id' => $club->id, 'sponsor_account_id' => $sponsor->id, 'annual_amount' => 1920000]);
     }
 
     #[Test]

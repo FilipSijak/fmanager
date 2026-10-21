@@ -12,7 +12,7 @@ use App\Models\Instance;
 use App\Models\Season;
 use App\Models\SponsorshipContract;
 use App\Models\SponsorshipPayment;
-use App\Services\FinanceService\Domain\SponsorshipCalculator;
+use App\Services\FinanceService\Domain\SponsorshipOfferCalculator;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
@@ -24,7 +24,7 @@ class SponsorshipService
 {
     public function __construct(
         private readonly FinanceService $finances,
-        private readonly SponsorshipCalculator $calculator,
+        private readonly SponsorshipOfferCalculator $calculator,
         private readonly GameContext $context,
     ) {}
 
@@ -43,15 +43,19 @@ class SponsorshipService
         }
 
         Club::query()->forInstance($instance->id)->each(function (Club $club) use ($instance, $startsAt, $firstSeasonEnd, $sponsorAccounts): void {
-            $nearestRankDistance = $sponsorAccounts->min(fn (GameEntityAccount $account): int => abs($account->gameEntity->rank - (int) $club->rank));
-            $sponsorAccount = $sponsorAccounts->filter(fn (GameEntityAccount $account): bool => abs($account->gameEntity->rank - (int) $club->rank) === $nearestRankDistance)->random();
+            $eligibleSponsors = $sponsorAccounts->filter(fn (GameEntityAccount $account): bool => $this->calculator->isEligible((int) $club->rank, $account->gameEntity->rank));
+            if ($eligibleSponsors->isEmpty()) {
+                return;
+            }
+            $nearestRankDistance = $eligibleSponsors->min(fn (GameEntityAccount $account): int => abs($account->gameEntity->rank - (int) $club->rank));
+            $sponsorAccount = $eligibleSponsors->filter(fn (GameEntityAccount $account): bool => abs($account->gameEntity->rank - (int) $club->rank) === $nearestRankDistance)->random();
             SponsorshipContract::query()->firstOrCreate([
                 'club_id' => $club->id,
                 'starts_at' => $startsAt->toDateString(),
             ], [
                 'instance_id' => $instance->id,
                 'sponsor_account_id' => $sponsorAccount->id,
-                'annual_amount' => $this->calculator->annualAmount((int) $club->rank),
+                'annual_amount' => $this->calculator->initialAmount((int) $club->rank, $sponsorAccount->gameEntity->rank),
                 'expires_at' => $firstSeasonEnd->addYearsNoOverflow(random_int(0, 4))->toDateString(),
             ]);
         });

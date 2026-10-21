@@ -11,6 +11,7 @@ use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\PlayerSearchController;
+use App\Http\Controllers\SponsorshipOfferController;
 use App\Http\Controllers\SquadLineupController;
 use App\Http\Controllers\StadiumController;
 use App\Http\Controllers\TacticsController;
@@ -36,6 +37,10 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/finance', [FinanceController::class, 'show']);
             Route::get('/finance/loans', [FinanceLoanController::class, 'index']);
             Route::get('/finance/sponsors', [FinanceSponsorController::class, 'index']);
+            Route::get('/finance/sponsor-offers', [SponsorshipOfferController::class, 'index']);
+            Route::post('/finance/sponsor-offers/{offerId}/accept', [SponsorshipOfferController::class, 'accept'])->whereNumber('offerId');
+            Route::post('/finance/sponsor-offers/{offerId}/reject', [SponsorshipOfferController::class, 'reject'])->whereNumber('offerId');
+            Route::post('/finance/sponsor-offers/{offerId}/negotiate', [SponsorshipOfferController::class, 'negotiate'])->whereNumber('offerId');
             Route::post('/finance/loans', [FinanceLoanController::class, 'store']);
 
             Route::prefix('stadium')->group(function (): void {

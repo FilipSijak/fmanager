@@ -2,6 +2,11 @@ import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
 import { type FormEvent, type ReactNode, useRef, useState } from 'react';
 import { store as takeOutLoan } from '@/actions/App/Http/Controllers/FinanceLoanController';
+import {
+    accept as acceptSponsorOffer,
+    negotiate as negotiateSponsorOffer,
+    reject as rejectSponsorOffer,
+} from '@/actions/App/Http/Controllers/SponsorshipOfferController';
 import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
 
@@ -33,11 +38,24 @@ type Loan = {
     }[];
 };
 
+type SponsorOffer = {
+    id: number;
+    sponsor_name: string;
+    sponsor_rank: number;
+    annual_amount: number;
+    term_seasons: number;
+    starts_at: string;
+    expires_at: string;
+    respond_by: string;
+    negotiation_response: 'agreed' | 'counteroffer' | null;
+};
+
 type Props = {
     club: { id: number; name: string };
     season: { start_date: string; end_date: string };
     finances: FinancialSummary | null;
     loans: Loan[];
+    sponsorOffers: SponsorOffer[];
     sponsors: {
         id: number;
         sponsor_name: string;
@@ -193,12 +211,175 @@ function LoanDetails({ loan }: { loan: Loan }) {
 const fieldClass =
     'w-full border border-[#3355dd] bg-black px-3 py-2 text-white focus:outline-2 focus:outline-[#f5f000]';
 
+function SponsorOfferCard({ offer }: { offer: SponsorOffer }) {
+    const [counterAmount, setCounterAmount] = useState(
+        String(Math.min(30000000, Math.ceil(offer.annual_amount * 1.05))),
+    );
+    const [busy, setBusy] = useState(false);
+    const busyRef = useRef(false);
+    const [error, setError] = useState<string | null>(null);
+    const [message, setMessage] = useState<string | null>(null);
+
+    async function respond(action: 'accept' | 'reject' | 'negotiate') {
+        if (busyRef.current) return;
+        busyRef.current = true;
+        setBusy(true);
+        setError(null);
+        setMessage(null);
+        const endpoints = {
+            accept: acceptSponsorOffer,
+            reject: rejectSponsorOffer,
+            negotiate: negotiateSponsorOffer,
+        };
+        try {
+            const response = await api.post(
+                endpoints[action].url(offer.id),
+                action === 'negotiate'
+                    ? { annual_amount: Number(counterAmount) }
+                    : {},
+            );
+            if (action === 'negotiate') {
+                setCounterAmount(
+                    String(
+                        Math.min(
+                            30000000,
+                            Math.ceil(response.data.data.annual_amount * 1.05),
+                        ),
+                    ),
+                );
+                setMessage(
+                    response.data.data.negotiation_response === 'agreed'
+                        ? 'The sponsor agreed to your annual amount. Accept the offer to sign the contract.'
+                        : 'The sponsor returned a counter-offer. You can accept it, reject it, or negotiate again.',
+                );
+            }
+        } catch (failure) {
+            const data = axios.isAxiosError<{
+                error?: string;
+                message?: string;
+                errors?: Record<string, string[]>;
+            }>(failure)
+                ? failure.response?.data
+                : undefined;
+            setError(
+                data?.errors?.annual_amount?.join(' ') ??
+                    data?.error ??
+                    data?.message ??
+                    'Unable to respond to this sponsorship offer.',
+            );
+            busyRef.current = false;
+            setBusy(false);
+            return;
+        }
+        router.reload({
+            only: ['sponsorOffers', 'sponsors'],
+            onFinish: () => {
+                busyRef.current = false;
+                setBusy(false);
+            },
+        });
+    }
+
+    return (
+        <article className="flex flex-col gap-4 border border-[#f5f000]/50 bg-[#04120a] p-4">
+            <div className="flex flex-wrap justify-between gap-2">
+                <h3 className="font-bold text-[#f5f000]">
+                    {offer.sponsor_name}{' '}
+                    <span className="text-xs font-normal text-[#5fae5f]">
+                        Rank {offer.sponsor_rank}/20
+                    </span>
+                </h3>
+                <span className="text-sm text-[#f5f000]">
+                    {formatMoney(offer.annual_amount)} per season
+                </span>
+            </div>
+            <p className="text-sm">
+                {offer.term_seasons} season{offer.term_seasons === 1 ? '' : 's'}{' '}
+                · {formatDate(offer.starts_at)} to{' '}
+                {formatDate(offer.expires_at)}
+            </p>
+            <p className="text-xs text-[#5fae5f]">
+                Respond by {formatDate(offer.respond_by)}. Payment starts with
+                the new contract.
+            </p>
+            {message && (
+                <p role="status" className="text-sm text-[#f5f000]">
+                    {message}
+                </p>
+            )}
+            {error && (
+                <p role="alert" className="text-sm text-red-400">
+                    {error}
+                </p>
+            )}
+            <div className="flex gap-3">
+                <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void respond('accept')}
+                    className="border border-[#39ff14] px-4 py-2 font-bold text-[#39ff14] hover:bg-white/5 disabled:opacity-50"
+                >
+                    {busy ? 'Processing…' : 'Accept'}
+                </button>
+                <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void respond('reject')}
+                    className="border border-red-400 px-4 py-2 text-red-400 hover:bg-white/5 disabled:opacity-50"
+                >
+                    Reject
+                </button>
+            </div>
+            {offer.annual_amount < 30000000 && (
+                <form
+                    onSubmit={(event) => {
+                        event.preventDefault();
+                        void respond('negotiate');
+                    }}
+                >
+                    <fieldset
+                        disabled={busy}
+                        className="flex flex-wrap items-end gap-3 disabled:opacity-50"
+                    >
+                        <label
+                            htmlFor={`sponsor-counter-${offer.id}`}
+                            className="flex flex-col gap-2 text-sm"
+                        >
+                            Counter-offer (£ per season)
+                            <input
+                                id={`sponsor-counter-${offer.id}`}
+                                type="number"
+                                min={offer.annual_amount + 1}
+                                max="30000000"
+                                step="1"
+                                required
+                                value={counterAmount}
+                                onChange={(event) =>
+                                    setCounterAmount(event.target.value)
+                                }
+                                className={fieldClass}
+                            />
+                        </label>
+                        <button
+                            type="submit"
+                            className="border border-[#f5f000] px-4 py-2 text-[#f5f000] hover:bg-white/5"
+                        >
+                            Negotiate
+                        </button>
+                    </fieldset>
+                </form>
+            )}
+        </article>
+    );
+}
+
 export default function Finance({
     club,
     season,
     finances,
     loans,
     sponsors,
+    sponsorOffers,
     loanOptions,
 }: Props) {
     const [amount, setAmount] = useState('');
@@ -332,6 +513,25 @@ export default function Finance({
                             Financial information is unavailable for this club.
                         </p>
                     )}
+
+                    <Panel title="Sponsorship Offers">
+                        {sponsorOffers.length === 0 ? (
+                            <p className="text-sm">
+                                No active sponsorship offer. Sponsors approach
+                                during the final six months of your current
+                                contract.
+                            </p>
+                        ) : (
+                            <div className="flex flex-col gap-4">
+                                {sponsorOffers.map((offer) => (
+                                    <SponsorOfferCard
+                                        key={offer.id}
+                                        offer={offer}
+                                    />
+                                ))}
+                            </div>
+                        )}
+                    </Panel>
 
                     <Panel title="Sponsors">
                         <p className="mb-4 text-xs text-[#5fae5f]">
