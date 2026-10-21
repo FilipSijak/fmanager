@@ -1,0 +1,77 @@
+database/factories/SponsorshipContractFactory.php
+  s_1df176e85068b1::t_7a6fc2b8545951 1-4,10-12,14-18,28-30
+  s_1df176e85068b1::t_db148fb8fe49e0 5-9,13,19-27
+app/Models/SponsorshipPayment.php
+  s_1df176e85068b1::t_1620627299c2f5 7,12-33
+  s_1df176e85068b1::t_7351e4d7b9e7f6 1-6,8-11,34
+routes/api.php
+  s_1df176e85068b1::t_e76a074462aec9 8,38
+app/Services/FinanceService/Domain/SponsorshipCalculator.php
+  s_1df176e85068b1::t_4b4d2ca2dee221 1-12,14-15
+  s_1df176e85068b1::t_a1f88740ff48a4 13
+database/migrations/2026_10_21_092319_create_sponsorship_contracts_table.php
+  s_1df176e85068b1::t_7a6fc2b8545951 1-10,12,20,24-31
+  s_1df176e85068b1::t_96d40d98484bd9 11,13-19,21-23
+app/Providers/EventServiceProvider.php
+  s_1df176e85068b1::t_e76a074462aec9 47,63
+  s_1df176e85068b1::t_29a77c749dfbc9 19
+database/migrations/2026_10_21_092320_create_sponsorship_payments_table.php
+  s_1df176e85068b1::t_6452c1e9944e19 11,13-18,20-21
+  s_1df176e85068b1::t_7351e4d7b9e7f6 1-10,12,19,22-29
+app/Services/InstanceService/CreateInstance.php
+  s_1df176e85068b1::t_e76a074462aec9 12,41,53
+tests/Feature/SponsorshipApiTest.php
+  s_1df176e85068b1::t_76dfebeb2df16f 1-4,11,14-17,90,95,98-99
+  s_1df176e85068b1::t_fd86fe4dc70a06 92,94
+  s_1df176e85068b1::t_53603a022b4887 5-10,12-13,18-89,91,93,96-97
+resources/js/pages/Finance.tsx
+  s_1df176e85068b1::t_6ae19690d420b7 41-49,200,335,340,344-346,351,358-359,400-405
+  s_1df176e85068b1::t_8d78e1adf5422a 336-339,341-343,347-350,352-357,360-399
+  s_1df176e85068b1::t_699794d2ed070d 406
+app/Models/SponsorshipContract.php
+  s_1df176e85068b1::t_7a6fc2b8545951 1-4,6-7,10-12,40
+  s_1df176e85068b1::t_1d4e43d0bad4ca 5,8-9,13-39
+app/Http/Resources/SponsorshipContractResource.php
+  s_1df176e85068b1::t_a79b5833d9d805 1-6,8-15,17-29
+  s_1df176e85068b1::t_e76a074462aec9 7,16
+database/factories/SponsorshipPaymentFactory.php
+  s_1df176e85068b1::t_7351e4d7b9e7f6 1-4,10-12,14-18,39-41
+  s_1df176e85068b1::t_43d56b885a7d6e 5-9,13,19-38
+app/Http/Controllers/FinancePageController.php
+  s_1df176e85068b1::t_e76a074462aec9 7,11,18,30
+tests/Integration/Instance/CreateInstanceTest.php
+  s_1df176e85068b1::t_6ae19690d420b7 64-70,420-421
+  s_1df176e85068b1::t_e5ffda5f255b25 12,25
+app/Http/Controllers/FinanceSponsorController.php
+  s_1df176e85068b1::t_fb37d77dd37700 1-18
+tests/Feature/SponsorshipTest.php
+  s_1df176e85068b1::t_6ed6e511c537c7 5-21,23,28-50,52-147,149-159,161-170
+  s_1df176e85068b1::t_d9404ac2f5a1c4 1-4,22,24-27,148,160,171-172
+  s_1df176e85068b1::t_a1f88740ff48a4 51
+tests/Unit/SponsorshipCalculatorTest.php
+  s_1df176e85068b1::t_a1f88740ff48a4 13-17
+  s_1df176e85068b1::t_7c37572d9a5abd 1-12,18-26
+app/Services/FinanceService/SponsorshipService.php
+  s_1df176e85068b1::t_d44e2f7ffff917 1-4,22-23,31,108-109
+  s_1df176e85068b1::t_a971e9cc3655c1 5-21,24-30,32-107
+app/Listeners/PayClubSponsorships.php
+  s_1df176e85068b1::t_2e1f53a38c13ff 1-4,6,10-12,14,16,28-29
+  s_1df176e85068b1::t_b04fc88ccc0eda 5,7-9,13,15,17,23-27
+  s_1df176e85068b1::t_e76a074462aec9 18-22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5fdca49213c5bbe25372cc708f8b3eaec7e69362",
+  "prompts": {},
+  "sessions": {
+    "s_1df176e85068b1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15d99-464d-73a0-8117-8fdff2966ebd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
