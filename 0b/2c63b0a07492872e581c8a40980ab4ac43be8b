@@ -1,0 +1,31 @@
+tests/Feature/SponsorshipTest.php
+  s_1df176e85068b1::t_6c4272e2835bde 30,32,47-50,99,102-106,135,138,154,157,161-164
+tests/Feature/SponsorshipApiTest.php
+  s_1df176e85068b1::t_bd83eb17a1de6d 64,76-77
+  s_1df176e85068b1::t_6c4272e2835bde 90-103
+  s_1df176e85068b1::t_714f46623fca1f 89
+app/Services/FinanceService/SponsorshipService.php
+  s_1df176e85068b1::t_bd83eb17a1de6d 33-35,45,55,77,79-81
+app/Services/InstanceService/CreateInstance.php
+  s_1df176e85068b1::t_bd83eb17a1de6d 57,87
+tests/Integration/Instance/CreateInstanceTest.php
+  s_1df176e85068b1::t_6c4272e2835bde 64-66,70,73-76
+database/factories/SponsorshipContractFactory.php
+  s_1df176e85068b1::t_bd83eb17a1de6d 26-27
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0b2c63b0a07492872e581c8a40980ab4ac43be8b",
+  "prompts": {},
+  "sessions": {
+    "s_1df176e85068b1": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a15d99-464d-73a0-8117-8fdff2966ebd",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
