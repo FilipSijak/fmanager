@@ -38,6 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/finance/loans', [FinanceLoanController::class, 'index']);
             Route::get('/finance/sponsors', [FinanceSponsorController::class, 'index']);
             Route::get('/finance/sponsor-offers', [SponsorshipOfferController::class, 'index']);
+            Route::get('/finance/sponsor-offers/history', [SponsorshipOfferController::class, 'history']);
             Route::post('/finance/sponsor-offers/{offerId}/accept', [SponsorshipOfferController::class, 'accept'])->whereNumber('offerId');
             Route::post('/finance/sponsor-offers/{offerId}/reject', [SponsorshipOfferController::class, 'reject'])->whereNumber('offerId');
             Route::post('/finance/sponsor-offers/{offerId}/negotiate', [SponsorshipOfferController::class, 'negotiate'])->whereNumber('offerId');

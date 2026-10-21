@@ -119,8 +119,7 @@ class SponsorshipOfferTest extends TestCase
     {
         $instance = $this->world();
         $service = app(SponsorshipOfferService::class);
-        foreach ([15, 16, 17] as $attempt => $day) {
-            $date = '2026-12-'.$day;
+        foreach (['2026-12-15', '2026-12-29', '2027-01-12'] as $attempt => $date) {
             $instance->forceFill(['instance_date' => $date])->save();
             app(GameContext::class)->set($instance->id, $instance->season_id, $date);
             $service->process($instance);
@@ -130,7 +129,7 @@ class SponsorshipOfferTest extends TestCase
             $service->process($instance);
             $this->assertSame($attempt + 1, SponsorshipOffer::query()->count());
         }
-        $instance->forceFill(['instance_date' => '2026-12-18'])->save();
+        $instance->forceFill(['instance_date' => '2027-01-26'])->save();
         $service->process($instance);
         $this->assertDatabaseCount('sponsorship_offers', 3);
 
@@ -156,6 +155,76 @@ class SponsorshipOfferTest extends TestCase
         $this->assertSame(SponsorshipOfferStatus::Accepted, $offer->status);
         $this->assertSame('2027-08-15', $offer->acceptedContract->starts_at->toDateString());
         $this->assertSame(2, SponsorshipContract::query()->where('club_id', $club->id)->count());
+    }
+
+    #[Test]
+    public function a_sponsor_waits_fourteen_days_from_rejection_before_approaching_again(): void
+    {
+        $instance = $this->world();
+        $service = app(SponsorshipOfferService::class);
+        $service->process($instance);
+        $offer = SponsorshipOffer::query()->sole();
+        app(GameContext::class)->setInstanceDate('2027-01-01');
+        $service->respond($offer->id, 'reject');
+        $this->assertSame('2027-01-01', $offer->fresh()->rejected_on->toDateString());
+
+        $instance->forceFill(['instance_date' => '2027-01-14'])->save();
+        $service->process($instance);
+        $this->assertDatabaseCount('sponsorship_offers', 1);
+        $instance->forceFill(['instance_date' => '2027-01-15'])->save();
+        $service->process($instance);
+
+        $this->assertDatabaseHas('sponsorship_offers', ['club_id' => $instance->club_id, 'status' => 'pending', 'attempt_number' => 2, 'offered_on' => '2027-01-15']);
+    }
+
+    #[Test]
+    public function another_eligible_sponsor_can_approach_during_a_rejection_cooldown(): void
+    {
+        $instance = $this->world();
+        $service = app(SponsorshipOfferService::class);
+        $service->process($instance);
+        $service->respond(SponsorshipOffer::query()->sole()->id, 'reject');
+        $entity = GameEntity::factory()->create(['instance_id' => $instance->id, 'type' => GameEntityType::SPONSOR, 'rank' => 10]);
+        $other = GameEntityAccount::factory()->create(['instance_id' => $instance->id, 'game_entity_id' => $entity->id]);
+
+        $instance->forceFill(['instance_date' => '2026-12-16'])->save();
+        $service->process($instance);
+
+        $this->assertSame($other->id, SponsorshipOffer::query()->where('status', SponsorshipOfferStatus::Pending)->sole()->sponsor_account_id);
+    }
+
+    #[Test]
+    public function older_rejections_without_a_rejection_date_use_the_offer_date_for_cooldown(): void
+    {
+        $instance = $this->world();
+        $service = app(SponsorshipOfferService::class);
+        $service->process($instance);
+        SponsorshipOffer::query()->sole()->update(['status' => 'rejected']);
+
+        $instance->forceFill(['instance_date' => '2026-12-28'])->save();
+        $service->process($instance);
+        $this->assertDatabaseCount('sponsorship_offers', 1);
+        $instance->forceFill(['instance_date' => '2026-12-29'])->save();
+        $service->process($instance);
+
+        $this->assertDatabaseHas('sponsorship_offers', ['status' => 'pending', 'attempt_number' => 2]);
+    }
+
+    #[Test]
+    public function rejecting_a_sponsor_does_not_prevent_it_approaching_another_club(): void
+    {
+        $instance = $this->world();
+        $service = app(SponsorshipOfferService::class);
+        $service->process($instance);
+        $offer = SponsorshipOffer::query()->sole();
+        $service->respond($offer->id, 'reject');
+        $club = Club::factory()->create(['instance_id' => $instance->id, 'rank' => 10]);
+
+        $instance->forceFill(['instance_date' => '2026-12-16'])->save();
+        $service->process($instance);
+
+        $this->assertDatabaseHas('sponsorship_offers', ['club_id' => $club->id, 'sponsor_account_id' => $offer->sponsor_account_id, 'status' => 'accepted']);
+        $this->assertSame(1, SponsorshipOffer::query()->where('club_id', $instance->club_id)->count());
     }
 
     #[Test]

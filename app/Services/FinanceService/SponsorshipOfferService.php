@@ -25,6 +25,10 @@ class SponsorshipOfferService
 {
     public const int MAX_APPROACHES_PER_SEASON = 3;
 
+    public const int REJECTION_COOLDOWN_DAYS = 14;
+
+    public const int HISTORY_LIMIT = 50;
+
     public function __construct(
         private readonly SponsorshipOfferCalculator $calculator,
         private readonly NewsService $news,
@@ -89,7 +93,14 @@ class SponsorshipOfferService
                     $occupied = SponsorshipContract::query()->forInstance($instance->id)
                         ->whereDate('expires_at', '>=', $date->toDateString())
                         ->pluck('sponsor_account_id')->flip();
+                    $cooldownCutoff = $date->subDays(self::REJECTION_COOLDOWN_DAYS)->toDateString();
+                    $coolingDown = SponsorshipOffer::query()->forInstance($instance->id)->where('club_id', $club->id)
+                        ->where('status', SponsorshipOfferStatus::Rejected)
+                        ->where(fn (Builder $query) => $query->whereDate('rejected_on', '>', $cooldownCutoff)
+                            ->orWhere(fn (Builder $legacy) => $legacy->whereNull('rejected_on')->whereDate('offered_on', '>', $cooldownCutoff)))
+                        ->pluck('sponsor_account_id')->flip();
                     $sponsor = $sponsors->filter(fn (GameEntityAccount $account): bool => $this->calculator->isEligible((int) $lockedClub->rank, $account->gameEntity->rank)
+                        && ! $coolingDown->has($account->id)
                         && (int) $attempts->get($account->id, 0) < self::MAX_APPROACHES_PER_SEASON)
                         ->sortBy(fn (GameEntityAccount $account): array => [
                             $occupied->has($account->id) ? 1 : 0,
@@ -144,8 +155,11 @@ class SponsorshipOfferService
                 $this->acceptLocked($offer, $date);
                 $this->publish($offer, $date, 'Sponsorship agreement signed', 'Your club has agreed a sponsorship starting '.$offer->starts_at->toDateString().'.');
             } elseif ($action === 'reject') {
-                $offer->update(['status' => SponsorshipOfferStatus::Rejected]);
+                $offer->update(['status' => SponsorshipOfferStatus::Rejected, 'rejected_on' => $date]);
             } elseif ($action === 'negotiate') {
+                if ($offer->isFinal()) {
+                    throw new DomainException("This is the sponsor's final offer. Accept or reject it.");
+                }
                 if ($annualAmount === null || $annualAmount <= $offer->annual_amount || $annualAmount > SponsorshipCalculator::MAX_ANNUAL_AMOUNT) {
                     throw new DomainException('Your counter-offer must exceed the current offer and be no more than £30 million.');
                 }
@@ -179,6 +193,19 @@ class SponsorshipOfferService
             'starts_at' => $offer->starts_at, 'expires_at' => $offer->expires_at,
         ]);
         $offer->update(['status' => SponsorshipOfferStatus::Accepted, 'accepted_contract_id' => $contract->id]);
+    }
+
+    /** @return Collection<int, SponsorshipOffer> */
+    public function historyForManagedClub(): Collection
+    {
+        $instance = Instance::query()->findOrFail($this->context->instanceId());
+
+        return SponsorshipOffer::query()->forInstance($instance->id)
+            ->where('club_id', $instance->club_id)
+            ->where(fn (Builder $query) => $query->where('status', '!=', SponsorshipOfferStatus::Pending)
+                ->orWhereDate('respond_by', '<', $this->context->instanceDate()))
+            ->with('sponsorAccount.gameEntity')->orderByDesc('offered_on')->orderByDesc('id')
+            ->limit(self::HISTORY_LIMIT)->get();
     }
 
     /** @return array{CarbonImmutable, CarbonImmutable} */

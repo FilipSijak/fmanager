@@ -31,6 +31,7 @@ class FinancePageController extends Controller
             'loanOptions' => $finances->cashLoanOptions(),
             'sponsors' => SponsorshipContractResource::collection($sponsorships->getClubContracts())->resolve(),
             'sponsorOffers' => SponsorshipOfferResource::collection($offers->pendingForManagedClub())->resolve(),
+            'sponsorOfferHistory' => SponsorshipOfferResource::collection($offers->historyForManagedClub())->resolve(),
         ]);
     }
 }

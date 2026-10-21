@@ -23,6 +23,11 @@ class SponsorshipOfferController extends Controller
         return $this->respond($offerId, 'accept');
     }
 
+    public function history(): JsonResponse
+    {
+        return ResponseHelper::success(SponsorshipOfferResource::collection($this->offers->historyForManagedClub())->resolve(request()));
+    }
+
     public function reject(int $offerId): JsonResponse
     {
         return $this->respond($offerId, 'reject');

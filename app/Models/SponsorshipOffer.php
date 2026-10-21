@@ -15,7 +15,7 @@ class SponsorshipOffer extends Model
     protected $fillable = [
         'instance_id', 'club_id', 'season_id', 'sponsor_account_id', 'accepted_contract_id',
         'status', 'attempt_number', 'term_seasons', 'annual_amount', 'maximum_annual_amount',
-        'negotiation_rounds', 'negotiation_response', 'offered_on', 'starts_at', 'expires_at', 'respond_by',
+        'negotiation_rounds', 'negotiation_response', 'offered_on', 'starts_at', 'expires_at', 'respond_by', 'rejected_on',
     ];
 
     protected function casts(): array
@@ -26,12 +26,18 @@ class SponsorshipOffer extends Model
             'attempt_number' => 'integer', 'term_seasons' => 'integer', 'negotiation_rounds' => 'integer',
             'offered_on' => 'immutable_date', 'starts_at' => 'immutable_date',
             'expires_at' => 'immutable_date', 'respond_by' => 'immutable_date',
+            'rejected_on' => 'immutable_date',
         ];
     }
 
     public function club(): BelongsTo
     {
         return $this->belongsTo(Club::class);
+    }
+
+    public function isFinal(): bool
+    {
+        return $this->annual_amount >= $this->maximum_annual_amount;
     }
 
     public function sponsorAccount(): BelongsTo

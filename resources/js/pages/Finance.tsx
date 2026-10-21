@@ -48,6 +48,12 @@ type SponsorOffer = {
     expires_at: string;
     respond_by: string;
     negotiation_response: 'agreed' | 'counteroffer' | null;
+    is_final: boolean;
+    status: 'pending' | 'accepted' | 'rejected' | 'expired';
+    offered_on: string;
+    rejected_on: string | null;
+    attempt_number: number;
+    negotiation_rounds: number;
 };
 
 type Props = {
@@ -56,6 +62,7 @@ type Props = {
     finances: FinancialSummary | null;
     loans: Loan[];
     sponsorOffers: SponsorOffer[];
+    sponsorOfferHistory: SponsorOffer[];
     sponsors: {
         id: number;
         sponsor_name: string;
@@ -248,9 +255,11 @@ function SponsorOfferCard({ offer }: { offer: SponsorOffer }) {
                     ),
                 );
                 setMessage(
-                    response.data.data.negotiation_response === 'agreed'
-                        ? 'The sponsor agreed to your annual amount. Accept the offer to sign the contract.'
-                        : 'The sponsor returned a counter-offer. You can accept it, reject it, or negotiate again.',
+                    response.data.data.is_final
+                        ? "This is the sponsor's final offer. Accept it to sign the contract, or reject it."
+                        : response.data.data.negotiation_response === 'agreed'
+                          ? 'The sponsor agreed to your annual amount. Accept the offer to sign the contract.'
+                          : 'The sponsor returned a counter-offer. You can accept it, reject it, or negotiate again.',
                 );
             }
         } catch (failure) {
@@ -272,7 +281,7 @@ function SponsorOfferCard({ offer }: { offer: SponsorOffer }) {
             return;
         }
         router.reload({
-            only: ['sponsorOffers', 'sponsors'],
+            only: ['sponsorOffers', 'sponsors', 'sponsorOfferHistory'],
             onFinish: () => {
                 busyRef.current = false;
                 setBusy(false);
@@ -302,6 +311,15 @@ function SponsorOfferCard({ offer }: { offer: SponsorOffer }) {
                 Respond by {formatDate(offer.respond_by)}. Payment starts with
                 the new contract.
             </p>
+            {offer.is_final && (
+                <p className="text-sm font-bold text-[#f5f000]">
+                    Final offer — the sponsor cannot increase this amount.
+                </p>
+            )}
+            <p className="text-xs text-[#5fae5f]">
+                After rejection, this sponsor must wait 14 days before
+                approaching again.
+            </p>
             {message && (
                 <p role="status" className="text-sm text-[#f5f000]">
                     {message}
@@ -330,7 +348,7 @@ function SponsorOfferCard({ offer }: { offer: SponsorOffer }) {
                     Reject
                 </button>
             </div>
-            {offer.annual_amount < 30000000 && (
+            {!offer.is_final && (
                 <form
                     onSubmit={(event) => {
                         event.preventDefault();
@@ -373,6 +391,70 @@ function SponsorOfferCard({ offer }: { offer: SponsorOffer }) {
     );
 }
 
+function SponsorOfferHistory({ offers }: { offers: SponsorOffer[] }) {
+    return (
+        <Panel title="Sponsorship Offer History">
+            {offers.length === 0 ? (
+                <p className="text-sm">No past sponsorship offers.</p>
+            ) : (
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <caption className="mb-3 text-left text-xs text-[#5fae5f]">
+                            Your 50 most recent accepted, rejected, and expired
+                            offers.
+                        </caption>
+                        <thead className="text-xs text-[#5fae5f]">
+                            <tr>
+                                <th className="p-2">Sponsor</th>
+                                <th className="p-2">Offered</th>
+                                <th className="p-2">Annual Amount</th>
+                                <th className="p-2">Contract Dates</th>
+                                <th className="p-2">Outcome</th>
+                                <th className="p-2">Attempt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {offers.map((offer) => (
+                                <tr
+                                    key={offer.id}
+                                    className="border-t border-[#1f3a1f]"
+                                >
+                                    <td className="p-2 text-[#f5f000]">
+                                        {offer.sponsor_name}
+                                    </td>
+                                    <td className="p-2 whitespace-nowrap">
+                                        {formatDate(offer.offered_on)}
+                                    </td>
+                                    <td className="p-2 whitespace-nowrap">
+                                        {formatMoney(offer.annual_amount)}
+                                    </td>
+                                    <td className="p-2 whitespace-nowrap">
+                                        {formatDate(offer.starts_at)} to{' '}
+                                        {formatDate(offer.expires_at)}
+                                    </td>
+                                    <td className="p-2">
+                                        <span className="capitalize">
+                                            {offer.status}
+                                        </span>
+                                        {offer.rejected_on && (
+                                            <span className="block whitespace-nowrap text-xs text-[#5fae5f]">
+                                                {formatDate(offer.rejected_on)}
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="p-2">
+                                        {offer.attempt_number} / 3
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </Panel>
+    );
+}
+
 export default function Finance({
     club,
     season,
@@ -380,6 +462,7 @@ export default function Finance({
     loans,
     sponsors,
     sponsorOffers,
+    sponsorOfferHistory,
     loanOptions,
 }: Props) {
     const [amount, setAmount] = useState('');
@@ -532,6 +615,8 @@ export default function Finance({
                             </div>
                         )}
                     </Panel>
+
+                    <SponsorOfferHistory offers={sponsorOfferHistory} />
 
                     <Panel title="Sponsors">
                         <p className="mb-4 text-xs text-[#5fae5f]">

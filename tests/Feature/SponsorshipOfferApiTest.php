@@ -22,13 +22,15 @@ class SponsorshipOfferApiTest extends TestCase
     public function negotiations_keep_one_offer_and_acceptance_signs_once_without_immediate_payment(): void
     {
         $offer = $this->offer();
-        $this->getJson('/api/finance/sponsor-offers')->assertOk()->assertJsonCount(1, 'data')->assertJsonMissingPath('data.0.maximum_annual_amount');
+        $this->getJson('/api/finance/sponsor-offers')->assertOk()->assertJsonCount(1, 'data')->assertJsonPath('data.0.is_final', false)->assertJsonMissingPath('data.0.maximum_annual_amount');
         $this->postJson($this->url($offer, 'negotiate'), ['annual_amount' => 3900000])
             ->assertOk()->assertJsonPath('data.annual_amount', 3900000)->assertJsonPath('data.negotiation_response', 'agreed');
         $this->postJson($this->url($offer, 'negotiate'), ['annual_amount' => 30000000])
             ->assertOk()->assertJsonPath('data.annual_amount', 4095000)->assertJsonPath('data.negotiation_response', 'counteroffer');
         $this->postJson($this->url($offer, 'negotiate'), ['annual_amount' => 30000000])
-            ->assertOk()->assertJsonPath('data.annual_amount', 4125000);
+            ->assertOk()->assertJsonPath('data.annual_amount', 4125000)->assertJsonPath('data.is_final', true);
+        $this->postJson($this->url($offer, 'negotiate'), ['annual_amount' => 30000000])
+            ->assertUnprocessable()->assertJsonPath('error', "This is the sponsor's final offer. Accept or reject it.");
         $this->assertDatabaseCount('sponsorship_offers', 1);
         $this->assertDatabaseHas('sponsorship_offers', ['id' => $offer->id, 'status' => 'pending', 'attempt_number' => 1, 'negotiation_rounds' => 3]);
 
@@ -95,6 +97,68 @@ class SponsorshipOfferApiTest extends TestCase
     {
         $this->getJson('/api/finance/sponsor-offers')->assertUnauthorized();
         $this->postJson('/api/finance/sponsor-offers/1/accept')->assertUnauthorized();
+        $this->getJson('/api/finance/sponsor-offers/history')->assertUnauthorized();
+    }
+
+    #[Test]
+    public function final_offers_at_the_global_cap_can_still_be_rejected(): void
+    {
+        $offer = $this->offer();
+        $offer->update(['annual_amount' => 30000000, 'maximum_annual_amount' => 30000000]);
+
+        $this->getJson('/api/finance/sponsor-offers')->assertJsonPath('data.0.is_final', true);
+        $this->postJson($this->url($offer, 'reject'))->assertOk()->assertJsonPath('data.status', 'rejected')->assertJsonPath('data.rejected_on', '2026-12-15');
+    }
+
+    #[Test]
+    public function history_shows_only_the_managed_clubs_closed_offers_newest_first(): void
+    {
+        $offer = $this->offer();
+        $this->postJson($this->url($offer, 'reject'))->assertOk();
+        $attributes = ['instance_id' => $offer->instance_id, 'club_id' => $offer->club_id, 'season_id' => $offer->season_id, 'sponsor_account_id' => $offer->sponsor_account_id];
+        $expired = SponsorshipOffer::factory()->create([...$attributes, 'status' => 'expired', 'attempt_number' => 2, 'offered_on' => '2026-12-14']);
+        $accepted = SponsorshipOffer::factory()->create([...$attributes, 'status' => 'accepted', 'attempt_number' => 3, 'offered_on' => '2026-12-13']);
+        SponsorshipOffer::factory()->create([...$attributes, 'status' => 'pending', 'attempt_number' => 1, 'season_id' => Season::factory()->create(['instance_id' => $offer->instance_id])->id]);
+        SponsorshipOffer::factory()->create(['status' => 'rejected']);
+        $otherContract = SponsorshipContract::factory()->create(['instance_id' => $offer->instance_id]);
+        SponsorshipOffer::factory()->create([...$attributes, 'club_id' => $otherContract->club_id, 'status' => 'expired']);
+
+        $this->getJson('/api/finance/sponsor-offers/history?club_id='.$otherContract->club_id)->assertOk()
+            ->assertJsonCount(3, 'data')->assertJsonPath('data.0.id', $offer->id)->assertJsonPath('data.0.status', 'rejected')
+            ->assertJsonPath('data.0.rejected_on', '2026-12-15')->assertJsonPath('data.1.id', $expired->id)->assertJsonPath('data.2.id', $accepted->id)
+            ->assertJsonMissingPath('data.0.maximum_annual_amount');
+        $this->withoutVite();
+        $instance = Instance::query()->findOrFail($offer->instance_id);
+        $this->withSession(['active_instance_hash' => $instance->instance_hash])->get('/finance')
+            ->assertInertia(fn (Assert $page) => $page->has('sponsorOfferHistory', 3)
+                ->where('sponsorOfferHistory.0.id', $offer->id)->where('sponsorOfferHistory.1.status', 'expired')->where('sponsorOfferHistory.2.status', 'accepted'));
+    }
+
+    #[Test]
+    public function history_is_limited_to_the_fifty_most_recent_offers(): void
+    {
+        $offer = $this->offer();
+        $offer->update(['status' => 'rejected']);
+        SponsorshipOffer::factory()->count(50)->create(['instance_id' => $offer->instance_id, 'club_id' => $offer->club_id, 'sponsor_account_id' => $offer->sponsor_account_id, 'status' => 'expired']);
+
+        $this->getJson('/api/finance/sponsor-offers/history')->assertJsonCount(50, 'data')->assertJsonMissing(['id' => $offer->id]);
+    }
+
+    #[Test]
+    public function offers_move_to_expired_history_after_the_deadline_before_daily_processing(): void
+    {
+        $offer = $this->offer();
+        $instance = Instance::query()->findOrFail($offer->instance_id);
+        $instance->forceFill(['instance_date' => '2027-08-14'])->save();
+        $this->getJson('/api/finance/sponsor-offers/history')->assertJsonCount(0, 'data');
+        $this->getJson('/api/finance/sponsor-offers')->assertJsonCount(1, 'data');
+
+        $instance->forceFill(['instance_date' => '2027-08-15'])->save();
+
+        $this->getJson('/api/finance/sponsor-offers')->assertJsonCount(0, 'data');
+        $this->getJson('/api/finance/sponsor-offers/history')->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $offer->id)->assertJsonPath('data.0.status', 'expired');
+        $this->postJson($this->url($offer, 'accept'))->assertUnprocessable();
     }
 
     #[Test]
