@@ -12,14 +12,19 @@ use App\Services\MatchEngineService\Data\MatchTeam;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\TacticsService\FormationTendency;
 use App\Services\TacticsService\Mentality;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 /**
- * Turns a club's tactic and starting eleven into the ratings the match engine plays with.
+ * Turns a club's tactic and matchday squad into the ratings the match engine plays with.
  */
 class MatchTeamBuilder
 {
     private const LINEUP_SIZE = 11;
+
+    private const SUBSTITUTES = 7;
+
+    /** Position the lineup screen saves for bench slots. */
+    private const SUBSTITUTE_POSITION = 'SUB';
 
     /** Rating given to a lineup slot the club cannot fill. */
     private const EMPTY_SLOT_RATING = 1.0;
@@ -60,9 +65,22 @@ class MatchTeamBuilder
             ->where('club_id', $clubId)
             ->where('is_retired', false)
             ->get()
-            ->keyBy('id');
+            ->keyBy('id')
+            ->collect();
 
-        $lineup = $this->savedLineup($tactic, $squad) ?? $this->pickLineup($this->formationLines($formation), $squad);
+        [$savedStarters, $savedSubstitutes] = $this->savedSelection($tactic, $squad);
+        $savedPlayerIds = [
+            ...array_map(fn (array $slot): int => $slot['player']->id, $savedStarters),
+            ...$savedSubstitutes->keys()->all(),
+        ];
+        $unselected = $squad->except($savedPlayerIds);
+
+        $lineup = $this->completeLineup($this->formationLines($formation), $savedStarters, $savedSubstitutes, $unselected);
+        $starterIds = array_map(fn (array $slot): int => $slot['player']->id, array_filter($lineup, fn (array $slot): bool => $slot['player'] !== null));
+        $substitutes = $this->completeBench(
+            $savedSubstitutes->except($starterIds),
+            $unselected->except($starterIds),
+        );
 
         return new MatchTeam(
             clubId: $clubId,
@@ -72,6 +90,8 @@ class MatchTeamBuilder
             goalkeeping: $this->goalkeeperRating($lineup),
             formationTendency: $formation?->tactical_tendency ?? FormationTendency::BALANCED,
             mentality: $tactic?->mentality ?? $preference?->mentality ?? Mentality::BALANCED,
+            startingPlayerIds: array_values($starterIds),
+            substitutePlayerIds: $substitutes->keys()->all(),
         );
     }
 
@@ -97,29 +117,34 @@ class MatchTeamBuilder
     }
 
     /**
-     * The lineup the club picked, as long as all eleven players are still in the squad.
+     * The starters and substitutes the club picked who are still in the squad.
      *
      * @param  Collection<int, Player>  $squad
-     * @return list<array{line: PitchLine, player: ?Player}>|null
+     * @return array{0: list<array{line: PitchLine, player: Player}>, 1: Collection<int, Player>}
      */
-    private function savedLineup(?ClubTactic $tactic, Collection $squad): ?array
+    private function savedSelection(?ClubTactic $tactic, Collection $squad): array
     {
         if ($tactic === null) {
-            return null;
+            return [[], collect()];
         }
 
-        $slots = ClubTacticPlayerSlot::query()->where('club_tactic_id', $tactic->id)->get();
-        $playerIds = $slots->pluck('player_id')->unique();
+        $slots = ClubTacticPlayerSlot::query()
+            ->where('club_tactic_id', $tactic->id)
+            ->orderBy('id')
+            ->get()
+            ->filter(fn (ClubTacticPlayerSlot $slot): bool => $squad->has($slot->player_id));
+        [$substituteSlots, $starterSlots] = $slots->partition(fn (ClubTacticPlayerSlot $slot): bool => $slot->position === self::SUBSTITUTE_POSITION);
 
-        if ($slots->count() !== self::LINEUP_SIZE || $playerIds->count() !== self::LINEUP_SIZE
-            || $playerIds->contains(fn (int $playerId): bool => ! $squad->has($playerId))) {
-            return null;
-        }
-
-        return $slots->map(fn (ClubTacticPlayerSlot $slot): array => [
+        $starters = $starterSlots->take(self::LINEUP_SIZE)->map(fn (ClubTacticPlayerSlot $slot): array => [
             'line' => PitchLine::fromPosition($slot->position),
             'player' => $squad->get($slot->player_id),
         ])->values()->all();
+
+        $substitutes = $substituteSlots->take(self::SUBSTITUTES)
+            ->mapWithKeys(fn (ClubTacticPlayerSlot $slot): array => [$slot->player_id => $squad->get($slot->player_id)])
+            ->toBase();
+
+        return [$starters, $substitutes];
     }
 
     /** @return array<string, int> */
@@ -135,43 +160,83 @@ class MatchTeamBuilder
     }
 
     /**
-     * Fills each line with the best players who naturally play there, then fills any gaps with the best of the rest.
+     * Keeps the saved starters and fills each line's open places, first from the saved bench and then from the rest
+     * of the squad, preferring players who naturally play in that line. Places nobody can fill stay empty.
      *
      * @param  array<string, int>  $lines
-     * @param  Collection<int, Player>  $squad
+     * @param  list<array{line: PitchLine, player: Player}>  $savedStarters
+     * @param  Collection<int, Player>  $savedSubstitutes
+     * @param  Collection<int, Player>  $unselected
      * @return list<array{line: PitchLine, player: ?Player}>
      */
-    private function pickLineup(array $lines, Collection $squad): array
+    private function completeLineup(array $lines, array $savedStarters, Collection $savedSubstitutes, Collection $unselected): array
     {
-        $available = $squad->collect();
-        $lineup = [];
+        $lineup = $savedStarters;
 
-        foreach ([true, false] as $naturalPositionOnly) {
-            foreach ($lines as $lineValue => $count) {
-                $line = PitchLine::from($lineValue);
-                $needed = $count - count(array_filter($lineup, fn (array $slot): bool => $slot['line'] === $line));
-                $candidates = $available
-                    ->filter(fn (Player $player): bool => ! $naturalPositionOnly || PitchLine::fromPosition($player->position) === $line)
-                    ->sortByDesc(fn (Player $player): float => $this->skillRating($player, $this->lineSkill($line)))
-                    ->take(max(0, $needed));
+        foreach ([$savedSubstitutes->collect(), $unselected->collect()] as $pool) {
+            foreach ([true, false] as $naturalPositionOnly) {
+                foreach ($lines as $lineValue => $count) {
+                    $line = PitchLine::from($lineValue);
+                    $open = min($count - $this->playersInLine($lineup, $line), self::LINEUP_SIZE - count($lineup));
+                    $candidates = $pool
+                        ->filter(fn (Player $player): bool => ! $naturalPositionOnly || PitchLine::fromPosition($player->position) === $line)
+                        ->sortByDesc(fn (Player $player): float => $this->skillRating($player, $this->lineSkill($line)))
+                        ->take(max(0, $open));
 
-                foreach ($candidates as $player) {
-                    $lineup[] = ['line' => $line, 'player' => $player];
-                    $available->forget($player->id);
+                    foreach ($candidates as $player) {
+                        $lineup[] = ['line' => $line, 'player' => $player];
+                        $pool->forget($player->id);
+                    }
                 }
             }
         }
 
         foreach ($lines as $lineValue => $count) {
             $line = PitchLine::from($lineValue);
-            $filled = count(array_filter($lineup, fn (array $slot): bool => $slot['line'] === $line));
 
-            for ($slot = $filled; $slot < $count; $slot++) {
+            for ($slot = $this->playersInLine($lineup, $line); $slot < $count; $slot++) {
                 $lineup[] = ['line' => $line, 'player' => null];
             }
         }
 
         return $lineup;
+    }
+
+    /**
+     * Keeps the saved substitutes and fills the rest of the bench with the best unselected players, starting with a
+     * backup goalkeeper when the bench has none.
+     *
+     * @param  Collection<int, Player>  $savedSubstitutes
+     * @param  Collection<int, Player>  $unselected
+     * @return Collection<int, Player>
+     */
+    private function completeBench(Collection $savedSubstitutes, Collection $unselected): Collection
+    {
+        $bench = $savedSubstitutes->collect();
+        $isGoalkeeper = fn (Player $player): bool => PitchLine::fromPosition($player->position) === PitchLine::GOALKEEPER;
+
+        if (! $bench->contains($isGoalkeeper)) {
+            $backupGoalkeeper = $unselected->filter($isGoalkeeper)
+                ->sortByDesc(fn (Player $player): float => $this->skillRating($player, 'goalkeeping'))
+                ->first();
+
+            if ($backupGoalkeeper !== null && $bench->count() < self::SUBSTITUTES) {
+                $bench->put($backupGoalkeeper->id, $backupGoalkeeper);
+            }
+        }
+
+        $unselected->except($bench->keys()->all())
+            ->sortByDesc(fn (Player $player): float => $this->naturalRating($player))
+            ->take(self::SUBSTITUTES - $bench->count())
+            ->each(fn (Player $player) => $bench->put($player->id, $player));
+
+        return $bench;
+    }
+
+    /** @param list<array{line: PitchLine, player: ?Player}> $lineup */
+    private function playersInLine(array $lineup, PitchLine $line): int
+    {
+        return count(array_filter($lineup, fn (array $slot): bool => $slot['line'] === $line));
     }
 
     /** @param list<array{line: PitchLine, player: ?Player}> $lineup */
@@ -204,6 +269,11 @@ class MatchTeamBuilder
     private function slotRating(?Player $player, string $skill): float
     {
         return $player === null ? self::EMPTY_SLOT_RATING : $this->skillRating($player, $skill);
+    }
+
+    private function naturalRating(Player $player): float
+    {
+        return $this->skillRating($player, $this->lineSkill(PitchLine::fromPosition($player->position)));
     }
 
     private function skillRating(Player $player, string $skill): float

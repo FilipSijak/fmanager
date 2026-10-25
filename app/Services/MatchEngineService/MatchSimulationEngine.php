@@ -53,6 +53,10 @@ class MatchSimulationEngine
                 'home' => round($homeExpectedGoals, 2),
                 'away' => round($awayExpectedGoals, 2),
             ],
+            'lineups' => [
+                'home' => ['starting' => $home->startingPlayerIds, 'substitutes' => $home->substitutePlayerIds],
+                'away' => ['starting' => $away->startingPlayerIds, 'substitutes' => $away->substitutePlayerIds],
+            ],
             'events' => $this->goalEvents($home, $homeGoals, $away, $awayGoals),
         ]);
     }

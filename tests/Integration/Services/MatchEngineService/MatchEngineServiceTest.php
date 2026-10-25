@@ -29,6 +29,8 @@ class MatchEngineServiceTest extends TestCase
 
     private const LINEUP_POSITIONS = ['GK', 'CB', 'CB', 'CB', 'CB', 'CM', 'CM', 'CM', 'CM', 'ST', 'ST'];
 
+    private const BENCH_POSITIONS = ['GK', 'CB', 'CB', 'CM', 'CM', 'ST', 'ST'];
+
     #[Test]
     public function clubs_without_a_tactic_or_manager_play_neutral(): void
     {
@@ -68,31 +70,62 @@ class MatchEngineServiceTest extends TestCase
     }
 
     #[Test]
-    public function picks_the_best_active_players_when_the_club_has_no_saved_lineup(): void
+    public function picks_the_best_active_eleven_and_bench_when_the_club_has_no_saved_lineup(): void
     {
         $game = $this->game();
-        $this->squad($game->hometeam_id, 12);
-        $this->squad($game->hometeam_id, 8);
+        $starters = $this->squad($game->hometeam_id, 12);
+        $substitutes = $this->squad($game->hometeam_id, 8, positions: self::BENCH_POSITIONS);
+        $this->squad($game->hometeam_id, 5, positions: ['CB']);
         $this->squad($game->hometeam_id, 20, ['is_retired' => true]);
         $this->squad($game->awayteam_id, 8);
 
         $result = app(MatchEngineService::class)->simulate($game);
 
         $this->assertSame(['home' => 2.94, 'away' => 0.59], $result->summary['expected_goals']);
+        $this->assertSame([
+            'starting' => $starters->pluck('id')->all(),
+            'substitutes' => $substitutes->pluck('id')->all(),
+        ], $result->summary['lineups']['home']);
     }
 
     #[Test]
-    public function plays_the_saved_lineup_over_better_players_on_the_bench(): void
+    public function plays_the_saved_starters_and_keeps_the_saved_bench_out_of_the_ratings(): void
     {
         $game = $this->game();
         $tactic = $this->clubTactic($game->hometeam_id, FormationTendency::BALANCED, Mentality::BALANCED);
-        $this->squad($game->hometeam_id, 12);
-        $this->saveLineup($tactic, $this->squad($game->hometeam_id, 8));
+        $starters = $this->squad($game->hometeam_id, 8);
+        $substitutes = $this->squad($game->hometeam_id, 12, positions: self::BENCH_POSITIONS);
+        $this->saveLineup($tactic, $starters, $substitutes);
         $this->squad($game->awayteam_id, 8);
 
         $result = app(MatchEngineService::class)->simulate($game);
 
         $this->assertSame(['home' => 1.46, 'away' => 1.2], $result->summary['expected_goals']);
+        $this->assertSame([
+            'starting' => $starters->pluck('id')->all(),
+            'substitutes' => $substitutes->pluck('id')->all(),
+        ], $result->summary['lineups']['home']);
+    }
+
+    #[Test]
+    public function replaces_a_saved_starter_who_left_the_club_from_the_saved_bench(): void
+    {
+        $game = $this->game();
+        $tactic = $this->clubTactic($game->hometeam_id, FormationTendency::BALANCED, Mentality::BALANCED);
+        $starters = $this->squad($game->hometeam_id, 10);
+        $substitutes = $this->squad($game->hometeam_id, 8, positions: self::BENCH_POSITIONS);
+        $reserve = $this->squad($game->hometeam_id, 6, positions: ['CM'])->first();
+        $this->saveLineup($tactic, $starters, $substitutes);
+        $soldDefender = $starters[1];
+        $soldDefender->forceFill(['club_id' => null])->save();
+        $replacementDefender = $substitutes[1];
+
+        $result = app(MatchEngineService::class)->simulate($game);
+
+        $this->assertSame([
+            'starting' => [...$starters->except(1)->pluck('id')->all(), $replacementDefender->id],
+            'substitutes' => [...$substitutes->except(1)->pluck('id')->all(), $reserve->id],
+        ], $result->summary['lineups']['home']);
     }
 
     private function game(): Game
@@ -125,12 +158,13 @@ class MatchEngineServiceTest extends TestCase
     }
 
     /**
-     * An eleven in a 4-4-2 shape with every attribute set to the given rating.
+     * Players in the given positions (an eleven in a 4-4-2 shape by default) with every attribute set to the given rating.
      *
      * @param  array<string, mixed>  $attributes
+     * @param  list<string>  $positions
      * @return Collection<int, Player>
      */
-    private function squad(int $clubId, int $rating, array $attributes = []): Collection
+    private function squad(int $clubId, int $rating, array $attributes = [], array $positions = self::LINEUP_POSITIONS): Collection
     {
         $ratings = array_fill_keys([
             ...PlayerFields::TECHNICAL_FIELDS,
@@ -139,7 +173,7 @@ class MatchEngineServiceTest extends TestCase
             ...PlayerFields::GOALKEEPING_FIELDS,
         ], $rating);
 
-        return collect(self::LINEUP_POSITIONS)->map(fn (string $position): Player => Player::factory()->create([
+        return collect($positions)->map(fn (string $position): Player => Player::factory()->create([
             ...$ratings,
             ...$attributes,
             'instance_id' => 1,
@@ -148,17 +182,27 @@ class MatchEngineServiceTest extends TestCase
         ]));
     }
 
-    /** @param Collection<int, Player> $players */
-    private function saveLineup(ClubTactic $tactic, Collection $players): void
+    /**
+     * Saves the selection the way the lineup screen does: formation slots for starters, SUB slots for the bench.
+     *
+     * @param  Collection<int, Player>  $starters
+     * @param  Collection<int, Player>  $substitutes
+     */
+    private function saveLineup(ClubTactic $tactic, Collection $starters, Collection $substitutes): void
     {
-        foreach ($players->values() as $index => $player) {
+        $slots = [
+            ...$starters->values()->map(fn (Player $player, int $index): array => ['slot' => 'S'.($index + 1), 'player' => $player, 'position' => $player->position]),
+            ...$substitutes->values()->map(fn (Player $player, int $index): array => ['slot' => 'SUB'.($index + 1), 'player' => $player, 'position' => 'SUB']),
+        ];
+
+        foreach ($slots as $slot) {
             ClubTacticPlayerSlot::query()->create([
                 'instance_id' => 1,
                 'club_id' => $tactic->club_id,
                 'club_tactic_id' => $tactic->id,
-                'player_id' => $player->id,
-                'slot' => (string) $index,
-                'position' => $player->position,
+                'player_id' => $slot['player']->id,
+                'slot' => $slot['slot'],
+                'position' => $slot['position'],
             ]);
         }
     }

@@ -6,7 +6,7 @@ use App\Services\TacticsService\FormationTendency;
 use App\Services\TacticsService\Mentality;
 
 /**
- * A club's strength going into a match. Ratings use the 1-20 player attribute scale.
+ * A club's strength going into a match. Ratings use the 1-20 player attribute scale and come from the starters only.
  */
 final class MatchTeam
 {
@@ -18,5 +18,9 @@ final class MatchTeam
         public readonly float $goalkeeping,
         public readonly FormationTendency $formationTendency = FormationTendency::BALANCED,
         public readonly Mentality $mentality = Mentality::BALANCED,
+        /** @var list<int> */
+        public readonly array $startingPlayerIds = [],
+        /** @var list<int> */
+        public readonly array $substitutePlayerIds = [],
     ) {}
 }
