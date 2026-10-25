@@ -18,8 +18,17 @@ class MatchSimulationEngine
 
     private const AWAY_DISADVANTAGE = 0.92;
 
-    /** How sharply the attack-to-defence ratio separates stronger sides from weaker ones. */
-    private const STRENGTH_EXPONENT = 1.5;
+    /** Rating of an average player on the 1-20 attribute scale; sides rated here score and concede the base amount. */
+    private const AVERAGE_RATING = 10.0;
+
+    /** Every 10% a side's attack rating sits above (below) average raises (lowers) its expected goals by 8%. */
+    private const ATTACK_WEIGHT = 0.8;
+
+    /** Every 10% a side's defence rating sits above (below) average lowers (raises) the opponent's expected goals by 7%. */
+    private const DEFENCE_WEIGHT = 0.7;
+
+    /** Lowest multiplier an attack or defence rating can apply, so very weak sides still create something. */
+    private const MIN_RATING_FACTOR = 0.2;
 
     /** Goalkeeper's share of a side's defensive strength; outfield defending makes up the rest. */
     private const GOALKEEPER_DEFENCE_SHARE = 0.25;
@@ -86,14 +95,24 @@ class MatchSimulationEngine
     {
         $defensiveStrength = $defending->defence * (1 - self::GOALKEEPER_DEFENCE_SHARE)
             + $defending->goalkeeping * self::GOALKEEPER_DEFENCE_SHARE;
-        $strengthFactor = ($attacking->attack / $defensiveStrength) ** self::STRENGTH_EXPONENT;
+        $attackFactor = $this->ratingFactor(self::ATTACK_WEIGHT * ($attacking->attack - self::AVERAGE_RATING));
+        $defenceFactor = $this->ratingFactor(self::DEFENCE_WEIGHT * (self::AVERAGE_RATING - $defensiveStrength));
         $possessionFactor = 0.5 + $attacking->midfield / ($attacking->midfield + $defending->midfield);
         $scoringFactor = 1 + self::STANCE_SCORING_STEP * $this->tacticalStance($attacking);
         $concedingFactor = 1 + self::STANCE_CONCEDING_STEP * $this->tacticalStance($defending);
 
-        $expectedGoals = self::BASE_GOALS * $venueFactor * $strengthFactor * $possessionFactor * $scoringFactor * $concedingFactor;
+        $expectedGoals = self::BASE_GOALS * $venueFactor * $attackFactor * $defenceFactor * $possessionFactor * $scoringFactor * $concedingFactor;
 
         return max(self::MIN_EXPECTED_GOALS, min(self::MAX_EXPECTED_GOALS, $expectedGoals));
+    }
+
+    /**
+     * Turns a weighted rating gap from average into a multiplier on the base: positive gaps add goals, negative gaps take
+     * them away.
+     */
+    private function ratingFactor(float $weightedGapFromAverage): float
+    {
+        return max(self::MIN_RATING_FACTOR, 1 + $weightedGapFromAverage / self::AVERAGE_RATING);
     }
 
     /**

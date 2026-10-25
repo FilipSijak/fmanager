@@ -38,12 +38,34 @@ class MatchSimulationEngineTest extends TestCase
         $this->assertSame(['home' => $homeExpectedGoals, 'away' => $awayExpectedGoals], $result->summary['expected_goals']);
     }
 
-    #[Test]
-    public function stronger_attack_against_weaker_defence_raises_expected_goals(): void
+    /** @return array<string, array{float, float, float, float}> */
+    public static function homeRatings(): array
     {
-        $result = (new MatchSimulationEngine)->simulate($this->team(10, attack: 15), $this->team(20));
+        return [
+            'strong attack scores more' => [15, 10, 2.04, 1.2],
+            'weak attack scores less' => [5, 10, 0.87, 1.2],
+            'strong defence concedes less' => [10, 15, 1.46, 0.88],
+            'weak defence concedes more' => [10, 5, 1.46, 1.51],
+        ];
+    }
 
-        $this->assertSame(['home' => 2.67, 'away' => 1.2], $result->summary['expected_goals']);
+    #[Test]
+    #[DataProvider('homeRatings')]
+    public function attack_and_defence_ratings_move_expected_goals_off_the_base(float $attack, float $defence, float $homeExpectedGoals, float $awayExpectedGoals): void
+    {
+        $result = (new MatchSimulationEngine)->simulate($this->team(10, attack: $attack, defence: $defence), $this->team(20));
+
+        $this->assertSame(['home' => $homeExpectedGoals, 'away' => $awayExpectedGoals], $result->summary['expected_goals']);
+    }
+
+    #[Test]
+    public function evenly_matched_weak_sides_score_less_than_evenly_matched_average_sides(): void
+    {
+        $weakSide = fn (int $clubId): MatchTeam => $this->team($clubId, attack: 5, midfield: 5, defence: 5, goalkeeping: 5);
+
+        $result = (new MatchSimulationEngine)->simulate($weakSide(10), $weakSide(20));
+
+        $this->assertSame(['home' => 1.18, 'away' => 0.97], $result->summary['expected_goals']);
     }
 
     #[Test]
@@ -55,14 +77,25 @@ class MatchSimulationEngineTest extends TestCase
     }
 
     #[Test]
-    public function expected_goals_are_capped_for_mismatched_sides(): void
+    public function expected_goals_are_capped_for_a_dominant_side(): void
     {
         $result = (new MatchSimulationEngine)->simulate(
-            $this->team(10, attack: 20),
-            $this->team(20, attack: 1, defence: 1, goalkeeping: 1),
+            $this->team(10, attack: 20, midfield: 20),
+            $this->team(20, attack: 1, midfield: 1, defence: 1, goalkeeping: 1),
         );
 
-        $this->assertSame(['home' => 6.0, 'away' => 0.05], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 6.0, 'away' => 0.18], $result->summary['expected_goals']);
+    }
+
+    #[Test]
+    public function expected_goals_have_a_floor_for_a_hopeless_side(): void
+    {
+        $result = (new MatchSimulationEngine)->simulate(
+            $this->team(10, defence: 20, goalkeeping: 20),
+            $this->team(20, attack: 1, midfield: 1, formationTendency: FormationTendency::DEFENSIVE, mentality: Mentality::DEFENSIVE),
+        );
+
+        $this->assertSame(['home' => 1.56, 'away' => 0.05], $result->summary['expected_goals']);
     }
 
     #[Test]

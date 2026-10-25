@@ -35,6 +35,7 @@ class MatchEngineServiceTest extends TestCase
     public function clubs_without_a_tactic_or_manager_play_neutral(): void
     {
         $game = $this->game();
+        $this->averageSquads($game);
 
         $result = app(MatchEngineService::class)->simulate($game);
 
@@ -45,6 +46,7 @@ class MatchEngineServiceTest extends TestCase
     public function attacking_club_tactic_scores_and_concedes_more(): void
     {
         $game = $this->game();
+        $this->averageSquads($game);
         $this->clubTactic($game->hometeam_id, FormationTendency::ATTACKING, Mentality::ATTACKING);
 
         $result = app(MatchEngineService::class)->simulate($game);
@@ -56,6 +58,7 @@ class MatchEngineServiceTest extends TestCase
     public function falls_back_to_the_managers_tactic_preference_when_the_club_has_no_tactic(): void
     {
         $game = $this->game();
+        $this->averageSquads($game);
         StaffTacticPreference::query()->create([
             'staff_coaching_id' => StaffCoaching::factory()->create(['club_id' => $game->hometeam_id])->id,
             'base_formation_id' => $this->formation(FormationTendency::DEFENSIVE)->id,
@@ -81,7 +84,7 @@ class MatchEngineServiceTest extends TestCase
 
         $result = app(MatchEngineService::class)->simulate($game);
 
-        $this->assertSame(['home' => 2.94, 'away' => 0.59], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 2.12, 'away' => 0.78], $result->summary['expected_goals']);
         $this->assertSame([
             'starting' => $starters->pluck('id')->all(),
             'substitutes' => $substitutes->pluck('id')->all(),
@@ -100,7 +103,7 @@ class MatchEngineServiceTest extends TestCase
 
         $result = app(MatchEngineService::class)->simulate($game);
 
-        $this->assertSame(['home' => 1.46, 'away' => 1.2], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 1.39, 'away' => 1.15], $result->summary['expected_goals']);
         $this->assertSame([
             'starting' => $starters->pluck('id')->all(),
             'substitutes' => $substitutes->pluck('id')->all(),
@@ -155,6 +158,12 @@ class MatchEngineServiceTest extends TestCase
             'hometeam_id' => Club::factory()->create(['instance_id' => 1])->id,
             'awayteam_id' => Club::factory()->create(['instance_id' => 1])->id,
         ]);
+    }
+
+    private function averageSquads(Game $game): void
+    {
+        $this->squad($game->hometeam_id, 10);
+        $this->squad($game->awayteam_id, 10);
     }
 
     private function clubTactic(int $clubId, FormationTendency $formationTendency, Mentality $mentality): ClubTactic
