@@ -52,7 +52,7 @@ class MatchEngineServiceTest extends TestCase
 
         $result = app(MatchEngineService::class)->simulate($game);
 
-        $this->assertSame(['home' => 1.89, 'away' => 1.48], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 1.69, 'away' => 1.34], $result->summary['expected_goals']);
     }
 
     #[Test]
@@ -70,7 +70,7 @@ class MatchEngineServiceTest extends TestCase
 
         $result = app(MatchEngineService::class)->simulate($game);
 
-        $this->assertSame(['home' => 1.02, 'away' => 0.91], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 1.22, 'away' => 1.05], $result->summary['expected_goals']);
     }
 
     #[Test]
@@ -85,7 +85,7 @@ class MatchEngineServiceTest extends TestCase
 
         $result = app(MatchEngineService::class)->simulate($game);
 
-        $this->assertSame(['home' => 2.46, 'away' => 0.65], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 2.75, 'away' => 0.57], $result->summary['expected_goals']);
         $this->assertSame([
             'starting' => $starters->pluck('id')->all(),
             'substitutes' => $substitutes->pluck('id')->all(),
@@ -104,7 +104,7 @@ class MatchEngineServiceTest extends TestCase
 
         $result = app(MatchEngineService::class)->simulate($game);
 
-        $this->assertSame(['home' => 1.17, 'away' => 0.96], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 1.31, 'away' => 1.08], $result->summary['expected_goals']);
         $this->assertSame([
             'starting' => $starters->pluck('id')->all(),
             'substitutes' => $substitutes->pluck('id')->all(),

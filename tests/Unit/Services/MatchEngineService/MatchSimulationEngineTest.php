@@ -20,10 +20,10 @@ class MatchSimulationEngineTest extends TestCase
         return [
             'balanced formation and mentality gets no bonus' => [FormationTendency::BALANCED, Mentality::BALANCED, 1.46, 1.2],
             'attacking formation with defensive mentality cancels out' => [FormationTendency::ATTACKING, Mentality::DEFENSIVE, 1.46, 1.2],
-            'attacking formation scores and concedes more' => [FormationTendency::ATTACKING, Mentality::BALANCED, 1.67, 1.34],
-            'attacking formation and mentality scores and concedes the most' => [FormationTendency::ATTACKING, Mentality::ATTACKING, 1.89, 1.48],
-            'defensive mentality scores and concedes less' => [FormationTendency::BALANCED, Mentality::DEFENSIVE, 1.24, 1.05],
-            'defensive formation and mentality scores and concedes the least' => [FormationTendency::DEFENSIVE, Mentality::DEFENSIVE, 1.02, 0.91],
+            'attacking formation scores and concedes more' => [FormationTendency::ATTACKING, Mentality::BALANCED, 1.57, 1.27],
+            'attacking formation and mentality scores and concedes the most' => [FormationTendency::ATTACKING, Mentality::ATTACKING, 1.69, 1.34],
+            'defensive mentality scores and concedes less' => [FormationTendency::BALANCED, Mentality::DEFENSIVE, 1.34, 1.12],
+            'defensive formation and mentality scores and concedes the least' => [FormationTendency::DEFENSIVE, Mentality::DEFENSIVE, 1.22, 1.05],
         ];
     }
 
@@ -44,8 +44,8 @@ class MatchSimulationEngineTest extends TestCase
         return [
             'strong attack scores more' => [15, 10, 2.04, 1.2],
             'weak attack scores less' => [5, 10, 0.87, 1.2],
-            'strong defence concedes less' => [10, 15, 1.46, 0.88],
-            'weak defence concedes more' => [10, 5, 1.46, 1.51],
+            'strong defence concedes less' => [10, 15, 1.46, 0.62],
+            'weak defence concedes more' => [10, 5, 1.46, 1.96],
         ];
     }
 
@@ -56,6 +56,18 @@ class MatchSimulationEngineTest extends TestCase
         $result = (new MatchSimulationEngine)->simulate($this->team(10, attack: $attack, defence: $defence), $this->team(20));
 
         $this->assertSame(['home' => $homeExpectedGoals, 'away' => $awayExpectedGoals], $result->summary['expected_goals']);
+    }
+
+    #[Test]
+    public function defenders_hold_back_the_opponents_chances(): void
+    {
+        $engine = new MatchSimulationEngine;
+
+        $againstStrongDefence = $engine->simulate($this->team(10, defence: 15), $this->team(20));
+        $againstWeakDefence = $engine->simulate($this->team(10, defence: 5), $this->team(20));
+
+        $this->assertSame(6.44, $againstStrongDefence->summary['expected_chances']['away']);
+        $this->assertSame(11.96, $againstWeakDefence->summary['expected_chances']['away']);
     }
 
     /** @return array<string, array{float, float, float}> */
@@ -85,7 +97,7 @@ class MatchSimulationEngineTest extends TestCase
 
         $result = (new MatchSimulationEngine)->simulate($weakSide(10), $weakSide(20));
 
-        $this->assertSame(['home' => 0.71, 'away' => 0.58], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 0.92, 'away' => 0.76], $result->summary['expected_goals']);
     }
 
     #[Test]
@@ -104,7 +116,7 @@ class MatchSimulationEngineTest extends TestCase
             $this->team(20, attack: 1, midfield: 1, defence: 1, goalkeeping: 1, chanceCreation: 1),
         );
 
-        $this->assertSame(['home' => 25.0, 'away' => 1.75], $result->summary['expected_chances']);
+        $this->assertSame(['home' => 25.0, 'away' => 1.58], $result->summary['expected_chances']);
         $this->assertSame(['home' => 8.75, 'away' => 0.06], $result->summary['expected_goals']);
     }
 
@@ -116,8 +128,8 @@ class MatchSimulationEngineTest extends TestCase
             $this->team(20, attack: 1, midfield: 1, chanceCreation: 1, formationTendency: FormationTendency::DEFENSIVE, mentality: Mentality::DEFENSIVE),
         );
 
-        $this->assertSame(['home' => 12.36, 'away' => 1.0], $result->summary['expected_chances']);
-        $this->assertSame(['home' => 1.61, 'away' => 0.02], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 14.31, 'away' => 1.0], $result->summary['expected_chances']);
+        $this->assertSame(['home' => 1.86, 'away' => 0.02], $result->summary['expected_goals']);
     }
 
     #[Test]

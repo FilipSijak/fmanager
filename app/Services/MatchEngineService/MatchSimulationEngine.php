@@ -36,6 +36,9 @@ class MatchSimulationEngine
     /** Every 10% a side's defence rating sits above (below) average lowers (raises) the opponent's conversion by 7%. */
     private const DEFENCE_WEIGHT = 0.7;
 
+    /** Every 10% a side's outfield defence sits above (below) average lowers (raises) the opponent's chances by 6%. */
+    private const CHANCE_PREVENTION_WEIGHT = 0.6;
+
     /** Lowest multiplier a rating can apply, so very weak sides still create and finish something. */
     private const MIN_RATING_FACTOR = 0.2;
 
@@ -43,10 +46,10 @@ class MatchSimulationEngine
     private const GOALKEEPER_DEFENCE_SHARE = 0.25;
 
     /** Change in a side's own chances per step of attacking (+) or defensive (-) stance. */
-    private const STANCE_SCORING_STEP = 0.15;
+    private const STANCE_SCORING_STEP = 0.08;
 
     /** Change in the opponent's chances per step of attacking (+) or defensive (-) stance. */
-    private const STANCE_CONCEDING_STEP = 0.12;
+    private const STANCE_CONCEDING_STEP = 0.06;
 
     private const MIN_EXPECTED_CHANCES = 1.0;
 
@@ -123,7 +126,8 @@ class MatchSimulationEngine
     }
 
     /**
-     * Chances come from the side's creators, its share of the ball and how openly both sides play.
+     * Chances come from the side's creators, its share of the ball and how openly both sides play, and are held back
+     * by the opponent's defenders.
      */
     private function expectedChances(MatchTeam $attacking, MatchTeam $defending, float $venueFactor): float
     {
@@ -131,8 +135,9 @@ class MatchSimulationEngine
         $possessionFactor = 0.5 + $attacking->midfield / ($attacking->midfield + $defending->midfield);
         $scoringFactor = 1 + self::STANCE_SCORING_STEP * $this->tacticalStance($attacking);
         $concedingFactor = 1 + self::STANCE_CONCEDING_STEP * $this->tacticalStance($defending);
+        $preventionFactor = $this->ratingFactor(self::CHANCE_PREVENTION_WEIGHT * (self::AVERAGE_RATING - $defending->defence));
 
-        $expectedChances = self::BASE_CHANCES * $venueFactor * $creationFactor * $possessionFactor * $scoringFactor * $concedingFactor;
+        $expectedChances = self::BASE_CHANCES * $venueFactor * $creationFactor * $possessionFactor * $scoringFactor * $concedingFactor * $preventionFactor;
 
         return max(self::MIN_EXPECTED_CHANCES, min(self::MAX_EXPECTED_CHANCES, $expectedChances));
     }
