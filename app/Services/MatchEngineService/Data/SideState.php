@@ -25,8 +25,8 @@ final class SideState
      */
     public function __construct(
         public readonly int $clubId,
-        public readonly FormationTendency $formationTendency,
-        public readonly Mentality $mentality,
+        public FormationTendency $formationTendency,
+        public Mentality $mentality,
         public readonly bool $userControlled,
         public array $slots,
         public array $bench,
@@ -39,6 +39,7 @@ final class SideState
         public int $substitutionsUsed = 0,
         public int $goals = 0,
         public int $chances = 0,
+        public ?int $formationId = null,
     ) {}
 
     public static function kickOff(MatchTeam $team, bool $userControlled): self
@@ -79,6 +80,7 @@ final class SideState
             ],
             startingPlayerIds: $team->startingPlayerIds,
             substitutePlayerIds: $team->substitutePlayerIds,
+            formationId: $team->formationId,
         );
     }
 
@@ -161,6 +163,7 @@ final class SideState
             'substitutions_used' => $this->substitutionsUsed,
             'goals' => $this->goals,
             'chances' => $this->chances,
+            'formation_id' => $this->formationId,
         ];
     }
 
@@ -195,6 +198,7 @@ final class SideState
             substitutionsUsed: $data['substitutions_used'],
             goals: $data['goals'],
             chances: $data['chances'],
+            formationId: $data['formation_id'] ?? null,
         );
     }
 }

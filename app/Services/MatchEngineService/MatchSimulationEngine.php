@@ -74,6 +74,8 @@ class MatchSimulationEngine
 
     private readonly PlayerMatchRating $playerMatchRating;
 
+    private readonly TacticalChanges $tacticalChanges;
+
     public function __construct(Randomizer $randomizer = new Randomizer)
     {
         $this->teamRatings = new TeamRatings;
@@ -81,6 +83,7 @@ class MatchSimulationEngine
         $this->substitutions = new Substitutions($this->teamRatings);
         $this->minuteSimulator = new MinuteSimulator(new MatchRandom($randomizer), $this->teamRatings);
         $this->aiSubstitutions = new AiSubstitutions($this->substitutions, $this->playerMatchRating);
+        $this->tacticalChanges = new TacticalChanges($this->teamRatings);
     }
 
     /** Plays a whole match between two sides the AI manages. */
@@ -147,6 +150,14 @@ class MatchSimulationEngine
     public function substitute(MatchState $state, string $side, int $playerOffId, int $playerOnId): void
     {
         $this->substitutions->make($state, $side, $playerOffId, $playerOnId);
+    }
+
+    /**
+     * @param  list<array{position: string, player_id: ?int}>  $slots
+     */
+    public function changeTactics(MatchState $state, string $side, ?int $formationId, FormationTendency $formationTendency, Mentality $mentality, array $slots): void
+    {
+        $this->tacticalChanges->make($state, $side, $formationId, $formationTendency, $mentality, $slots);
     }
 
     public function finish(MatchState $state): MatchSimulationResult

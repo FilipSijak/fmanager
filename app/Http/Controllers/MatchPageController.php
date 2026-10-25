@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Instance;
 use App\Repositories\GameRepository;
 use App\Services\MatchEngineService\LiveMatchService;
+use App\Services\TacticsService\TacticsService;
 use App\Support\GameContext;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
@@ -32,7 +33,7 @@ class MatchPageController extends Controller
     }
 
     /** The user's match screen while it is played live; other games open their normal match page. */
-    public function live(int $gameId, LiveMatchService $liveMatchService, GameContext $gameContext): Response|RedirectResponse
+    public function live(int $gameId, LiveMatchService $liveMatchService, TacticsService $tacticsService, GameContext $gameContext): Response|RedirectResponse
     {
         try {
             $liveMatch = $liveMatchService->find($gameId, Instance::query()->findOrFail($gameContext->instanceId()));
@@ -40,6 +41,10 @@ class MatchPageController extends Controller
             return redirect()->route('matches.show', $gameId);
         }
 
-        return Inertia::render('matches/LiveMatch', ['match' => $liveMatchService->view($liveMatch)]);
+        return Inertia::render('matches/LiveMatch', [
+            'match' => $liveMatchService->view($liveMatch),
+            'formations' => $tacticsService->availableFormations(),
+            'mentalities' => $tacticsService->options()['mentalities'],
+        ]);
     }
 }

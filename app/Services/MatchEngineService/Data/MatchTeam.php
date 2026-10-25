@@ -30,5 +30,7 @@ final class MatchTeam
         public readonly array $substitutes = [],
         /** @var list<string> Lineup positions the club could not fill; they play as empty slots. */
         public readonly array $vacantPositions = [],
+        /** The formation the lineup is laid out in, when the club has one. */
+        public readonly ?int $formationId = null,
     ) {}
 }

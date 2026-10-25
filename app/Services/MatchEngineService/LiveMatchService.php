@@ -2,6 +2,8 @@
 
 namespace App\Services\MatchEngineService;
 
+use App\Models\BaseData\BaseFormation;
+use App\Models\BaseData\BaseFormationSlot;
 use App\Models\Club;
 use App\Models\Game;
 use App\Models\Instance;
@@ -11,6 +13,8 @@ use App\Services\ClubService\ClubService;
 use App\Services\GameService\CompleteGameService;
 use App\Services\MatchEngineService\Data\MatchState;
 use App\Services\MatchEngineService\Data\SideState;
+use App\Services\TacticsService\Mentality;
+use App\Services\TacticsService\TacticsService;
 use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -26,6 +30,7 @@ class LiveMatchService
         private readonly MatchSimulationEngine $engine,
         private readonly ClubService $clubService,
         private readonly CompleteGameService $completeGameService,
+        private readonly TacticsService $tacticsService,
     ) {}
 
     /** The user's club's game on the instance's current date that is still to be played. */
@@ -57,12 +62,15 @@ class LiveMatchService
             $matchDate = Carbon::parse($game->match_start)->toDateString();
             $opponentId = $game->hometeam_id === $instance->club_id ? $game->awayteam_id : $game->hometeam_id;
             $this->clubService->selectAiLineup(Club::query()->findOrFail($opponentId), $matchDate);
+            $this->ensureUserTactic(Club::query()->findOrFail($instance->club_id));
 
+            $userSide = $game->hometeam_id === $instance->club_id ? 'home' : 'away';
             $state = $this->engine->kickOff(
                 $this->matchTeamBuilder->forClub($game->hometeam_id, $matchDate),
                 $this->matchTeamBuilder->forClub($game->awayteam_id, $matchDate),
-                userSide: $game->hometeam_id === $instance->club_id ? 'home' : 'away',
+                userSide: $userSide,
             );
+            $this->layOutInFormation($state, $userSide);
 
             $game->status = Game::STATUS_IN_PROGRESS;
             $game->save();
@@ -113,6 +121,37 @@ class LiveMatchService
     {
         $state = MatchState::fromArray($liveMatch->state);
         $this->engine->substitute($state, $this->userSide($state), $playerOffId, $playerOnId);
+        $liveMatch->update(['state' => $state->toArray()]);
+
+        return $liveMatch;
+    }
+
+    /**
+     * Moves the user's players into the given formation and mentality. Only players already on the pitch can be
+     * placed; the formation's positions nobody is placed in stay empty.
+     *
+     * @param  array<string, ?int>  $assignments  Player id for each formation slot id.
+     */
+    public function changeTactics(LiveMatch $liveMatch, int $formationId, Mentality $mentality, array $assignments): LiveMatch
+    {
+        $state = MatchState::fromArray($liveMatch->state);
+        $formation = BaseFormation::query()->with('slots')->where('is_active', true)->find($formationId);
+
+        if ($formation === null) {
+            throw new DomainException('The selected formation is not available.');
+        }
+
+        $this->engine->changeTactics(
+            $state,
+            $this->userSide($state),
+            $formation->id,
+            $formation->tactical_tendency,
+            $mentality,
+            $formation->slots->map(fn (BaseFormationSlot $slot): array => [
+                'position' => $slot->position,
+                'player_id' => $assignments[$slot->slot] ?? null,
+            ])->all(),
+        );
         $liveMatch->update(['state' => $state->toArray()]);
 
         return $liveMatch;
@@ -178,6 +217,8 @@ class LiveMatchService
         return [
             'club_id' => $team->clubId,
             'name' => $clubName,
+            'formation_id' => $team->formationId,
+            'mentality' => $team->mentality->value,
             'goals' => $team->goals,
             'substitutions_used' => $team->substitutionsUsed,
             'totals' => [
@@ -211,6 +252,55 @@ class LiveMatchService
         usort($events, fn (array $first, array $second): int => $first['minute'] <=> $second['minute']);
 
         return $events;
+    }
+
+    /**
+     * A user who has never opened the Tactics page has no club tactic yet; it is created from their manager's
+     * preference, as opening the page would, so the match has a formation to show and change.
+     */
+    private function ensureUserTactic(Club $club): void
+    {
+        try {
+            $this->tacticsService->currentForClub($club);
+        } catch (DomainException) {
+            // A club without a manager plays the engine's default formation.
+        }
+    }
+
+    /**
+     * Puts the user's players in their formation's slot order, so the match screen can draw them on the pitch: each
+     * slot takes a player picked for that position, and anyone left over fills the remaining slots in order.
+     */
+    private function layOutInFormation(MatchState $state, string $side): void
+    {
+        $team = $state->side($side);
+        $formation = $team->formationId === null ? null : BaseFormation::query()->with('slots')->find($team->formationId);
+
+        if ($formation === null) {
+            return;
+        }
+
+        $remaining = $team->slots;
+        $placed = [];
+
+        foreach ($formation->slots as $index => $formationSlot) {
+            foreach ($remaining as $key => $slot) {
+                if ($slot['position'] === $formationSlot->position) {
+                    $placed[$index] = $slot['player_id'];
+                    unset($remaining[$key]);
+
+                    break;
+                }
+            }
+        }
+
+        $leftOver = array_column($remaining, 'player_id');
+        $slots = $formation->slots->values()->map(fn (BaseFormationSlot $formationSlot, int $index): array => [
+            'position' => $formationSlot->position,
+            'player_id' => array_key_exists($index, $placed) ? $placed[$index] : array_shift($leftOver),
+        ])->all();
+
+        $this->engine->changeTactics($state, $side, $formation->id, $team->formationTendency, $team->mentality, $slots);
     }
 
     private function userSide(MatchState $state): string

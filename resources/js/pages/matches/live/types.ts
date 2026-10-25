@@ -53,6 +53,8 @@ export type TeamTotals = {
 export type LiveSide = {
     club_id: number;
     name: string;
+    formation_id: number | null;
+    mentality: string;
     goals: number;
     substitutions_used: number;
     totals: TeamTotals;
@@ -81,4 +83,13 @@ export type LiveMatchData = {
     home: LiveSide;
     away: LiveSide;
     events: MatchEvent[];
+};
+
+/** Formation slot id to the player placed in it, or null for an empty place. */
+export type SlotAssignments = Record<string, number | null>;
+
+export type TacticsDraft = {
+    formationId: number;
+    mentality: string;
+    assignments: SlotAssignments;
 };

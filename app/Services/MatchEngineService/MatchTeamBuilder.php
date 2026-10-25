@@ -96,6 +96,7 @@ class MatchTeamBuilder
             players: array_values(array_filter(array_column($ratingSlots, 'player'))),
             substitutes: $substitutes->map(fn (Player $player): MatchPlayer => $this->matchPlayer($player, $player->position))->values()->all(),
             vacantPositions: array_values(array_column(array_filter($ratingSlots, fn (array $slot): bool => $slot['player'] === null), 'position')),
+            formationId: $formation !== null && $formation->slots->count() === self::LINEUP_SIZE ? $formation->id : null,
         );
     }
 

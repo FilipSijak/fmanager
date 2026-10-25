@@ -4,11 +4,12 @@ import { nextDay } from '@/actions/App/Http/Controllers/InstanceController';
 import {
     advance,
     substitute as substituteRoute,
+    tactics as tacticsRoute,
 } from '@/actions/App/Http/Controllers/LiveMatchController';
 import api from '@/api';
 import { start } from '@/routes';
 import { extractErrorMessage } from '../../squad/utils';
-import type { LiveMatchData } from './types';
+import type { LiveMatchData, TacticsDraft } from './types';
 
 /** Real-time gap between clock ticks. */
 const TICK_MS = 1000;
@@ -82,6 +83,31 @@ export function useLiveMatch(initialMatch: LiveMatchData) {
         }
     }
 
+    /** Applies a new formation, mentality and positions for the players on the pitch. */
+    async function changeTactics(draft: TacticsDraft) {
+        setBusy(true);
+        setError(null);
+
+        try {
+            const response = await api.put(tacticsRoute.url(match.game_id), {
+                formation_id: draft.formationId,
+                mentality: draft.mentality,
+                assignments: Object.entries(draft.assignments).map(
+                    ([slot, playerId]) => ({ slot, player_id: playerId }),
+                ),
+            });
+            setMatch(response.data.data);
+
+            return true;
+        } catch (requestError) {
+            setError(extractErrorMessage(requestError));
+
+            return false;
+        } finally {
+            setBusy(false);
+        }
+    }
+
     /** Finishes the match day: the rest of today's games are played and the game moves on to tomorrow. */
     async function continueAfterMatch() {
         setBusy(true);
@@ -103,6 +129,7 @@ export function useLiveMatch(initialMatch: LiveMatchData) {
         setSpeed,
         togglePlaying,
         substitute,
+        changeTactics,
         continueAfterMatch,
         error,
         busy,

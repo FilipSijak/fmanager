@@ -1,19 +1,30 @@
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import GameLayout from '@/layouts/GameLayout';
+import type { Formation } from '../tactics/types';
 import MatchStatsTab from './live/components/MatchStatsTab';
+import TacticsTab from './live/components/TacticsTab';
 import TeamSheet from './live/components/TeamSheet';
 import type { LiveMatchData } from './live/types';
 import { SPEEDS, useLiveMatch } from './live/useLiveMatch';
 
-type Tab = 'stats' | 'teams';
+type Tab = 'stats' | 'teams' | 'tactics';
 
 const TABS: { id: Tab; label: string }[] = [
     { id: 'stats', label: 'Match stats' },
     { id: 'teams', label: 'Teams & substitutions' },
+    { id: 'tactics', label: 'Tactics' },
 ];
 
-export default function LiveMatch({ match: initialMatch }: { match: LiveMatchData }) {
+export default function LiveMatch({
+    match: initialMatch,
+    formations,
+    mentalities,
+}: {
+    match: LiveMatchData;
+    formations: Formation[];
+    mentalities: string[];
+}) {
     const {
         match,
         playing,
@@ -21,6 +32,7 @@ export default function LiveMatch({ match: initialMatch }: { match: LiveMatchDat
         setSpeed,
         togglePlaying,
         substitute,
+        changeTactics,
         continueAfterMatch,
         error,
         busy,
@@ -38,14 +50,20 @@ export default function LiveMatch({ match: initialMatch }: { match: LiveMatchDat
         )?.name;
     const heading = `${match.home.name} v ${match.away.name}`;
 
-    async function confirmSubstitution() {
-        if (playerOffId === null || playerOnId === null) {
-            return;
-        }
+    async function makeSubstitution(offId: number, onId: number) {
+        const made = await substitute(offId, onId);
 
-        if (await substitute(playerOffId, playerOnId)) {
+        if (made) {
             setPlayerOffId(null);
             setPlayerOnId(null);
+        }
+
+        return made;
+    }
+
+    async function confirmSubstitution() {
+        if (playerOffId !== null && playerOnId !== null) {
+            await makeSubstitution(playerOffId, playerOnId);
         }
     }
 
@@ -57,6 +75,7 @@ export default function LiveMatch({ match: initialMatch }: { match: LiveMatchDat
                   setPlayerOffId((current) => (current === playerId ? null : playerId)),
               onSelectOn: (playerId: number) =>
                   setPlayerOnId((current) => (current === playerId ? null : playerId)),
+              onSubstitute: (offId: number, onId: number) => void makeSubstitution(offId, onId),
           }
         : null;
 
@@ -150,9 +169,21 @@ export default function LiveMatch({ match: initialMatch }: { match: LiveMatchDat
                     ))}
                 </div>
 
-                {tab === 'stats' ? (
-                    <MatchStatsTab match={match} />
-                ) : (
+                {tab === 'stats' && <MatchStatsTab match={match} />}
+                {tab === 'tactics' && (
+                    <TacticsTab
+                        match={match}
+                        formations={formations}
+                        mentalities={mentalities}
+                        editable={!playing && !match.finished}
+                        busy={busy}
+                        onApply={changeTactics}
+                        onSubstitute={(offId, onId) =>
+                            substitutionsLeft > 0 ? makeSubstitution(offId, onId) : Promise.resolve(false)
+                        }
+                    />
+                )}
+                {tab === 'teams' && (
                     <div className="flex flex-col gap-6">
                         <section
                             className="flex flex-wrap items-center gap-4 border border-[#3355dd]/50 bg-[#101358] px-5 py-3"
@@ -176,6 +207,7 @@ export default function LiveMatch({ match: initialMatch }: { match: LiveMatchDat
                                             {playerName(playerOffId) ?? 'pick a player on the pitch'}
                                         </strong>
                                     </span>
+                                    <span className="text-sm text-white/70">Click or drag to pick.</span>
                                     <span>
                                         On:{' '}
                                         <strong>

@@ -1,10 +1,14 @@
+import { playerDropTarget, startPlayerDrag } from '../dragAndDrop';
+import type { DraggedPlayer } from '../dragAndDrop';
 import type { LivePlayer, LiveSide } from '../types';
 
+/** Lets the user pick, or drag, a player on the pitch and a substitute to swap. */
 type Selection = {
     playerOffId: number | null;
     playerOnId: number | null;
     onSelectOff: (playerId: number) => void;
     onSelectOn: (playerId: number) => void;
+    onSubstitute: (playerOffId: number, playerOnId: number) => void;
 };
 
 const STATUS_LABELS: Partial<Record<LivePlayer['status'], string>> = {
@@ -44,12 +48,18 @@ function PlayerRows({
     selectable,
     selectedId,
     onSelect,
+    dragFrom,
+    onDropPlayer,
 }: {
     title: string;
     players: LivePlayer[];
     selectable: boolean;
     selectedId: number | null;
     onSelect?: (playerId: number) => void;
+    /** Rows can be dragged out of this group as players from the pitch or the bench. */
+    dragFrom?: DraggedPlayer['from'];
+    /** A player dropped onto a row of this group. */
+    onDropPlayer?: (player: DraggedPlayer, target: number) => void;
 }) {
     if (players.length === 0) {
         return null;
@@ -74,6 +84,19 @@ function PlayerRows({
                 return (
                     <tr
                         key={player.player_id ?? `empty-${index}`}
+                        draggable={isSelectable && dragFrom !== undefined}
+                        onDragStart={(event) =>
+                            dragFrom &&
+                            startPlayerDrag(event, {
+                                playerId: player.player_id as number,
+                                from: dragFrom,
+                            })
+                        }
+                        {...(isSelectable && onDropPlayer
+                            ? playerDropTarget((dragged) =>
+                                  onDropPlayer(dragged, player.player_id as number),
+                              )
+                            : {})}
                         onClick={
                             isSelectable && onSelect
                                 ? () => onSelect(player.player_id as number)
@@ -134,7 +157,7 @@ function PlayerRows({
 
 /**
  * One side's players with their stats so far. For the user's side, while substitutions are allowed, a player on the
- * pitch and one on the bench can be picked to swap.
+ * pitch and one on the bench can be picked to swap, or one dragged onto the other.
  */
 export default function TeamSheet({
     side,
@@ -195,6 +218,11 @@ export default function TeamSheet({
                         selectable={selection !== null}
                         selectedId={selection?.playerOffId ?? null}
                         onSelect={selection?.onSelectOff}
+                        dragFrom="pitch"
+                        onDropPlayer={(dragged, playerOffId) =>
+                            dragged.from === 'bench' &&
+                            selection?.onSubstitute(playerOffId, dragged.playerId)
+                        }
                     />
                     <PlayerRows
                         title="Substitutes"
@@ -202,6 +230,11 @@ export default function TeamSheet({
                         selectable={selection !== null}
                         selectedId={selection?.playerOnId ?? null}
                         onSelect={selection?.onSelectOn}
+                        dragFrom="bench"
+                        onDropPlayer={(dragged, playerOnId) =>
+                            dragged.from === 'pitch' &&
+                            selection?.onSubstitute(dragged.playerId, playerOnId)
+                        }
                     />
                     <PlayerRows
                         title="Off the pitch"

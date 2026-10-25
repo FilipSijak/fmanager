@@ -142,6 +142,65 @@ class LiveMatchApiTest extends TestCase
     }
 
     #[Test]
+    public function the_users_players_start_laid_out_in_their_formation(): void
+    {
+        [$instance, $game] = $this->liveMatch();
+
+        $response = $this->apiRequest($instance)->getJson("/api/live-match/{$game->id}");
+
+        $this->assertSame(BaseFormation::query()->where('code', '4-4-2')->value('id'), $response->json('data.home.formation_id'));
+        $this->assertSame(array_slice(self::SQUAD_POSITIONS, 0, 11), array_column($response->json('data.home.on_pitch'), 'position'));
+    }
+
+    #[Test]
+    public function the_user_changes_formation_mentality_and_positions_during_the_match(): void
+    {
+        [$instance, $game] = $this->liveMatch();
+        $fourThreeThree = $this->formation('4-3-3', 'attacking', ['GK', 'LB', 'CB', 'CB', 'RB', 'CM', 'CM', 'CM', 'LW', 'AM', 'RW']);
+        $onPitch = array_column($this->apiRequest($instance)->getJson("/api/live-match/{$game->id}")->json('data.home.on_pitch'), 'player_id');
+        [$onPitch[1], $onPitch[2]] = [$onPitch[2], $onPitch[1]];
+
+        $response = $this->apiRequest($instance)->putJson("/api/live-match/{$game->id}/tactics", [
+            'formation_id' => $fourThreeThree->id,
+            'mentality' => 'attacking',
+            'assignments' => array_map(fn (int $index): array => ['slot' => (string) ($index + 1), 'player_id' => $onPitch[$index]], range(0, 10)),
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('data.home.formation_id', $fourThreeThree->id)
+            ->assertJsonPath('data.home.mentality', 'attacking')
+            ->assertJsonPath('data.home.on_pitch.1.player_id', $onPitch[1])
+            ->assertJsonPath('data.home.on_pitch.1.position', 'LB')
+            ->assertJsonPath('data.home.on_pitch.10.position', 'RW');
+    }
+
+    #[Test]
+    public function tactics_placing_a_substitute_are_rejected_with_their_reason(): void
+    {
+        [$instance, $game] = $this->liveMatch();
+        $match = $this->apiRequest($instance)->getJson("/api/live-match/{$game->id}")->json('data');
+        $playerIds = array_column($match['home']['on_pitch'], 'player_id');
+        $playerIds[10] = $match['home']['bench'][0]['player_id'];
+
+        $response = $this->apiRequest($instance)->putJson("/api/live-match/{$game->id}/tactics", [
+            'formation_id' => $match['home']['formation_id'],
+            'mentality' => 'balanced',
+            'assignments' => array_map(fn (int $index): array => ['slot' => (string) ($index + 1), 'player_id' => $playerIds[$index]], range(0, 10)),
+        ]);
+
+        $response->assertUnprocessable()->assertJsonPath('error', 'Every player on the pitch needs exactly one position, and only they can be placed.');
+    }
+
+    #[Test]
+    public function tactics_require_a_known_mentality(): void
+    {
+        [$instance, $game] = $this->liveMatch();
+
+        $this->apiRequest($instance)->putJson("/api/live-match/{$game->id}/tactics", ['formation_id' => 1, 'mentality' => 'reckless', 'assignments' => []])
+            ->assertUnprocessable()->assertJsonValidationErrors('mentality');
+    }
+
+    #[Test]
     public function advancing_requires_between_1_and_90_minutes(): void
     {
         [$instance, $game] = $this->liveMatch();
@@ -167,7 +226,9 @@ class LiveMatchApiTest extends TestCase
         $session = ['active_instance_hash' => $instance->instance_hash];
 
         $this->actingAs($instance->user)->withSession($session)->get("/matches/{$game->id}/live")
-            ->assertInertia(fn (Assert $page) => $page->component('matches/LiveMatch')->where('match.game_id', $game->id)->where('match.minute', 0));
+            ->assertInertia(fn (Assert $page) => $page->component('matches/LiveMatch')->where('match.game_id', $game->id)->where('match.minute', 0)
+                ->has('formations', 1)->where('formations.0.code', '4-4-2')->has('formations.0.slots', 11)
+                ->where('mentalities', ['defensive', 'balanced', 'attacking']));
 
         $otherGame = $this->game($instance, Club::query()->findOrFail($game->awayteam_id), Club::query()->findOrFail($game->hometeam_id), '2026-08-22');
         $this->actingAs($instance->user)->withSession($session)->get("/matches/{$otherGame->id}/live")
@@ -183,11 +244,7 @@ class LiveMatchApiTest extends TestCase
     {
         $instance = Instance::factory()->create(['instance_hash' => 'live-match-'.uniqid(), 'season_id' => 1, 'instance_date' => self::MATCH_DATE]);
         Season::factory()->create(['id' => 1, 'instance_id' => $instance->id, 'start_date' => '2026-08-01', 'end_date' => '2027-06-01']);
-        $formation = BaseFormation::query()->create(['code' => '4-4-2', 'name' => '4-4-2', 'is_active' => true, 'tactical_tendency' => 'balanced']);
-
-        foreach (array_slice(self::SQUAD_POSITIONS, 0, 11) as $index => $position) {
-            $formation->slots()->create(['slot' => (string) ($index + 1), 'position' => $position, 'x' => 50, 'y' => 50]);
-        }
+        $this->formation('4-4-2', 'balanced', array_slice(self::SQUAD_POSITIONS, 0, 11));
 
         $competition = Competition::factory()->create(['instance_id' => $instance->id, 'type' => 'league', 'groups' => null, 'clubs_number' => 2]);
         [$userClub, $aiClub] = Club::factory()->count(2)->create(['instance_id' => $instance->id])->all();
@@ -203,6 +260,18 @@ class LiveMatchApiTest extends TestCase
         }
 
         return [$instance->fresh(), $this->game($instance, $userClub, $aiClub, self::MATCH_DATE, $competition)];
+    }
+
+    /** @param list<string> $positions */
+    private function formation(string $code, string $tendency, array $positions): BaseFormation
+    {
+        $formation = BaseFormation::query()->create(['code' => $code, 'name' => $code, 'is_active' => true, 'tactical_tendency' => $tendency]);
+
+        foreach ($positions as $index => $position) {
+            $formation->slots()->create(['slot' => (string) ($index + 1), 'position' => $position, 'x' => 50, 'y' => 50]);
+        }
+
+        return $formation;
     }
 
     /** @return array{0: Instance, 1: Game} */

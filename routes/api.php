@@ -62,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::get('/', [LiveMatchController::class, 'show'])->name('show');
                 Route::post('/advance', [LiveMatchController::class, 'advance'])->name('advance');
                 Route::post('/substitutions', [LiveMatchController::class, 'substitute'])->name('substitute');
+                Route::put('/tactics', [LiveMatchController::class, 'tactics'])->name('tactics');
             });
 
             Route::prefix('squad')->group(function (): void {
