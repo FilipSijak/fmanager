@@ -155,6 +155,18 @@ class Player extends Model
         return $query->where('is_retired', false);
     }
 
+    /**
+     * Players without an injury covering the given date.
+     */
+    public function scopeNotInjuredOn(Builder $query, string $date): Builder
+    {
+        return $query->whereNotExists(fn ($injuries) => $injuries
+            ->from('player_injuries')
+            ->whereColumn('player_injuries.player_id', 'players.id')
+            ->where('player_injuries.injury_start_date', '<=', $date)
+            ->where('player_injuries.injury_end_date', '>=', $date));
+    }
+
     public function scopeRetired(Builder $query): Builder
     {
         return $query->where('is_retired', true);

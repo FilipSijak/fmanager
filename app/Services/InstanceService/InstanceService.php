@@ -8,6 +8,7 @@ use App\Events\NextDay;
 use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Models\Club;
+use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Manager;
 use App\Models\Season;
@@ -17,8 +18,10 @@ use App\Repositories\Competition\CompetitionScheduleRepository;
 use App\Services\GameService\CompleteGameService;
 use App\Services\MatchEngineService\MatchEngineService;
 use App\Services\PersonService\PersonService;
+use App\Services\SquadLineupService\AiLineupSelector;
 use App\Support\GameContext;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class InstanceService implements IInstanceService
@@ -38,7 +41,8 @@ class InstanceService implements IInstanceService
         CreateInstance $createInstance,
         MatchEngineService $matchEngineService,
         CompleteGameService $completeGameService,
-        private readonly GameContext $gameContext
+        private readonly GameContext $gameContext,
+        private readonly AiLineupSelector $aiLineupSelector,
 
     ) {
         $this->competitionRepository = $competitionRepository;
@@ -139,6 +143,8 @@ class InstanceService implements IInstanceService
         $instance = $this->getInstance();
         $games = $this->competitionRepository->scheduledFor($instance);
 
+        $this->selectAiLineups($instance, $games);
+
         $completedGames = collect();
 
         foreach ($games as $game) {
@@ -154,6 +160,22 @@ class InstanceService implements IInstanceService
         if ($completedGames->isNotEmpty()) {
             event(new MatchDayCompleted($instance, $completedGames));
         }
+    }
+
+    /**
+     * Clubs the user does not manage pick their matchday squads before kick-off.
+     *
+     * @param  Collection<int, Game>  $games
+     */
+    private function selectAiLineups(Instance $instance, Collection $games): void
+    {
+        $aiClubIds = $games
+            ->flatMap(fn (Game $game): array => [$game->hometeam_id, $game->awayteam_id])
+            ->unique()
+            ->reject(fn (int $clubId): bool => $clubId === (int) $instance->club_id);
+
+        Club::query()->whereIn('id', $aiClubIds)->get()
+            ->each(fn (Club $club) => $this->aiLineupSelector->selectForClub($club, $instance->instance_date));
     }
 
     public function setSeason(Season $season)

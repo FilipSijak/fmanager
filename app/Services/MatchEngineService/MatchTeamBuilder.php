@@ -54,14 +54,19 @@ class MatchTeamBuilder
         'defending' => ['defence' => 1.0, 'midfield' => 0.5, 'attack' => 0.15],
     ];
 
-    public function forClub(int $clubId): MatchTeam
+    /**
+     * Players injured on the match date are unavailable: they are dropped from the saved lineup and replaced like
+     * players who have left the club.
+     */
+    public function forClub(int $clubId, string $matchDate): MatchTeam
     {
         $tactic = ClubTactic::query()->with('formation.slots')->where('club_id', $clubId)->first();
         $preference = $tactic === null ? $this->managerPreference($clubId) : null;
         $formation = $tactic?->formation ?? $preference?->formation;
         $squad = Player::query()
             ->where('club_id', $clubId)
-            ->where('is_retired', false)
+            ->active()
+            ->notInjuredOn($matchDate)
             ->get()
             ->keyBy('id')
             ->collect();

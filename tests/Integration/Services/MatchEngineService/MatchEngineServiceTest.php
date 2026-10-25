@@ -20,6 +20,7 @@ use App\Services\TacticsService\PassingStyle;
 use App\Services\TacticsService\PressingIntensity;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -132,6 +133,28 @@ class MatchEngineServiceTest extends TestCase
     }
 
     #[Test]
+    public function replaces_a_saved_starter_injured_on_match_day_from_the_saved_bench(): void
+    {
+        $game = $this->game();
+        $tactic = $this->clubTactic($game->hometeam_id, FormationTendency::BALANCED, Mentality::BALANCED);
+        $starters = $this->squad($game->hometeam_id, 10);
+        $substitutes = $this->squad($game->hometeam_id, 8, positions: self::BENCH_POSITIONS);
+        $this->saveLineup($tactic, $starters, $substitutes);
+        DB::table('injuries')->insert(['id' => 1, 'type' => 'Knee injury', 'severity' => 4, 'duration_from' => 10, 'duration_to' => 20]);
+        DB::table('player_injuries')->insert([
+            'instance_id' => 1, 'season_id' => 1, 'player_id' => $starters[1]->id, 'injury_id' => 1,
+            'injury_start_date' => '2026-08-10', 'injury_end_date' => '2026-08-15',
+        ]);
+
+        $result = app(MatchEngineService::class)->simulate($game);
+
+        $this->assertSame([
+            'starting' => [...$starters->except(1)->pluck('id')->all(), $substitutes[1]->id],
+            'substitutes' => $substitutes->except(1)->pluck('id')->all(),
+        ], $result->summary['lineups']['home']);
+    }
+
+    #[Test]
     public function saved_lineup_without_substitutes_plays_with_an_empty_bench(): void
     {
         $game = $this->game();
@@ -157,6 +180,7 @@ class MatchEngineServiceTest extends TestCase
             'instance_id' => 1,
             'hometeam_id' => Club::factory()->create(['instance_id' => 1])->id,
             'awayteam_id' => Club::factory()->create(['instance_id' => 1])->id,
+            'match_start' => '2026-08-15 15:00:00',
         ]);
     }
 
