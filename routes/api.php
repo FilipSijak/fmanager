@@ -8,6 +8,7 @@ use App\Http\Controllers\FinanceLoanController;
 use App\Http\Controllers\FinanceSponsorController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\InstanceController;
+use App\Http\Controllers\LiveMatchController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PlayerController;
 use App\Http\Controllers\PlayerSearchController;
@@ -55,6 +56,12 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::prefix('tactics')->name('tactics.')->group(function (): void {
                 Route::get('/', [TacticsController::class, 'show'])->name('show');
                 Route::put('/', [TacticsController::class, 'update'])->name('update');
+            });
+
+            Route::prefix('live-match/{gameId}')->whereNumber('gameId')->name('live-match.')->group(function (): void {
+                Route::get('/', [LiveMatchController::class, 'show'])->name('show');
+                Route::post('/advance', [LiveMatchController::class, 'advance'])->name('advance');
+                Route::post('/substitutions', [LiveMatchController::class, 'substitute'])->name('substitute');
             });
 
             Route::prefix('squad')->group(function (): void {

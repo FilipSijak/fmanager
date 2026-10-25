@@ -18,6 +18,7 @@ use App\Services\GameService\CompleteGameService;
 use App\Services\InstanceService\InstanceService;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Support\GameContext;
+use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use PHPUnit\Framework\Attributes\Test;
@@ -120,5 +121,29 @@ class InstanceServiceTest extends TestCase
 
         $this->assertSame(11, ClubTacticPlayerSlot::query()->where('club_id', $aiClub->id)->count());
         $this->assertSame(0, ClubTacticPlayerSlot::query()->where('club_id', $userClub->id)->count());
+    }
+
+    #[Test]
+    public function next_day_refuses_to_move_on_while_the_users_match_is_in_progress(): void
+    {
+        Season::factory()->create(['id' => 1, 'instance_id' => 1]);
+        $instance = Instance::factory()->create(['id' => 1, 'season_id' => 1, 'instance_date' => '2026-08-15']);
+        app(GameContext::class)->set(1, 1, '2026-08-15');
+        [$userClub, $aiClub] = Club::factory()->count(2)->create(['instance_id' => 1])->all();
+        $instance->forceFill(['club_id' => $userClub->id])->save();
+        Game::factory()->create([
+            'instance_id' => 1, 'season_id' => 1, 'competition_id' => Competition::factory()->create(['instance_id' => 1])->id,
+            'hometeam_id' => $userClub->id, 'awayteam_id' => $aiClub->id, 'stadium_id' => 1,
+            'match_start' => '2026-08-15 15:00:00', 'status' => Game::STATUS_IN_PROGRESS,
+        ]);
+
+        try {
+            app(InstanceService::class)->nextDay();
+            $this->fail('The day moved on with the user\'s match unfinished.');
+        } catch (DomainException $exception) {
+            $this->assertSame('Finish your match before continuing.', $exception->getMessage());
+        }
+
+        $this->assertSame('2026-08-15', $instance->fresh()->instance_date);
     }
 }

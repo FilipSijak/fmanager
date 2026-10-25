@@ -155,19 +155,21 @@ class MatchEngineServiceTest extends TestCase
     }
 
     #[Test]
-    public function credits_player_stats_to_every_starter_and_only_the_starters(): void
+    public function credits_player_stats_to_the_starters_and_the_substitutes_who_came_on(): void
     {
         $game = $this->game();
         $homeStarters = $this->squad($game->hometeam_id, 10);
-        $this->squad($game->hometeam_id, 9, positions: self::BENCH_POSITIONS);
+        $homeBench = $this->squad($game->hometeam_id, 9, positions: self::BENCH_POSITIONS);
         $awayStarters = $this->squad($game->awayteam_id, 10);
 
         $result = app(MatchEngineService::class)->simulate($game);
 
-        $statsByClub = collect($result->playerStats)->groupBy('club_id');
-        $this->assertSame($homeStarters->pluck('id')->all(), $statsByClub[$game->hometeam_id]->pluck('player_id')->all());
-        $this->assertSame($awayStarters->pluck('id')->all(), $statsByClub[$game->awayteam_id]->pluck('player_id')->all());
-        $this->assertSame(self::LINEUP_POSITIONS, $statsByClub[$game->hometeam_id]->pluck('position')->all());
+        [$started, $cameOn] = collect($result->playerStats)->where('club_id', $game->hometeam_id)->partition('started');
+        $this->assertSame($homeStarters->pluck('id')->all(), $started->pluck('player_id')->all());
+        $this->assertSame(self::LINEUP_POSITIONS, $started->pluck('position')->all());
+        $this->assertCount(3, $cameOn);
+        $this->assertEmpty($cameOn->pluck('player_id')->diff($homeBench->pluck('id')));
+        $this->assertSame($awayStarters->pluck('id')->all(), collect($result->playerStats)->where('club_id', $game->awayteam_id)->pluck('player_id')->all());
     }
 
     #[Test]

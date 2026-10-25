@@ -2,19 +2,23 @@
 
 namespace App\Services\MatchEngineService;
 
+use App\Services\MatchEngineService\Data\MatchState;
 use App\Services\MatchEngineService\Data\MatchTeam;
+use App\Services\MatchEngineService\Data\SideState;
 use App\Services\TacticsService\FormationTendency;
 use App\Services\TacticsService\Mentality;
 use Random\Randomizer;
 
 /**
- * Plays a match as two steps per side: how many chances it creates, then how many of them it converts.
+ * Plays a match minute by minute. Each minute both sides create chances from their current ratings, tactics and the
+ * ball they have, and convert them against the other side's defence; everything else on the pitch is credited to the
+ * players in it. A match can be played to full time in one go or a few minutes at a time with substitutions between.
  */
 class MatchSimulationEngine
 {
-    public const ENGINE_VERSION = 4;
+    public const ENGINE_VERSION = 5;
 
-    /** Chances an average side creates against an equal opponent on neutral ground. */
+    /** Chances an average side creates over a match against an equal opponent on neutral ground. */
     private const BASE_CHANCES = 10.0;
 
     /** Share of chances an average side converts against an average defence (10 chances x 0.13 = 1.3 goals). */
@@ -51,6 +55,7 @@ class MatchSimulationEngine
     /** Change in the opponent's chances per step of attacking (+) or defensive (-) stance. */
     private const STANCE_CONCEDING_STEP = 0.06;
 
+    /** Bounds on a side's chances over a whole match at its current rate. */
     private const MIN_EXPECTED_CHANCES = 1.0;
 
     private const MAX_EXPECTED_CHANCES = 25.0;
@@ -59,56 +64,148 @@ class MatchSimulationEngine
 
     private const MAX_CONVERSION = 0.35;
 
-    private readonly MatchRandom $random;
+    private readonly TeamRatings $teamRatings;
 
-    private readonly PlayerActionSimulator $playerActions;
+    private readonly MinuteSimulator $minuteSimulator;
+
+    private readonly Substitutions $substitutions;
+
+    private readonly AiSubstitutions $aiSubstitutions;
+
+    private readonly PlayerMatchRating $playerMatchRating;
 
     public function __construct(Randomizer $randomizer = new Randomizer)
     {
-        $this->random = new MatchRandom($randomizer);
-        $this->playerActions = new PlayerActionSimulator($this->random);
+        $this->teamRatings = new TeamRatings;
+        $this->playerMatchRating = new PlayerMatchRating;
+        $this->substitutions = new Substitutions($this->teamRatings);
+        $this->minuteSimulator = new MinuteSimulator(new MatchRandom($randomizer), $this->teamRatings);
+        $this->aiSubstitutions = new AiSubstitutions($this->substitutions, $this->playerMatchRating);
     }
 
+    /** Plays a whole match between two sides the AI manages. */
     public function simulate(MatchTeam $home, MatchTeam $away): MatchSimulationResult
     {
-        $homeExpectedChances = $this->expectedChances($home, $away, self::HOME_ADVANTAGE);
-        $awayExpectedChances = $this->expectedChances($away, $home, self::AWAY_DISADVANTAGE);
-        $homeConversion = $this->conversion($home, $away);
-        $awayConversion = $this->conversion($away, $home);
+        $state = $this->kickOff($home, $away);
+        $this->play($state, MatchState::FULL_TIME);
 
-        $chances = ['home' => $this->random->poisson($homeExpectedChances), 'away' => $this->random->poisson($awayExpectedChances)];
-        $played = $this->playerActions->play(
-            $home,
-            $away,
-            $chances,
-            ['home' => $homeConversion, 'away' => $awayConversion],
-            $home->midfield / ($home->midfield + $away->midfield),
-        );
+        return $this->finish($state);
+    }
 
-        return new MatchSimulationResult($played->homeGoals, $played->awayGoals, [
-            'engine_version' => self::ENGINE_VERSION,
-            'expected_chances' => [
-                'home' => round($homeExpectedChances, 2),
-                'away' => round($awayExpectedChances, 2),
-            ],
+    /**
+     * @param  ?string  $userSide  'home' or 'away' when the user manages that side and makes its substitutions.
+     */
+    public function kickOff(MatchTeam $home, MatchTeam $away, ?string $userSide = null): MatchState
+    {
+        $sides = [
+            'home' => SideState::kickOff($home, $userSide === 'home'),
+            'away' => SideState::kickOff($away, $userSide === 'away'),
+        ];
+        $expectedChances = [
+            'home' => $this->expectedChances($sides, 'home'),
+            'away' => $this->expectedChances($sides, 'away'),
+        ];
+
+        return new MatchState(0, $sides, [], [
+            'expected_chances' => array_map(fn (float $chances): float => round($chances, 2), $expectedChances),
             'expected_goals' => [
-                'home' => round($homeExpectedChances * $homeConversion, 2),
-                'away' => round($awayExpectedChances * $awayConversion, 2),
+                'home' => round($expectedChances['home'] * $this->conversion($sides, 'home'), 2),
+                'away' => round($expectedChances['away'] * $this->conversion($sides, 'away'), 2),
             ],
-            'chances' => $chances,
+        ]);
+    }
+
+    /** Plays on from the current minute up to the given one, letting AI sides make their substitutions on the way. */
+    public function play(MatchState $state, int $untilMinute): void
+    {
+        $untilMinute = min($untilMinute, MatchState::FULL_TIME);
+
+        while ($state->minute < $untilMinute) {
+            $minute = $state->minute + 1;
+            $sides = $state->sides;
+
+            $this->minuteSimulator->play(
+                $state,
+                $minute,
+                [
+                    'home' => $this->expectedChances($sides, 'home') / MatchState::FULL_TIME,
+                    'away' => $this->expectedChances($sides, 'away') / MatchState::FULL_TIME,
+                ],
+                ['home' => $this->conversion($sides, 'home'), 'away' => $this->conversion($sides, 'away')],
+                $sides['home']->ratings['midfield'] / ($sides['home']->ratings['midfield'] + $sides['away']->ratings['midfield']),
+            );
+
+            $state->minute = $minute;
+
+            if (! $state->isFinished()) {
+                $this->aiSubstitutions->apply($state, 'home');
+                $this->aiSubstitutions->apply($state, 'away');
+            }
+        }
+    }
+
+    public function substitute(MatchState $state, string $side, int $playerOffId, int $playerOnId): void
+    {
+        $this->substitutions->make($state, $side, $playerOffId, $playerOnId);
+    }
+
+    public function finish(MatchState $state): MatchSimulationResult
+    {
+        usort($state->events, fn (array $first, array $second): int => $first['minute'] <=> $second['minute']);
+        $home = $state->side('home');
+        $away = $state->side('away');
+
+        return new MatchSimulationResult($home->goals, $away->goals, [
+            'engine_version' => self::ENGINE_VERSION,
+            ...$state->kickOffExpectations,
+            'chances' => ['home' => $home->chances, 'away' => $away->chances],
             'lineups' => [
                 'home' => ['starting' => $home->startingPlayerIds, 'substitutes' => $home->substitutePlayerIds],
                 'away' => ['starting' => $away->startingPlayerIds, 'substitutes' => $away->substitutePlayerIds],
             ],
-            'events' => $played->events,
-        ], $played->playerStats);
+            'events' => $state->events,
+        ], [...$this->playerStatRows($state, 'home'), ...$this->playerStatRows($state, 'away')]);
+    }
+
+    /**
+     * Each player's stats so far, shaped like game_player_stats. Goals conceded and clean sheets belong to the
+     * goalkeeper on the pitch at the time; a clean sheet needs the minimum minutes in goal.
+     *
+     * @return list<array<string, int|float|bool|string>>
+     */
+    public function playerStatRows(MatchState $state, string $side): array
+    {
+        $team = $state->side($side);
+        $opponent = $state->side($side === 'home' ? 'away' : 'home');
+        $result = $team->goals <=> $opponent->goals;
+        $rows = [];
+
+        foreach ($team->stats as $playerId => $stats) {
+            $minutesPlayed = ($stats['left_minute'] ?? $state->minute) - $stats['entered_minute'];
+            $isGoalkeeper = PitchLine::fromPosition($stats['position']) === PitchLine::GOALKEEPER;
+            $cleanSheet = $isGoalkeeper && $stats['goals_conceded'] === 0 && $minutesPlayed >= PlayerMatchRating::CLEAN_SHEET_MINUTES;
+            $counters = array_diff_key($stats, array_flip(['position', 'started', 'entered_minute', 'left_minute']));
+
+            $rows[] = [
+                'club_id' => $team->clubId,
+                'player_id' => $playerId,
+                'position' => $stats['position'],
+                'started' => $stats['started'],
+                'minutes_played' => $minutesPlayed,
+                ...$counters,
+                'clean_sheet' => $cleanSheet,
+                'rating' => $this->playerMatchRating->rate($stats, $cleanSheet, $result),
+            ];
+        }
+
+        return $rows;
     }
 
     /**
      * Combined formation tendency and mentality, from -2 (fully defensive) to 2 (fully attacking).
      * A balanced formation played with a balanced mentality, such as a default 4-4-2, is 0.
      */
-    public function tacticalStance(MatchTeam $team): int
+    public function tacticalStance(MatchTeam|SideState $team): int
     {
         $formationStance = match ($team->formationTendency) {
             FormationTendency::DEFENSIVE => -1,
@@ -126,16 +223,21 @@ class MatchSimulationEngine
     }
 
     /**
-     * Chances come from the side's creators, its share of the ball and how openly both sides play, and are held back
-     * by the opponent's defenders.
+     * Chances a side would create over a whole match at its current rate: from its creators, its share of the ball
+     * and how openly both sides play, held back by the opponent's defenders.
+     *
+     * @param  array{home: SideState, away: SideState}  $sides
      */
-    private function expectedChances(MatchTeam $attacking, MatchTeam $defending, float $venueFactor): float
+    private function expectedChances(array $sides, string $side): float
     {
-        $creationFactor = $this->ratingFactor(self::CHANCE_CREATION_WEIGHT * ($attacking->chanceCreation - self::AVERAGE_RATING));
-        $possessionFactor = 0.5 + $attacking->midfield / ($attacking->midfield + $defending->midfield);
+        $attacking = $sides[$side];
+        $defending = $sides[$side === 'home' ? 'away' : 'home'];
+        $venueFactor = $side === 'home' ? self::HOME_ADVANTAGE : self::AWAY_DISADVANTAGE;
+        $creationFactor = $this->ratingFactor(self::CHANCE_CREATION_WEIGHT * ($attacking->ratings['chanceCreation'] - self::AVERAGE_RATING));
+        $possessionFactor = 0.5 + $attacking->ratings['midfield'] / ($attacking->ratings['midfield'] + $defending->ratings['midfield']);
         $scoringFactor = 1 + self::STANCE_SCORING_STEP * $this->tacticalStance($attacking);
         $concedingFactor = 1 + self::STANCE_CONCEDING_STEP * $this->tacticalStance($defending);
-        $preventionFactor = $this->ratingFactor(self::CHANCE_PREVENTION_WEIGHT * (self::AVERAGE_RATING - $defending->defence));
+        $preventionFactor = $this->ratingFactor(self::CHANCE_PREVENTION_WEIGHT * (self::AVERAGE_RATING - $defending->ratings['defence']));
 
         $expectedChances = self::BASE_CHANCES * $venueFactor * $creationFactor * $possessionFactor * $scoringFactor * $concedingFactor * $preventionFactor;
 
@@ -144,12 +246,16 @@ class MatchSimulationEngine
 
     /**
      * Chance of scoring from each chance: the side's finishing against the opponent's defence and goalkeeper.
+     *
+     * @param  array{home: SideState, away: SideState}  $sides
      */
-    private function conversion(MatchTeam $attacking, MatchTeam $defending): float
+    private function conversion(array $sides, string $side): float
     {
-        $defensiveStrength = $defending->defence * (1 - self::GOALKEEPER_DEFENCE_SHARE)
-            + $defending->goalkeeping * self::GOALKEEPER_DEFENCE_SHARE;
-        $attackFactor = $this->ratingFactor(self::ATTACK_WEIGHT * ($attacking->attack - self::AVERAGE_RATING));
+        $attacking = $sides[$side];
+        $defending = $sides[$side === 'home' ? 'away' : 'home'];
+        $defensiveStrength = $defending->ratings['defence'] * (1 - self::GOALKEEPER_DEFENCE_SHARE)
+            + $defending->ratings['goalkeeping'] * self::GOALKEEPER_DEFENCE_SHARE;
+        $attackFactor = $this->ratingFactor(self::ATTACK_WEIGHT * ($attacking->ratings['attack'] - self::AVERAGE_RATING));
         $defenceFactor = $this->ratingFactor(self::DEFENCE_WEIGHT * (self::AVERAGE_RATING - $defensiveStrength));
 
         return max(self::MIN_CONVERSION, min(self::MAX_CONVERSION, self::BASE_CONVERSION * $attackFactor * $defenceFactor));

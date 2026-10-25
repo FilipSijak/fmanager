@@ -25,23 +25,8 @@ class MatchTeamBuilder
 
     private const SUBSTITUTES = 7;
 
-    /** Rating given to a lineup slot the club cannot fill. */
-    private const EMPTY_SLOT_RATING = 1.0;
-
     /** Positions played when the club has no formation: a 4-4-2. */
     private const DEFAULT_POSITIONS = ['GK', 'LB', 'CB', 'CB', 'RB', 'LM', 'CM', 'CM', 'RM', 'ST', 'ST'];
-
-    /**
-     * How much a player's creating ability counts towards the team's chances by the position they play: midfield counts
-     * the most, then forwards, wing backs and finally centre backs.
-     */
-    private const CHANCE_CREATION_WEIGHTS = [
-        'midfield' => 1.0,
-        'forward' => 0.6,
-        'wing_back' => 0.35,
-        'centre_back' => 0.1,
-        'goalkeeper' => 0.0,
-    ];
 
     /** @var array<string, list<string>> */
     private const SKILL_ATTRIBUTES = [
@@ -56,16 +41,9 @@ class MatchTeamBuilder
         'dribbling' => ['dribbling', 'agility', 'balance', 'flair', 'acceleration'],
     ];
 
-    /**
-     * How much each line contributes to a team rating, keyed by rating then line.
-     *
-     * @var array<string, array<string, float>>
-     */
-    private const LINE_WEIGHTS = [
-        'attacking' => ['attack' => 1.0, 'midfield' => 0.5, 'defence' => 0.15],
-        'playmaking' => ['midfield' => 1.0, 'attack' => 0.3, 'defence' => 0.3],
-        'defending' => ['defence' => 1.0, 'midfield' => 0.5, 'attack' => 0.15],
-    ];
+    public function __construct(
+        private readonly TeamRatings $teamRatings,
+    ) {}
 
     /**
      * Players injured on the match date are unavailable: they are dropped from the saved lineup and replaced like
@@ -98,18 +76,26 @@ class MatchTeamBuilder
             ? $this->pickBench($unselected->except($starterIds))
             : $savedSubstitutes->except($starterIds);
 
+        $ratingSlots = array_map(fn (array $slot): array => [
+            'position' => $slot['position'],
+            'player' => $slot['player'] === null ? null : $this->matchPlayer($slot['player'], $slot['position']),
+        ], $lineup);
+        $ratings = $this->teamRatings->calculate($ratingSlots);
+
         return new MatchTeam(
             clubId: $clubId,
-            attack: $this->teamRating($lineup, 'attacking'),
-            midfield: $this->teamRating($lineup, 'playmaking'),
-            defence: $this->teamRating($lineup, 'defending'),
-            goalkeeping: $this->goalkeeperRating($lineup),
-            chanceCreation: $this->chanceCreationRating($lineup),
+            attack: $ratings['attack'],
+            midfield: $ratings['midfield'],
+            defence: $ratings['defence'],
+            goalkeeping: $ratings['goalkeeping'],
+            chanceCreation: $ratings['chanceCreation'],
             formationTendency: $formation?->tactical_tendency ?? FormationTendency::BALANCED,
             mentality: $tactic?->mentality ?? $preference?->mentality ?? Mentality::BALANCED,
             startingPlayerIds: array_values($starterIds),
             substitutePlayerIds: $substitutes->keys()->all(),
-            players: $this->matchPlayers($lineup),
+            players: array_values(array_filter(array_column($ratingSlots, 'player'))),
+            substitutes: $substitutes->map(fn (Player $player): MatchPlayer => $this->matchPlayer($player, $player->position))->values()->all(),
+            vacantPositions: array_values(array_column(array_filter($ratingSlots, fn (array $slot): bool => $slot['player'] === null), 'position')),
         );
     }
 
@@ -261,85 +247,23 @@ class MatchTeamBuilder
         return $bench;
     }
 
-    /** @param list<array{position: string, line: PitchLine, player: ?Player}> $lineup */
-    private function teamRating(array $lineup, string $skill): float
+    private function matchPlayer(Player $player, string $position): MatchPlayer
     {
-        $weightedRating = 0.0;
-        $totalWeight = 0.0;
-
-        foreach ($lineup as $slot) {
-            $weight = self::LINE_WEIGHTS[$skill][$slot['line']->value] ?? 0.0;
-            $weightedRating += $weight * $this->slotRating($slot['player'], $skill);
-            $totalWeight += $weight;
-        }
-
-        return $totalWeight > 0 ? $weightedRating / $totalWeight : self::EMPTY_SLOT_RATING;
-    }
-
-    /** @param list<array{position: string, line: PitchLine, player: ?Player}> $lineup */
-    private function goalkeeperRating(array $lineup): float
-    {
-        foreach ($lineup as $slot) {
-            if ($slot['line'] === PitchLine::GOALKEEPER) {
-                return $this->slotRating($slot['player'], 'goalkeeping');
-            }
-        }
-
-        return self::EMPTY_SLOT_RATING;
-    }
-
-    /**
-     * The starters' chance creation averaged by the weight of the position each one plays. It is an average rather than
-     * a total so every formation creates the same number of chances with average players; the formation's style is
-     * left to its tactical tendency.
-     *
-     * @param  list<array{position: string, line: PitchLine, player: ?Player}>  $lineup
-     */
-    private function chanceCreationRating(array $lineup): float
-    {
-        $weightedRating = 0.0;
-        $totalWeight = 0.0;
-
-        foreach ($lineup as $slot) {
-            $weight = $this->chanceCreationWeight($slot['position']);
-            $weightedRating += $weight * $this->slotRating($slot['player'], 'chance_creation');
-            $totalWeight += $weight;
-        }
-
-        return $totalWeight > 0 ? $weightedRating / $totalWeight : self::EMPTY_SLOT_RATING;
-    }
-
-    /**
-     * @param  list<array{position: string, line: PitchLine, player: ?Player}>  $lineup
-     * @return list<MatchPlayer>
-     */
-    private function matchPlayers(array $lineup): array
-    {
-        $filledSlots = array_filter($lineup, fn (array $slot): bool => $slot['player'] !== null);
-
-        return array_values(array_map(fn (array $slot): MatchPlayer => new MatchPlayer(
-            playerId: $slot['player']->id,
-            position: $slot['position'],
-            shooting: $this->skillRating($slot['player'], 'attacking'),
-            creating: $this->skillRating($slot['player'], 'chance_creation'),
-            passing: $this->skillRating($slot['player'], 'passing'),
-            tackling: $this->skillRating($slot['player'], 'tackling'),
-            intercepting: $this->skillRating($slot['player'], 'intercepting'),
-            dribbling: $this->skillRating($slot['player'], 'dribbling'),
-            aggression: (float) $slot['player']->aggression,
-            decisions: (float) $slot['player']->decisions,
-            goalkeeping: $this->skillRating($slot['player'], 'goalkeeping'),
-        ), $filledSlots));
-    }
-
-    private function chanceCreationWeight(string $position): float
-    {
-        return self::CHANCE_CREATION_WEIGHTS[PositionRole::fromPosition($position)->value];
-    }
-
-    private function slotRating(?Player $player, string $skill): float
-    {
-        return $player === null ? self::EMPTY_SLOT_RATING : $this->skillRating($player, $skill);
+        return new MatchPlayer(
+            playerId: $player->id,
+            position: $position,
+            shooting: $this->skillRating($player, 'attacking'),
+            creating: $this->skillRating($player, 'chance_creation'),
+            passing: $this->skillRating($player, 'passing'),
+            tackling: $this->skillRating($player, 'tackling'),
+            intercepting: $this->skillRating($player, 'intercepting'),
+            dribbling: $this->skillRating($player, 'dribbling'),
+            aggression: (float) $player->aggression,
+            decisions: (float) $player->decisions,
+            goalkeeping: $this->skillRating($player, 'goalkeeping'),
+            playmaking: $this->skillRating($player, 'playmaking'),
+            defending: $this->skillRating($player, 'defending'),
+        );
     }
 
     private function naturalRating(Player $player): float

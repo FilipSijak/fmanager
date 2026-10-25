@@ -21,6 +21,7 @@ use App\Services\MatchEngineService\MatchEngineService;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\Carbon;
+use DomainException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -102,6 +103,7 @@ class InstanceService implements IInstanceService
     public function nextDay(): Instance
     {
         $instance = $this->getInstance();
+        $this->ensureUserMatchIsNotInProgress($instance);
         $this->season = Season::findOrFail($instance->season_id);
         $currentGameDate = Carbon::parse($instance->instance_date);
         $isMonthlyUpdate = $currentGameDate->day === 1;
@@ -145,7 +147,7 @@ class InstanceService implements IInstanceService
 
         $this->selectAiLineups($instance, $games);
 
-        $completedGames = collect();
+        $completedGames = $this->gamesCompletedToday($instance);
 
         foreach ($games as $game) {
             $result = $this->matchEngineService->simulate($game);
@@ -161,6 +163,42 @@ class InstanceService implements IInstanceService
         if ($completedGames->isNotEmpty()) {
             event(new MatchDayCompleted($instance, $completedGames));
         }
+    }
+
+    /**
+     * The user's match is played live before the day moves on, so it cannot be left half played.
+     */
+    private function ensureUserMatchIsNotInProgress(Instance $instance): void
+    {
+        if ($instance->club_id === null) {
+            return;
+        }
+
+        $inProgress = Game::query()
+            ->where('instance_id', $instance->id)
+            ->forClub($instance->club_id)
+            ->where('status', Game::STATUS_IN_PROGRESS)
+            ->exists();
+
+        if ($inProgress) {
+            throw new DomainException('Finish your match before continuing.');
+        }
+    }
+
+    /**
+     * Today's games already completed before the rest are simulated: the user's match, played live.
+     *
+     * @return Collection<int, Game>
+     */
+    private function gamesCompletedToday(Instance $instance): Collection
+    {
+        return Game::query()
+            ->where('instance_id', $instance->id)
+            ->whereDate('match_start', $instance->instance_date)
+            ->whereNotNull('processed_at')
+            ->where('status', Game::STATUS_COMPLETED)
+            ->get()
+            ->toBase();
     }
 
     /**

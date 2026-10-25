@@ -33,6 +33,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/competitions', [CompetitionPageController::class, 'index'])->name('competitions.index');
         Route::get('/competitions/{competitionId}', [CompetitionPageController::class, 'show'])->whereNumber('competitionId')->name('competitions.show');
         Route::get('/matches/{gameId}', [MatchPageController::class, 'show'])->whereNumber('gameId')->name('matches.show');
+        Route::get('/matches/{gameId}/live', [MatchPageController::class, 'live'])->whereNumber('gameId')->middleware(EnsureUserHasClub::class)->name('matches.live');
         Route::get('/clubs/{clubId}', [ClubPageController::class, 'show'])->whereNumber('clubId')->name('clubs.show');
         Route::get('/league-table', [CompetitionPageController::class, 'index'])->name('league-table');
         Route::get('/jobs', [ManagerJobController::class, 'index'])->name('jobs');

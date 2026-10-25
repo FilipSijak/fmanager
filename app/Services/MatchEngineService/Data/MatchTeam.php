@@ -24,7 +24,11 @@ final class MatchTeam
         public readonly array $startingPlayerIds = [],
         /** @var list<int> */
         public readonly array $substitutePlayerIds = [],
-        /** @var list<MatchPlayer> Starters the engine credits individual actions to. */
+        /** @var list<MatchPlayer> Starters in lineup order, each playing their slot's position. */
         public readonly array $players = [],
+        /** @var list<MatchPlayer> The selected bench, available to come on. */
+        public readonly array $substitutes = [],
+        /** @var list<string> Lineup positions the club could not fill; they play as empty slots. */
+        public readonly array $vacantPositions = [],
     ) {}
 }
