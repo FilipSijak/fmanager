@@ -5,6 +5,7 @@ namespace App\Services\GameService;
 use App\Events\PostMatch;
 use App\Models\Competition;
 use App\Models\Game;
+use App\Models\GamePlayerStat;
 use App\Models\Season;
 use App\Services\CompetitionService\Competitions\CompetitionUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
@@ -21,9 +22,12 @@ class CompleteGameService
         private readonly GameContext $gameContext
     ) {}
 
-    public function complete(int $gameId, int $homeGoals, int $awayGoals, ?array $matchSummary = null): Game
+    /**
+     * @param  list<array<string, int|float|bool|string>>  $playerStats  One row per player who played, without game and instance ids.
+     */
+    public function complete(int $gameId, int $homeGoals, int $awayGoals, ?array $matchSummary = null, array $playerStats = []): Game
     {
-        return DB::transaction(function () use ($gameId, $homeGoals, $awayGoals, $matchSummary): Game {
+        return DB::transaction(function () use ($gameId, $homeGoals, $awayGoals, $matchSummary, $playerStats): Game {
             $game = $this->findGame($gameId);
 
             if ($game->processed_at !== null) {
@@ -40,6 +44,16 @@ class CompleteGameService
             $game->match_summary = $matchSummary === null ? null : json_encode($matchSummary, JSON_THROW_ON_ERROR);
             $game->status = Game::STATUS_COMPLETED;
             $game->save();
+
+            if ($playerStats !== []) {
+                GamePlayerStat::query()->insert(array_map(fn (array $row): array => [
+                    ...array_fill_keys(GamePlayerStat::COUNTERS, 0),
+                    'clean_sheet' => false,
+                    ...$row,
+                    'instance_id' => $game->instance_id,
+                    'game_id' => $game->id,
+                ], $playerStats));
+            }
 
             $this->competitionUpdater->setGamesByCompetition([
                 $game->competition_id => [$game->toArray()],

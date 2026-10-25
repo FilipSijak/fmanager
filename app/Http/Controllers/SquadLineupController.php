@@ -7,7 +7,7 @@ use App\Http\Requests\SaveSquadLineupRequest;
 use App\Http\Resources\ClubTacticPlayerSlotResource;
 use App\Models\Club;
 use App\Models\Instance;
-use App\Services\SquadLineupService\SquadLineupService;
+use App\Services\ClubService\ClubService;
 use App\Support\GameContext;
 use DomainException;
 use Illuminate\Http\JsonResponse;
@@ -16,14 +16,14 @@ class SquadLineupController extends Controller
 {
     public function __construct(
         private readonly GameContext $gameContext,
-        private readonly SquadLineupService $squadLineupService,
+        private readonly ClubService $clubService,
     ) {}
 
     public function show(): JsonResponse
     {
         return ResponseHelper::success(
             ClubTacticPlayerSlotResource::collection(
-                $this->squadLineupService->currentForClub($this->managedClub()),
+                $this->clubService->currentLineup($this->managedClub()),
             )->resolve(request()),
         );
     }
@@ -31,7 +31,7 @@ class SquadLineupController extends Controller
     public function store(SaveSquadLineupRequest $request): JsonResponse
     {
         try {
-            $slots = $this->squadLineupService->saveForClub(
+            $slots = $this->clubService->saveLineup(
                 $this->managedClub(),
                 $request->validated('assignments'),
             );

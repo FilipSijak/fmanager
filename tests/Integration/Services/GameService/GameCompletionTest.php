@@ -6,6 +6,7 @@ use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
+use App\Models\Player;
 use App\Models\Season;
 use App\Services\GameService\CompleteGameService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,6 +33,27 @@ class GameCompletionTest extends TestCase
         $this->assertDatabaseHas('competition_season', ['club_id' => 1, 'played' => 1, 'wins' => 1, 'points' => 3, 'goals_for' => 3, 'goals_against' => 1]);
         $this->assertDatabaseHas('competition_season', ['club_id' => 2, 'played' => 1, 'losses' => 1, 'points' => 0, 'goals_for' => 1, 'goals_against' => 3]);
         $this->assertDatabaseHas('games', ['id' => $game->id, 'home_team_goals' => 3, 'away_team_goals' => 1]);
+    }
+
+    #[Test]
+    public function completing_a_game_saves_its_player_stats_once(): void
+    {
+        [$instance, $season, $competition, $clubs] = $this->competition('league', null);
+        $game = $this->game($instance, $season, $competition, $clubs[0], $clubs[1]);
+        $scorer = Player::factory()->create(['instance_id' => 1, 'club_id' => $clubs[0]->id, 'position' => 'ST']);
+        $goalkeeper = Player::factory()->create(['instance_id' => 1, 'club_id' => $clubs[1]->id, 'position' => 'GK']);
+        $playerStats = [
+            ['club_id' => $clubs[0]->id, 'player_id' => $scorer->id, 'position' => 'ST', 'started' => true, 'minutes_played' => 90, 'goals' => 1, 'shots' => 3, 'shots_on_target' => 2, 'rating' => 7.8],
+            ['club_id' => $clubs[1]->id, 'player_id' => $goalkeeper->id, 'position' => 'GK', 'started' => true, 'minutes_played' => 90, 'saves' => 1, 'goals_conceded' => 1, 'rating' => 6.4],
+        ];
+        $service = app(CompleteGameService::class);
+
+        $service->complete($game->id, 1, 0, null, $playerStats);
+        $service->complete($game->id, 1, 0, null, $playerStats);
+
+        $this->assertDatabaseCount('game_player_stats', 2);
+        $this->assertDatabaseHas('game_player_stats', ['instance_id' => 1, 'game_id' => $game->id, 'player_id' => $scorer->id, 'goals' => 1, 'shots_on_target' => 2, 'rating' => 7.8]);
+        $this->assertDatabaseHas('game_player_stats', ['instance_id' => 1, 'game_id' => $game->id, 'player_id' => $goalkeeper->id, 'saves' => 1, 'goals_conceded' => 1, 'clean_sheet' => false]);
     }
 
     #[Test]

@@ -8,17 +8,21 @@ use App\Events\NextDay;
 use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Models\Club;
+use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Manager;
 use App\Models\Season;
 use App\Models\StaffCoaching;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionScheduleRepository;
+use App\Services\ClubService\ClubService;
 use App\Services\GameService\CompleteGameService;
-use App\Services\GameService\MatchSimulationEngine;
+use App\Services\MatchEngineService\MatchEngineService;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\Carbon;
+use DomainException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class InstanceService implements IInstanceService
@@ -27,7 +31,7 @@ class InstanceService implements IInstanceService
 
     private Season $season;
 
-    private MatchSimulationEngine $matchSimulationEngine;
+    private MatchEngineService $matchEngineService;
 
     private CompleteGameService $completeGameService;
 
@@ -36,13 +40,14 @@ class InstanceService implements IInstanceService
     public function __construct(
         CompetitionScheduleRepository $competitionRepository,
         CreateInstance $createInstance,
-        MatchSimulationEngine $matchSimulationEngine,
+        MatchEngineService $matchEngineService,
         CompleteGameService $completeGameService,
-        private readonly GameContext $gameContext
+        private readonly GameContext $gameContext,
+        private readonly ClubService $clubService,
 
     ) {
         $this->competitionRepository = $competitionRepository;
-        $this->matchSimulationEngine = $matchSimulationEngine;
+        $this->matchEngineService = $matchEngineService;
         $this->completeGameService = $completeGameService;
         $this->createInstance = $createInstance;
     }
@@ -98,6 +103,7 @@ class InstanceService implements IInstanceService
     public function nextDay(): Instance
     {
         $instance = $this->getInstance();
+        $this->ensureUserMatchIsNotInProgress($instance);
         $this->season = Season::findOrFail($instance->season_id);
         $currentGameDate = Carbon::parse($instance->instance_date);
         $isMonthlyUpdate = $currentGameDate->day === 1;
@@ -139,21 +145,76 @@ class InstanceService implements IInstanceService
         $instance = $this->getInstance();
         $games = $this->competitionRepository->scheduledFor($instance);
 
-        $completedGames = collect();
+        $this->selectAiLineups($instance, $games);
+
+        $completedGames = $this->gamesCompletedToday($instance);
 
         foreach ($games as $game) {
-            $result = $this->matchSimulationEngine->simulate($game);
+            $result = $this->matchEngineService->simulate($game);
             $completedGames->push($this->completeGameService->complete(
                 $game->id,
                 $result->homeGoals,
                 $result->awayGoals,
-                $result->summary
+                $result->summary,
+                $result->playerStats,
             ));
         }
 
         if ($completedGames->isNotEmpty()) {
             event(new MatchDayCompleted($instance, $completedGames));
         }
+    }
+
+    /**
+     * The user's match is played live before the day moves on, so it cannot be left half played.
+     */
+    private function ensureUserMatchIsNotInProgress(Instance $instance): void
+    {
+        if ($instance->club_id === null) {
+            return;
+        }
+
+        $inProgress = Game::query()
+            ->where('instance_id', $instance->id)
+            ->forClub($instance->club_id)
+            ->where('status', Game::STATUS_IN_PROGRESS)
+            ->exists();
+
+        if ($inProgress) {
+            throw new DomainException('Finish your match before continuing.');
+        }
+    }
+
+    /**
+     * Today's games already completed before the rest are simulated: the user's match, played live.
+     *
+     * @return Collection<int, Game>
+     */
+    private function gamesCompletedToday(Instance $instance): Collection
+    {
+        return Game::query()
+            ->where('instance_id', $instance->id)
+            ->whereDate('match_start', $instance->instance_date)
+            ->whereNotNull('processed_at')
+            ->where('status', Game::STATUS_COMPLETED)
+            ->get()
+            ->toBase();
+    }
+
+    /**
+     * Clubs the user does not manage pick their matchday squads before kick-off.
+     *
+     * @param  Collection<int, Game>  $games
+     */
+    private function selectAiLineups(Instance $instance, Collection $games): void
+    {
+        $aiClubIds = $games
+            ->flatMap(fn (Game $game): array => [$game->hometeam_id, $game->awayteam_id])
+            ->unique()
+            ->reject(fn (int $clubId): bool => $clubId === (int) $instance->club_id);
+
+        Club::query()->whereIn('id', $aiClubIds)->get()
+            ->each(fn (Club $club) => $this->clubService->selectAiLineup($club, $instance->instance_date));
     }
 
     public function setSeason(Season $season)

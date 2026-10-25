@@ -6,6 +6,7 @@ import { nextDay } from '@/actions/App/Http/Controllers/InstanceController';
 import api from '@/api';
 import { playerSearch, setupGame, start } from '@/routes';
 import { index as competitions } from '@/routes/competitions';
+import { live as liveMatch } from '@/routes/matches';
 
 type NavItem = {
     label: string;
@@ -47,8 +48,10 @@ export default function Sidebar({ active }: { active?: string }) {
         setAdvanceError(null);
 
         try {
-            await api.post(nextDay.url());
-            router.visit(start.url(), {
+            const response = await api.post(nextDay.url());
+            const liveGameId: number | null = response.data.data.live_game_id;
+
+            router.visit(liveGameId ? liveMatch.url(liveGameId) : start.url(), {
                 onFinish: () => setAdvancing(false),
             });
         } catch {

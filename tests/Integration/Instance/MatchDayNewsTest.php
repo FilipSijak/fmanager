@@ -9,9 +9,9 @@ use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
 use App\Services\GameService\CompleteGameService;
-use App\Services\GameService\MatchSimulationEngine;
-use App\Services\GameService\MatchSimulationResult;
 use App\Services\InstanceService\InstanceService;
+use App\Services\MatchEngineService\MatchEngineService;
+use App\Services\MatchEngineService\MatchSimulationResult;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -48,10 +48,10 @@ class MatchDayNewsTest extends TestCase
         Event::fake([MatchDayCompleted::class]);
         $game = $this->game($this->userClub, $this->clubIn($this->league, 'Chelsea'), null, null);
         $completedGame = $game->replicate()->forceFill(['id' => $game->id, 'home_team_goals' => 2, 'away_team_goals' => 1]);
-        $this->mock(MatchSimulationEngine::class)->shouldReceive('simulate')->once()
+        $this->mock(MatchEngineService::class)->shouldReceive('simulate')->once()
             ->andReturn(new MatchSimulationResult(2, 1, []));
         $this->mock(CompleteGameService::class)->shouldReceive('complete')->once()
-            ->with($game->id, 2, 1, [])->andReturn($completedGame);
+            ->with($game->id, 2, 1, [], [])->andReturn($completedGame);
 
         app(InstanceService::class)->nextDay();
 
