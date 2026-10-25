@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { Formation } from '../../../tactics/types';
 import { formatOptionLabel } from '../../../tactics/utils';
-import { playerDropTarget, startPlayerDrag } from '../dragAndDrop';
 import type { DraggedPlayer } from '../dragAndDrop';
+import { playerDropTarget, startPlayerDrag } from '../dragAndDrop';
 import { draftFromMatch, reassignToFormation, shortName } from '../tactics';
 import type { LiveMatchData, LivePlayer, TacticsDraft } from '../types';
 
@@ -42,7 +42,9 @@ export default function TacticsTab({
         return <p>No formations are available.</p>;
     }
 
-    const formation = formations.find((option) => option.id === draft.formationId) ?? formations[0];
+    const formation =
+        formations.find((option) => option.id === draft.formationId) ??
+        formations[0];
     const players = new Map<number, LivePlayer>(
         [...team.on_pitch, ...team.bench]
             .filter((player) => player.player_id !== null)
@@ -130,7 +132,10 @@ export default function TacticsTab({
                 aria-label="Pitch"
                 className="relative min-h-[560px] overflow-hidden rounded border border-white/10 bg-gradient-to-b from-emerald-700 via-emerald-800 to-emerald-700"
             >
-                <div aria-hidden className="pointer-events-none absolute inset-0 opacity-30">
+                <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 opacity-30"
+                >
                     <div className="absolute inset-4 border-2 border-white" />
                     <div className="absolute inset-x-0 top-1/2 h-px bg-white" />
                     <div className="absolute top-1/2 left-1/2 size-24 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white" />
@@ -138,17 +143,23 @@ export default function TacticsTab({
 
                 {formation.slots.map((slot) => {
                     const playerId = draft.assignments[slot.slot] ?? null;
-                    const player = playerId === null ? null : players.get(playerId);
+                    const player =
+                        playerId === null ? null : players.get(playerId);
 
                     return (
                         <div
                             key={slot.slot}
-                            {...(editable ? playerDropTarget((dragged) => dropOnSlot(slot.slot, dragged)) : {})}
+                            {...(editable
+                                ? playerDropTarget((dragged) =>
+                                      dropOnSlot(slot.slot, dragged),
+                                  )
+                                : {})}
                             className="absolute flex w-24 -translate-x-1/2 -translate-y-1/2 flex-col items-center"
                             style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
                         >
                             {player ? (
-                                <span
+                                <button
+                                    type="button"
                                     draggable={editable}
                                     onDragStart={(event) =>
                                         startPlayerDrag(event, {
@@ -158,18 +169,25 @@ export default function TacticsTab({
                                         })
                                     }
                                     className={`flex size-10 items-center justify-center rounded-full border-2 border-white/60 bg-red-900 text-sm font-bold text-white ${
-                                        editable ? 'cursor-grab active:cursor-grabbing' : ''
+                                        editable
+                                            ? 'cursor-grab active:cursor-grabbing'
+                                            : ''
                                     }`}
+                                    aria-label={player.name ?? undefined}
                                     title={player.name ?? undefined}
                                 >
-                                    {player.stats ? player.stats.rating.toFixed(1) : slot.position}
-                                </span>
+                                    {player.stats
+                                        ? player.stats.rating.toFixed(1)
+                                        : slot.position}
+                                </button>
                             ) : (
                                 <span className="flex size-10 items-center justify-center rounded-full border-2 border-dashed border-white/60 text-xs text-white/80">
                                     —
                                 </span>
                             )}
-                            <span className="mt-0.5 text-xs font-bold text-white">{slot.position}</span>
+                            <span className="mt-0.5 text-xs font-bold text-white">
+                                {slot.position}
+                            </span>
                             <span className="max-w-24 truncate text-xs font-bold text-[#f5f000]">
                                 {player ? shortName(player.name) : 'Empty'}
                             </span>
@@ -179,8 +197,13 @@ export default function TacticsTab({
             </section>
 
             <div className="flex flex-col gap-6">
-                <section className="border border-[#3355dd]/50" aria-label="Team instructions">
-                    <h2 className="bg-[#101358] px-5 py-3 font-bold text-[#f5f000]">Tactics</h2>
+                <section
+                    className="border border-[#3355dd]/50"
+                    aria-label="Team instructions"
+                >
+                    <h2 className="bg-[#101358] px-5 py-3 font-bold text-[#f5f000]">
+                        Tactics
+                    </h2>
                     <div className="flex flex-col gap-4 p-5">
                         {!editable && (
                             <p className="text-[#c8ffb0]">
@@ -194,12 +217,18 @@ export default function TacticsTab({
                             <select
                                 value={draft.formationId}
                                 disabled={!editable}
-                                onChange={(event) => changeFormation(Number(event.target.value))}
+                                onChange={(event) =>
+                                    changeFormation(Number(event.target.value))
+                                }
                                 className="border border-[#3355dd] bg-black px-3 py-2 disabled:opacity-50"
                             >
                                 {formations.map((option) => (
                                     <option key={option.id} value={option.id}>
-                                        {option.name} ({formatOptionLabel(option.tactical_tendency)})
+                                        {option.name} (
+                                        {formatOptionLabel(
+                                            option.tactical_tendency,
+                                        )}
+                                        )
                                     </option>
                                 ))}
                             </select>
@@ -209,7 +238,9 @@ export default function TacticsTab({
                             <select
                                 value={draft.mentality}
                                 disabled={!editable}
-                                onChange={(event) => editDraft({ mentality: event.target.value })}
+                                onChange={(event) =>
+                                    editDraft({ mentality: event.target.value })
+                                }
                                 className="border border-[#3355dd] bg-black px-3 py-2 disabled:opacity-50"
                             >
                                 {mentalities.map((option) => (
@@ -220,8 +251,8 @@ export default function TacticsTab({
                             </select>
                         </label>
                         <p className="text-sm text-white/70">
-                            Drag players between positions to swap them, or drag a substitute onto a player to bring
-                            them on.
+                            Drag players between positions to swap them, or drag
+                            a substitute onto a player to bring them on.
                         </p>
                         <div className="flex gap-3">
                             <button
@@ -247,12 +278,18 @@ export default function TacticsTab({
                     </div>
                 </section>
 
-                <section className="border border-[#3355dd]/50" aria-label="Substitutes">
+                <section
+                    className="border border-[#3355dd]/50"
+                    aria-label="Substitutes"
+                >
                     <h2 className="bg-[#101358] px-5 py-3 font-bold text-[#f5f000]">
-                        Substitutes ({team.substitutions_used}/{match.max_substitutions} used)
+                        Substitutes ({team.substitutions_used}/
+                        {match.max_substitutions} used)
                     </h2>
                     {team.bench.length === 0 ? (
-                        <p className="px-5 py-3 text-white/70">No substitutes left on the bench.</p>
+                        <p className="px-5 py-3 text-white/70">
+                            No substitutes left on the bench.
+                        </p>
                     ) : (
                         <ul className="divide-y divide-white/10">
                             {team.bench.map((player) => (
@@ -260,19 +297,28 @@ export default function TacticsTab({
                                     key={player.player_id}
                                     draggable={editable}
                                     onDragStart={(event) =>
-                                        startPlayerDrag(event, { playerId: player.player_id as number, from: 'bench' })
+                                        startPlayerDrag(event, {
+                                            playerId:
+                                                player.player_id as number,
+                                            from: 'bench',
+                                        })
                                     }
                                     {...(editable
                                         ? playerDropTarget(
                                               (dragged) =>
                                                   dragged.from === 'pitch' &&
-                                                  void substituteInDraft(dragged.playerId, player.player_id as number),
+                                                  void substituteInDraft(
+                                                      dragged.playerId,
+                                                      player.player_id as number,
+                                                  ),
                                           )
                                         : {})}
                                     className={`flex justify-between px-5 py-2 ${editable ? 'cursor-grab hover:bg-[#3355dd]/30' : ''}`}
                                 >
                                     <span>
-                                        <span className="mr-3 font-bold text-[#c8ffb0]">{player.position}</span>
+                                        <span className="mr-3 font-bold text-[#c8ffb0]">
+                                            {player.position}
+                                        </span>
                                         {player.name}
                                     </span>
                                 </li>

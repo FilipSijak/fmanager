@@ -1,5 +1,5 @@
-import { playerDropTarget, startPlayerDrag } from '../dragAndDrop';
 import type { DraggedPlayer } from '../dragAndDrop';
+import { playerDropTarget, startPlayerDrag } from '../dragAndDrop';
 import type { LivePlayer, LiveSide } from '../types';
 
 /** Lets the user pick, or drag, a player on the pitch and a substitute to swap. */
@@ -35,9 +35,16 @@ function Cards({ player }: { player: LivePlayer }) {
     }
 
     return (
-        <span className="ml-2 inline-flex gap-0.5 align-middle" aria-label={`${stats.yellow_cards} yellow, ${stats.red_cards} red`}>
-            {stats.yellow_cards > 0 && <span className="inline-block h-3 w-2 bg-yellow-400" />}
-            {stats.red_cards > 0 && <span className="inline-block h-3 w-2 bg-red-600" />}
+        <span className="ml-2 inline-flex gap-0.5 align-middle">
+            <span className="sr-only">
+                {stats.yellow_cards} yellow, {stats.red_cards} red
+            </span>
+            {stats.yellow_cards > 0 && (
+                <span className="inline-block h-3 w-2 bg-yellow-400" />
+            )}
+            {stats.red_cards > 0 && (
+                <span className="inline-block h-3 w-2 bg-red-600" />
+            )}
         </span>
     );
 }
@@ -78,7 +85,8 @@ function PlayerRows({
             {players.map((player, index) => {
                 const isSelectable = selectable && player.player_id !== null;
                 const isSelected =
-                    player.player_id !== null && player.player_id === selectedId;
+                    player.player_id !== null &&
+                    player.player_id === selectedId;
                 const stats = player.stats;
 
                 return (
@@ -94,7 +102,10 @@ function PlayerRows({
                         }
                         {...(isSelectable && onDropPlayer
                             ? playerDropTarget((dragged) =>
-                                  onDropPlayer(dragged, player.player_id as number),
+                                  onDropPlayer(
+                                      dragged,
+                                      player.player_id as number,
+                                  ),
                               )
                             : {})}
                         onClick={
@@ -128,9 +139,13 @@ function PlayerRows({
                         <td className="px-2 py-1.5">{stats?.goals ?? ''}</td>
                         <td className="px-2 py-1.5">{stats?.assists ?? ''}</td>
                         <td className="px-2 py-1.5">
-                            {stats ? `${stats.shots}/${stats.shots_on_target}` : ''}
+                            {stats
+                                ? `${stats.shots}/${stats.shots_on_target}`
+                                : ''}
                         </td>
-                        <td className="px-2 py-1.5">{stats?.key_passes ?? ''}</td>
+                        <td className="px-2 py-1.5">
+                            {stats?.key_passes ?? ''}
+                        </td>
                         <td className="px-2 py-1.5">
                             {stats ? passAccuracy(player) : ''}
                         </td>
@@ -197,7 +212,10 @@ export default function TeamSheet({
                         <th className="px-2 py-2" title="Pass completion">
                             Pass
                         </th>
-                        <th className="px-2 py-2" title="Tackles won / attempted">
+                        <th
+                            className="px-2 py-2"
+                            title="Tackles won / attempted"
+                        >
                             Tkl
                         </th>
                         <th className="px-2 py-2" title="Interceptions">
@@ -206,7 +224,10 @@ export default function TeamSheet({
                         <th className="px-2 py-2" title="Saves">
                             Sv
                         </th>
-                        <th className="px-3 py-2 text-right" title="Match rating">
+                        <th
+                            className="px-3 py-2 text-right"
+                            title="Match rating"
+                        >
                             Rtg
                         </th>
                     </tr>
@@ -221,7 +242,10 @@ export default function TeamSheet({
                         dragFrom="pitch"
                         onDropPlayer={(dragged, playerOffId) =>
                             dragged.from === 'bench' &&
-                            selection?.onSubstitute(playerOffId, dragged.playerId)
+                            selection?.onSubstitute(
+                                playerOffId,
+                                dragged.playerId,
+                            )
                         }
                     />
                     <PlayerRows
@@ -233,7 +257,10 @@ export default function TeamSheet({
                         dragFrom="bench"
                         onDropPlayer={(dragged, playerOnId) =>
                             dragged.from === 'pitch' &&
-                            selection?.onSubstitute(dragged.playerId, playerOnId)
+                            selection?.onSubstitute(
+                                dragged.playerId,
+                                playerOnId,
+                            )
                         }
                     />
                     <PlayerRows

@@ -17,7 +17,9 @@ export function startPlayerDrag(event: DragEvent, player: DraggedPlayer): void {
 }
 
 /** Lets an element accept dropped players; returns props to spread onto it. */
-export function playerDropTarget(onDropPlayer: (player: DraggedPlayer) => void) {
+export function playerDropTarget(
+    onDropPlayer: (player: DraggedPlayer) => void,
+) {
     return {
         onDragOver: (event: DragEvent) => {
             if (event.dataTransfer.types.includes(LIVE_PLAYER_DRAG_TYPE)) {

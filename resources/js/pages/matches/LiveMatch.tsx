@@ -42,7 +42,8 @@ export default function LiveMatch({
     const [playerOnId, setPlayerOnId] = useState<number | null>(null);
 
     const userTeam = match.user_side === 'home' ? match.home : match.away;
-    const substitutionsLeft = match.max_substitutions - userTeam.substitutions_used;
+    const substitutionsLeft =
+        match.max_substitutions - userTeam.substitutions_used;
     const canSubstitute = !playing && !match.finished && substitutionsLeft > 0;
     const playerName = (playerId: number | null) =>
         [...userTeam.on_pitch, ...userTeam.bench].find(
@@ -72,10 +73,15 @@ export default function LiveMatch({
               playerOffId,
               playerOnId,
               onSelectOff: (playerId: number) =>
-                  setPlayerOffId((current) => (current === playerId ? null : playerId)),
+                  setPlayerOffId((current) =>
+                      current === playerId ? null : playerId,
+                  ),
               onSelectOn: (playerId: number) =>
-                  setPlayerOnId((current) => (current === playerId ? null : playerId)),
-              onSubstitute: (offId: number, onId: number) => void makeSubstitution(offId, onId),
+                  setPlayerOnId((current) =>
+                      current === playerId ? null : playerId,
+                  ),
+              onSubstitute: (offId: number, onId: number) =>
+                  void makeSubstitution(offId, onId),
           }
         : null;
 
@@ -117,13 +123,14 @@ export default function LiveMatch({
                                 onClick={togglePlaying}
                                 className="w-36 border-2 border-[#f5f000] px-6 py-2 font-black text-[#f5f000] uppercase hover:bg-[#f5f000] hover:text-black"
                             >
-                                {playing ? 'Pause' : match.minute === 0 ? 'Kick off' : 'Play'}
+                                {playing
+                                    ? 'Pause'
+                                    : match.minute === 0
+                                      ? 'Kick off'
+                                      : 'Play'}
                             </button>
-                            <div
-                                className="flex border border-[#3355dd]"
-                                role="group"
-                                aria-label="Match speed"
-                            >
+                            <fieldset className="flex border border-[#3355dd]">
+                                <legend className="sr-only">Match speed</legend>
                                 {SPEEDS.map((option, index) => (
                                     <button
                                         key={option.label}
@@ -139,7 +146,7 @@ export default function LiveMatch({
                                         {option.label}
                                     </button>
                                 ))}
-                            </div>
+                            </fieldset>
                         </>
                     )}
                 </div>
@@ -150,7 +157,10 @@ export default function LiveMatch({
                 )}
             </header>
             <main className="flex-1 bg-[#0c0c14] p-6 text-white">
-                <div className="mb-6 flex gap-2 border-b border-[#3355dd]/50" role="tablist">
+                <div
+                    className="mb-6 flex gap-2 border-b border-[#3355dd]/50"
+                    role="tablist"
+                >
                     {TABS.map((option) => (
                         <button
                             key={option.id}
@@ -179,7 +189,9 @@ export default function LiveMatch({
                         busy={busy}
                         onApply={changeTactics}
                         onSubstitute={(offId, onId) =>
-                            substitutionsLeft > 0 ? makeSubstitution(offId, onId) : Promise.resolve(false)
+                            substitutionsLeft > 0
+                                ? makeSubstitution(offId, onId)
+                                : Promise.resolve(false)
                         }
                     />
                 )}
@@ -196,7 +208,9 @@ export default function LiveMatch({
                             {match.finished ? (
                                 <span>The match has finished.</span>
                             ) : playing ? (
-                                <span>Pause the match to make a substitution.</span>
+                                <span>
+                                    Pause the match to make a substitution.
+                                </span>
                             ) : substitutionsLeft === 0 ? (
                                 <span>All substitutions have been made.</span>
                             ) : (
@@ -204,20 +218,28 @@ export default function LiveMatch({
                                     <span>
                                         Off:{' '}
                                         <strong>
-                                            {playerName(playerOffId) ?? 'pick a player on the pitch'}
+                                            {playerName(playerOffId) ??
+                                                'pick a player on the pitch'}
                                         </strong>
                                     </span>
-                                    <span className="text-sm text-white/70">Click or drag to pick.</span>
+                                    <span className="text-sm text-white/70">
+                                        Click or drag to pick.
+                                    </span>
                                     <span>
                                         On:{' '}
                                         <strong>
-                                            {playerName(playerOnId) ?? 'pick a substitute'}
+                                            {playerName(playerOnId) ??
+                                                'pick a substitute'}
                                         </strong>
                                     </span>
                                     <button
                                         type="button"
                                         onClick={confirmSubstitution}
-                                        disabled={busy || playerOffId === null || playerOnId === null}
+                                        disabled={
+                                            busy ||
+                                            playerOffId === null ||
+                                            playerOnId === null
+                                        }
                                         className="ml-auto border-2 border-[#f5f000] px-4 py-1 font-bold text-[#f5f000] hover:bg-[#f5f000] hover:text-black disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-[#f5f000]"
                                     >
                                         Make substitution
@@ -230,7 +252,11 @@ export default function LiveMatch({
                                 <TeamSheet
                                     key={side}
                                     side={match[side]}
-                                    selection={side === match.user_side ? selection : null}
+                                    selection={
+                                        side === match.user_side
+                                            ? selection
+                                            : null
+                                    }
                                 />
                             ))}
                         </div>

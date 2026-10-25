@@ -15,7 +15,10 @@ function percentage(part: number, whole: number): string {
 const TOTALS: { label: string; value: (totals: TeamTotals) => string }[] = [
     { label: 'Possession', value: (totals) => `${totals.possession}%` },
     { label: 'Chances', value: (totals) => String(totals.chances) },
-    { label: 'Shots on target', value: (totals) => String(totals.shots_on_target) },
+    {
+        label: 'Shots on target',
+        value: (totals) => String(totals.shots_on_target),
+    },
     { label: 'Key passes', value: (totals) => String(totals.key_passes) },
     {
         label: 'Passes completed',
@@ -94,9 +97,9 @@ export default function MatchStatsTab({ match }: { match: LiveMatchData }) {
                     </p>
                 ) : (
                     <ol className="max-h-[480px] divide-y divide-white/10 overflow-y-auto">
-                        {events.map((event, index) => (
+                        {events.map((event) => (
                             <li
-                                key={`${event.minute}-${event.type}-${index}`}
+                                key={`${event.minute}-${event.type}-${event.player_id}-${event.assist_player_name}-${event.replaced_player_name}`}
                                 className="flex gap-4 px-5 py-3"
                             >
                                 <span className="w-10 font-bold text-[#f5f000] tabular-nums">

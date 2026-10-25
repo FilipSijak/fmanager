@@ -62,7 +62,11 @@ export function draftFromMatch(
               formation,
           );
 
-    return { formationId: formation.id, mentality: team.mentality, assignments };
+    return {
+        formationId: formation.id,
+        mentality: team.mentality,
+        assignments,
+    };
 }
 
 export function shortName(name: string | null): string {
