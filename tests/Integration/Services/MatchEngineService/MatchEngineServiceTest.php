@@ -108,13 +108,13 @@ class MatchEngineServiceTest extends TestCase
     }
 
     #[Test]
-    public function replaces_a_saved_starter_who_left_the_club_from_the_saved_bench(): void
+    public function replaces_a_saved_starter_who_left_the_club_from_the_saved_bench_without_refilling_the_bench(): void
     {
         $game = $this->game();
         $tactic = $this->clubTactic($game->hometeam_id, FormationTendency::BALANCED, Mentality::BALANCED);
         $starters = $this->squad($game->hometeam_id, 10);
         $substitutes = $this->squad($game->hometeam_id, 8, positions: self::BENCH_POSITIONS);
-        $reserve = $this->squad($game->hometeam_id, 6, positions: ['CM'])->first();
+        $this->squad($game->hometeam_id, 6, positions: ['CM']);
         $this->saveLineup($tactic, $starters, $substitutes);
         $soldDefender = $starters[1];
         $soldDefender->forceFill(['club_id' => null])->save();
@@ -124,7 +124,24 @@ class MatchEngineServiceTest extends TestCase
 
         $this->assertSame([
             'starting' => [...$starters->except(1)->pluck('id')->all(), $replacementDefender->id],
-            'substitutes' => [...$substitutes->except(1)->pluck('id')->all(), $reserve->id],
+            'substitutes' => $substitutes->except(1)->pluck('id')->all(),
+        ], $result->summary['lineups']['home']);
+    }
+
+    #[Test]
+    public function saved_lineup_without_substitutes_plays_with_an_empty_bench(): void
+    {
+        $game = $this->game();
+        $tactic = $this->clubTactic($game->hometeam_id, FormationTendency::BALANCED, Mentality::BALANCED);
+        $starters = $this->squad($game->hometeam_id, 8);
+        $this->squad($game->hometeam_id, 12, positions: self::BENCH_POSITIONS);
+        $this->saveLineup($tactic, $starters, collect());
+
+        $result = app(MatchEngineService::class)->simulate($game);
+
+        $this->assertSame([
+            'starting' => $starters->pluck('id')->all(),
+            'substitutes' => [],
         ], $result->summary['lineups']['home']);
     }
 
