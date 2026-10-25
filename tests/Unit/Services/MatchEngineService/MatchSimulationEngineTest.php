@@ -1,9 +1,9 @@
 <?php
 
-namespace Tests\Unit\Services\GameService;
+namespace Tests\Unit\Services\MatchEngineService;
 
 use App\Models\Game;
-use App\Services\GameService\MatchSimulationEngine;
+use App\Services\MatchEngineService\MatchSimulationEngine;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 

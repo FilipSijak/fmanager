@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\GameService;
+namespace App\Services\MatchEngineService;
 
 use App\Models\Game;
 

@@ -15,7 +15,7 @@ use App\Models\StaffCoaching;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionScheduleRepository;
 use App\Services\GameService\CompleteGameService;
-use App\Services\GameService\MatchSimulationEngine;
+use App\Services\MatchEngineService\MatchSimulationEngine;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\Carbon;
