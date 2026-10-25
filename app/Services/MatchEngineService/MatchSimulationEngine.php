@@ -12,7 +12,7 @@ use Random\Randomizer;
  */
 class MatchSimulationEngine
 {
-    public const ENGINE_VERSION = 3;
+    public const ENGINE_VERSION = 4;
 
     /** Chances an average side creates against an equal opponent on neutral ground. */
     private const BASE_CHANCES = 10.0;
@@ -56,11 +56,15 @@ class MatchSimulationEngine
 
     private const MAX_CONVERSION = 0.35;
 
-    private const MATCH_MINUTES = 90;
+    private readonly MatchRandom $random;
 
-    public function __construct(
-        private readonly Randomizer $randomizer = new Randomizer,
-    ) {}
+    private readonly PlayerActionSimulator $playerActions;
+
+    public function __construct(Randomizer $randomizer = new Randomizer)
+    {
+        $this->random = new MatchRandom($randomizer);
+        $this->playerActions = new PlayerActionSimulator($this->random);
+    }
 
     public function simulate(MatchTeam $home, MatchTeam $away): MatchSimulationResult
     {
@@ -69,12 +73,16 @@ class MatchSimulationEngine
         $homeConversion = $this->conversion($home, $away);
         $awayConversion = $this->conversion($away, $home);
 
-        $homeChances = $this->poisson($homeExpectedChances);
-        $awayChances = $this->poisson($awayExpectedChances);
-        $homeGoals = $this->goalsFrom($homeChances, $homeConversion);
-        $awayGoals = $this->goalsFrom($awayChances, $awayConversion);
+        $chances = ['home' => $this->random->poisson($homeExpectedChances), 'away' => $this->random->poisson($awayExpectedChances)];
+        $played = $this->playerActions->play(
+            $home,
+            $away,
+            $chances,
+            ['home' => $homeConversion, 'away' => $awayConversion],
+            $home->midfield / ($home->midfield + $away->midfield),
+        );
 
-        return new MatchSimulationResult($homeGoals, $awayGoals, [
+        return new MatchSimulationResult($played->homeGoals, $played->awayGoals, [
             'engine_version' => self::ENGINE_VERSION,
             'expected_chances' => [
                 'home' => round($homeExpectedChances, 2),
@@ -84,13 +92,13 @@ class MatchSimulationEngine
                 'home' => round($homeExpectedChances * $homeConversion, 2),
                 'away' => round($awayExpectedChances * $awayConversion, 2),
             ],
-            'chances' => ['home' => $homeChances, 'away' => $awayChances],
+            'chances' => $chances,
             'lineups' => [
                 'home' => ['starting' => $home->startingPlayerIds, 'substitutes' => $home->substitutePlayerIds],
                 'away' => ['starting' => $away->startingPlayerIds, 'substitutes' => $away->substitutePlayerIds],
             ],
-            'events' => $this->goalEvents($home, $homeGoals, $away, $awayGoals),
-        ]);
+            'events' => $played->events,
+        ], $played->playerStats);
     }
 
     /**
@@ -148,56 +156,5 @@ class MatchSimulationEngine
     private function ratingFactor(float $weightedGapFromAverage): float
     {
         return max(self::MIN_RATING_FACTOR, 1 + $weightedGapFromAverage / self::AVERAGE_RATING);
-    }
-
-    /**
-     * Samples a Poisson-distributed count around the expected value (Knuth's method).
-     */
-    private function poisson(float $expected): int
-    {
-        $threshold = exp(-$expected);
-        $count = 0;
-        $probability = $this->randomizer->nextFloat();
-
-        while ($probability > $threshold) {
-            $count++;
-            $probability *= $this->randomizer->nextFloat();
-        }
-
-        return $count;
-    }
-
-    private function goalsFrom(int $chances, float $conversion): int
-    {
-        $goals = 0;
-
-        for ($chance = 0; $chance < $chances; $chance++) {
-            if ($this->randomizer->nextFloat() < $conversion) {
-                $goals++;
-            }
-        }
-
-        return $goals;
-    }
-
-    /** @return list<array{minute: int, type: string, team: string, club_id: int}> */
-    private function goalEvents(MatchTeam $home, int $homeGoals, MatchTeam $away, int $awayGoals): array
-    {
-        $events = [];
-
-        foreach (['home' => [$home, $homeGoals], 'away' => [$away, $awayGoals]] as $side => [$team, $goals]) {
-            for ($goal = 0; $goal < $goals; $goal++) {
-                $events[] = [
-                    'minute' => $this->randomizer->getInt(1, self::MATCH_MINUTES),
-                    'type' => 'goal',
-                    'team' => $side,
-                    'club_id' => $team->clubId,
-                ];
-            }
-        }
-
-        usort($events, fn (array $first, array $second): int => $first['minute'] <=> $second['minute']);
-
-        return $events;
     }
 }

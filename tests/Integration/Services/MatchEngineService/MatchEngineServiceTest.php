@@ -155,6 +155,22 @@ class MatchEngineServiceTest extends TestCase
     }
 
     #[Test]
+    public function credits_player_stats_to_every_starter_and_only_the_starters(): void
+    {
+        $game = $this->game();
+        $homeStarters = $this->squad($game->hometeam_id, 10);
+        $this->squad($game->hometeam_id, 9, positions: self::BENCH_POSITIONS);
+        $awayStarters = $this->squad($game->awayteam_id, 10);
+
+        $result = app(MatchEngineService::class)->simulate($game);
+
+        $statsByClub = collect($result->playerStats)->groupBy('club_id');
+        $this->assertSame($homeStarters->pluck('id')->all(), $statsByClub[$game->hometeam_id]->pluck('player_id')->all());
+        $this->assertSame($awayStarters->pluck('id')->all(), $statsByClub[$game->awayteam_id]->pluck('player_id')->all());
+        $this->assertSame(self::LINEUP_POSITIONS, $statsByClub[$game->hometeam_id]->pluck('position')->all());
+    }
+
+    #[Test]
     public function saved_lineup_without_substitutes_plays_with_an_empty_bench(): void
     {
         $game = $this->game();

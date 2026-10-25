@@ -24,5 +24,7 @@ final class MatchTeam
         public readonly array $startingPlayerIds = [],
         /** @var list<int> */
         public readonly array $substitutePlayerIds = [],
+        /** @var list<MatchPlayer> Starters the engine credits individual actions to. */
+        public readonly array $players = [],
     ) {}
 }

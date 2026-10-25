@@ -51,7 +51,7 @@ class MatchDayNewsTest extends TestCase
         $this->mock(MatchEngineService::class)->shouldReceive('simulate')->once()
             ->andReturn(new MatchSimulationResult(2, 1, []));
         $this->mock(CompleteGameService::class)->shouldReceive('complete')->once()
-            ->with($game->id, 2, 1, [])->andReturn($completedGame);
+            ->with($game->id, 2, 1, [], [])->andReturn($completedGame);
 
         app(InstanceService::class)->nextDay();
 

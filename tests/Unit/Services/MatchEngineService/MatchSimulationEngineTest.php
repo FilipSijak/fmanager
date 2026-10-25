@@ -146,7 +146,7 @@ class MatchSimulationEngineTest extends TestCase
             $result = $engine->simulate($this->team(10, attack: 14), $this->team(20, attack: 14));
             $events = $result->summary['events'];
 
-            $this->assertSame(3, $result->summary['engine_version']);
+            $this->assertSame(4, $result->summary['engine_version']);
             $this->assertLessThanOrEqual($result->summary['chances']['home'], $result->homeGoals);
             $this->assertLessThanOrEqual($result->summary['chances']['away'], $result->awayGoals);
             $this->assertSame($result->homeGoals, count(array_filter($events, fn (array $event): bool => $event['team'] === 'home' && $event['club_id'] === 10)));

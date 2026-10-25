@@ -153,7 +153,8 @@ class InstanceService implements IInstanceService
                 $game->id,
                 $result->homeGoals,
                 $result->awayGoals,
-                $result->summary
+                $result->summary,
+                $result->playerStats,
             ));
         }
 
