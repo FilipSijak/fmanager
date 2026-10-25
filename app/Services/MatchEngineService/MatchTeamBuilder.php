@@ -10,6 +10,7 @@ use App\Models\StaffCoaching;
 use App\Models\StaffTacticPreference;
 use App\Services\MatchEngineService\Data\MatchTeam;
 use App\Services\PersonService\PersonConfig\PersonTypes;
+use App\Services\SquadLineupService\SquadLineupService;
 use App\Services\TacticsService\FormationTendency;
 use App\Services\TacticsService\Mentality;
 use Illuminate\Support\Collection;
@@ -19,12 +20,9 @@ use Illuminate\Support\Collection;
  */
 class MatchTeamBuilder
 {
-    private const LINEUP_SIZE = 11;
+    private const LINEUP_SIZE = SquadLineupService::STARTING_PLAYERS;
 
     private const SUBSTITUTES = 7;
-
-    /** Position the lineup screen saves for bench slots. */
-    private const SUBSTITUTE_POSITION = 'SUB';
 
     /** Rating given to a lineup slot the club cannot fill. */
     private const EMPTY_SLOT_RATING = 1.0;
@@ -139,7 +137,7 @@ class MatchTeamBuilder
         }
 
         $slots = $savedSlots->filter(fn (ClubTacticPlayerSlot $slot): bool => $squad->has($slot->player_id));
-        [$substituteSlots, $starterSlots] = $slots->partition(fn (ClubTacticPlayerSlot $slot): bool => $slot->position === self::SUBSTITUTE_POSITION);
+        [$substituteSlots, $starterSlots] = $slots->partition(fn (ClubTacticPlayerSlot $slot): bool => $slot->position === SquadLineupService::SUBSTITUTE_POSITION);
 
         $starters = $starterSlots->take(self::LINEUP_SIZE)->map(fn (ClubTacticPlayerSlot $slot): array => [
             'line' => PitchLine::fromPosition($slot->position),

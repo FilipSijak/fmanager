@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\DB;
 
 class SquadLineupService
 {
+    public const STARTING_PLAYERS = 11;
+
+    /** Position saved for bench slots; every other position is a starter. */
+    public const SUBSTITUTE_POSITION = 'SUB';
+
     public function __construct(
         private readonly TacticsService $tacticsService,
     ) {}
@@ -31,6 +36,7 @@ class SquadLineupService
     public function saveForClub(Club $club, array $assignments): Collection
     {
         return DB::transaction(function () use ($club, $assignments): Collection {
+            $this->validateStartingPlayers($assignments);
             $this->validatePlayersBelongToClub($club, $assignments);
 
             $tactic = $this->tacticsService->currentForClub($club);
@@ -54,6 +60,27 @@ class SquadLineupService
 
             return ClubTacticPlayerSlot::query()->where('club_tactic_id', $tactic->id)->get();
         });
+    }
+
+    /**
+     * A lineup needs a full starting eleven; substitutes are optional. An empty lineup clears the selection.
+     *
+     * @param  list<array{slot: string, player_id: int, position: string}>  $assignments
+     */
+    private function validateStartingPlayers(array $assignments): void
+    {
+        if ($assignments === []) {
+            return;
+        }
+
+        $startingPlayers = array_filter(
+            $assignments,
+            fn (array $assignment): bool => $assignment['position'] !== self::SUBSTITUTE_POSITION,
+        );
+
+        if (count($startingPlayers) !== self::STARTING_PLAYERS) {
+            throw new DomainException('A lineup needs exactly 11 starting players.');
+        }
     }
 
     /** @param list<array{slot: string, player_id: int, position: string}> $assignments */
