@@ -58,14 +58,34 @@ class MatchSimulationEngineTest extends TestCase
         $this->assertSame(['home' => $homeExpectedGoals, 'away' => $awayExpectedGoals], $result->summary['expected_goals']);
     }
 
+    /** @return array<string, array{float, float, float}> */
+    public static function homeChanceCreation(): array
+    {
+        return [
+            'strong creators make more chances' => [15, 15.68, 2.04],
+            'average creators make the base number of chances' => [10, 11.2, 1.46],
+            'weak creators make fewer chances' => [5, 6.72, 0.87],
+        ];
+    }
+
+    #[Test]
+    #[DataProvider('homeChanceCreation')]
+    public function chance_creation_moves_chances_and_goals_off_the_base(float $chanceCreation, float $homeExpectedChances, float $homeExpectedGoals): void
+    {
+        $result = (new MatchSimulationEngine)->simulate($this->team(10, chanceCreation: $chanceCreation), $this->team(20));
+
+        $this->assertSame(['home' => $homeExpectedChances, 'away' => 9.2], $result->summary['expected_chances']);
+        $this->assertSame(['home' => $homeExpectedGoals, 'away' => 1.2], $result->summary['expected_goals']);
+    }
+
     #[Test]
     public function evenly_matched_weak_sides_score_less_than_evenly_matched_average_sides(): void
     {
-        $weakSide = fn (int $clubId): MatchTeam => $this->team($clubId, attack: 5, midfield: 5, defence: 5, goalkeeping: 5);
+        $weakSide = fn (int $clubId): MatchTeam => $this->team($clubId, attack: 5, midfield: 5, defence: 5, goalkeeping: 5, chanceCreation: 5);
 
         $result = (new MatchSimulationEngine)->simulate($weakSide(10), $weakSide(20));
 
-        $this->assertSame(['home' => 1.18, 'away' => 0.97], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 0.71, 'away' => 0.58], $result->summary['expected_goals']);
     }
 
     #[Test]
@@ -77,25 +97,27 @@ class MatchSimulationEngineTest extends TestCase
     }
 
     #[Test]
-    public function expected_goals_are_capped_for_a_dominant_side(): void
+    public function chances_and_conversion_are_capped_for_a_dominant_side(): void
     {
         $result = (new MatchSimulationEngine)->simulate(
-            $this->team(10, attack: 20, midfield: 20),
-            $this->team(20, attack: 1, midfield: 1, defence: 1, goalkeeping: 1),
+            $this->team(10, attack: 20, midfield: 20, chanceCreation: 20, formationTendency: FormationTendency::ATTACKING, mentality: Mentality::ATTACKING),
+            $this->team(20, attack: 1, midfield: 1, defence: 1, goalkeeping: 1, chanceCreation: 1),
         );
 
-        $this->assertSame(['home' => 6.0, 'away' => 0.18], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 25.0, 'away' => 1.75], $result->summary['expected_chances']);
+        $this->assertSame(['home' => 8.75, 'away' => 0.06], $result->summary['expected_goals']);
     }
 
     #[Test]
-    public function expected_goals_have_a_floor_for_a_hopeless_side(): void
+    public function chances_and_conversion_have_a_floor_for_a_hopeless_side(): void
     {
         $result = (new MatchSimulationEngine)->simulate(
-            $this->team(10, defence: 20, goalkeeping: 20),
-            $this->team(20, attack: 1, midfield: 1, formationTendency: FormationTendency::DEFENSIVE, mentality: Mentality::DEFENSIVE),
+            $this->team(10, midfield: 20, defence: 20, goalkeeping: 20),
+            $this->team(20, attack: 1, midfield: 1, chanceCreation: 1, formationTendency: FormationTendency::DEFENSIVE, mentality: Mentality::DEFENSIVE),
         );
 
-        $this->assertSame(['home' => 1.56, 'away' => 0.05], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 12.36, 'away' => 1.0], $result->summary['expected_chances']);
+        $this->assertSame(['home' => 1.61, 'away' => 0.02], $result->summary['expected_goals']);
     }
 
     #[Test]
@@ -116,7 +138,7 @@ class MatchSimulationEngineTest extends TestCase
     }
 
     #[Test]
-    public function generates_one_ordered_goal_event_per_goal(): void
+    public function scores_only_from_chances_and_generates_one_ordered_goal_event_per_goal(): void
     {
         $engine = new MatchSimulationEngine(new Randomizer(new Mt19937(7)));
 
@@ -124,7 +146,9 @@ class MatchSimulationEngineTest extends TestCase
             $result = $engine->simulate($this->team(10, attack: 14), $this->team(20, attack: 14));
             $events = $result->summary['events'];
 
-            $this->assertSame(2, $result->summary['engine_version']);
+            $this->assertSame(3, $result->summary['engine_version']);
+            $this->assertLessThanOrEqual($result->summary['chances']['home'], $result->homeGoals);
+            $this->assertLessThanOrEqual($result->summary['chances']['away'], $result->awayGoals);
             $this->assertSame($result->homeGoals, count(array_filter($events, fn (array $event): bool => $event['team'] === 'home' && $event['club_id'] === 10)));
             $this->assertSame($result->awayGoals, count(array_filter($events, fn (array $event): bool => $event['team'] === 'away' && $event['club_id'] === 20)));
 
@@ -147,9 +171,10 @@ class MatchSimulationEngineTest extends TestCase
         float $midfield = 10,
         float $defence = 10,
         float $goalkeeping = 10,
+        float $chanceCreation = 10,
         FormationTendency $formationTendency = FormationTendency::BALANCED,
         Mentality $mentality = Mentality::BALANCED,
     ): MatchTeam {
-        return new MatchTeam($clubId, $attack, $midfield, $defence, $goalkeeping, $formationTendency, $mentality);
+        return new MatchTeam($clubId, $attack, $midfield, $defence, $goalkeeping, $chanceCreation, $formationTendency, $mentality);
     }
 }

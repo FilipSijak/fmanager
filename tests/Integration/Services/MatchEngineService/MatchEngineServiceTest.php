@@ -28,7 +28,7 @@ class MatchEngineServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    private const LINEUP_POSITIONS = ['GK', 'CB', 'CB', 'CB', 'CB', 'CM', 'CM', 'CM', 'CM', 'ST', 'ST'];
+    private const LINEUP_POSITIONS = ['GK', 'LB', 'CB', 'CB', 'RB', 'LM', 'CM', 'CM', 'RM', 'ST', 'ST'];
 
     private const BENCH_POSITIONS = ['GK', 'CB', 'CB', 'CM', 'CM', 'ST', 'ST'];
 
@@ -85,7 +85,7 @@ class MatchEngineServiceTest extends TestCase
 
         $result = app(MatchEngineService::class)->simulate($game);
 
-        $this->assertSame(['home' => 2.12, 'away' => 0.78], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 2.46, 'away' => 0.65], $result->summary['expected_goals']);
         $this->assertSame([
             'starting' => $starters->pluck('id')->all(),
             'substitutes' => $substitutes->pluck('id')->all(),
@@ -104,7 +104,7 @@ class MatchEngineServiceTest extends TestCase
 
         $result = app(MatchEngineService::class)->simulate($game);
 
-        $this->assertSame(['home' => 1.39, 'away' => 1.15], $result->summary['expected_goals']);
+        $this->assertSame(['home' => 1.17, 'away' => 0.96], $result->summary['expected_goals']);
         $this->assertSame([
             'starting' => $starters->pluck('id')->all(),
             'substitutes' => $substitutes->pluck('id')->all(),

@@ -27,12 +27,19 @@ class MatchTeamBuilder
     /** Rating given to a lineup slot the club cannot fill. */
     private const EMPTY_SLOT_RATING = 1.0;
 
-    /** Lines played when the club has no formation: a 4-4-2. */
-    private const DEFAULT_LINES = [
-        'goalkeeper' => 1,
-        'defence' => 4,
-        'midfield' => 4,
-        'attack' => 2,
+    /** Positions played when the club has no formation: a 4-4-2. */
+    private const DEFAULT_POSITIONS = ['GK', 'LB', 'CB', 'CB', 'RB', 'LM', 'CM', 'CM', 'RM', 'ST', 'ST'];
+
+    /**
+     * Share of the team's chances created from each position: midfield creates the most, then forwards, wing backs and
+     * finally centre backs.
+     */
+    private const CHANCE_CREATION_WEIGHTS = [
+        'midfield' => 1.0,
+        'forward' => 0.6,
+        'wing_back' => 0.35,
+        'centre_back' => 0.1,
+        'goalkeeper' => 0.0,
     ];
 
     /** @var array<string, list<string>> */
@@ -41,6 +48,7 @@ class MatchTeamBuilder
         'defending' => ['marking', 'tackling', 'positioning', 'anticipation', 'concentration', 'heading', 'strength', 'pace'],
         'playmaking' => ['passing', 'first_touch', 'technique', 'decisions', 'creativity', 'teamwork', 'workrate', 'stamina'],
         'attacking' => ['finishing', 'of_the_ball', 'composure', 'dribbling', 'technique', 'pace', 'acceleration', 'heading'],
+        'chance_creation' => ['creativity', 'passing', 'crossing', 'dribbling', 'flair', 'decisions', 'technique', 'of_the_ball'],
     ];
 
     /**
@@ -79,7 +87,7 @@ class MatchTeamBuilder
         ];
         $unselected = $squad->except($savedPlayerIds);
 
-        $lineup = $this->completeLineup($this->formationLines($formation), $savedStarters, $savedSubstitutes, $unselected);
+        $lineup = $this->completeLineup($this->formationPositions($formation), $savedStarters, $savedSubstitutes, $unselected);
         $starterIds = array_map(fn (array $slot): int => $slot['player']->id, array_filter($lineup, fn (array $slot): bool => $slot['player'] !== null));
         $substitutes = $savedSelection === null
             ? $this->pickBench($unselected->except($starterIds))
@@ -91,6 +99,7 @@ class MatchTeamBuilder
             midfield: $this->teamRating($lineup, 'playmaking'),
             defence: $this->teamRating($lineup, 'defending'),
             goalkeeping: $this->goalkeeperRating($lineup),
+            chanceCreation: $this->chanceCreationRating($lineup),
             formationTendency: $formation?->tactical_tendency ?? FormationTendency::BALANCED,
             mentality: $tactic?->mentality ?? $preference?->mentality ?? Mentality::BALANCED,
             startingPlayerIds: array_values($starterIds),
@@ -124,7 +133,7 @@ class MatchTeamBuilder
      * Substitutes are optional, so a saved lineup may come with a short or empty bench.
      *
      * @param  Collection<int, Player>  $squad
-     * @return array{0: list<array{line: PitchLine, player: Player}>, 1: Collection<int, Player>}|null
+     * @return array{0: list<array{position: string, line: PitchLine, player: Player}>, 1: Collection<int, Player>}|null
      */
     private function savedSelection(?ClubTactic $tactic, Collection $squad): ?array
     {
@@ -145,6 +154,7 @@ class MatchTeamBuilder
         [$substituteSlots, $starterSlots] = $slots->partition(fn (ClubTacticPlayerSlot $slot): bool => $slot->position === SquadLineup::SUBSTITUTE_POSITION);
 
         $starters = $starterSlots->take(self::LINEUP_SIZE)->map(fn (ClubTacticPlayerSlot $slot): array => [
+            'position' => $slot->position,
             'line' => PitchLine::fromPosition($slot->position),
             'player' => $squad->get($slot->player_id),
         ])->values()->all();
@@ -156,59 +166,67 @@ class MatchTeamBuilder
         return [$starters, $substitutes];
     }
 
-    /** @return array<string, int> */
-    private function formationLines(?BaseFormation $formation): array
+    /** @return list<string> */
+    private function formationPositions(?BaseFormation $formation): array
     {
         if ($formation === null || $formation->slots->count() !== self::LINEUP_SIZE) {
-            return self::DEFAULT_LINES;
+            return self::DEFAULT_POSITIONS;
         }
 
-        return $formation->slots
-            ->countBy(fn ($slot): string => PitchLine::fromPosition($slot->position)->value)
-            ->all();
+        return $formation->slots->pluck('position')->all();
     }
 
     /**
-     * Keeps the saved starters and fills each line's open places, first from the saved bench and then from the rest
-     * of the squad, preferring players who naturally play in that line. Places nobody can fill stay empty.
+     * Keeps the saved starters and fills the formation positions they leave open, first from the saved bench and then
+     * from the rest of the squad, preferring players who naturally play in that line. Places nobody can fill stay empty.
      *
-     * @param  array<string, int>  $lines
-     * @param  list<array{line: PitchLine, player: Player}>  $savedStarters
+     * @param  list<string>  $positions
+     * @param  list<array{position: string, line: PitchLine, player: Player}>  $savedStarters
      * @param  Collection<int, Player>  $savedSubstitutes
      * @param  Collection<int, Player>  $unselected
-     * @return list<array{line: PitchLine, player: ?Player}>
+     * @return list<array{position: string, line: PitchLine, player: ?Player}>
      */
-    private function completeLineup(array $lines, array $savedStarters, Collection $savedSubstitutes, Collection $unselected): array
+    private function completeLineup(array $positions, array $savedStarters, Collection $savedSubstitutes, Collection $unselected): array
     {
-        $lineup = $savedStarters;
+        foreach ($savedStarters as $starter) {
+            $taken = array_search($starter['position'], $positions, true);
+
+            if ($taken !== false) {
+                unset($positions[$taken]);
+            }
+        }
+
+        $openPositions = array_slice(array_values($positions), 0, self::LINEUP_SIZE - count($savedStarters));
+        $filled = [];
 
         foreach ([$savedSubstitutes->collect(), $unselected->collect()] as $pool) {
             foreach ([true, false] as $naturalPositionOnly) {
-                foreach ($lines as $lineValue => $count) {
-                    $line = PitchLine::from($lineValue);
-                    $open = min($count - $this->playersInLine($lineup, $line), self::LINEUP_SIZE - count($lineup));
-                    $candidates = $pool
+                foreach ($openPositions as $index => $position) {
+                    if (isset($filled[$index])) {
+                        continue;
+                    }
+
+                    $line = PitchLine::fromPosition($position);
+                    $player = $pool
                         ->filter(fn (Player $player): bool => ! $naturalPositionOnly || PitchLine::fromPosition($player->position) === $line)
                         ->sortByDesc(fn (Player $player): float => $this->skillRating($player, $this->lineSkill($line)))
-                        ->take(max(0, $open));
+                        ->first();
 
-                    foreach ($candidates as $player) {
-                        $lineup[] = ['line' => $line, 'player' => $player];
+                    if ($player !== null) {
+                        $filled[$index] = $player;
                         $pool->forget($player->id);
                     }
                 }
             }
         }
 
-        foreach ($lines as $lineValue => $count) {
-            $line = PitchLine::from($lineValue);
+        $completed = array_map(fn (string $position, int $index): array => [
+            'position' => $position,
+            'line' => PitchLine::fromPosition($position),
+            'player' => $filled[$index] ?? null,
+        ], $openPositions, array_keys($openPositions));
 
-            for ($slot = $this->playersInLine($lineup, $line); $slot < $count; $slot++) {
-                $lineup[] = ['line' => $line, 'player' => null];
-            }
-        }
-
-        return $lineup;
+        return [...$savedStarters, ...$completed];
     }
 
     /**
@@ -237,13 +255,7 @@ class MatchTeamBuilder
         return $bench;
     }
 
-    /** @param list<array{line: PitchLine, player: ?Player}> $lineup */
-    private function playersInLine(array $lineup, PitchLine $line): int
-    {
-        return count(array_filter($lineup, fn (array $slot): bool => $slot['line'] === $line));
-    }
-
-    /** @param list<array{line: PitchLine, player: ?Player}> $lineup */
+    /** @param list<array{position: string, line: PitchLine, player: ?Player}> $lineup */
     private function teamRating(array $lineup, string $skill): float
     {
         $weightedRating = 0.0;
@@ -258,7 +270,7 @@ class MatchTeamBuilder
         return $totalWeight > 0 ? $weightedRating / $totalWeight : self::EMPTY_SLOT_RATING;
     }
 
-    /** @param list<array{line: PitchLine, player: ?Player}> $lineup */
+    /** @param list<array{position: string, line: PitchLine, player: ?Player}> $lineup */
     private function goalkeeperRating(array $lineup): float
     {
         foreach ($lineup as $slot) {
@@ -268,6 +280,35 @@ class MatchTeamBuilder
         }
 
         return self::EMPTY_SLOT_RATING;
+    }
+
+    /**
+     * Each starter's chance creation weighted by the position they play, scaled so an average 4-4-2 rates average.
+     *
+     * @param  list<array{position: string, line: PitchLine, player: ?Player}>  $lineup
+     */
+    private function chanceCreationRating(array $lineup): float
+    {
+        $weightedRating = 0.0;
+
+        foreach ($lineup as $slot) {
+            $weightedRating += $this->chanceCreationWeight($slot['position']) * $this->slotRating($slot['player'], 'chance_creation');
+        }
+
+        $averageLineupWeight = array_sum(array_map($this->chanceCreationWeight(...), self::DEFAULT_POSITIONS));
+
+        return $weightedRating / $averageLineupWeight;
+    }
+
+    private function chanceCreationWeight(string $position): float
+    {
+        return self::CHANCE_CREATION_WEIGHTS[match (true) {
+            $position === 'GK' => 'goalkeeper',
+            $position === 'CB' => 'centre_back',
+            in_array($position, ['LB', 'RB', 'LWB', 'RWB'], true) => 'wing_back',
+            PitchLine::fromPosition($position) === PitchLine::ATTACK => 'forward',
+            default => 'midfield',
+        }];
     }
 
     private function slotRating(?Player $player, string $skill): float
