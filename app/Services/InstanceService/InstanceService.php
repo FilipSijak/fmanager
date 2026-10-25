@@ -15,7 +15,7 @@ use App\Models\StaffCoaching;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionScheduleRepository;
 use App\Services\GameService\CompleteGameService;
-use App\Services\MatchEngineService\MatchSimulationEngine;
+use App\Services\MatchEngineService\MatchEngineService;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\Carbon;
@@ -27,7 +27,7 @@ class InstanceService implements IInstanceService
 
     private Season $season;
 
-    private MatchSimulationEngine $matchSimulationEngine;
+    private MatchEngineService $matchEngineService;
 
     private CompleteGameService $completeGameService;
 
@@ -36,13 +36,13 @@ class InstanceService implements IInstanceService
     public function __construct(
         CompetitionScheduleRepository $competitionRepository,
         CreateInstance $createInstance,
-        MatchSimulationEngine $matchSimulationEngine,
+        MatchEngineService $matchEngineService,
         CompleteGameService $completeGameService,
         private readonly GameContext $gameContext
 
     ) {
         $this->competitionRepository = $competitionRepository;
-        $this->matchSimulationEngine = $matchSimulationEngine;
+        $this->matchEngineService = $matchEngineService;
         $this->completeGameService = $completeGameService;
         $this->createInstance = $createInstance;
     }
@@ -142,7 +142,7 @@ class InstanceService implements IInstanceService
         $completedGames = collect();
 
         foreach ($games as $game) {
-            $result = $this->matchSimulationEngine->simulate($game);
+            $result = $this->matchEngineService->simulate($game);
             $completedGames->push($this->completeGameService->complete(
                 $game->id,
                 $result->homeGoals,
