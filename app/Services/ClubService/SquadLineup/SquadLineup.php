@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\SquadLineupService;
+namespace App\Services\ClubService\SquadLineup;
 
 use App\Models\Club;
 use App\Models\ClubTacticPlayerSlot;
@@ -10,7 +10,7 @@ use DomainException;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
-class SquadLineupService
+class SquadLineup
 {
     public const STARTING_PLAYERS = 11;
 

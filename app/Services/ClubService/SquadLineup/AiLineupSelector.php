@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\SquadLineupService;
+namespace App\Services\ClubService\SquadLineup;
 
 use App\Models\BaseData\BaseFormationSlot;
 use App\Models\Club;
@@ -25,7 +25,7 @@ class AiLineupSelector
 
     public function __construct(
         private readonly TacticsService $tacticsService,
-        private readonly SquadLineupService $squadLineupService,
+        private readonly SquadLineup $squadLineup,
     ) {}
 
     /**
@@ -53,13 +53,13 @@ class AiLineupSelector
 
         $starters = $this->startersForFormation($formationSlots, $available);
 
-        if (count($starters) !== SquadLineupService::STARTING_PLAYERS || $formationSlots->count() !== count($starters)) {
-            $this->squadLineupService->saveForClub($club, []);
+        if (count($starters) !== SquadLineup::STARTING_PLAYERS || $formationSlots->count() !== count($starters)) {
+            $this->squadLineup->saveForClub($club, []);
 
             return;
         }
 
-        $this->squadLineupService->saveForClub($club, [...$starters, ...$this->bench($available)]);
+        $this->squadLineup->saveForClub($club, [...$starters, ...$this->bench($available)]);
     }
 
     /**
@@ -120,7 +120,7 @@ class AiLineupSelector
         return $substitutes->map(fn (Player $player, int $index): array => [
             'slot' => 'SUB'.($index + 1),
             'player_id' => $player->id,
-            'position' => SquadLineupService::SUBSTITUTE_POSITION,
+            'position' => SquadLineup::SUBSTITUTE_POSITION,
         ])->all();
     }
 }

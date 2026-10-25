@@ -15,10 +15,10 @@ use App\Models\Season;
 use App\Models\StaffCoaching;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionScheduleRepository;
+use App\Services\ClubService\ClubService;
 use App\Services\GameService\CompleteGameService;
 use App\Services\MatchEngineService\MatchEngineService;
 use App\Services\PersonService\PersonService;
-use App\Services\SquadLineupService\AiLineupSelector;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -42,7 +42,7 @@ class InstanceService implements IInstanceService
         MatchEngineService $matchEngineService,
         CompleteGameService $completeGameService,
         private readonly GameContext $gameContext,
-        private readonly AiLineupSelector $aiLineupSelector,
+        private readonly ClubService $clubService,
 
     ) {
         $this->competitionRepository = $competitionRepository;
@@ -175,7 +175,7 @@ class InstanceService implements IInstanceService
             ->reject(fn (int $clubId): bool => $clubId === (int) $instance->club_id);
 
         Club::query()->whereIn('id', $aiClubIds)->get()
-            ->each(fn (Club $club) => $this->aiLineupSelector->selectForClub($club, $instance->instance_date));
+            ->each(fn (Club $club) => $this->clubService->selectAiLineup($club, $instance->instance_date));
     }
 
     public function setSeason(Season $season)

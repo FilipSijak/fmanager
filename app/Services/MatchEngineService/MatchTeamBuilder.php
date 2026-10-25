@@ -8,9 +8,9 @@ use App\Models\ClubTacticPlayerSlot;
 use App\Models\Player;
 use App\Models\StaffCoaching;
 use App\Models\StaffTacticPreference;
+use App\Services\ClubService\SquadLineup\SquadLineup;
 use App\Services\MatchEngineService\Data\MatchTeam;
 use App\Services\PersonService\PersonConfig\PersonTypes;
-use App\Services\SquadLineupService\SquadLineupService;
 use App\Services\TacticsService\FormationTendency;
 use App\Services\TacticsService\Mentality;
 use Illuminate\Support\Collection;
@@ -20,7 +20,7 @@ use Illuminate\Support\Collection;
  */
 class MatchTeamBuilder
 {
-    private const LINEUP_SIZE = SquadLineupService::STARTING_PLAYERS;
+    private const LINEUP_SIZE = SquadLineup::STARTING_PLAYERS;
 
     private const SUBSTITUTES = 7;
 
@@ -142,7 +142,7 @@ class MatchTeamBuilder
         }
 
         $slots = $savedSlots->filter(fn (ClubTacticPlayerSlot $slot): bool => $squad->has($slot->player_id));
-        [$substituteSlots, $starterSlots] = $slots->partition(fn (ClubTacticPlayerSlot $slot): bool => $slot->position === SquadLineupService::SUBSTITUTE_POSITION);
+        [$substituteSlots, $starterSlots] = $slots->partition(fn (ClubTacticPlayerSlot $slot): bool => $slot->position === SquadLineup::SUBSTITUTE_POSITION);
 
         $starters = $starterSlots->take(self::LINEUP_SIZE)->map(fn (ClubTacticPlayerSlot $slot): array => [
             'line' => PitchLine::fromPosition($slot->position),

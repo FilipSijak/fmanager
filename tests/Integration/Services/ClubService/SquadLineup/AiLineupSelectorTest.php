@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Integration\Services\SquadLineupService;
+namespace Tests\Integration\Services\ClubService\SquadLineup;
 
 use App\Models\BaseData\BaseFormation;
 use App\Models\Club;
@@ -10,7 +10,7 @@ use App\Models\Player;
 use App\Models\Season;
 use App\Models\StaffCoaching;
 use App\Services\PersonService\PersonConfig\PersonTypes;
-use App\Services\SquadLineupService\AiLineupSelector;
+use App\Services\ClubService\SquadLineup\AiLineupSelector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
