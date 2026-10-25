@@ -16,7 +16,7 @@ final class MatchTeam
         public readonly float $midfield,
         public readonly float $defence,
         public readonly float $goalkeeping,
-        /** Starters' chance-creating ability weighted by the position they play; an average 4-4-2 rates 10. */
+        /** Starters' chance-creating ability averaged by the weight of the position each plays. */
         public readonly float $chanceCreation,
         public readonly FormationTendency $formationTendency = FormationTendency::BALANCED,
         public readonly Mentality $mentality = Mentality::BALANCED,

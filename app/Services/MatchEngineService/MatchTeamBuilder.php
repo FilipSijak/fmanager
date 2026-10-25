@@ -31,8 +31,8 @@ class MatchTeamBuilder
     private const DEFAULT_POSITIONS = ['GK', 'LB', 'CB', 'CB', 'RB', 'LM', 'CM', 'CM', 'RM', 'ST', 'ST'];
 
     /**
-     * Share of the team's chances created from each position: midfield creates the most, then forwards, wing backs and
-     * finally centre backs.
+     * How much a player's creating ability counts towards the team's chances by the position they play: midfield counts
+     * the most, then forwards, wing backs and finally centre backs.
      */
     private const CHANCE_CREATION_WEIGHTS = [
         'midfield' => 1.0,
@@ -283,21 +283,24 @@ class MatchTeamBuilder
     }
 
     /**
-     * Each starter's chance creation weighted by the position they play, scaled so an average 4-4-2 rates average.
+     * The starters' chance creation averaged by the weight of the position each one plays. It is an average rather than
+     * a total so every formation creates the same number of chances with average players; the formation's style is
+     * left to its tactical tendency.
      *
      * @param  list<array{position: string, line: PitchLine, player: ?Player}>  $lineup
      */
     private function chanceCreationRating(array $lineup): float
     {
         $weightedRating = 0.0;
+        $totalWeight = 0.0;
 
         foreach ($lineup as $slot) {
-            $weightedRating += $this->chanceCreationWeight($slot['position']) * $this->slotRating($slot['player'], 'chance_creation');
+            $weight = $this->chanceCreationWeight($slot['position']);
+            $weightedRating += $weight * $this->slotRating($slot['player'], 'chance_creation');
+            $totalWeight += $weight;
         }
 
-        $averageLineupWeight = array_sum(array_map($this->chanceCreationWeight(...), self::DEFAULT_POSITIONS));
-
-        return $weightedRating / $averageLineupWeight;
+        return $totalWeight > 0 ? $weightedRating / $totalWeight : self::EMPTY_SLOT_RATING;
     }
 
     private function chanceCreationWeight(string $position): float
