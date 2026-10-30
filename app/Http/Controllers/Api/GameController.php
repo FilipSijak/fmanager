@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Controller;
 use App\Services\GameService\CompleteGameService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

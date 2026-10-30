@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { index as showDashboard } from '@/actions/App/Http/Controllers/DashboardController';
-import { show as showPlayer } from '@/actions/App/Http/Controllers/PlayerController';
+import { index as showDashboard } from '@/actions/App/Http/Controllers/Api/DashboardController';
+import { show as showPlayer } from '@/actions/App/Http/Controllers/Api/PlayerController';
 import api from '@/api';
 import type { PlayerProfileData } from './types';
 

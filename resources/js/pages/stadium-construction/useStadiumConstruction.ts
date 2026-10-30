@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { show as showFinance } from '@/actions/App/Http/Controllers/FinanceController';
+import { show as showFinance } from '@/actions/App/Http/Controllers/Api/FinanceController';
 import {
     build as buildConstruction,
     demolishCommercialVenue,
     buildableCommercialCategories as fetchBuildableCategories,
     show as showStadium,
     standExpansionCost,
-} from '@/actions/App/Http/Controllers/StadiumController';
+} from '@/actions/App/Http/Controllers/Api/StadiumController';
 import api from '@/api';
 import type {
     BuildableCategory,

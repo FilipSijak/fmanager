@@ -1,8 +1,8 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
+import { nextDay } from '@/actions/App/Http/Controllers/Api/InstanceController';
 import { logout } from '@/actions/App/Http/Controllers/AuthController';
-import { nextDay } from '@/actions/App/Http/Controllers/InstanceController';
 import api from '@/api';
 import { playerSearch, setupGame, start } from '@/routes';
 import { index as competitions } from '@/routes/competitions';

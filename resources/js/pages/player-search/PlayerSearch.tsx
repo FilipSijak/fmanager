@@ -1,7 +1,7 @@
 import { Head, Link, useRemember } from '@inertiajs/react';
 import axios from 'axios';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-import searchPlayers from '@/actions/App/Http/Controllers/PlayerSearchController';
+import searchPlayers from '@/actions/App/Http/Controllers/Api/PlayerSearchController';
 import api from '@/api';
 import ClubLink from '@/components/game/ClubLink';
 import GameLayout from '@/layouts/GameLayout';
