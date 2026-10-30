@@ -1,0 +1,104 @@
+resources/js/pages/matches/live/useLiveMatch.ts
+  s_ddd18830fe91fa::t_72b8a54a3d0376 3,8
+resources/js/pages/player-profile/usePlayerProfile.ts
+  s_ddd18830fe91fa::t_72b8a54a3d0376 2-3
+resources/js/pages/transfers/Transfers.tsx
+  s_ddd18830fe91fa::t_79b5b407279f96 4-5
+resources/js/pages/player-search/PlayerSearch.tsx
+  s_ddd18830fe91fa::t_72b8a54a3d0376 4
+app/Http/Controllers/Api/TransferController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-26
+app/Http/Controllers/Api/NewsController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-5,7-14,16-32
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6,15
+app/Http/Controllers/Api/PlayerController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-30
+app/Http/Controllers/Api/CompetitionController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-140
+resources/js/pages/squad/useLineupBoard.ts
+  s_ddd18830fe91fa::t_72b8a54a3d0376 5-6
+app/Http/Controllers/Api/GameController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-5,7-42
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+app/Http/Controllers/Api/TacticsController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-5,7-88
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+resources/js/pages/tactics/useTactics.ts
+  s_ddd18830fe91fa::t_72b8a54a3d0376 5,9
+app/Http/Controllers/Api/FinanceLoanController.php
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 7
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-6,8-50
+routes/api.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 3-20
+resources/js/pages/Finance.tsx
+  s_ddd18830fe91fa::t_72b8a54a3d0376 4,9
+app/Http/Controllers/Api/InstanceController.php
+  s_ddd18830fe91fa::t_099c9ee2bb0645 1-4,14-17,78
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+  s_ddd18830fe91fa::t_72b8a54a3d0376 5,7-13,18-77
+app/Http/Controllers/Api/TransferManagementController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 5,7-10,14-28
+  s_ddd18830fe91fa::t_099c9ee2bb0645 1-4,11-13,29
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+app/Http/Controllers/Api/StadiumController.php
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 7
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-6,8-148
+resources/js/pages/squad/useSquad.ts
+  s_ddd18830fe91fa::t_72b8a54a3d0376 2-3
+app/Http/Controllers/Api/DashboardController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 5,7-9,13-25
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+  s_ddd18830fe91fa::t_099c9ee2bb0645 1-4,10-12,26
+resources/js/components/game/Sidebar.tsx
+  s_ddd18830fe91fa::t_72b8a54a3d0376 4
+app/Http/Controllers/Api/PlayerSearchController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-44
+app/Http/Controllers/Api/SponsorshipOfferController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-5,7-50
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+app/Http/Controllers/Api/ClubController.php
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-5,7-36
+tests/Feature/ControllerRoutingTest.php
+  s_ddd18830fe91fa::t_cc962149c1a50a 21,38
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 5-6,11-12,14-15,17-20,22-37,39-41
+  s_ddd18830fe91fa::t_099c9ee2bb0645 1-4,7-10,13,16,42-43
+resources/js/pages/Dashboard.tsx
+  s_ddd18830fe91fa::t_72b8a54a3d0376 4
+resources/js/pages/transfers/PlayerOffer.tsx
+  s_ddd18830fe91fa::t_79b5b407279f96 4-5
+app/Http/Controllers/Api/CoreController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-23
+app/Http/Controllers/Api/FinanceController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-5,7-27
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+app/Http/Controllers/Api/LiveMatchController.php
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-5,7-72
+app/Http/Controllers/Api/SquadLineupController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-5,7-57
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+resources/js/pages/stadium-construction/useStadiumConstruction.ts
+  s_ddd18830fe91fa::t_72b8a54a3d0376 2,9
+app/Http/Controllers/Api/FinanceSponsorController.php
+  s_ddd18830fe91fa::t_72b8a54a3d0376 1-5,7-19
+  s_ddd18830fe91fa::t_eb7183ac1f1d3b 6
+resources/js/pages/GameStart.tsx
+  s_ddd18830fe91fa::t_79b5b407279f96 4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4b6dda7fac1b2b3c799dc5a0cccf151ed00e5819",
+  "prompts": {},
+  "sessions": {
+    "s_ddd18830fe91fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18c62-3384-7882-af58-7f847ac60131",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
