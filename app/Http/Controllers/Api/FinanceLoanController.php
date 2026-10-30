@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\GameEntityType;
 use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\TakeOutCashLoanRequest;
 use App\Http\Resources\FinanceEntityLoanResource;
 use App\Services\FinanceService\FinanceService;

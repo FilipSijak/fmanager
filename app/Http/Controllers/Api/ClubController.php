@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\ClubResource;
 use App\Http\Resources\ClubSquadPlayerResource;
 use App\Repositories\ClubRepository;

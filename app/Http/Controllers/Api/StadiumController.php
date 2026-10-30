@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\ConstructionPaymentMethod;
 use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\BuildStadiumRequest;
 use App\Http\Requests\StartStadiumStandConstructionRequest;
 use App\Http\Resources\StadiumCommercialCategoryResource;

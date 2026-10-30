@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { squad as fetchSquad } from '@/actions/App/Http/Controllers/ClubController';
-import { index as showDashboard } from '@/actions/App/Http/Controllers/DashboardController';
+import { squad as fetchSquad } from '@/actions/App/Http/Controllers/Api/ClubController';
+import { index as showDashboard } from '@/actions/App/Http/Controllers/Api/DashboardController';
 import api from '@/api';
 import type { SquadPlayer } from './types';
 
