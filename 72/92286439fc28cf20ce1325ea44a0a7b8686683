@@ -1,0 +1,67 @@
+resources/js/pages/training/utils.ts
+  s_ddd18830fe91fa::t_ea751441cf0481 1-2,7,19-21,33-35,41
+  s_ddd18830fe91fa::t_15cc369131acc5 3-6,8-18,22-32,36-40
+app/Http/Controllers/TrainingController.php
+  s_ddd18830fe91fa::t_53ecd4c0071333 1-4,8-10,15
+  s_ddd18830fe91fa::t_5182226604078d 5-7,11-14
+app/Http/Requests/UpdateTrainingRequest.php
+  s_ddd18830fe91fa::t_53ecd4c0071333 1-4,7,9-13,15-16,18-19,24,31-32
+  s_ddd18830fe91fa::t_5182226604078d 5-6,8,14,17,20-23,25-30
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_ddd18830fe91fa::t_5c045632c6c45d 52-58,127-154,266
+  s_ddd18830fe91fa::t_faf9a009ddfc8a 40
+  s_ddd18830fe91fa::t_e3e31035f71be8 11
+resources/js/pages/training/Training.tsx
+  s_ddd18830fe91fa::t_ea751441cf0481 1-10,19-24,28-29,42,52-53,59-62,72-73,516
+  s_ddd18830fe91fa::t_15cc369131acc5 11-18,25-27,30-41,43-51,54-58,63-71,74-515
+tests/Unit/Services/TrainingService/PlayerProgressCalculatorTest.php
+  s_ddd18830fe91fa::t_faf9a009ddfc8a 13,326-357
+  s_ddd18830fe91fa::t_c64713e797cfb9 358
+routes/web.php
+  s_ddd18830fe91fa::t_e9e0bb9d4d7cc5 11,43
+app/Http/Controllers/Api/TrainingController.php
+  s_ddd18830fe91fa::t_5182226604078d 5,7-9,13-24
+  s_ddd18830fe91fa::t_53ecd4c0071333 1-4,6,10-12,25
+resources/js/pages/training/components/DevelopmentPanel.tsx
+  s_ddd18830fe91fa::t_ea751441cf0481 1-5,12-17,24,121
+  s_ddd18830fe91fa::t_15cc369131acc5 6-11,18-23,25-120
+app/Services/TrainingService/TrainingManagementService.php
+  s_ddd18830fe91fa::t_5182226604078d 5-15,18-57,59-81,85-90,92-97,99-100,102-132,134
+  s_ddd18830fe91fa::t_464302d8c05e95 58,135-159
+  s_ddd18830fe91fa::t_faf9a009ddfc8a 82-84,91
+  s_ddd18830fe91fa::t_53ecd4c0071333 1-4,16-17,98,101,133,160-161
+routes/api.php
+  s_ddd18830fe91fa::t_e9e0bb9d4d7cc5 39-40
+  s_ddd18830fe91fa::t_611525d6ff656d 3
+resources/js/pages/training/types.ts
+  s_ddd18830fe91fa::t_ea751441cf0481 1-2,9,22-42
+  s_ddd18830fe91fa::t_15cc369131acc5 3-8,10-21
+resources/js/pages/training/useTraining.ts
+  s_ddd18830fe91fa::t_15cc369131acc5 14-17,25-30,34-43,54-63
+  s_ddd18830fe91fa::t_ea751441cf0481 1-13,18-24,31-33,44-53,64
+resources/js/components/game/TopMenu.tsx
+  s_ddd18830fe91fa::t_e9e0bb9d4d7cc5 4,34
+resources/js/pages/training/components/PlayerTrainingDialog.tsx
+  s_ddd18830fe91fa::t_ea751441cf0481 1-2,10-11,22-27,32-33,44-49,207
+  s_ddd18830fe91fa::t_15cc369131acc5 3-9,12-21,28-31,34-43,50-206
+tests/Feature/TrainingManagementTest.php
+  s_ddd18830fe91fa::t_53ecd4c0071333 1-4,19-22,151,155,295-296
+  s_ddd18830fe91fa::t_15cc369131acc5 5-6,8-18,23-150,152-154,156-175,178-263,275-294
+  s_ddd18830fe91fa::t_95b44f1fc89157 7,176-177,264-274
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7292286439fc28cf20ce1325ea44a0a7b8686683",
+  "prompts": {},
+  "sessions": {
+    "s_ddd18830fe91fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18c62-3384-7882-af58-7f847ac60131",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
