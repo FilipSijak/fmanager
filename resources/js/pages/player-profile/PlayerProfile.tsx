@@ -1,5 +1,9 @@
-import { Head } from '@inertiajs/react';
-import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Head, Link } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+    offer,
+    index as transfers,
+} from '@/actions/App/Http/Controllers/TransferManagementController';
 import GameLayout from '@/layouts/GameLayout';
 import AttributeColumn from './components/AttributeColumn';
 import { usePlayerProfile } from './usePlayerProfile';
@@ -112,7 +116,8 @@ const statColumns = [
 ] as const;
 
 export default function PlayerProfile({ playerId }: { playerId: number }) {
-    const { player, instanceDate, loadError } = usePlayerProfile(playerId);
+    const { player, instanceDate, loadError, managedClubId } =
+        usePlayerProfile(playerId);
 
     if (loadError) {
         return (
@@ -142,6 +147,11 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
 
     const age = ageFromDob(player.dob, instanceDate);
     const positionLabel = POSITION_LABELS[player.position] ?? player.position;
+    const canOffer =
+        managedClubId !== null &&
+        player.club?.id !== managedClubId &&
+        !player.is_retired &&
+        !player.is_on_loan;
 
     return (
         <GameLayout active="Nations & Clubs">
@@ -161,29 +171,44 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
                     {player.first_name} {player.last_name}
                     {player.club ? ` (${player.club.name})` : ''}
                 </h1>
-                <button
-                    type="button"
-                    className="flex items-center gap-1 rounded bg-[#0031a5] px-4 py-2 text-sm font-semibold text-white hover:bg-[#00268a]"
-                >
-                    Action
-                    <ChevronDown size={14} />
-                </button>
+                {managedClubId !== null && (
+                    <Link
+                        href={canOffer ? offer.url(player.id) : transfers.url()}
+                        className="flex items-center gap-1 rounded bg-[#0031a5] px-4 py-2 text-sm font-semibold text-white hover:bg-[#00268a]"
+                    >
+                        {canOffer ? 'Make offer' : 'Manage transfers'}
+                    </Link>
+                )}
             </header>
 
             <div className="flex bg-[#200064]">
-                {tabs.map((tab) => (
-                    <button
-                        key={tab}
-                        type="button"
-                        className={`flex-1 border-r border-white/10 py-4 text-sm font-bold last:border-r-0 ${
-                            tab === 'Profile'
-                                ? 'bg-[#1a0050] text-[#f5f000] ring-2 ring-inset ring-[#f5f000]'
-                                : 'text-white hover:bg-white/5'
-                        }`}
-                    >
-                        {tab}
-                    </button>
-                ))}
+                {tabs.map((tab) =>
+                    tab === 'Transfer' && managedClubId !== null ? (
+                        <Link
+                            key={tab}
+                            href={
+                                canOffer
+                                    ? offer.url(player.id)
+                                    : transfers.url()
+                            }
+                            className="flex-1 border-r border-white/10 py-4 text-center text-sm font-bold text-white hover:bg-white/5"
+                        >
+                            Transfer
+                        </Link>
+                    ) : (
+                        <button
+                            key={tab}
+                            type="button"
+                            className={`flex-1 border-r border-white/10 py-4 text-sm font-bold last:border-r-0 ${
+                                tab === 'Profile'
+                                    ? 'bg-[#1a0050] text-[#f5f000] ring-2 ring-inset ring-[#f5f000]'
+                                    : 'text-white hover:bg-white/5'
+                            }`}
+                        >
+                            {tab}
+                        </button>
+                    ),
+                )}
             </div>
 
             <div className="relative flex flex-1 flex-col overflow-hidden bg-gradient-to-b from-emerald-900 via-emerald-800 to-emerald-900">

@@ -9,11 +9,14 @@ final class TransferState
 {
     private const ALLOWED = [
         TransferStatusTypes::WAITING_TARGET_CLUB->value => [
+            TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER->value,
+            TransferStatusTypes::TRANSFER_FAILED->value,
             TransferStatusTypes::WAITING_PLAYER->value,
             TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value,
             TransferStatusTypes::TARGET_CLUB_DECLINED->value,
         ],
         TransferStatusTypes::WAITING_PLAYER->value => [
+            TransferStatusTypes::TRANSFER_FAILED->value,
             TransferStatusTypes::WAITING_PAPERWORK->value,
             TransferStatusTypes::PLAYER_COUNTEROFFER->value,
             TransferStatusTypes::PLAYER_DECLINED->value,
@@ -36,13 +39,17 @@ final class TransferState
             TransferStatusTypes::TRANSFER_FAILED->value,
         ],
         TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value => [
+            TransferStatusTypes::WAITING_TARGET_CLUB->value,
             TransferStatusTypes::COUNTEROFFER_ACCEPTED->value,
             TransferStatusTypes::TRANSFER_FAILED->value,
         ],
         TransferStatusTypes::COUNTEROFFER_ACCEPTED->value => [
+            TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER->value,
+            TransferStatusTypes::TRANSFER_FAILED->value,
             TransferStatusTypes::WAITING_PLAYER->value,
         ],
         TransferStatusTypes::PLAYER_COUNTEROFFER->value => [
+            TransferStatusTypes::WAITING_PLAYER->value,
             TransferStatusTypes::WAITING_PAPERWORK->value,
             TransferStatusTypes::TRANSFER_FAILED->value,
         ],
@@ -50,6 +57,8 @@ final class TransferState
             TransferStatusTypes::MOVE_PLAYER->value,
         ],
         TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER->value => [
+            TransferStatusTypes::WAITING_PLAYER->value,
+            TransferStatusTypes::TRANSFER_FAILED->value,
             TransferStatusTypes::WAITING_PAPERWORK->value,
             TransferStatusTypes::PLAYER_DECLINED->value,
         ],
@@ -65,7 +74,7 @@ final class TransferState
     {
         $current = (int) $transfer->transfer_status;
 
-        if (!in_array($next->value, self::ALLOWED[$current] ?? [], true)) {
+        if (! in_array($next->value, self::ALLOWED[$current] ?? [], true)) {
             throw new InvalidTransferTransition($current, $next->value);
         }
 

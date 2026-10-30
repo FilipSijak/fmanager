@@ -8,6 +8,7 @@ export function usePlayerProfile(playerId: number) {
     const [player, setPlayer] = useState<PlayerProfileData | null>(null);
     const [instanceDate, setInstanceDate] = useState<string | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const [managedClubId, setManagedClubId] = useState<number | null>(null);
 
     useEffect(() => {
         setPlayer(null);
@@ -22,10 +23,11 @@ export function usePlayerProfile(playerId: number) {
                     date: string;
                 };
                 setInstanceDate(instance.date);
+                setManagedClubId(dashboardResponse.data.data.club?.id ?? null);
                 setPlayer(playerResponse.data.data as PlayerProfileData);
             })
             .catch(() => setLoadError('Unable to load this player.'));
     }, [playerId]);
 
-    return { player, instanceDate, loadError };
+    return { player, instanceDate, loadError, managedClubId };
 }

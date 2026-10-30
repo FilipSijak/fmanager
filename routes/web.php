@@ -8,6 +8,7 @@ use App\Http\Controllers\FinancePageController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\ManagerJobController;
 use App\Http\Controllers\MatchPageController;
+use App\Http\Controllers\TransferManagementController;
 use App\Http\Middleware\EnsureGameIsValid;
 use App\Http\Middleware\EnsureUserHasClub;
 use App\Http\Middleware\SetGameContext;
@@ -38,6 +39,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/league-table', [CompetitionPageController::class, 'index'])->name('league-table');
         Route::get('/jobs', [ManagerJobController::class, 'index'])->name('jobs');
         Route::get('/finance', [FinancePageController::class, 'show'])->middleware(EnsureUserHasClub::class)->name('finance');
+        Route::get('/transfers', [TransferManagementController::class, 'index'])->middleware(EnsureUserHasClub::class)->name('transfers.index');
+        Route::get('/transfers/offer/{playerId}', [TransferManagementController::class, 'offer'])->whereNumber('playerId')->middleware(EnsureUserHasClub::class)->name('transfers.offer');
         Route::post('/jobs/{clubId}/apply', [ManagerJobController::class, 'apply'])->name('jobs.apply');
     });
 });
