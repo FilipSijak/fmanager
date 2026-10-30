@@ -44,6 +44,19 @@ readonly class TransferServiceHandler
 
     public function processTransfer(Transfer $transfer): void
     {
+        $transfer->loadMissing('instance');
+        $managedClubId = (int) $transfer->instance?->club_id;
+        $status = (int) $transfer->transfer_status;
+
+        if (((int) $transfer->target_club_id === $managedClubId && $status === TransferStatusTypes::WAITING_TARGET_CLUB->value)
+            || ((int) $transfer->source_club_id === $managedClubId && in_array($status, [
+                TransferStatusTypes::TARGET_CLUB_COUNTEROFFER->value,
+                TransferStatusTypes::PLAYER_COUNTEROFFER->value,
+                TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER->value,
+            ], true))) {
+            return;
+        }
+
         switch ($transfer->transfer_type) {
             case TransferType::FREE_TRANSFER->value:
                 $this->transferStatusUpdates->freeTransferUpdates($transfer);

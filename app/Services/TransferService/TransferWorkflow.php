@@ -16,6 +16,7 @@ use App\Repositories\TransferRepository;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferEntityAnalysis\PlayerValuation;
 use App\Services\TransferService\TransferWindowConfig\TransferWindowAvailability;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class TransferWorkflow
@@ -153,6 +154,12 @@ class TransferWorkflow
 
     public function removeTransferAndPlayerOffers(Transfer $transfer): void
     {
+        $managedClubId = $transfer->instance?->club_id;
+
+        if ($managedClubId !== null && in_array((int) $managedClubId, [(int) $transfer->source_club_id, (int) $transfer->target_club_id], true)) {
+            return;
+        }
+
         $this->transferRepository->removeTransferAndPlayerOffers($transfer);
     }
 
@@ -213,7 +220,7 @@ class TransferWorkflow
         });
     }
 
-    public function makePlayerContractOffer(Transfer $transfer)
+    public function makePlayerContractOffer(Transfer $transfer): void
     {
         $player = Player::find($transfer->player_id);
 
@@ -239,7 +246,10 @@ class TransferWorkflow
             ]
         );
 
-        $this->transferRepository->updateTransferStatus($transfer, TransferStatusTypes::WAITING_PLAYER->value);
+        $managedBuyer = $transfer->instance?->club_id !== null && (int) $transfer->instance->club_id === (int) $transfer->source_club_id;
+        $this->transferRepository->updateTransferStatus($transfer, $managedBuyer
+            ? TransferStatusTypes::SOURCE_CLUB_PLAYER_COUNTEROFFER
+            : TransferStatusTypes::WAITING_PLAYER);
     }
 
     private function canClubAffordTransfer(Transfer $transfer, Club $club): bool
@@ -262,6 +272,10 @@ class TransferWorkflow
     {
         $player = $transfer->player()->first();
         $offeredContract = new PlayerContract($transferContractOffer->toArray());
+        $contractStart = Carbon::parse($transfer->instance->instance_date);
+        $offeredContract->contract_start = $contractStart->toDateString();
+        $offeredContract->contract_end = $contractStart->copy()->addYears(3)->toDateString();
+        $offeredContract->signing_fee = $transferContractOffer->transfer_fee;
 
         $offeredContract->save();
         $player->contract_id = $offeredContract->id;

@@ -6,6 +6,7 @@ use App\Http\Requests\CreateTransferRequest;
 use App\Http\Requests\FreeTransferRequest;
 use App\Models\Account;
 use App\Models\Club;
+use App\Models\Instance;
 use App\Models\Transfer;
 use App\Repositories\TransferRepository;
 use App\Services\BaseService;
@@ -57,7 +58,8 @@ class TransferService extends BaseService
      */
     public function automaticTransferBids()
     {
-        $clubs = Club::where('instance_id', $this->instanceId())->get();
+        $managedClubId = Instance::query()->findOrFail($this->instanceId())->club_id;
+        $clubs = Club::where('instance_id', $this->instanceId())->where('id', '!=', $managedClubId)->get();
 
         foreach ($clubs as $club) {
             $deficitPositions = $this->clubTransferAnalysis->playerDeficitByPosition($club);

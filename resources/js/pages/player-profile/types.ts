@@ -12,6 +12,7 @@ export type PlayerProfileData = {
     country_code: string | null;
     dob: string | null;
     is_retired: boolean;
+    is_on_loan: boolean;
     club: { id: number; name: string } | null;
     attributes: Record<PlayerAttributeCategory, Record<string, number>>;
 };

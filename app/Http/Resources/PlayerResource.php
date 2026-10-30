@@ -25,6 +25,7 @@ class PlayerResource extends JsonResource
             'country_code' => $this->person->country_code,
             'dob' => $this->person->dob?->toDateString(),
             'is_retired' => (bool) $this->is_retired,
+            'is_on_loan' => $this->loan_club_id !== null,
             'club' => $this->club ? [
                 'id' => $this->club->id,
                 'name' => $this->club->name,

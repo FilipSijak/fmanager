@@ -17,6 +17,7 @@ use App\Http\Controllers\SquadLineupController;
 use App\Http\Controllers\StadiumController;
 use App\Http\Controllers\TacticsController;
 use App\Http\Controllers\TransferController;
+use App\Http\Controllers\TransferManagementController;
 use App\Http\Middleware\EnsureGameIsValid;
 use App\Http\Middleware\EnsureUserHasClub;
 use App\Http\Middleware\SetGameContext;
@@ -34,6 +35,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
 
         Route::middleware(EnsureUserHasClub::class)->group(function (): void {
+            Route::post('/transfers', [TransferManagementController::class, 'store'])->name('transfers.store');
+            Route::post('/transfers/{transferId}/respond', [TransferManagementController::class, 'respond'])->whereNumber('transferId')->name('transfers.respond');
             Route::post('/instance/resign', [InstanceController::class, 'resign']);
             Route::get('/finance', [FinanceController::class, 'show']);
             Route::get('/finance/loans', [FinanceLoanController::class, 'index']);

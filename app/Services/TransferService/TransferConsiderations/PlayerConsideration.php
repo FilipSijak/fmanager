@@ -8,11 +8,11 @@ use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
-use App\Services\TransferService\TransferStatusTypes;
 
 class PlayerConsideration
 {
     const MAX_COUNTER_OFFER = 2;
+
     const MAX_AMBITION_DIFF = 4;
 
     const COUNTABLE_CONTRACT_FIELDS = [
@@ -27,13 +27,13 @@ class PlayerConsideration
         'cup',
         'el',
         'cl',
-        'loan_contribution_pc'
+        'loan_contribution_pc',
     ];
 
     public function considerOffer(Transfer $transfer): PlayerContractDecision
     {
         $player = Player::where('id', $transfer->player_id)->get()->first();
-        $playerContract = $player->contract()->first();
+        $playerContract = $player->contract()->first() ?? new PlayerContract(['salary' => 0]);
         $sourceClub = Club::where('id', $transfer->source_club_id)->get()->first();
         $offerContract = TransferContractOffer::where('transfer_id', $transfer->id)->get()->first();
 
@@ -46,9 +46,8 @@ class PlayerConsideration
         Player $player,
         Club $sourceClub,
         Transfer $transfer
-    ): PlayerContractDecision
-    {
-        $playerContractDecision = new PlayerContractDecision();
+    ): PlayerContractDecision {
+        $playerContractDecision = new PlayerContractDecision;
         $performanceGameBonusesOffer = $offerContract->appearance + $offerContract->clean_sheet +
                                        $offerContract->goal + $offerContract->assist;
 
@@ -67,6 +66,7 @@ class PlayerConsideration
             if ($offerContract->counter_offered >= self::MAX_COUNTER_OFFER) {
                 // player previously rejected the offer and made a counteroffer, now rejecting the transfer outright
                 $playerContractDecision->acceptableTransfer = false;
+
                 return $playerContractDecision;
             }
 
@@ -90,13 +90,11 @@ class PlayerConsideration
         return $playerContractDecision;
     }
 
-    private function requiredOffer
-    (
+    private function requiredOffer(
         PlayerContract $currentContract,
         Player $player,
         Club $sourceClub
-    ): int
-    {
+    ): int {
         $performanceGameBonusesCurrentContract = $currentContract->appearance + $currentContract->clean_sheet +
             $currentContract->goal + $currentContract->assist;
 
