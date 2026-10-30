@@ -1,0 +1,89 @@
+resources/js/pages/transfers/PlayerOffer.tsx
+  s_ddd18830fe91fa::t_5750484df1c900 4-7,15-22,30-33,47-51,54-65,75-78,81-91,94-110,112-191,193-221
+  s_ddd18830fe91fa::t_0d6af5f49b4fdc 1-3,8-14,23-29,34-46,52-53,66-74,79-80,92-93,111,222-227
+  s_ddd18830fe91fa::t_c084bc14e0b246 192
+app/Http/Requests/StorePlayerOfferRequest.php
+  s_ddd18830fe91fa::t_bdca52f7800b2e 29-33
+  s_ddd18830fe91fa::t_068f95985195ec 6,12,15,19-28
+  s_ddd18830fe91fa::t_52ab287fa8d9be 1-5,7-11,13-14,16-18,34-36
+routes/api.php
+  s_ddd18830fe91fa::t_ed1bd5c588ac4d 20,38-39
+app/Services/TransferService/TransferWorkflow.php
+  s_ddd18830fe91fa::t_e4db214be7bc6d 19
+  s_ddd18830fe91fa::t_bdca52f7800b2e 275-278
+  s_ddd18830fe91fa::t_ed1bd5c588ac4d 160-162,223,250-252
+  s_ddd18830fe91fa::t_54a13ed4113207 157-159,249
+app/Http/Resources/PlayerResource.php
+  s_ddd18830fe91fa::t_d4572772408f90 28
+app/Services/TransferService/TransferState.php
+  s_ddd18830fe91fa::t_f13e24ca285e27 77
+  s_ddd18830fe91fa::t_ed1bd5c588ac4d 12-13,19,42,47-48,52,60-61
+resources/js/pages/transfers/Transfers.tsx
+  s_ddd18830fe91fa::t_5750484df1c900 4-7,12-19,25-30,33-39,41-47,62-66,68-70,72-83,92-161,167-272,274-292,294-440
+  s_ddd18830fe91fa::t_c084bc14e0b246 162-166
+  s_ddd18830fe91fa::t_0d6af5f49b4fdc 1-3,8-11,20-24,31-32,40,48-61,67,71,84-91,273,293,441
+resources/js/pages/transfers/ContractFields.tsx
+  s_ddd18830fe91fa::t_bdca52f7800b2e 10-14
+  s_ddd18830fe91fa::t_5750484df1c900 17-21,27-33,35-38,40-55
+  s_ddd18830fe91fa::t_0d6af5f49b4fdc 1-9,15-16,22-26,34,39,56-60
+app/Services/TransferService/TransferService.php
+  s_ddd18830fe91fa::t_f13e24ca285e27 9,61
+  s_ddd18830fe91fa::t_ed1bd5c588ac4d 62
+app/Http/Requests/RespondTransferRequest.php
+  s_ddd18830fe91fa::t_52ab287fa8d9be 1-5,7-11,13-14,16-18,32-34
+  s_ddd18830fe91fa::t_bdca52f7800b2e 27-31
+  s_ddd18830fe91fa::t_068f95985195ec 6,12,15,19-26
+resources/js/pages/player-profile/types.ts
+  s_ddd18830fe91fa::t_d4572772408f90 15
+tests/Feature/TransferManagementTest.php
+  s_ddd18830fe91fa::t_52ab287fa8d9be 1-4,15,19-22,351,355,397-398
+  s_ddd18830fe91fa::t_8faa69b88574e7 5-14,16-18,23-85,137-183,185-350,352-354,356-396
+  s_ddd18830fe91fa::t_e4db214be7bc6d 86-136
+  s_ddd18830fe91fa::t_86932c511ceffd 184
+routes/web.php
+  s_ddd18830fe91fa::t_ed1bd5c588ac4d 11,42-43
+app/Services/TransferService/TransferServiceHandler.php
+  s_ddd18830fe91fa::t_ed1bd5c588ac4d 47,49-59
+  s_ddd18830fe91fa::t_54a13ed4113207 48
+resources/js/pages/transfers/types.ts
+  s_ddd18830fe91fa::t_bdca52f7800b2e 8-12,46-50
+  s_ddd18830fe91fa::t_5750484df1c900 15-20,39-45,51,53-58,60-61,63-64
+  s_ddd18830fe91fa::t_0d6af5f49b4fdc 1-7,13-14,21-38,52,59,62
+resources/js/pages/player-profile/PlayerProfile.tsx
+  s_ddd18830fe91fa::t_5750484df1c900 3-6,119-120,150-154,174-181,185-211
+  s_ddd18830fe91fa::t_d4572772408f90 1-2
+resources/js/components/game/TopMenu.tsx
+  s_ddd18830fe91fa::t_d4572772408f90 3,31
+resources/js/pages/player-profile/usePlayerProfile.ts
+  s_ddd18830fe91fa::t_d4572772408f90 11,26,32
+app/Services/TransferService/TransferManagementService.php
+  s_ddd18830fe91fa::t_2ad21c89bbab83 5-15,18-19,21-148,150-173
+  s_ddd18830fe91fa::t_52ab287fa8d9be 1-4,16-17,174-175
+  s_ddd18830fe91fa::t_bdca52f7800b2e 20,149
+app/Http/Controllers/TransferManagementController.php
+  s_ddd18830fe91fa::t_52ab287fa8d9be 1-4,13-15,60
+  s_ddd18830fe91fa::t_ed1bd5c588ac4d 5-12,16-59
+app/Services/TransferService/TransferConsiderations/PlayerConsideration.php
+  s_ddd18830fe91fa::t_7cb74037cf6434 15,30,49-50,69,93,97
+  s_ddd18830fe91fa::t_bdca52f7800b2e 36
+app/Http/Resources/TransferResource.php
+  s_ddd18830fe91fa::t_52ab287fa8d9be 1-4,6-17,43-44
+  s_ddd18830fe91fa::t_ed1bd5c588ac4d 5,18-33,35-42
+  s_ddd18830fe91fa::t_e4db214be7bc6d 34
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4408f04d04b4043b60dff2f54e15a385e9a3394b",
+  "prompts": {},
+  "sessions": {
+    "s_ddd18830fe91fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18c62-3384-7882-af58-7f847ac60131",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
