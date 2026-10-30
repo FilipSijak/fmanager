@@ -8,6 +8,7 @@ use App\Domain\PlayerDevelopment\TrainingCategory;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TrainingService\Data\TrainingPlayerData;
+use App\Services\TrainingService\Data\TrainingScheduleData;
 use Carbon\CarbonInterface;
 
 class PlayerProgressCalculator
@@ -36,7 +37,7 @@ class PlayerProgressCalculator
 
     private const VERY_HARD_CONDITION_COST = 5;
 
-    private const MINIMUM_TRAINING_CONDITION = 70;
+    public const MINIMUM_TRAINING_CONDITION = 70;
 
     private const TRAINING_CONDITION_RECOVERY = 3;
 
@@ -48,6 +49,13 @@ class PlayerProgressCalculator
         array $trainingFields,
         CarbonInterface $timestamp
     ): PlayerProgressUpdate {
+        if ($this->isResting($schedules, $player->position)) {
+            return new PlayerProgressUpdate(
+                progress: ['condition' => $this->recoveredCondition($player->condition), 'last_progressed_at' => $timestamp, 'updated_at' => $timestamp],
+                player: [],
+            );
+        }
+
         if ($player->injured || $player->condition < self::MINIMUM_TRAINING_CONDITION) {
             return new PlayerProgressUpdate(
                 progress: $this->missedSessionProgress($player, $trainingFields, $timestamp),
@@ -114,6 +122,34 @@ class PlayerProgressCalculator
     public function recoveredCondition(int $condition): int
     {
         return min(100, $condition + self::REST_DAY_CONDITION_RECOVERY);
+    }
+
+    /** @param array<int, TrainingScheduleData> $schedules */
+    public function isResting(array $schedules, string $position): bool
+    {
+        foreach (TrainingCategory::cases() as $category) {
+            if ($category === TrainingCategory::Goalkeeping && $position !== 'GK') {
+                continue;
+            }
+
+            if (($schedules[$category->value] ?? null)?->intensity !== TrainingIntensity::None) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /** @param array<int, TrainingScheduleData> $schedules */
+    public function conditionChange(array $schedules, string $position): int
+    {
+        if ($this->isResting($schedules, $position)) {
+            return self::REST_DAY_CONDITION_RECOVERY;
+        }
+
+        $cost = $this->conditionCost($schedules, $position);
+
+        return $cost > 0 ? -$cost : self::TRAINING_CONDITION_RECOVERY;
     }
 
     private function missedSessionProgress(
@@ -227,7 +263,7 @@ class PlayerProgressCalculator
         };
     }
 
-    private function progressThreshold(int $categoryId): int
+    public function progressThreshold(int $categoryId): int
     {
         return $categoryId === TrainingCategory::Tactical->value
             ? self::TACTICAL_PROGRESS_THRESHOLD
