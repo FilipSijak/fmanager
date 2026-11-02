@@ -1,11 +1,11 @@
 import { router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
-import { nextDay } from '@/actions/App/Http/Controllers/InstanceController';
+import { nextDay } from '@/actions/App/Http/Controllers/Api/InstanceController';
 import {
     advance,
     substitute as substituteRoute,
     tactics as tacticsRoute,
-} from '@/actions/App/Http/Controllers/LiveMatchController';
+} from '@/actions/App/Http/Controllers/Api/LiveMatchController';
 import api from '@/api';
 import { start } from '@/routes';
 import { extractErrorMessage } from '../../squad/utils';

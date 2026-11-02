@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import {
     show as showLineup,
     store as storeLineup,
-} from '@/actions/App/Http/Controllers/SquadLineupController';
+} from '@/actions/App/Http/Controllers/Api/SquadLineupController';
 import {
     show as showTactics,
     update as updateTactics,
-} from '@/actions/App/Http/Controllers/TacticsController';
+} from '@/actions/App/Http/Controllers/Api/TacticsController';
 import api from '@/api';
 import type { LineupAssignments } from '../squad/types';
 import type { Tactic, TacticsData, TacticsDraft } from './types';

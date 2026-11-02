@@ -1,12 +1,12 @@
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
 import { type FormEvent, type ReactNode, useRef, useState } from 'react';
-import { store as takeOutLoan } from '@/actions/App/Http/Controllers/FinanceLoanController';
+import { store as takeOutLoan } from '@/actions/App/Http/Controllers/Api/FinanceLoanController';
 import {
     accept as acceptSponsorOffer,
     negotiate as negotiateSponsorOffer,
     reject as rejectSponsorOffer,
-} from '@/actions/App/Http/Controllers/SponsorshipOfferController';
+} from '@/actions/App/Http/Controllers/Api/SponsorshipOfferController';
 import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
 

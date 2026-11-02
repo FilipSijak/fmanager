@@ -1,9 +1,9 @@
 import { Head, router } from '@inertiajs/react';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
+import { startNewGame } from '@/actions/App/Http/Controllers/Api/InstanceController';
 import {
     select,
-    startNewGame,
     takeOver,
 } from '@/actions/App/Http/Controllers/InstanceController';
 import api from '@/api';

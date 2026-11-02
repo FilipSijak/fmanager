@@ -1,10 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
 import { type FormEvent, useRef, useState } from 'react';
-import {
-    index,
-    store,
-} from '@/actions/App/Http/Controllers/TransferManagementController';
+import { store } from '@/actions/App/Http/Controllers/Api/TransferManagementController';
+import { index } from '@/actions/App/Http/Controllers/TransferManagementController';
 import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
 import { playerProfile } from '@/routes';

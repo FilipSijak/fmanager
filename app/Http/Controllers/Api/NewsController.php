@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Helpers\ResponseHelper;
+use App\Http\Controllers\Controller;
 use App\Services\NewsService\NewsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,8 +12,7 @@ class NewsController extends Controller
 {
     public function __construct(
         private readonly NewsService $newsService,
-    ) {
-    }
+    ) {}
 
     public function index(Request $request): JsonResponse
     {

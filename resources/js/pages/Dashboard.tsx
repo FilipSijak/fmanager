@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
 import { useState } from 'react';
-import { resign } from '@/actions/App/Http/Controllers/InstanceController';
+import { resign } from '@/actions/App/Http/Controllers/Api/InstanceController';
 import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
 import { jobs } from '@/routes';
