@@ -1,0 +1,40 @@
+app/Services/TrainingService/TrainingService.php
+  s_ddd18830fe91fa::t_e8d6880fcceada 21,28,32,45-47,52-57,87,138,147,153,156-163,166,178-179
+  s_ddd18830fe91fa::t_aef5eacb4182cd 180-181
+app/Services/TrainingService/PlayerProgressCalculator.php
+  s_ddd18830fe91fa::t_fdfbef50f0dd9a 40-41,247-253
+app/Models/Player.php
+  s_ddd18830fe91fa::t_e8d6880fcceada 50
+app/Services/TrainingService/TrainingPlan.php
+  s_ddd18830fe91fa::t_e8d6880fcceada 14,16,19-20,26-33
+  s_ddd18830fe91fa::t_bc6fa60b3c8559 34-35
+tests/Feature/TrainingManagementTest.php
+  s_ddd18830fe91fa::t_fdfbef50f0dd9a 73,261-276
+  s_ddd18830fe91fa::t_e46a91f6b32304 74-134,136-145,147-152,154-165
+  s_ddd18830fe91fa::t_52d23458b55e19 135,146,153
+app/Services/TrainingService/AiTrainingPlanner.php
+  s_ddd18830fe91fa::t_abcfc318cff1d5 1-4,7-8,12,27-28
+  s_ddd18830fe91fa::t_e8d6880fcceada 5-6,9-11,13-26
+tests/Unit/Services/TrainingService/PlayerProgressCalculatorTest.php
+  s_ddd18830fe91fa::t_fdfbef50f0dd9a 175-193
+  s_ddd18830fe91fa::t_6f5f2fa17f629d 173
+  s_ddd18830fe91fa::t_a7c874c67d8edc 174
+tests/Unit/Services/TrainingService/TrainingServiceTest.php
+  s_ddd18830fe91fa::t_e8d6880fcceada 8,33,37,48,56,69,93
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f1e37055e9af1325ff8db46c55f71e5f9c6629c5",
+  "prompts": {},
+  "sessions": {
+    "s_ddd18830fe91fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18c62-3384-7882-af58-7f847ac60131",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
