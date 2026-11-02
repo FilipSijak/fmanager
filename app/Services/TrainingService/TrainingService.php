@@ -18,16 +18,18 @@ class TrainingService
         private readonly TrainingRepository $trainingRepository,
         private readonly PlayerProgressCalculator $playerProgressCalculator,
         private readonly GameContext $context,
+        private readonly AiTrainingPlanner $aiTrainingPlanner,
     ) {}
 
     public function processDay(Instance $instance): void
     {
         $trainingDate = CarbonImmutable::parse($instance->instance_date)->startOfDay();
         $previousDate = $trainingDate->subDay();
+        $nextDate = $trainingDate->addDay();
         $games = $this->trainingRepository->scheduledGames(
             (int) $instance->id,
             $previousDate,
-            $trainingDate
+            $nextDate
         );
         $clubIds = static fn ($scheduledGames) => $scheduledGames
             ->flatMap(fn ($game): array => $game->clubIds())
@@ -40,11 +42,19 @@ class TrainingService
             fn ($game): bool => $game->kickoff->isSameDay($previousDate)
         ))->diff($playingTodayIds)->values();
         $clubsWithoutTraining = $playingTodayIds->merge($postMatchRestIds)->unique();
+        $playingTomorrowIds = $clubIds($games->filter(
+            fn ($game): bool => $game->kickoff->isSameDay($nextDate)
+        ));
 
         $this->trainingRepository->clubsByIds((int) $instance->id, $postMatchRestIds)
             ->each(fn (Club $club) => $this->recoverCondition($club, $trainingDate));
         $this->trainingRepository->clubsExceptIds((int) $instance->id, $clubsWithoutTraining)
-            ->each(fn (Club $club) => $this->executeTrainingSession($club, $trainingDate));
+            ->each(fn (Club $club) => $this->executeTrainingSession(
+                $club,
+                $trainingDate,
+                (int) $club->id !== (int) $instance->club_id,
+                $playingTomorrowIds->contains($club->id),
+            ));
     }
 
     public function managedClub(): Club
@@ -74,7 +84,7 @@ class TrainingService
             'intensities' => array_map(fn (TrainingIntensity $intensity): array => ['id' => $intensity->value, 'name' => $intensity->name], TrainingIntensity::cases()),
             'presets' => TrainingPlan::presets(),
             'players' => $players->map(function (Player $player) use ($schedules): array {
-                $plan = TrainingPlan::fromSchedules($schedules->get($player->id, []));
+                $plan = TrainingPlan::fromSchedules($schedules->get($player->id, []), $player->position);
                 $scheduleData = $plan->schedules();
                 $attributes = [];
 
@@ -125,7 +135,7 @@ class TrainingService
         });
     }
 
-    private function executeTrainingSession(Club $club, CarbonImmutable $trainingDate): void
+    private function executeTrainingSession(Club $club, CarbonImmutable $trainingDate, bool $manageAutomatically, bool $playsTomorrow): void
     {
         $trainingFields = array_merge(
             PlayerFields::TECHNICAL_FIELDS,
@@ -134,17 +144,26 @@ class TrainingService
             PlayerFields::GOALKEEPING_FIELDS
         );
 
-        $this->trainingRepository->transaction(function () use ($club, $trainingDate, $trainingFields): void {
+        $this->trainingRepository->transaction(function () use ($club, $trainingDate, $trainingFields, $manageAutomatically, $playsTomorrow): void {
             $players = $this->trainingRepository->playersForTraining($club, $trainingFields, $trainingDate);
             $playerIds = $players->pluck('id');
             $schedulesByPlayer = $this->trainingRepository->schedulesForPlayers($playerIds);
             $progressUpdates = [];
             $playerUpdates = [];
+            $scheduleRows = [];
 
             foreach ($players as $player) {
+                $plan = $manageAutomatically
+                    ? $this->aiTrainingPlanner->plan($player, $playsTomorrow)
+                    : TrainingPlan::fromSchedules($schedulesByPlayer->get($player->id, []), $player->position);
+
+                if ($manageAutomatically) {
+                    array_push($scheduleRows, ...$plan->rowsForPlayers([$player->id]));
+                }
+
                 $updates = $this->playerProgressCalculator->forTrainingSession(
                     $player,
-                    $schedulesByPlayer->get($player->id, []),
+                    $plan->schedules(),
                     $trainingFields,
                     $trainingDate
                 );
@@ -154,6 +173,10 @@ class TrainingService
                     $playerUpdates[(int) $player->id] = $updates->player;
                 }
 
+            }
+
+            if ($scheduleRows !== []) {
+                $this->trainingRepository->saveSchedules($scheduleRows);
             }
 
             $this->trainingRepository->bulkUpdateProgress($progressUpdates);

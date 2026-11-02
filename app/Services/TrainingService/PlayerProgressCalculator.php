@@ -37,6 +37,8 @@ class PlayerProgressCalculator
 
     private const VERY_HARD_CONDITION_COST = 5;
 
+    private const GOALKEEPING_EFFORT_MULTIPLIER = 0.5;
+
     public const MINIMUM_TRAINING_CONDITION = 70;
 
     private const TRAINING_CONDITION_RECOVERY = 3;
@@ -242,9 +244,13 @@ class PlayerProgressCalculator
 
         $effort = collect($schedules)
             ->whereIn('category.value', $trainedCategories)
-            ->sum(fn ($schedule): int => $this->effortForIntensity(
-                $schedule->intensity
-            ));
+            ->sum(function (TrainingScheduleData $schedule): float {
+                $effort = $this->effortForIntensity($schedule->intensity);
+
+                return $schedule->category === TrainingCategory::Goalkeeping
+                    ? $effort * self::GOALKEEPING_EFFORT_MULTIPLIER
+                    : $effort;
+            });
 
         if ($effort > self::VERY_HARD_EFFORT_THRESHOLD) {
             return self::VERY_HARD_CONDITION_COST;

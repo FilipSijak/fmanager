@@ -5,6 +5,7 @@ namespace Tests\Unit\Services\TrainingService;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Repositories\TrainingRepository;
+use App\Services\TrainingService\AiTrainingPlanner;
 use App\Services\TrainingService\Data\ScheduledGameData;
 use App\Services\TrainingService\Data\TrainingPlayerData;
 use App\Services\TrainingService\PlayerProgressCalculator;
@@ -29,9 +30,11 @@ class TrainingServiceTest extends TestCase
         $calculator = $this->createMock(PlayerProgressCalculator::class);
         $repository->expects($this->once())
             ->method('scheduledGames')
+            ->with(1, CarbonImmutable::parse('2027-06-09'), CarbonImmutable::parse('2027-06-11'))
             ->willReturn(new Collection([
                 new ScheduledGameData(1, 2, CarbonImmutable::parse('2027-06-10 15:00')),
                 new ScheduledGameData(2, 3, CarbonImmutable::parse('2027-06-09 15:00')),
+                new ScheduledGameData(4, 5, CarbonImmutable::parse('2027-06-11 15:00')),
             ]));
         $repository->expects($this->once())
             ->method('clubsByIds')
@@ -42,7 +45,7 @@ class TrainingServiceTest extends TestCase
             ->with(1, $this->callback(fn (Collection $ids): bool => $ids->sort()->values()->all() === [1, 2, 3]))
             ->willReturn(new Collection);
 
-        (new TrainingService($repository, $calculator, new GameContext))->processDay($instance);
+        (new TrainingService($repository, $calculator, new GameContext, new AiTrainingPlanner))->processDay($instance);
     }
 
     #[Test]
@@ -50,6 +53,7 @@ class TrainingServiceTest extends TestCase
     {
         $instance = (new Instance)->forceFill([
             'id' => 1,
+            'club_id' => 10,
             'instance_date' => '2027-06-10',
         ]);
         $club = (new Club)->forceFill(['id' => 10, 'instance_id' => 1]);
@@ -62,6 +66,7 @@ class TrainingServiceTest extends TestCase
         $repository->method('scheduledGames')->willReturn(new Collection);
         $repository->method('clubsByIds')->willReturn(new Collection);
         $repository->method('clubsExceptIds')->willReturn(new Collection([$club]));
+        $repository->expects($this->never())->method('saveSchedules');
         $repository->expects($this->once())
             ->method('transaction')
             ->willReturnCallback(fn (\Closure $callback) => $callback());
@@ -85,6 +90,6 @@ class TrainingServiceTest extends TestCase
             ->method('bulkUpdatePlayers')
             ->with([7 => ['pace' => 11]]);
 
-        (new TrainingService($repository, $calculator, new GameContext))->processDay($instance);
+        (new TrainingService($repository, $calculator, new GameContext, new AiTrainingPlanner))->processDay($instance);
     }
 }

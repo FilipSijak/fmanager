@@ -11,15 +11,26 @@ final readonly class TrainingPlan
     public function __construct(public array $schedule) {}
 
     /** @param array<int, TrainingScheduleData> $schedules */
-    public static function fromSchedules(array $schedules): self
+    public static function fromSchedules(array $schedules, string $position = 'CB'): self
     {
-        $plan = [];
+        $plan = self::defaultForPosition($position)->schedule;
 
         foreach (TrainingCategory::cases() as $category) {
-            $plan[strtolower($category->name)] = ($schedules[$category->value] ?? null)?->intensity->value ?? TrainingIntensity::Medium->value;
+            $key = strtolower($category->name);
+            $plan[$key] = ($schedules[$category->value] ?? null)?->intensity->value ?? $plan[$key];
         }
 
         return new self($plan);
+    }
+
+    public static function defaultForPosition(string $position): self
+    {
+        return new self([
+            'physical' => TrainingIntensity::Medium->value,
+            'tactical' => ($position === 'GK' ? TrainingIntensity::Light : TrainingIntensity::Medium)->value,
+            'technical' => ($position === 'GK' ? TrainingIntensity::Light : TrainingIntensity::Medium)->value,
+            'goalkeeping' => ($position === 'GK' ? TrainingIntensity::Hard : TrainingIntensity::Medium)->value,
+        ]);
     }
 
     /** @return array<int, TrainingScheduleData> */

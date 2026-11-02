@@ -47,7 +47,7 @@ class Player extends Model
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
-                TrainingPlan::fromSchedules([])->rowsForPlayers([$this->id])
+                TrainingPlan::defaultForPosition($this->position)->rowsForPlayers([$this->id])
             )
         );
     }

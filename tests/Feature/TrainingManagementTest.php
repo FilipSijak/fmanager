@@ -71,6 +71,99 @@ class TrainingManagementTest extends TestCase
     }
 
     #[Test]
+    public function new_goalkeepers_use_position_defaults_and_missing_categories_preserve_saved_settings(): void
+    {
+        [$instance, $club] = $this->world();
+        $goalkeeper = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'position' => 'GK']);
+
+        $this->getJson('/api/training')->assertOk()->assertJsonPath('data.players.1.schedule', [
+            'physical' => 2, 'tactical' => 1, 'technical' => 1, 'goalkeeping' => 3,
+        ]);
+        $this->assertDatabaseHas('training_player_schedule', ['player_id' => $goalkeeper->id, 'training_category_id' => 4, 'training_intensity_id' => 3]);
+
+        DB::table('training_player_schedule')->where('player_id', $goalkeeper->id)->where('training_category_id', 1)->update(['training_intensity_id' => 3]);
+        DB::table('training_player_schedule')->where('player_id', $goalkeeper->id)->where('training_category_id', 4)->delete();
+
+        $this->getJson('/api/training')->assertOk()->assertJsonPath('data.players.1.schedule', [
+            'physical' => 3, 'tactical' => 1, 'technical' => 1, 'goalkeeping' => 3,
+        ]);
+        $this->assertDatabaseMissing('training_player_schedule', ['player_id' => $goalkeeper->id, 'training_category_id' => 4]);
+    }
+
+    #[Test]
+    #[TestWith(['GK', 90, false, false, [2, 1, 1, 3], 93])]
+    #[TestWith(['CB', 90, false, false, [2, 2, 2, 2], 93])]
+    #[TestWith(['GK', 89, false, false, [4, 4, 4, 4], 99])]
+    #[TestWith(['CB', 65, false, false, [4, 4, 4, 4], 75])]
+    #[TestWith(['GK', 100, true, false, [4, 4, 4, 4], 100])]
+    #[TestWith(['GK', 90, false, true, [1, 1, 1, 1], 93])]
+    #[TestWith(['CB', 90, false, true, [1, 1, 1, 1], 93])]
+    #[TestWith(['GK', 89, false, true, [4, 4, 4, 4], 99])]
+    /** @param list<int> $expectedIntensities */
+    public function ai_plans_reflect_position_fitness_and_tomorrows_fixture(string $position, int $condition, bool $injured, bool $playsTomorrow, array $expectedIntensities, int $expectedCondition): void
+    {
+        [$instance, $managedClub, $managedPlayer] = $this->world();
+        $club = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => 200]);
+        $player = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'position' => $position]);
+        DB::table('players_progress')->where('player_id', $player->id)->update(['condition' => $condition, 'handling' => 50]);
+        $this->putJson('/api/training', $this->payload($managedPlayer, 3))->assertOk();
+
+        if ($injured) {
+            DB::table('injuries')->insert(['id' => 1, 'type' => 'Knee injury', 'severity' => 4, 'duration_from' => 1, 'duration_to' => 20]);
+            DB::table('player_injuries')->insert(['instance_id' => $instance->id, 'season_id' => $instance->season_id, 'player_id' => $player->id, 'injury_id' => 1, 'injury_start_date' => '2026-08-31', 'injury_end_date' => '2026-09-05']);
+        }
+
+        if ($playsTomorrow) {
+            $competition = Competition::factory()->create(['instance_id' => $instance->id]);
+            Game::factory()->create(['instance_id' => $instance->id, 'season_id' => $instance->season_id, 'competition_id' => $competition->id, 'stadium_id' => $managedClub->stadium_id, 'hometeam_id' => $managedClub->id, 'awayteam_id' => $club->id, 'match_start' => '2026-09-02 23:59:00', 'status' => Game::STATUS_SCHEDULED]);
+        }
+
+        app(TrainingService::class)->processDay($instance);
+
+        foreach ($expectedIntensities as $index => $intensity) {
+            $this->assertDatabaseHas('training_player_schedule', ['player_id' => $player->id, 'training_category_id' => $index + 1, 'training_intensity_id' => $intensity]);
+        }
+        $this->assertDatabaseHas('players_progress', ['player_id' => $player->id, 'condition' => $expectedCondition]);
+        $this->assertSame(4, DB::table('training_player_schedule')->where('player_id', $managedPlayer->id)->where('training_intensity_id', 3)->count());
+    }
+
+    #[Test]
+    public function ai_resumes_normal_training_after_recovery(): void
+    {
+        [$instance] = $this->world();
+        $club = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => 200]);
+        $player = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'position' => 'GK', 'handling' => 10, 'technical' => 180, 'current_technical_potential' => 150]);
+        DB::table('players_progress')->where('player_id', $player->id)->update(['condition' => 80, 'handling' => 50]);
+
+        app(TrainingService::class)->processDay($instance);
+
+        $this->assertDatabaseHas('players_progress', ['player_id' => $player->id, 'condition' => 90, 'handling' => 50]);
+
+        $instance->forceFill(['instance_date' => '2026-09-02'])->save();
+        app(TrainingService::class)->processDay($instance);
+
+        $this->assertDatabaseHas('training_player_schedule', ['player_id' => $player->id, 'training_category_id' => 4, 'training_intensity_id' => 3]);
+        $this->assertDatabaseHas('players_progress', ['player_id' => $player->id, 'condition' => 93, 'handling' => 55]);
+    }
+
+    #[Test]
+    #[TestWith([Game::STATUS_CANCELLED, '2026-09-02 15:00:00', 2])]
+    #[TestWith([Game::STATUS_SCHEDULED, '2026-09-03 00:00:00', 2])]
+    #[TestWith([Game::STATUS_SCHEDULED, '2026-09-02 00:00:00', 1])]
+    public function ai_tapers_only_for_an_active_fixture_on_the_next_calendar_day(string $status, string $kickoff, int $expectedIntensity): void
+    {
+        [$instance, $managedClub] = $this->world();
+        $club = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => 200]);
+        $player = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id]);
+        $competition = Competition::factory()->create(['instance_id' => $instance->id]);
+        Game::factory()->create(['instance_id' => $instance->id, 'season_id' => $instance->season_id, 'competition_id' => $competition->id, 'stadium_id' => $club->stadium_id, 'hometeam_id' => $club->id, 'awayteam_id' => $managedClub->id, 'match_start' => $kickoff, 'status' => $status]);
+
+        app(TrainingService::class)->processDay($instance);
+
+        $this->assertDatabaseHas('training_player_schedule', ['player_id' => $player->id, 'training_category_id' => 1, 'training_intensity_id' => $expectedIntensity]);
+    }
+
+    #[Test]
     public function individual_and_shared_schedules_save_to_existing_rows(): void
     {
         [$instance, $club, $player] = $this->world();
@@ -165,7 +258,22 @@ class TrainingManagementTest extends TestCase
         DB::table('players_progress')->where('player_id', $player->id)->update(['condition' => 90, 'handling' => 99]);
 
         $this->getJson('/api/training')->assertOk()->assertJsonPath('data.players.0.attributes.goalkeeping.0', ['key' => 'handling', 'name' => 'Handling', 'value' => 12, 'progress' => 99])
-            ->assertJsonPath('data.players.0.workload', 'Heavy')->assertJsonPath('data.players.0.condition_change', -5);
+            ->assertJsonPath('data.players.0.workload', 'Heavy')->assertJsonPath('data.players.0.condition_change', -3);
+    }
+
+    #[Test]
+    public function hard_goalkeeping_with_medium_physical_and_light_other_categories_recovers_condition_and_develops_skills(): void
+    {
+        [$instance, , $player] = $this->world();
+        $player->forceFill(['position' => 'GK', 'handling' => 10])->save();
+        DB::table('players_progress')->where('player_id', $player->id)->update(['condition' => 90, 'handling' => 50]);
+        $schedule = ['physical' => 2, 'tactical' => 1, 'technical' => 1, 'goalkeeping' => 3];
+        $this->putJson('/api/training', ['player_ids' => [$player->id], 'schedule' => $schedule])->assertOk();
+        $this->getJson('/api/training')->assertOk()->assertJsonPath('data.players.0.workload', 'Balanced')->assertJsonPath('data.players.0.condition_change', 3);
+
+        app(TrainingService::class)->processDay($instance);
+
+        $this->assertDatabaseHas('players_progress', ['player_id' => $player->id, 'condition' => 93, 'handling' => 55]);
     }
 
     #[Test]

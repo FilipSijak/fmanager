@@ -170,6 +170,27 @@ class PlayerProgressCalculatorTest extends TestCase
         $this->assertSame(85, $veryHardUpdates->progress['condition']);
     }
 
+    /** @param array{int, int, int, int} $intensities */
+    #[Test]
+    #[TestWith(['GK', [2, 1, 1, 3], 3])]
+    #[TestWith(['GK', [2, 2, 2, 2], -3])]
+    #[TestWith(['GK', [2, 2, 1, 2], -3])]
+    #[TestWith(['GK', [3, 1, 2, 2], -5])]
+    #[TestWith(['GK', [3, 3, 3, 3], -5])]
+    #[TestWith(['CB', [2, 2, 2, 3], 3])]
+    #[TestWith(['CB', [3, 3, 1, 3], -5])]
+    public function goalkeeper_workload_is_halved_and_other_categories_keep_their_weight(string $position, array $intensities, int $conditionChange): void
+    {
+        $schedules = $this->schedules([
+            TrainingCategory::Physical->value => TrainingIntensity::from($intensities[0]),
+            TrainingCategory::Tactical->value => TrainingIntensity::from($intensities[1]),
+            TrainingCategory::Technical->value => TrainingIntensity::from($intensities[2]),
+            TrainingCategory::Goalkeeping->value => TrainingIntensity::from($intensities[3]),
+        ]);
+
+        $this->assertSame($conditionChange, (new PlayerProgressCalculator)->conditionChange($schedules, $position));
+    }
+
     #[Test]
     public function tactical_training_requires_two_hundred_progress_for_an_attribute(): void
     {
