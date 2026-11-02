@@ -1,0 +1,47 @@
+app/Repositories/TrainingRepository.php
+  s_ddd18830fe91fa::t_a1f423a5e11476 8-9,28-49,55-58,61-82,102-103,134
+  s_ddd18830fe91fa::t_0b70ccf7cc66e8 17,87
+tests/Unit/Services/TrainingService/TrainingServiceTest.php
+  s_ddd18830fe91fa::t_4259bd650ee9e3 13,45,88
+app/Services/TrainingService/TrainingPlan.php
+  s_ddd18830fe91fa::t_0d1b4fdb78c121 1-4,9,37,40,56,77-78
+  s_ddd18830fe91fa::t_a1f423a5e11476 5-8,10-36,38-39,41-55,57-76
+app/Http/Controllers/Api/TrainingController.php
+  s_ddd18830fe91fa::t_4259bd650ee9e3 8,13,18
+app/Services/TrainingService/TrainingService.php
+  s_ddd18830fe91fa::t_4259bd650ee9e3 5-6,9,12,19-20,50-51,53-66,69-74,76,79-104,106-118,121,123,125-127,187-191
+  s_ddd18830fe91fa::t_a1f423a5e11476 52,67-68,75,77-78,105,119-120,122,124
+app/Models/PlayerInjury.php
+  s_ddd18830fe91fa::t_b92f380711e4a4 5,16-21
+  s_ddd18830fe91fa::t_a1f423a5e11476 14
+app/Models/Player.php
+  s_ddd18830fe91fa::t_b7f87a213f66db 7,46,50
+  s_ddd18830fe91fa::t_b92f380711e4a4 154-176,182,184-185
+app/Models/Game.php
+  s_ddd18830fe91fa::t_b92f380711e4a4 6,42-50
+  s_ddd18830fe91fa::t_a49ab496d2785f 51
+app/Services/TrainingService/Data/TrainingPlayerData.php
+  s_ddd18830fe91fa::t_b92f380711e4a4 5-6,26-45
+  s_ddd18830fe91fa::t_06f2af8852f854 46
+tests/Integration/Repositories/TrainingRepositoryTest.php
+  s_ddd18830fe91fa::t_0b70ccf7cc66e8 6-7,18,91-182,184-196
+  s_ddd18830fe91fa::t_b7f87a213f66db 12,183
+app/Http/Controllers/TrainingController.php
+  s_ddd18830fe91fa::t_4259bd650ee9e3 5,11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5cea66c104c222489c4ccb22dd7033811768a650",
+  "prompts": {},
+  "sessions": {
+    "s_ddd18830fe91fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a18c62-3384-7882-af58-7f847ac60131",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
