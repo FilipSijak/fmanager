@@ -2,10 +2,9 @@
 
 namespace App\Models;
 
-use App\Domain\PlayerDevelopment\TrainingCategory;
 use App\Models\Concerns\BelongsToGameInstance;
 use App\Services\PersonService\Data\PersonInfo;
-use App\Services\TrainingService\TrainingIntensity;
+use App\Services\TrainingService\TrainingPlan;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,14 +43,11 @@ class Player extends Model
 
         DB::table('training_player_schedule')->insert(
             array_map(
-                fn (TrainingCategory $category): array => [
-                    'player_id' => $this->id,
-                    'training_category_id' => $category->value,
-                    'training_intensity_id' => TrainingIntensity::Medium->value,
+                fn (array $schedule): array => $schedule + [
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
-                TrainingCategory::cases()
+                TrainingPlan::fromSchedules([])->rowsForPlayers([$this->id])
             )
         );
     }
@@ -155,16 +151,38 @@ class Player extends Model
         return $query->where('is_retired', false);
     }
 
+    public function scopeForClub(Builder $query, Club $club): Builder
+    {
+        return $query->where('players.instance_id', $club->instance_id)
+            ->where('players.club_id', $club->id);
+    }
+
+    /** @param list<string> $fields */
+    public function scopeWithTrainingProgress(Builder $query, array $fields): Builder
+    {
+        return $query->leftJoin('players_progress', 'players_progress.player_id', '=', 'players.id')
+            ->select('players.*')
+            ->addSelect(['players_progress.condition as training_condition', 'players_progress.last_progressed_at'])
+            ->addSelect(array_map(fn (string $field): string => "players_progress.{$field} as progress_{$field}", $fields));
+    }
+
+    public function scopeWithInjuryStatusOn(Builder $query, string $date): Builder
+    {
+        return $query->addSelect(['is_injured' => PlayerInjury::query()->activeOn($date)
+            ->whereColumn('player_injuries.player_id', 'players.id')
+            ->whereColumn('player_injuries.instance_id', 'players.instance_id')
+            ->selectRaw('1')->limit(1)]);
+    }
+
     /**
      * Players without an injury covering the given date.
      */
     public function scopeNotInjuredOn(Builder $query, string $date): Builder
     {
-        return $query->whereNotExists(fn ($injuries) => $injuries
-            ->from('player_injuries')
+        return $query->whereNotExists(PlayerInjury::query()->activeOn($date)
             ->whereColumn('player_injuries.player_id', 'players.id')
-            ->where('player_injuries.injury_start_date', '<=', $date)
-            ->where('player_injuries.injury_end_date', '>=', $date));
+            ->whereColumn('player_injuries.instance_id', 'players.instance_id')
+            ->selectRaw('1'));
     }
 
     public function scopeRetired(Builder $query): Builder

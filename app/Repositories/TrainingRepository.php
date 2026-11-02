@@ -5,6 +5,8 @@ namespace App\Repositories;
 use App\Domain\PlayerDevelopment\TrainingCategory;
 use App\Models\Club;
 use App\Models\Game;
+use App\Models\Instance;
+use App\Models\Player;
 use App\Services\TrainingService\Data\ScheduledGameData;
 use App\Services\TrainingService\Data\TrainingPlayerData;
 use App\Services\TrainingService\Data\TrainingScheduleData;
@@ -12,6 +14,7 @@ use App\Services\TrainingService\TrainingIntensity;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Closure;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -22,70 +25,66 @@ class TrainingRepository
         return DB::transaction($callback);
     }
 
+    public function managedClub(int $instanceId): Club
+    {
+        $instance = Instance::query()->findOrFail($instanceId);
+
+        return Club::query()->forInstance($instanceId)->findOrFail($instance->club_id);
+    }
+
+    /**
+     * @param  list<string>  $trainingFields
+     * @return Collection<int, Player>
+     */
+    public function playersForOverview(Club $club, array $trainingFields, string $date): Collection
+    {
+        return Player::query()->forClub($club)->active()
+            ->with('person')->withTrainingProgress($trainingFields)->withInjuryStatusOn($date)
+            ->orderBy('players.id')->get();
+    }
+
+    /**
+     * @param  list<string>  $trainingFields
+     * @return Collection<int, TrainingPlayerData>
+     */
     public function playersForTraining(
         Club $club,
         array $trainingFields,
         CarbonInterface $trainingDate
     ): Collection {
-        $trainingDay = $trainingDate->toDateString();
-
-        return DB::table('players')
-            ->join('players_progress', 'players_progress.player_id', '=', 'players.id')
-            ->where('players.instance_id', $club->instance_id)
-            ->where('players.club_id', $club->id)
-            ->where('players.is_retired', false)
-            ->select([
-                'players.id',
-                'players.potential',
-                'players.max_potential',
-                'players.technical',
-                'players.mental',
-                'players.physical',
-                'players.position',
-                'players_progress.condition',
-                ...array_map(fn (string $field): string => "players.{$field} as player_{$field}", $trainingFields),
-                ...array_map(fn (string $field): string => "players_progress.{$field} as progress_{$field}", $trainingFields),
-            ])
-            ->selectRaw(
-                'COALESCE(NULLIF(players.current_technical_potential, 0), players.technical) AS current_technical_potential, COALESCE(NULLIF(players.current_mental_potential, 0), players.mental) AS current_mental_potential, COALESCE(NULLIF(players.current_physical_potential, 0), players.physical) AS current_physical_potential'
-            )
-            ->selectRaw(
-                'EXISTS (SELECT 1 FROM player_injuries'
-                .' WHERE player_injuries.player_id = players.id'
-                .' AND player_injuries.injury_start_date <= ?'
-                .' AND player_injuries.injury_end_date >= ?) AS is_injured',
-                [$trainingDay, $trainingDay]
-            )
-            ->lockForUpdate()
-            ->get()
-            ->map(fn (object $row): TrainingPlayerData => new TrainingPlayerData(
-                id: (int) $row->id,
-                potential: (int) $row->potential,
-                maxPotential: (int) $row->max_potential,
-                technical: (int) $row->technical,
-                mental: (int) $row->mental,
-                physical: (int) $row->physical,
-                currentTechnical: (int) $row->current_technical_potential,
-                currentMental: (int) $row->current_mental_potential,
-                currentPhysical: (int) $row->current_physical_potential,
-                position: $row->position,
-                injured: (bool) $row->is_injured,
-                condition: (int) $row->condition,
-                attributes: collect($trainingFields)->mapWithKeys(
-                    fn (string $field): array => [$field => (int) $row->{"player_{$field}"}]
-                )->all(),
-                progress: collect($trainingFields)->mapWithKeys(
-                    fn (string $field): array => [$field => (int) $row->{"progress_{$field}"}]
-                )->all(),
-            ));
+        return Player::query()->forClub($club)->active()
+            ->withTrainingProgress($trainingFields)->withInjuryStatusOn($trainingDate->toDateString())
+            ->whereNotNull('players_progress.player_id')->lockForUpdate()->get()
+            ->map(fn (Player $player): TrainingPlayerData => TrainingPlayerData::fromPlayer($player, $trainingFields));
     }
 
-    public function schedulesForPlayers(Collection $playerIds): Collection
+    /**
+     * @param  list<int>  $playerIds
+     * @return Collection<int, Player>
+     */
+    public function activePlayersByIdsForUpdate(Club $club, array $playerIds): Collection
+    {
+        return Player::query()->forClub($club)->active()->whereIn('id', $playerIds)->lockForUpdate()->get(['id']);
+    }
+
+    /** @param list<array{player_id: int, training_category_id: int, training_intensity_id: int}> $rows */
+    public function saveSchedules(array $rows): void
+    {
+        if ($rows === []) {
+            return;
+        }
+
+        $timestamp = now();
+        $rows = array_map(fn (array $row): array => $row + ['created_at' => $timestamp, 'updated_at' => $timestamp], $rows);
+        DB::table('training_player_schedule')->upsert($rows, ['player_id', 'training_category_id'], ['training_intensity_id', 'updated_at']);
+    }
+
+    public function schedulesForPlayers(Collection $playerIds, bool $lockForUpdate = true): Collection
     {
         return DB::table('training_player_schedule')
             ->whereIn('player_id', $playerIds)
             ->select(['player_id', 'training_category_id', 'training_intensity_id'])
-            ->lockForUpdate()
+            ->when($lockForUpdate, fn (Builder $query): Builder => $query->lockForUpdate())
             ->get()
             ->groupBy('player_id')
             ->map(fn (Collection $schedules): array => $schedules
@@ -100,11 +99,8 @@ class TrainingRepository
 
     public function scheduledGames(int $instanceId, CarbonImmutable $from, CarbonImmutable $to): Collection
     {
-        return DB::table('games')
-            ->where('instance_id', $instanceId)
-            ->where('status', '!=', Game::STATUS_CANCELLED)
-            ->where('match_start', '>=', $from->startOfDay())
-            ->where('match_start', '<', $to->addDay()->startOfDay())
+        return Game::query()->forInstance($instanceId)->notCancelled()
+            ->startingBetween($from->startOfDay(), $to->addDay()->startOfDay())
             ->get(['hometeam_id', 'awayteam_id', 'match_start'])
             ->map(fn (object $game): ScheduledGameData => new ScheduledGameData(
                 (int) $game->hometeam_id,
@@ -135,10 +131,7 @@ class TrainingRepository
 
     public function activePlayerIds(Club $club): Collection
     {
-        return DB::table('players')
-            ->where('instance_id', $club->instance_id)
-            ->where('club_id', $club->id)
-            ->where('is_retired', false)
+        return Player::query()->forClub($club)->active()
             ->lockForUpdate()
             ->pluck('id');
     }
