@@ -10,6 +10,7 @@ use App\Services\TrainingService\PlayerProgressCalculator;
 use App\Services\TrainingService\TrainingIntensity;
 use Carbon\CarbonImmutable;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 use Tests\TestCase;
 
 class PlayerProgressCalculatorTest extends TestCase
@@ -320,6 +321,39 @@ class PlayerProgressCalculatorTest extends TestCase
     public function rest_recovery_is_capped_at_full_condition(): void
     {
         $this->assertSame(100, (new PlayerProgressCalculator)->recoveredCondition(95));
+    }
+
+    #[Test]
+    #[TestWith(['CB', true, 65, 75])]
+    #[TestWith(['GK', false, 95, 100])]
+    public function full_rest_recovers_condition_without_losing_attribute_progress(string $position, bool $injured, int $condition, int $expectedCondition): void
+    {
+        $schedules = $this->schedules([
+            TrainingCategory::Physical->value => TrainingIntensity::None,
+            TrainingCategory::Tactical->value => TrainingIntensity::None,
+            TrainingCategory::Technical->value => TrainingIntensity::None,
+            TrainingCategory::Goalkeeping->value => $position === 'GK' ? TrainingIntensity::None : TrainingIntensity::Medium,
+        ]);
+        $player = new TrainingPlayerData(1, 100, 150, 150, 150, 150, $position, $injured, $condition, ['pace' => 10], ['pace' => 75]);
+
+        $updates = (new PlayerProgressCalculator)->forTrainingSession($player, $schedules, ['pace'], CarbonImmutable::parse('2027-06-10'));
+
+        $this->assertSame($expectedCondition, $updates->progress['condition']);
+        $this->assertArrayNotHasKey('pace', $updates->progress);
+        $this->assertSame([], $updates->player);
+    }
+
+    #[Test]
+    public function a_goalkeeper_still_training_goalkeeping_is_not_on_full_rest(): void
+    {
+        $schedules = $this->schedules([
+            TrainingCategory::Physical->value => TrainingIntensity::None,
+            TrainingCategory::Tactical->value => TrainingIntensity::None,
+            TrainingCategory::Technical->value => TrainingIntensity::None,
+            TrainingCategory::Goalkeeping->value => TrainingIntensity::Medium,
+        ]);
+
+        $this->assertFalse((new PlayerProgressCalculator)->isResting($schedules, 'GK'));
     }
 
     private function player(

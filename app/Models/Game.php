@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToGameInstance;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -36,6 +37,16 @@ class Game extends Model
             $query->where('hometeam_id', $clubId)
                 ->orWhere('awayteam_id', $clubId);
         });
+    }
+
+    public function scopeNotCancelled(Builder $query): Builder
+    {
+        return $query->where('status', '!=', self::STATUS_CANCELLED);
+    }
+
+    public function scopeStartingBetween(Builder $query, CarbonInterface $from, CarbonInterface $until): Builder
+    {
+        return $query->where('match_start', '>=', $from)->where('match_start', '<', $until);
     }
 
     public function playerStats(): HasMany

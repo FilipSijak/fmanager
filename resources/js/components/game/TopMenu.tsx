@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import { Image as ImageIcon } from 'lucide-react';
 import { index as transfers } from '@/actions/App/Http/Controllers/TransferManagementController';
-import { finance, squad, stadium } from '@/routes';
+import { finance, squad, stadium, training } from '@/routes';
 
 type MenuItem = {
     label: string;
@@ -31,6 +31,7 @@ const menuItems: MenuItem[] = [
     { label: 'Trans', href: transfers.url(), clubOnly: true },
     { label: 'Mngr' },
     { label: 'Squad', href: squad.url(), clubOnly: true },
+    { label: 'Train', href: training.url(), clubOnly: true },
     { label: 'Match', clubOnly: true },
     { label: 'Help' },
 ];

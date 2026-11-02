@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\SponsorshipOfferController;
 use App\Http\Controllers\Api\SquadLineupController;
 use App\Http\Controllers\Api\StadiumController;
 use App\Http\Controllers\Api\TacticsController;
+use App\Http\Controllers\Api\TrainingController;
 use App\Http\Controllers\Api\TransferController;
 use App\Http\Controllers\Api\TransferManagementController;
 use App\Http\Middleware\EnsureGameIsValid;
@@ -35,6 +36,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
 
         Route::middleware(EnsureUserHasClub::class)->group(function (): void {
+            Route::get('/training', [TrainingController::class, 'show'])->name('training.show');
+            Route::put('/training', [TrainingController::class, 'update'])->name('training.update');
             Route::post('/transfers', [TransferManagementController::class, 'store'])->name('transfers.store');
             Route::post('/transfers/{transferId}/respond', [TransferManagementController::class, 'respond'])->whereNumber('transferId')->name('transfers.respond');
             Route::post('/instance/resign', [InstanceController::class, 'resign']);

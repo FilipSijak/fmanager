@@ -10,6 +10,7 @@ use App\Services\TrainingService\Data\TrainingPlayerData;
 use App\Services\TrainingService\PlayerProgressCalculator;
 use App\Services\TrainingService\PlayerProgressUpdate;
 use App\Services\TrainingService\TrainingService;
+use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\Attributes\Test;
@@ -41,7 +42,7 @@ class TrainingServiceTest extends TestCase
             ->with(1, $this->callback(fn (Collection $ids): bool => $ids->sort()->values()->all() === [1, 2, 3]))
             ->willReturn(new Collection);
 
-        (new TrainingService($repository, $calculator))->processDay($instance);
+        (new TrainingService($repository, $calculator, new GameContext))->processDay($instance);
     }
 
     #[Test]
@@ -84,6 +85,6 @@ class TrainingServiceTest extends TestCase
             ->method('bulkUpdatePlayers')
             ->with([7 => ['pace' => 11]]);
 
-        (new TrainingService($repository, $calculator))->processDay($instance);
+        (new TrainingService($repository, $calculator, new GameContext))->processDay($instance);
     }
 }
