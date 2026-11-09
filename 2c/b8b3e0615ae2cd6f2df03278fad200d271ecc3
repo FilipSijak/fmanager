@@ -1,0 +1,40 @@
+app/Services/NewsService/NewsTypes/PlayerContractNews.php
+  s_b08adfe8862052::t_58afa929e324a4 1-13,15,31-39
+  s_b08adfe8862052::t_a7b1507ba8b849 14,16-30
+app/Listeners/ProcessPlayerContracts.php
+  s_b08adfe8862052::t_e13622289fddc2 1-16
+app/Models/Player.php
+  s_b08adfe8862052::t_e1b3abe017f9e5 149-153
+app/Providers/EventServiceProvider.php
+  s_b08adfe8862052::t_e6e2aa81e3b142 25,54
+app/Repositories/PlayerRepository.php
+  s_b08adfe8862052::t_b183d0619b9c8f 8,20,102-125
+app/Services/NewsService/NewsType.php
+  s_b08adfe8862052::t_96fa8afeee15c4 8
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_a22b0f622a1d0a 5,16-17,50-52,83-84,89-90,94-143
+database/factories/BaseFormationFactory.php
+  s_b08adfe8862052::t_2a410b2e69481b 13-14
+database/migrations/2026_11_09_151851_add_renewal_reminded_for_to_players_contracts_table.php
+  s_b08adfe8862052::t_28a3446a479572 1-22
+resources/js/pages/contracts/RenewContract.tsx
+  s_b08adfe8862052::t_174bd8f5c011b0 1,45-46
+tests/Feature/PlayerContractRenewalTest.php
+  s_b08adfe8862052::t_171a076d402b21 5-7,10-11,16-19,21,23,74,79,191-311
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2cb8b3e0615ae2cd6f2df03278fad200d271ecc3",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
