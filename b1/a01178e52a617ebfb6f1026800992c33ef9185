@@ -1,0 +1,21 @@
+app/Services/PersonService/Domain/PlayerPerformance.php
+  s_b08adfe8862052::t_e95a2c0f2d4533 3
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_f24119b0ae6dfa 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b1a01178e52a617ebfb6f1026800992c33ef9185",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
