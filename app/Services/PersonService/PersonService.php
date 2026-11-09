@@ -7,12 +7,14 @@ use App\Domain\PlayerDevelopment\PlayerDevelopmentCategory;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
+use App\Models\Season;
 use App\Models\StaffCoaching;
 use App\Models\User;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\Data\PotentialByCategoryData;
+use App\Services\PersonService\Domain\PlayerPerformance;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
@@ -21,6 +23,7 @@ use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 class PersonService
@@ -37,7 +40,39 @@ class PersonService
         private readonly PlayerPotential $playerPotential,
         private readonly GameContext $gameContext,
         private readonly PlayerAttributeCeiling $playerAttributeCeiling,
+        private readonly PlayerPerformance $playerPerformance,
     ) {}
+
+    /** @return array{player: Player, fitness: array<string, mixed>, performance: array<string, mixed>} */
+    public function playerProfile(int $playerId, ?int $seasonId = null): array
+    {
+        $player = $this->playerRepository->profile($this->gameContext->instanceId(), $playerId);
+        $date = $this->gameContext->instanceDate();
+        $seasons = $this->playerRepository->performanceSeasons($player, $date);
+        $currentSeasonId = $this->gameContext->hasSeasonId() ? $this->gameContext->seasonId() : null;
+
+        if ($seasonId !== null && ! $seasons->contains('id', $seasonId)) {
+            throw (new ModelNotFoundException)->setModel(Season::class, [$seasonId]);
+        }
+
+        $seasonId ??= $currentSeasonId;
+
+        return [
+            'player' => $player,
+            'fitness' => $this->playerPerformance->fitness(
+                $this->playerRepository->fitnessProgress($player),
+                $this->playerRepository->activeInjuries($player, $date),
+            ),
+            'performance' => $this->playerPerformance->summary(
+                $seasonId,
+                $this->playerRepository->performanceByCompetition($player, $seasonId, $date),
+                $this->playerRepository->recentAppearances($player, $seasonId, $date),
+            ) + [
+                'seasons' => $this->playerPerformance->seasons($seasons),
+                'current_season_id' => $currentSeasonId,
+            ],
+        ];
+    }
 
     public function createPlayer(GeneratedPlayerProfile $playerPotential): Player
     {

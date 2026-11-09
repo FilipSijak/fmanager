@@ -1,99 +1,14 @@
 import { Head, Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import {
     offer,
     index as transfers,
 } from '@/actions/App/Http/Controllers/TransferManagementController';
 import GameLayout from '@/layouts/GameLayout';
 import AttributeColumn from './components/AttributeColumn';
+import RecentAppearances from './components/RecentAppearances';
 import { usePlayerProfile } from './usePlayerProfile';
 import { ageFromDob, formatDob, POSITION_LABELS } from './utils';
-
-type ExtraAttribute = {
-    label: string;
-    value: string;
-};
-
-const extraAttributes: ExtraAttribute[] = [
-    { label: 'Preferred Foot', value: 'Right Only' },
-    { label: 'Form', value: '8-7-7-7' },
-    { label: 'Morale', value: 'Superb' },
-    { label: 'Condition', value: '100%' },
-];
-
-type StatRow = {
-    label: string;
-    apps: string | number;
-    gls: string | number;
-    asts: string | number;
-    mom: string | number;
-    pass: string | number;
-    tck: string | number;
-    drb: string | number;
-};
-
-const statRows: StatRow[] = [
-    {
-        label: 'Non Competitive',
-        apps: '-',
-        gls: '-',
-        asts: '-',
-        mom: '-',
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'League',
-        apps: 0,
-        gls: 0,
-        asts: 0,
-        mom: 0,
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'Cup',
-        apps: '-',
-        gls: '-',
-        asts: '-',
-        mom: '-',
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'Continental',
-        apps: '-',
-        gls: '-',
-        asts: '-',
-        mom: '-',
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'International',
-        apps: '-',
-        gls: '-',
-        asts: '-',
-        mom: '-',
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'Senior Club',
-        apps: 0,
-        gls: 0,
-        asts: 0,
-        mom: 0,
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-];
 
 const tabs = [
     'Profile',
@@ -103,21 +18,16 @@ const tabs = [
     'History',
 ] as const;
 
-const statColumns = [
-    'Apps',
-    'Gls',
-    'Asts',
-    'MoM',
-    'Pass',
-    'Tck',
-    'Drb',
-    'Sh Tar',
-    'Av R',
-] as const;
-
 export default function PlayerProfile({ playerId }: { playerId: number }) {
-    const { player, instanceDate, loadError, managedClubId } =
-        usePlayerProfile(playerId);
+    const {
+        player,
+        instanceDate,
+        loadError,
+        managedClubId,
+        loadingPerformance,
+        seasonError,
+        selectSeason,
+    } = usePlayerProfile(playerId);
 
     if (loadError) {
         return (
@@ -152,6 +62,28 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
         player.club?.id !== managedClubId &&
         !player.is_retired &&
         !player.is_on_loan;
+
+    const extraAttributes = [
+        { label: 'Preferred Foot', value: '—' },
+        {
+            label: 'Morale',
+            value:
+                player.fitness.morale === null
+                    ? '—'
+                    : `${player.fitness.morale}%`,
+        },
+        {
+            label: 'Condition',
+            value:
+                player.fitness.condition === null
+                    ? '—'
+                    : `${player.fitness.condition}%`,
+        },
+        {
+            label: 'Injury status',
+            value: player.fitness.is_injured ? 'Injured' : 'No active injury',
+        },
+    ];
 
     return (
         <GameLayout active="Nations & Clubs">
@@ -249,7 +181,16 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
                     </div>
 
                     <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-4">
-                        {extraAttributes.map((attribute) => (
+                        {[
+                            {
+                                label: 'Form (selected season)',
+                                value:
+                                    player.performance.recent
+                                        .map((match) => match.rating.toFixed(1))
+                                        .join(' / ') || '—',
+                            },
+                            ...extraAttributes,
+                        ].map((attribute) => (
                             <div
                                 key={attribute.label}
                                 className="flex items-center justify-between border-b border-white/10 py-1 text-sm"
@@ -264,73 +205,147 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
                         ))}
                     </div>
 
-                    <div className="mt-5">
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                aria-label="Previous season"
-                                className="flex size-6 items-center justify-center rounded bg-[#0031a5] text-white hover:bg-[#00268a]"
-                            >
-                                <ChevronLeft size={14} />
-                            </button>
-                            <button
-                                type="button"
-                                aria-label="Next season"
-                                className="flex size-6 items-center justify-center rounded bg-[#0031a5] text-white hover:bg-[#00268a]"
-                            >
-                                <ChevronRight size={14} />
-                            </button>
-                            <div className="grid flex-1 grid-cols-9 gap-px overflow-hidden rounded bg-black/30 text-center text-xs font-bold text-slate-800">
-                                {statColumns.map((col) => (
-                                    <span
-                                        key={col}
-                                        className="bg-[#c9c9cc] py-1.5"
+                    {player.fitness.injuries.length > 0 && (
+                        <section
+                            className="mt-4 border border-orange-400/50 p-3 text-sm text-white"
+                            aria-label="Active injuries"
+                        >
+                            <h2 className="font-bold text-orange-400">
+                                Active injuries
+                            </h2>
+                            <ul className="mt-2 space-y-1">
+                                {player.fitness.injuries.map((injury) => (
+                                    <li
+                                        key={`${injury.name}-${injury.starts_at}-${injury.ends_at}`}
                                     >
-                                        {col}
-                                    </span>
+                                        {injury.name} · {injury.starts_at} –{' '}
+                                        {injury.ends_at} (expected recovery)
+                                    </li>
                                 ))}
-                            </div>
-                        </div>
+                            </ul>
+                        </section>
+                    )}
 
-                        <div className="mt-1 divide-y divide-white/10">
-                            {statRows.map((row) => (
-                                <div
-                                    key={row.label}
-                                    className="grid grid-cols-[2fr_repeat(8,1fr)] items-center py-1 text-sm"
-                                >
-                                    <span className="font-semibold text-white">
-                                        {row.label}
-                                    </span>
-                                    <span className="text-center font-bold text-orange-400">
-                                        {row.apps}
-                                    </span>
-                                    <span className="text-center font-bold text-orange-400">
-                                        {row.gls}
-                                    </span>
-                                    <span className="text-center font-bold text-orange-400">
-                                        {row.asts}
-                                    </span>
-                                    <span className="text-center font-bold text-orange-400">
-                                        {row.mom}
-                                    </span>
-                                    <span className="text-center font-bold text-white">
-                                        {row.pass}
-                                    </span>
-                                    <span className="text-center font-bold text-white">
-                                        {row.tck}
-                                    </span>
-                                    <span className="text-center font-bold text-white">
-                                        {row.drb}
-                                    </span>
-                                    <span className="flex justify-center">
-                                        <span className="rounded-sm bg-[#3b003c] px-2 py-0.5 text-xs text-white">
-                                            ----
-                                        </span>
-                                    </span>
-                                </div>
+                    <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-white">
+                        <label
+                            htmlFor="performance-season"
+                            className="font-bold"
+                        >
+                            Performance season
+                        </label>
+                        <select
+                            id="performance-season"
+                            value={player.performance.season_id ?? ''}
+                            disabled={
+                                loadingPerformance ||
+                                player.performance.seasons.length === 0
+                            }
+                            onChange={(event) =>
+                                selectSeason(Number(event.target.value))
+                            }
+                            className="border border-[#3355dd] bg-[#080820] px-3 py-2 text-white focus:outline-2 focus:outline-[#f5f000] disabled:opacity-50"
+                        >
+                            {player.performance.seasons.length === 0 && (
+                                <option value="">No seasons available</option>
+                            )}
+                            {player.performance.seasons.map((season) => (
+                                <option key={season.id} value={season.id}>
+                                    {season.start_date.slice(0, 4)}–
+                                    {season.end_date.slice(0, 4)}
+                                    {season.id ===
+                                    player.performance.current_season_id
+                                        ? ' (current)'
+                                        : ''}
+                                </option>
                             ))}
-                        </div>
+                        </select>
+                        <span role="status">
+                            {loadingPerformance ? 'Loading performance…' : ''}
+                        </span>
+                        {seasonError && (
+                            <p role="alert" className="text-red-300">
+                                {seasonError}
+                            </p>
+                        )}
                     </div>
+                    <p className="mt-2 text-xs text-white/70">
+                        Condition and injuries are current as of {instanceDate}.
+                    </p>
+
+                    <section
+                        className="mt-5 overflow-x-auto"
+                        aria-label="Season performance"
+                        aria-busy={loadingPerformance}
+                    >
+                        <h2 className="mb-2 font-bold text-[#f5f000]">
+                            Season performance
+                        </h2>
+                        {player.performance.competitions.length === 0 ? (
+                            <p className="py-3 text-sm text-white">
+                                No appearances recorded this season.
+                            </p>
+                        ) : (
+                            <table className="w-full text-left text-sm text-white">
+                                <thead className="bg-[#c9c9cc] text-slate-900">
+                                    <tr>
+                                        {[
+                                            'Competition',
+                                            'Apps',
+                                            'Minutes',
+                                            'Goals',
+                                            'Assists',
+                                            'Avg rating',
+                                        ].map((label) => (
+                                            <th
+                                                key={label}
+                                                scope="col"
+                                                className="px-3 py-2"
+                                            >
+                                                {label}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {player.performance.competitions.map(
+                                        (row) => (
+                                            <tr
+                                                key={row.id}
+                                                className="border-b border-white/10"
+                                            >
+                                                <th
+                                                    scope="row"
+                                                    className="px-3 py-2"
+                                                >
+                                                    {row.name}
+                                                </th>
+                                                <td className="px-3 py-2">
+                                                    {row.appearances}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {row.minutes}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {row.goals}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {row.assists}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {row.average_rating.toFixed(
+                                                        1,
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ),
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                    </section>
+                    <RecentAppearances
+                        appearances={player.performance.recent}
+                    />
                 </div>
 
                 <p className="relative border-t border-white/10 bg-black/20 py-3 text-center text-base font-bold text-cyan-300">
