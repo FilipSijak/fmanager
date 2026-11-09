@@ -4,7 +4,6 @@ namespace App\Services\PersonService;
 
 use App\Domain\PlayerDevelopment\PlayerAttributeCeiling;
 use App\Domain\PlayerDevelopment\PlayerDevelopmentCategory;
-use App\Domain\PlayerPerformance;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
@@ -15,6 +14,7 @@ use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\Data\PotentialByCategoryData;
+use App\Services\PersonService\Domain\PlayerPerformance;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;

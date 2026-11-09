@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain;
+namespace App\Services\PersonService\Domain;
 
 use App\Models\GamePlayerStat;
 use App\Models\PlayerInjury;
