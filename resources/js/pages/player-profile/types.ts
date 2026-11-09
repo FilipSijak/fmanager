@@ -14,5 +14,17 @@ export type PlayerProfileData = {
     is_retired: boolean;
     is_on_loan: boolean;
     club: { id: number; name: string } | null;
+    performance: {
+        season_id: number;
+        competitions: {
+            id: number;
+            name: string;
+            appearances: number;
+            minutes: number;
+            goals: number;
+            assists: number;
+            average_rating: number;
+        }[];
+    };
     attributes: Record<PlayerAttributeCategory, Record<string, number>>;
 };

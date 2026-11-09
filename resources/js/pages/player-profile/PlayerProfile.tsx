@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import {
     offer,
     index as transfers,
@@ -21,98 +21,12 @@ const extraAttributes: ExtraAttribute[] = [
     { label: 'Condition', value: '100%' },
 ];
 
-type StatRow = {
-    label: string;
-    apps: string | number;
-    gls: string | number;
-    asts: string | number;
-    mom: string | number;
-    pass: string | number;
-    tck: string | number;
-    drb: string | number;
-};
-
-const statRows: StatRow[] = [
-    {
-        label: 'Non Competitive',
-        apps: '-',
-        gls: '-',
-        asts: '-',
-        mom: '-',
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'League',
-        apps: 0,
-        gls: 0,
-        asts: 0,
-        mom: 0,
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'Cup',
-        apps: '-',
-        gls: '-',
-        asts: '-',
-        mom: '-',
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'Continental',
-        apps: '-',
-        gls: '-',
-        asts: '-',
-        mom: '-',
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'International',
-        apps: '-',
-        gls: '-',
-        asts: '-',
-        mom: '-',
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-    {
-        label: 'Senior Club',
-        apps: 0,
-        gls: 0,
-        asts: 0,
-        mom: 0,
-        pass: '-',
-        tck: '-',
-        drb: '-',
-    },
-];
-
 const tabs = [
     'Profile',
     'Injuries & Bans',
     'Contract',
     'Transfer',
     'History',
-] as const;
-
-const statColumns = [
-    'Apps',
-    'Gls',
-    'Asts',
-    'MoM',
-    'Pass',
-    'Tck',
-    'Drb',
-    'Sh Tar',
-    'Av R',
 ] as const;
 
 export default function PlayerProfile({ playerId }: { playerId: number }) {
@@ -264,73 +178,76 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
                         ))}
                     </div>
 
-                    <div className="mt-5">
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                aria-label="Previous season"
-                                className="flex size-6 items-center justify-center rounded bg-[#0031a5] text-white hover:bg-[#00268a]"
-                            >
-                                <ChevronLeft size={14} />
-                            </button>
-                            <button
-                                type="button"
-                                aria-label="Next season"
-                                className="flex size-6 items-center justify-center rounded bg-[#0031a5] text-white hover:bg-[#00268a]"
-                            >
-                                <ChevronRight size={14} />
-                            </button>
-                            <div className="grid flex-1 grid-cols-9 gap-px overflow-hidden rounded bg-black/30 text-center text-xs font-bold text-slate-800">
-                                {statColumns.map((col) => (
-                                    <span
-                                        key={col}
-                                        className="bg-[#c9c9cc] py-1.5"
-                                    >
-                                        {col}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="mt-1 divide-y divide-white/10">
-                            {statRows.map((row) => (
-                                <div
-                                    key={row.label}
-                                    className="grid grid-cols-[2fr_repeat(8,1fr)] items-center py-1 text-sm"
-                                >
-                                    <span className="font-semibold text-white">
-                                        {row.label}
-                                    </span>
-                                    <span className="text-center font-bold text-orange-400">
-                                        {row.apps}
-                                    </span>
-                                    <span className="text-center font-bold text-orange-400">
-                                        {row.gls}
-                                    </span>
-                                    <span className="text-center font-bold text-orange-400">
-                                        {row.asts}
-                                    </span>
-                                    <span className="text-center font-bold text-orange-400">
-                                        {row.mom}
-                                    </span>
-                                    <span className="text-center font-bold text-white">
-                                        {row.pass}
-                                    </span>
-                                    <span className="text-center font-bold text-white">
-                                        {row.tck}
-                                    </span>
-                                    <span className="text-center font-bold text-white">
-                                        {row.drb}
-                                    </span>
-                                    <span className="flex justify-center">
-                                        <span className="rounded-sm bg-[#3b003c] px-2 py-0.5 text-xs text-white">
-                                            ----
-                                        </span>
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    <section
+                        className="mt-5 overflow-x-auto"
+                        aria-label="Season performance"
+                    >
+                        <h2 className="mb-2 font-bold text-[#f5f000]">
+                            Season performance
+                        </h2>
+                        {player.performance.competitions.length === 0 ? (
+                            <p className="py-3 text-sm text-white">
+                                No appearances recorded this season.
+                            </p>
+                        ) : (
+                            <table className="w-full text-left text-sm text-white">
+                                <thead className="bg-[#c9c9cc] text-slate-900">
+                                    <tr>
+                                        {[
+                                            'Competition',
+                                            'Apps',
+                                            'Minutes',
+                                            'Goals',
+                                            'Assists',
+                                            'Avg rating',
+                                        ].map((label) => (
+                                            <th
+                                                key={label}
+                                                scope="col"
+                                                className="px-3 py-2"
+                                            >
+                                                {label}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {player.performance.competitions.map(
+                                        (row) => (
+                                            <tr
+                                                key={row.id}
+                                                className="border-b border-white/10"
+                                            >
+                                                <th
+                                                    scope="row"
+                                                    className="px-3 py-2"
+                                                >
+                                                    {row.name}
+                                                </th>
+                                                <td className="px-3 py-2">
+                                                    {row.appearances}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {row.minutes}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {row.goals}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {row.assists}
+                                                </td>
+                                                <td className="px-3 py-2">
+                                                    {row.average_rating.toFixed(
+                                                        1,
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        ),
+                                    )}
+                                </tbody>
+                            </table>
+                        )}
+                    </section>
                 </div>
 
                 <p className="relative border-t border-white/10 bg-black/20 py-3 text-center text-base font-bold text-cyan-300">
