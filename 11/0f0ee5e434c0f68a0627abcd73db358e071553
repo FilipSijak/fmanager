@@ -1,0 +1,25 @@
+app/Domain/PlayerPerformance.php
+  s_b08adfe8862052::t_ae1c032872ee16 8,13-17,19,25-29,31,41-46,48,57,60-64,66
+app/Http/Controllers/Api/PlayerController.php
+  s_b08adfe8862052::t_8584aeedfd96c1 8,13,17-20,23-25
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_25949af19ffc91 7,11,26,43,46-76
+tests/Feature/PlayerPerformanceTest.php
+  s_b08adfe8862052::t_d2131559064450 228-241
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "110f0ee5e434c0f68a0627abcd73db358e071553",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
