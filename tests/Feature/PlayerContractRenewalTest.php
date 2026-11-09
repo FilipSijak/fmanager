@@ -2,14 +2,25 @@
 
 namespace Tests\Feature;
 
+use App\Events\NextDay;
+use App\Jobs\SynchronizePlayerSearchDocument;
+use App\Listeners\ProcessPlayerContracts;
 use App\Models\Account;
 use App\Models\Club;
+use App\Models\ClubTactic;
+use App\Models\ClubTacticPlayerSlot;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Models\Season;
+use App\Models\TransferList;
+use App\Services\TacticsService\Mentality;
+use App\Services\TacticsService\PassingStyle;
+use App\Services\TacticsService\PressingIntensity;
 use App\Support\GameContext;
+use Database\Factories\BaseFormationFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -60,10 +71,12 @@ class PlayerContractRenewalTest extends TestCase
     public function guests_and_unemployed_managers_cannot_manage_contracts(): void
     {
         $this->get('/contracts')->assertRedirect('/login');
+        $this->postJson('/api/contracts/1/renew', [])->assertUnauthorized();
         [$instance] = $this->world();
         $instance->forceFill(['club_id' => null])->save();
 
         $this->get('/contracts')->assertRedirect('/');
+        $this->postJson('/api/contracts/1/renew', [])->assertForbidden();
     }
 
     #[Test]
@@ -173,6 +186,127 @@ class PlayerContractRenewalTest extends TestCase
         $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'salary' => 1000, 'contract_end' => '2026-12-31']);
         $this->assertDatabaseHas('accounts', ['club_id' => $club->id, 'balance' => 1000000]);
         $this->assertDatabaseHas('player_contract_renewals', ['player_id' => $player->id, 'status' => 'rejected']);
+    }
+
+    #[Test]
+    public function daily_processing_reminds_once_and_never_automatically_renews_the_users_contracts(): void
+    {
+        [$instance, , $player] = $this->world();
+        $processor = app(ProcessPlayerContracts::class);
+
+        $processor->handle(new NextDay($instance));
+        $processor->handle(new NextDay($instance));
+
+        $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'contract_end' => '2026-12-31', 'renewal_reminded_for' => '2026-12-31']);
+        $this->assertDatabaseCount('player_contract_renewals', 0);
+        $this->assertDatabaseCount('news', 1);
+        $this->assertDatabaseHas('news', ['instance_id' => $instance->id, 'club_id' => $instance->club_id, 'type' => 'contract', 'published_at' => '2026-09-01 00:00:00']);
+    }
+
+    #[Test]
+    public function an_expired_contract_releases_the_player_clears_lineup_and_loan_state_and_updates_search(): void
+    {
+        Bus::fake([SynchronizePlayerSearchDocument::class]);
+        [$instance, $club, $player] = $this->world();
+        $loanClub = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => 200]);
+        $player->forceFill(['loan_club_id' => $loanClub->id, 'loan_start' => '2026-08-01', 'loan_end' => '2027-05-01'])->save();
+        $contractId = $player->contract_id;
+        $formation = BaseFormationFactory::new()->create();
+        $tactic = ClubTactic::query()->create(['club_id' => $club->id, 'base_formation_id' => $formation->id,
+            'mentality' => Mentality::cases()[0], 'passing' => PassingStyle::cases()[0], 'pressing' => PressingIntensity::cases()[0]]);
+        ClubTacticPlayerSlot::query()->create(['club_tactic_id' => $tactic->id, 'club_id' => $club->id, 'instance_id' => $instance->id, 'player_id' => $player->id, 'slot' => '1', 'position' => 'CB']);
+        TransferList::factory()->create(['player_id' => $player->id, 'club_id' => $club->id]);
+        $processor = app(ProcessPlayerContracts::class);
+        $instance->forceFill(['instance_date' => '2026-12-31'])->save();
+        $processor->handle(new NextDay($instance));
+        $this->assertSame($club->id, $player->fresh()->club_id);
+        $instance->forceFill(['instance_date' => '2027-01-01'])->save();
+
+        $processor->handle(new NextDay($instance));
+        $processor->handle(new NextDay($instance));
+
+        $this->assertDatabaseHas('players', ['id' => $player->id, 'club_id' => null, 'contract_id' => null, 'loan_club_id' => null, 'loan_start' => null, 'loan_end' => null]);
+        $this->assertDatabaseMissing('players_contracts', ['id' => $contractId]);
+        $this->assertDatabaseMissing('club_tactic_players_slots', ['player_id' => $player->id]);
+        $this->assertDatabaseMissing('transfer_list', ['player_id' => $player->id]);
+        $this->assertDatabaseCount('news', 2);
+        Bus::assertDispatched(SynchronizePlayerSearchDocument::class, fn ($job): bool => $job->playerId === $player->id);
+    }
+
+    #[Test]
+    public function ai_clubs_can_renew_eligible_players_without_renewing_the_users_players(): void
+    {
+        [$instance, , $player] = $this->world();
+        $ai = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => 200, 'rank' => 10]);
+        Account::factory()->create(['club_id' => $ai->id]);
+        $contract = $player->contract->replicate();
+        $contract->save();
+        $aiPlayer = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $ai->id, 'contract_id' => $contract->id, 'ambition' => 10]);
+        $processor = app(ProcessPlayerContracts::class);
+
+        $processor->handle(new NextDay($instance));
+        $processor->handle(new NextDay($instance));
+
+        $this->assertDatabaseHas('players_contracts', ['id' => $contract->id, 'contract_end' => '2029-09-01']);
+        $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'contract_end' => '2026-12-31']);
+        $this->assertDatabaseHas('player_contract_renewals', ['player_id' => $aiPlayer->id, 'months' => 36]);
+        $this->assertDatabaseCount('player_contract_renewals', 1);
+    }
+
+    #[Test]
+    #[TestWith([20, 100000000])]
+    #[TestWith([10, 1])]
+    public function ai_renewals_respect_player_refusals_and_the_wage_budget(int $ambition, int $budget): void
+    {
+        [$instance, , $player] = $this->world();
+        $ai = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => 200, 'rank' => 10]);
+        Account::factory()->create(['club_id' => $ai->id, 'salaries_yearly_budget' => $budget]);
+        $contract = $player->contract->replicate();
+        $contract->save();
+        Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $ai->id, 'contract_id' => $contract->id, 'ambition' => $ambition]);
+
+        app(ProcessPlayerContracts::class)->handle(new NextDay($instance));
+
+        $this->assertDatabaseHas('players_contracts', ['id' => $contract->id, 'contract_end' => '2026-12-31']);
+        $this->assertDatabaseCount('player_contract_renewals', 0);
+    }
+
+    #[Test]
+    public function daily_contract_processing_does_not_touch_another_save(): void
+    {
+        [$instance, , $player] = $this->world();
+        $foreign = Instance::factory()->create();
+        $foreignClub = Club::factory()->create(['instance_id' => $foreign->id, 'stadium_id' => 200]);
+        $contract = $player->contract->replicate();
+        $contract->contract_end = '2026-08-31';
+        $contract->save();
+        $foreignPlayer = Player::factory()->create(['instance_id' => $foreign->id, 'club_id' => $foreignClub->id, 'contract_id' => $contract->id]);
+
+        app(ProcessPlayerContracts::class)->handle(new NextDay($instance));
+
+        $this->assertSame($foreignClub->id, $foreignPlayer->fresh()->club_id);
+        $this->assertDatabaseHas('players_contracts', ['id' => $contract->id, 'contract_end' => '2026-08-31']);
+    }
+
+    #[Test]
+    public function six_month_renewals_handle_month_end_dates_without_overflow(): void
+    {
+        [$instance, , $player] = $this->world();
+        $instance->forceFill(['instance_date' => '2026-08-31'])->save();
+
+        $this->postJson('/api/contracts/'.$player->id.'/renew', $this->offer($player) + ['months' => 6])
+            ->assertOk()->assertJsonPath('data.ends_at', '2027-02-28');
+    }
+
+    #[Test]
+    public function missing_terms_are_rejected_and_retired_players_cannot_renew(): void
+    {
+        [, , $player] = $this->world();
+        $this->postJson('/api/contracts/'.$player->id.'/renew', [])->assertUnprocessable()
+            ->assertJsonValidationErrors(['months', 'expected_contract_end', 'salary']);
+        $player->forceFill(['is_retired' => true])->save();
+        $this->postJson('/api/contracts/'.$player->id.'/renew', $this->offer($player) + ['months' => 12])->assertNotFound();
+        $this->assertDatabaseCount('player_contract_renewals', 0);
     }
 
     /** @return array<string, mixed> */

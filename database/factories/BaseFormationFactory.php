@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\Factory;
  */
 class BaseFormationFactory extends Factory
 {
+    protected $model = BaseFormation::class;
+
     /**
      * Define the model's default state.
      *

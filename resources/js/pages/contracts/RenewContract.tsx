@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { isAxiosError } from 'axios';
 import { type FormEvent, useState } from 'react';
 import { store as renewContract } from '@/actions/App/Http/Controllers/Api/PlayerContractController';
@@ -42,6 +42,8 @@ export default function RenewContract({
             });
             setMessage(response.data.data.message);
             setAccepted(response.data.data.status === 'accepted');
+            if (response.data.data.status === 'accepted')
+                router.reload({ only: ['player'] });
             setCounterSalary(response.data.data.counter_salary ?? null);
         } catch (error) {
             const messages = isAxiosError(error)

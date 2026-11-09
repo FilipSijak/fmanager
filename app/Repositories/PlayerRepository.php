@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Helpers\DisplayHelpers;
 use App\Models\Account;
 use App\Models\Club;
+use App\Models\ClubTacticPlayerSlot;
 use App\Models\GamePlayerStat;
 use App\Models\Instance;
 use App\Models\Player;
@@ -16,6 +17,7 @@ use App\Services\PersonService\GeneratePeople\PlayerPosition;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TransferService\TransferStatusTypes;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Collection;
@@ -95,6 +97,30 @@ class PlayerRepository implements IPlayerRepository
             'previous_contract_end' => $player->contract->contract_end, 'contract_end' => $endsAt, 'offered_on' => $date,
             'terms' => json_encode($terms, JSON_THROW_ON_ERROR),
         ]);
+    }
+
+    /** @return LazyCollection<int, Player> */
+    public function contractsEndingBy(int $instanceId, string $date): LazyCollection
+    {
+        return Player::query()->forInstance($instanceId)->active()->whereNotNull('club_id')
+            ->whereHas('club', fn (Builder $club): Builder => $club->forInstance($instanceId))
+            ->withContractEndingBy($date)->with(['person', 'contract', 'club.account'])
+            ->lockForUpdate()->lazyById(200);
+    }
+
+    public function markContractReminder(Player $player): void
+    {
+        $player->contract->forceFill(['renewal_reminded_for' => $player->contract->contract_end])->save();
+    }
+
+    public function releaseExpiredPlayer(Player $player): void
+    {
+        $contract = $player->contract;
+        $player->forceFill(['club_id' => null, 'contract_id' => null, 'loan_club_id' => null, 'loan_start' => null, 'loan_end' => null])->save();
+        ClubTacticPlayerSlot::query()->where('instance_id', $player->instance_id)->where('player_id', $player->id)->delete();
+        DB::table('transfer_list')->where('player_id', $player->id)->delete();
+        $this->voidOngoingTransfersForPlayer($player->id);
+        $contract->delete();
     }
 
     public function profile(int $instanceId, int $playerId): Player
