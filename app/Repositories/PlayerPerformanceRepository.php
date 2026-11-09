@@ -6,13 +6,14 @@ use App\Models\Game;
 use App\Models\GamePlayerStat;
 use App\Models\Player;
 use App\Models\PlayerInjury;
+use App\Models\Season;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Facades\DB;
 
 class PlayerPerformanceRepository
 {
-    private function appearances(Player $player, int $seasonId, string $date): Builder
+    private function appearances(Player $player, ?int $seasonId, string $date): Builder
     {
         return GamePlayerStat::query()->where('game_player_stats.instance_id', $player->instance_id)
             ->where('player_id', $player->id)->where('minutes_played', '>', 0)
@@ -22,6 +23,16 @@ class PlayerPerformanceRepository
             })
             ->where('games.season_id', $seasonId)->where('games.status', Game::STATUS_COMPLETED)
             ->whereDate('games.match_start', '<=', $date);
+    }
+
+    /** @return list<array{id: int, start_date: string, end_date: string}> */
+    public function seasons(Player $player, string $date): array
+    {
+        return Season::query()->where('instance_id', $player->instance_id)
+            ->whereDate('start_date', '<=', $date)->orderByDesc('start_date')->orderByDesc('id')
+            ->get(['id', 'start_date', 'end_date'])->map(fn (Season $season): array => [
+                'id' => (int) $season->id, 'start_date' => $season->start_date, 'end_date' => $season->end_date,
+            ])->all();
     }
 
     /** @return array{condition: ?int, morale: ?int, is_injured: bool, injuries: list<array{name: string, starts_at: string, ends_at: string}>} */
@@ -44,7 +55,7 @@ class PlayerPerformanceRepository
     }
 
     /** @return list<array<string, mixed>> */
-    public function recentAppearances(Player $player, int $seasonId, string $date): array
+    public function recentAppearances(Player $player, ?int $seasonId, string $date): array
     {
         return $this->appearances($player, $seasonId, $date)
             ->join('clubs as home', function (JoinClause $join): void {
@@ -67,8 +78,8 @@ class PlayerPerformanceRepository
             ])->all();
     }
 
-    /** @return array{season_id: int, competitions: list<array<string, mixed>>, recent: list<array<string, mixed>>} */
-    public function summary(Player $player, int $seasonId, string $date): array
+    /** @return array{season_id: ?int, competitions: list<array<string, mixed>>, recent: list<array<string, mixed>>} */
+    public function summary(Player $player, ?int $seasonId, string $date): array
     {
         $competitions = $this->appearances($player, $seasonId, $date)
             ->join('competitions', function (JoinClause $join): void {

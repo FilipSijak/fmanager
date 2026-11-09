@@ -13,6 +13,7 @@ use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 use Tests\TestCase;
 
 class PlayerPerformanceTest extends TestCase
@@ -113,6 +114,84 @@ class PlayerPerformanceTest extends TestCase
     }
 
     #[Test]
+    public function selecting_a_past_season_shows_its_performance_after_a_player_changes_club(): void
+    {
+        [$instance, $player] = $this->world();
+        $past = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2025-07-01', 'end_date' => '2026-06-30']);
+        $competition = Competition::factory()->create(['instance_id' => $instance->id]);
+        $opponent = Club::factory()->create(['instance_id' => $instance->id, 'name' => 'Past opponent', 'stadium_id' => 200]);
+        $pastGame = $this->appearance($instance, $player, $competition, ['goals' => 2, 'rating' => 8], [
+            'season_id' => $past->id, 'match_start' => '2026-05-01 15:00:00', 'awayteam_id' => $opponent->id,
+        ]);
+        $this->appearance($instance, $player, $competition, ['goals' => 5]);
+        $player->forceFill(['club_id' => $opponent->id])->save();
+        DB::table('players_progress')->where('player_id', $player->id)->update(['condition' => 73]);
+
+        $this->getJson('/api/player/'.$player->id.'?season_id='.$past->id)->assertOk()
+            ->assertJsonPath('data.performance.season_id', $past->id)
+            ->assertJsonPath('data.performance.current_season_id', $instance->season_id)
+            ->assertJsonPath('data.performance.competitions.0.appearances', 1)
+            ->assertJsonPath('data.performance.competitions.0.goals', 2)
+            ->assertJsonPath('data.performance.recent.0.game_id', $pastGame->id)
+            ->assertJsonPath('data.performance.recent.0.opponent', 'Past opponent')
+            ->assertJsonPath('data.performance.recent.0.venue', 'Home')
+            ->assertJsonPath('data.fitness.condition', 73);
+    }
+
+    #[Test]
+    public function available_seasons_are_ordered_and_exclude_future_seasons_and_other_saves(): void
+    {
+        [$instance, $player] = $this->world();
+        $past = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2025-07-01', 'end_date' => '2026-06-30']);
+        Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2027-07-01', 'end_date' => '2028-06-30']);
+        $foreignInstance = Instance::factory()->create();
+        Season::factory()->create(['instance_id' => $foreignInstance->id, 'start_date' => '2025-07-01']);
+
+        $this->getJson('/api/player/'.$player->id)->assertOk()
+            ->assertJsonCount(2, 'data.performance.seasons')
+            ->assertJsonPath('data.performance.seasons.0.id', $instance->season_id)
+            ->assertJsonPath('data.performance.seasons.1', ['id' => $past->id, 'start_date' => '2025-07-01', 'end_date' => '2026-06-30']);
+    }
+
+    #[Test]
+    public function another_saves_season_and_a_future_season_return_404(): void
+    {
+        [$instance, $player] = $this->world();
+        $other = Instance::factory()->create();
+        $foreignSeason = Season::factory()->create(['instance_id' => $other->id, 'start_date' => '2025-07-01']);
+        $futureSeason = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2027-07-01']);
+
+        $this->getJson('/api/player/'.$player->id.'?season_id='.$foreignSeason->id)->assertNotFound();
+        $this->getJson('/api/player/'.$player->id.'?season_id='.$futureSeason->id)->assertNotFound();
+        $this->getJson('/api/player/'.$player->id.'?season_id=999999')->assertNotFound();
+    }
+
+    #[Test]
+    #[TestWith(['zero'])]
+    #[TestWith([0])]
+    #[TestWith([-1])]
+    #[TestWith([1.5])]
+    public function invalid_season_selection_returns_422(mixed $seasonId): void
+    {
+        [, $player] = $this->world();
+
+        $this->getJson('/api/player/'.$player->id.'?season_id='.$seasonId)
+            ->assertUnprocessable()->assertJsonValidationErrors('season_id');
+    }
+
+    #[Test]
+    public function a_profile_without_a_current_season_still_returns_empty_performance(): void
+    {
+        [$instance, $player] = $this->world();
+        $instance->forceFill(['season_id' => null])->save();
+
+        $this->getJson('/api/player/'.$player->id)->assertOk()
+            ->assertJsonPath('data.performance.season_id', null)
+            ->assertJsonPath('data.performance.competitions', [])
+            ->assertJsonPath('data.performance.recent', []);
+    }
+
+    #[Test]
     public function a_player_without_appearances_has_an_empty_summary(): void
     {
         [, $player] = $this->world();
@@ -140,7 +219,7 @@ class PlayerPerformanceTest extends TestCase
     private function world(): array
     {
         $instance = Instance::factory()->create(['instance_date' => '2026-09-01']);
-        $season = Season::factory()->create(['instance_id' => $instance->id]);
+        $season = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2026-07-01', 'end_date' => '2027-06-30']);
         $club = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => 100]);
         $instance->forceFill(['season_id' => $season->id, 'club_id' => $club->id])->save();
         $player = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id]);

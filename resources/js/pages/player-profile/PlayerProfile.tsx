@@ -19,8 +19,15 @@ const tabs = [
 ] as const;
 
 export default function PlayerProfile({ playerId }: { playerId: number }) {
-    const { player, instanceDate, loadError, managedClubId } =
-        usePlayerProfile(playerId);
+    const {
+        player,
+        instanceDate,
+        loadError,
+        managedClubId,
+        loadingPerformance,
+        seasonError,
+        selectSeason,
+    } = usePlayerProfile(playerId);
 
     if (loadError) {
         return (
@@ -176,7 +183,7 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
                     <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-4">
                         {[
                             {
-                                label: 'Form',
+                                label: 'Form (selected season)',
                                 value:
                                     player.performance.recent
                                         .map((match) => match.rating.toFixed(1))
@@ -219,9 +226,56 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
                         </section>
                     )}
 
+                    <div className="mt-5 flex flex-wrap items-center gap-3 text-sm text-white">
+                        <label
+                            htmlFor="performance-season"
+                            className="font-bold"
+                        >
+                            Performance season
+                        </label>
+                        <select
+                            id="performance-season"
+                            value={player.performance.season_id ?? ''}
+                            disabled={
+                                loadingPerformance ||
+                                player.performance.seasons.length === 0
+                            }
+                            onChange={(event) =>
+                                selectSeason(Number(event.target.value))
+                            }
+                            className="border border-[#3355dd] bg-[#080820] px-3 py-2 text-white focus:outline-2 focus:outline-[#f5f000] disabled:opacity-50"
+                        >
+                            {player.performance.seasons.length === 0 && (
+                                <option value="">No seasons available</option>
+                            )}
+                            {player.performance.seasons.map((season) => (
+                                <option key={season.id} value={season.id}>
+                                    {season.start_date.slice(0, 4)}–
+                                    {season.end_date.slice(0, 4)}
+                                    {season.id ===
+                                    player.performance.current_season_id
+                                        ? ' (current)'
+                                        : ''}
+                                </option>
+                            ))}
+                        </select>
+                        <span role="status">
+                            {loadingPerformance ? 'Loading performance…' : ''}
+                        </span>
+                        {seasonError && (
+                            <p role="alert" className="text-red-300">
+                                {seasonError}
+                            </p>
+                        )}
+                    </div>
+                    <p className="mt-2 text-xs text-white/70">
+                        Condition and injuries are current as of {instanceDate}.
+                    </p>
+
                     <section
                         className="mt-5 overflow-x-auto"
                         aria-label="Season performance"
+                        aria-busy={loadingPerformance}
                     >
                         <h2 className="mb-2 font-bold text-[#f5f000]">
                             Season performance

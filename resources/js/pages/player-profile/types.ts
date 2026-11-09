@@ -21,7 +21,9 @@ export type PlayerProfileData = {
         injuries: { name: string; starts_at: string; ends_at: string }[];
     };
     performance: {
-        season_id: number;
+        season_id: number | null;
+        current_season_id: number | null;
+        seasons: { id: number; start_date: string; end_date: string }[];
         recent: {
             game_id: number;
             date: string;
