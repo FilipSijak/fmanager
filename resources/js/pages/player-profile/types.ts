@@ -14,6 +14,12 @@ export type PlayerProfileData = {
     is_retired: boolean;
     is_on_loan: boolean;
     club: { id: number; name: string } | null;
+    fitness: {
+        condition: number | null;
+        morale: number | null;
+        is_injured: boolean;
+        injuries: { name: string; starts_at: string; ends_at: string }[];
+    };
     performance: {
         season_id: number;
         recent: {

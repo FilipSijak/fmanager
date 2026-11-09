@@ -11,6 +11,7 @@ use App\Models\Player;
 use App\Models\Season;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -72,6 +73,43 @@ class PlayerPerformanceTest extends TestCase
             ->assertJsonPath('data.performance.recent.1.date', '2026-08-06')
             ->assertJsonPath('data.performance.recent.1.venue', 'Home')
             ->assertJsonPath('data.performance.recent.4.date', '2026-08-03');
+    }
+
+    #[Test]
+    public function fitness_uses_stored_progress_and_only_injuries_active_on_the_game_date(): void
+    {
+        [$instance, $player] = $this->world();
+        DB::table('players_progress')->where('player_id', $player->id)->update(['condition' => 72, 'morale' => 65]);
+        $injuryId = DB::table('injuries')->insertGetId(['type' => 'Knee injury', 'severity' => 4, 'duration_from' => 1, 'duration_to' => 20]);
+        $foreignInstance = Instance::factory()->create(['season_id' => $instance->season_id]);
+        foreach ([
+            [$instance->id, '2026-08-30', '2026-09-01'],
+            [$instance->id, '2026-08-10', '2026-08-31'],
+            [$instance->id, '2026-09-02', '2026-09-10'],
+            [$foreignInstance->id, '2026-08-30', '2026-09-10'],
+        ] as [$instanceId, $start, $end]) {
+            DB::table('player_injuries')->insert([
+                'instance_id' => $instanceId, 'season_id' => $instance->season_id, 'player_id' => $player->id,
+                'injury_id' => $injuryId, 'injury_start_date' => $start, 'injury_end_date' => $end,
+            ]);
+        }
+
+        $this->getJson('/api/player/'.$player->id)->assertOk()->assertJsonPath('data.fitness', [
+            'condition' => 72, 'morale' => 65, 'is_injured' => true,
+            'injuries' => [['name' => 'Knee injury', 'starts_at' => '2026-08-30', 'ends_at' => '2026-09-01']],
+        ]);
+    }
+
+    #[Test]
+    public function missing_fitness_data_is_unknown_and_does_not_create_progress_records(): void
+    {
+        [, $player] = $this->world();
+        DB::table('players_progress')->where('player_id', $player->id)->delete();
+
+        $this->getJson('/api/player/'.$player->id)->assertOk()->assertJsonPath('data.fitness', [
+            'condition' => null, 'morale' => null, 'is_injured' => false, 'injuries' => [],
+        ]);
+        $this->assertDatabaseMissing('players_progress', ['player_id' => $player->id]);
     }
 
     #[Test]

@@ -27,6 +27,7 @@ class PlayerController extends CoreController
 
         return ResponseHelper::success(
             (new PlayerResource($player))->toArray(request()) + [
+                'fitness' => $this->performance->fitness($player, $this->gameContext->instanceDate()),
                 'performance' => $this->performance->summary($player, $this->gameContext->seasonId(), $this->gameContext->instanceDate()),
             ],
             ResponseHelper::RESPONSE_SUCCESS_CODE

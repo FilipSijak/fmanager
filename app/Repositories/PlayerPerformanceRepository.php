@@ -5,8 +5,10 @@ namespace App\Repositories;
 use App\Models\Game;
 use App\Models\GamePlayerStat;
 use App\Models\Player;
+use App\Models\PlayerInjury;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Facades\DB;
 
 class PlayerPerformanceRepository
 {
@@ -20,6 +22,25 @@ class PlayerPerformanceRepository
             })
             ->where('games.season_id', $seasonId)->where('games.status', Game::STATUS_COMPLETED)
             ->whereDate('games.match_start', '<=', $date);
+    }
+
+    /** @return array{condition: ?int, morale: ?int, is_injured: bool, injuries: list<array{name: string, starts_at: string, ends_at: string}>} */
+    public function fitness(Player $player, string $date): array
+    {
+        $progress = DB::table('players_progress')->where('player_id', $player->id)
+            ->where('instance_id', $player->instance_id)->first(['condition', 'morale']);
+        $injuries = PlayerInjury::query()->where('player_id', $player->id)
+            ->where('instance_id', $player->instance_id)->activeOn($date)
+            ->join('injuries', 'injuries.id', '=', 'player_injuries.injury_id')
+            ->orderBy('injury_end_date')->orderBy('player_injuries.id')
+            ->get(['injuries.type', 'injury_start_date', 'injury_end_date'])
+            ->map(fn (PlayerInjury $injury): array => [
+                'name' => $injury->type, 'starts_at' => $injury->injury_start_date, 'ends_at' => $injury->injury_end_date,
+            ])->all();
+
+        return ['condition' => $progress === null ? null : (int) $progress->condition,
+            'morale' => $progress === null ? null : (int) $progress->morale,
+            'is_injured' => $injuries !== [], 'injuries' => $injuries];
     }
 
     /** @return list<array<string, mixed>> */

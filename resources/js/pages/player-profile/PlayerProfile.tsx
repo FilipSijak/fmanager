@@ -10,17 +10,6 @@ import RecentAppearances from './components/RecentAppearances';
 import { usePlayerProfile } from './usePlayerProfile';
 import { ageFromDob, formatDob, POSITION_LABELS } from './utils';
 
-type ExtraAttribute = {
-    label: string;
-    value: string;
-};
-
-const extraAttributes: ExtraAttribute[] = [
-    { label: 'Preferred Foot', value: 'Right Only' },
-    { label: 'Morale', value: 'Superb' },
-    { label: 'Condition', value: '100%' },
-];
-
 const tabs = [
     'Profile',
     'Injuries & Bans',
@@ -66,6 +55,28 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
         player.club?.id !== managedClubId &&
         !player.is_retired &&
         !player.is_on_loan;
+
+    const extraAttributes = [
+        { label: 'Preferred Foot', value: '—' },
+        {
+            label: 'Morale',
+            value:
+                player.fitness.morale === null
+                    ? '—'
+                    : `${player.fitness.morale}%`,
+        },
+        {
+            label: 'Condition',
+            value:
+                player.fitness.condition === null
+                    ? '—'
+                    : `${player.fitness.condition}%`,
+        },
+        {
+            label: 'Injury status',
+            value: player.fitness.is_injured ? 'Injured' : 'No active injury',
+        },
+    ];
 
     return (
         <GameLayout active="Nations & Clubs">
@@ -186,6 +197,27 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
                             </div>
                         ))}
                     </div>
+
+                    {player.fitness.injuries.length > 0 && (
+                        <section
+                            className="mt-4 border border-orange-400/50 p-3 text-sm text-white"
+                            aria-label="Active injuries"
+                        >
+                            <h2 className="font-bold text-orange-400">
+                                Active injuries
+                            </h2>
+                            <ul className="mt-2 space-y-1">
+                                {player.fitness.injuries.map((injury) => (
+                                    <li
+                                        key={`${injury.name}-${injury.starts_at}-${injury.ends_at}`}
+                                    >
+                                        {injury.name} · {injury.starts_at} –{' '}
+                                        {injury.ends_at} (expected recovery)
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
+                    )}
 
                     <section
                         className="mt-5 overflow-x-auto"
