@@ -1,0 +1,32 @@
+app/Models/PlayerInjury.php
+  s_b08adfe8862052::t_71de619ec43232 17-22
+app/Repositories/PlayerRepository.php
+  s_b08adfe8862052::t_71de619ec43232 7,9-10,18-19,23,45-101
+  s_b08adfe8862052::t_831ee4477491ef 102
+app/Http/Controllers/Api/PlayerController.php
+  s_b08adfe8862052::t_71de619ec43232 5,9,17-18,25
+app/Models/GamePlayerStat.php
+  s_b08adfe8862052::t_71de619ec43232 7,11,48-63
+  s_b08adfe8862052::t_08f8d73204a9ad 64
+app/Domain/PlayerPerformance.php
+  s_b08adfe8862052::t_71de619ec43232 5-11,14-66
+  s_b08adfe8862052::t_f9df10cf9591a0 1-4,12-13,67-68
+tests/Feature/PlayerPerformanceTest.php
+  s_b08adfe8862052::t_72691c8b976f41 50-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "5e210d7ca9c0a0b7c5e168bb96b0bcc95f894767",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
