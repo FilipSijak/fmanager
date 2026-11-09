@@ -1,0 +1,41 @@
+app/Http/Controllers/PlayerContractController.php
+  s_b08adfe8862052::t_d00fca8f2bd797 1-4,8-26
+  s_b08adfe8862052::t_830bd67e3a00b3 5-7
+tests/Feature/PlayerContractRenewalTest.php
+  s_b08adfe8862052::t_e96c3d8e937a52 5-14,19-69,71-79,81
+  s_b08adfe8862052::t_d00fca8f2bd797 1-4,15-18,70,80,82-83
+app/Models/Player.php
+  s_b08adfe8862052::t_a2d8d55180126f 149-153
+app/Repositories/PlayerRepository.php
+  s_b08adfe8862052::t_2dc2e60dfa0c57 8,46-64
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_12f88a426d17de 46-72
+resources/js/components/game/TopMenu.tsx
+  s_b08adfe8862052::t_62bf49617d5711 3,35
+resources/js/pages/contracts/Contracts.tsx
+  s_b08adfe8862052::t_8caa2698f08393 1-101
+resources/js/pages/contracts/RenewContract.tsx
+  s_b08adfe8862052::t_d90bbd7c7d7ab3 1-41
+resources/js/pages/contracts/types.ts
+  s_b08adfe8862052::t_a82c87642e2861 1-17
+resources/js/pages/player-profile/PlayerProfile.tsx
+  s_b08adfe8862052::t_4e5ad9f0061937 3,119-130
+routes/web.php
+  s_b08adfe8862052::t_4646e37207e7cc 11,44-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4fdf0e491518dc5393ea59a6952fa0b698a4c51e",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
