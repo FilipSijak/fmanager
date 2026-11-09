@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
+import { show as renewContract } from '@/actions/App/Http/Controllers/PlayerContractController';
 import {
     offer,
     index as transfers,
@@ -115,7 +116,18 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
 
             <div className="flex bg-[#200064]">
                 {tabs.map((tab) =>
-                    tab === 'Transfer' && managedClubId !== null ? (
+                    tab === 'Contract' &&
+                    managedClubId !== null &&
+                    player.club?.id === managedClubId &&
+                    !player.is_retired ? (
+                        <Link
+                            key={tab}
+                            href={renewContract.url(player.id)}
+                            className="flex-1 border-r border-white/10 py-4 text-center text-sm font-bold text-white hover:bg-white/5"
+                        >
+                            Contract
+                        </Link>
+                    ) : tab === 'Transfer' && managedClubId !== null ? (
                         <Link
                             key={tab}
                             href={

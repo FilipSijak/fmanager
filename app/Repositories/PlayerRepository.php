@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Helpers\DisplayHelpers;
 use App\Models\Club;
 use App\Models\GamePlayerStat;
+use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerInjury;
 use App\Models\Season;
@@ -40,6 +41,25 @@ class PlayerRepository implements IPlayerRepository
     public function __construct(PlayerDataSource $playerDataSource)
     {
         $this->playerDataSource = $playerDataSource;
+    }
+
+    public function managedInstance(int $instanceId, bool $lockForUpdate = false): Instance
+    {
+        return Instance::query()->when($lockForUpdate, fn ($query) => $query->lockForUpdate())->findOrFail($instanceId);
+    }
+
+    /** @return EloquentCollection<int, Player> */
+    public function clubContracts(Club $club, string $date): EloquentCollection
+    {
+        return Player::query()->forClub($club)->withCurrentContractOn($date)
+            ->with(['person', 'contract'])->orderBy('players.id')->get();
+    }
+
+    public function playerForRenewal(Club $club, int $playerId, string $date, bool $lockForUpdate = false): Player
+    {
+        return Player::query()->forClub($club)->withCurrentContractOn($date)
+            ->with(['person', 'contract'])->when($lockForUpdate, fn ($query) => $query->lockForUpdate())
+            ->findOrFail($playerId);
     }
 
     public function profile(int $instanceId, int $playerId): Player

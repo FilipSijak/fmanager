@@ -43,6 +43,33 @@ class PersonService
         private readonly PlayerPerformance $playerPerformance,
     ) {}
 
+    /** @return array<string, mixed> */
+    public function contractOverview(?int $playerId = null): array
+    {
+        $instance = $this->playerRepository->managedInstance($this->gameContext->instanceId());
+        abort_if($instance->club_id === null, 403);
+        $date = $this->gameContext->instanceDate();
+        $club = $instance->club;
+        $players = $playerId === null
+            ? $this->playerRepository->clubContracts($club, $date)
+            : collect([$this->playerRepository->playerForRenewal($club, $playerId, $date)]);
+        $contracts = $players->map(function (Player $player) use ($date): array {
+            $contract = $player->contract;
+            $endsAt = CarbonImmutable::parse($contract->contract_end);
+
+            return [
+                'id' => $player->id, 'name' => trim($player->person->first_name.' '.$player->person->last_name),
+                'position' => $player->position, 'contract_id' => $contract->id,
+                'starts_at' => $contract->contract_start, 'ends_at' => $contract->contract_end,
+                'expiring' => $endsAt->lte(CarbonImmutable::parse($date)->addMonthsNoOverflow(6)),
+                'terms' => array_merge(['transfer_fee' => 0], collect(['salary', 'appearance', 'goal', 'assist', 'clean_sheet', 'league', 'promotion', 'cup', 'el', 'cl'])
+                    ->mapWithKeys(fn (string $field): array => [$field => (int) $contract->{$field}])->all()),
+            ];
+        })->sortBy('ends_at')->values()->all();
+
+        return ['club' => $club->only(['id', 'name']), 'date' => $date, 'players' => $contracts];
+    }
+
     /** @return array{player: Player, fitness: array<string, mixed>, performance: array<string, mixed>} */
     public function playerProfile(int $playerId, ?int $seasonId = null): array
     {

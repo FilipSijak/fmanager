@@ -146,6 +146,11 @@ class Player extends Model
         return $this->belongsTo(PlayerContract::class);
     }
 
+    public function scopeWithCurrentContractOn(Builder $query, string $date): Builder
+    {
+        return $query->active()->whereHas('contract', fn (Builder $contract): Builder => $contract->whereDate('contract_end', '>=', $date));
+    }
+
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_retired', false);

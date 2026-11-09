@@ -8,6 +8,7 @@ use App\Http\Controllers\FinancePageController;
 use App\Http\Controllers\InstanceController;
 use App\Http\Controllers\ManagerJobController;
 use App\Http\Controllers\MatchPageController;
+use App\Http\Controllers\PlayerContractController;
 use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\TransferManagementController;
 use App\Http\Middleware\EnsureGameIsValid;
@@ -40,6 +41,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/league-table', [CompetitionPageController::class, 'index'])->name('league-table');
         Route::get('/jobs', [ManagerJobController::class, 'index'])->name('jobs');
         Route::get('/finance', [FinancePageController::class, 'show'])->middleware(EnsureUserHasClub::class)->name('finance');
+        Route::middleware(EnsureUserHasClub::class)->group(function (): void {
+            Route::get('/contracts', [PlayerContractController::class, 'index'])->name('contracts.index');
+            Route::get('/contracts/{playerId}/renew', [PlayerContractController::class, 'show'])->whereNumber('playerId')->name('contracts.show');
+        });
         Route::get('/training', [TrainingController::class, 'index'])->middleware(EnsureUserHasClub::class)->name('training');
         Route::get('/transfers', [TransferManagementController::class, 'index'])->middleware(EnsureUserHasClub::class)->name('transfers.index');
         Route::get('/transfers/offer/{playerId}', [TransferManagementController::class, 'offer'])->whereNumber('playerId')->middleware(EnsureUserHasClub::class)->name('transfers.offer');
