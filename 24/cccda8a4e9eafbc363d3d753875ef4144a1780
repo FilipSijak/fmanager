@@ -1,0 +1,40 @@
+database/migrations/2026_11_09_150149_create_player_contract_renewals_table.php
+  s_b08adfe8862052::t_d5e1aa02a2aa56 1-10,12,26-33
+  s_b08adfe8862052::t_0569ea1e9c40ab 11,13-25
+app/Http/Controllers/Api/PlayerContractController.php
+  s_b08adfe8862052::t_d5e1aa02a2aa56 1-6,10-19
+  s_b08adfe8862052::t_9fda490b55f671 7-9
+app/Http/Requests/RenewPlayerContractRequest.php
+  s_b08adfe8862052::t_d5e1aa02a2aa56 1-4,6-11,13-14,16-17,23-32
+  s_b08adfe8862052::t_fd595862c7036e 5,12,15,18-22
+tests/Feature/PlayerContractRenewalTest.php
+  s_b08adfe8862052::t_2b50771ff8f30d 15,69-148
+  s_b08adfe8862052::t_6a40ce8d249e3a 149
+app/Services/PersonService/Domain/PlayerContractRenewal.php
+  s_b08adfe8862052::t_d5e1aa02a2aa56 1-9,17,27,31,33-41
+  s_b08adfe8862052::t_2535f1c7b3fa38 10-16,18-26,28-30,32
+app/Repositories/PlayerRepository.php
+  s_b08adfe8862052::t_12222dcd529838 6,66-94
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_c30b27508f796e 17,29,46,48-77
+resources/js/pages/contracts/RenewContract.tsx
+  s_b08adfe8862052::t_e92cab31b3f8bc 2-4,6,8-14,22-56,79-133
+routes/api.php
+  s_b08adfe8862052::t_50b87074a3e50b 13,40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "24cccda8a4e9eafbc363d3d753875ef4144a1780",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
