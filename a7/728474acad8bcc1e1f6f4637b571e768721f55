@@ -1,0 +1,27 @@
+app/Repositories/PlayerPerformanceRepository.php
+  s_b08adfe8862052::t_020a09e8fedd20 25-49,67-68
+resources/js/pages/player-profile/PlayerProfile.tsx
+  s_b08adfe8862052::t_571f9b62eb395a 9,166-175,260-262
+resources/js/pages/player-profile/components/RecentAppearances.tsx
+  s_b08adfe8862052::t_ad0cb1bbb85f3a 1-83
+resources/js/pages/player-profile/types.ts
+  s_b08adfe8862052::t_dcec5fa44cd71a 19-30
+tests/Feature/PlayerPerformanceTest.php
+  s_b08adfe8862052::t_377a9b5efeef14 48-76,82
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a7728474acad8bcc1e1f6f4637b571e768721f55",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
