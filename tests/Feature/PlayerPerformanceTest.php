@@ -48,6 +48,22 @@ class PlayerPerformanceTest extends TestCase
     }
 
     #[Test]
+    public function average_ratings_are_rounded_and_recent_appearances_break_date_ties_by_game_id(): void
+    {
+        [$instance, $player] = $this->world();
+        $competition = Competition::factory()->create(['instance_id' => $instance->id]);
+        $this->appearance($instance, $player, $competition, ['rating' => 8.1]);
+        $this->appearance($instance, $player, $competition, ['rating' => 6.2]);
+        $latest = $this->appearance($instance, $player, $competition, ['rating' => 7.4]);
+
+        $this->getJson('/api/player/'.$player->id)->assertOk()
+            ->assertJsonPath('data.performance.competitions.0.average_rating', 7.2)
+            ->assertJsonPath('data.performance.recent.0.game_id', $latest->id)
+            ->assertJsonPath('data.performance.recent.0.rating', 7.4)
+            ->assertJsonPath('data.performance.recent.0.home_goals', null);
+    }
+
+    #[Test]
     public function recent_form_contains_only_the_last_five_completed_appearances_in_date_order(): void
     {
         [$instance, $player] = $this->world();

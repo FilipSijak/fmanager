@@ -4,9 +4,11 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToGameInstance;
 use Database\Factories\GamePlayerStatFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Query\JoinClause;
 
 /**
  * One player's performance in one game. Goals conceded, saves and clean sheets are only counted for goalkeepers.
@@ -41,6 +43,23 @@ class GamePlayerStat extends Model
             'clean_sheet' => 'boolean',
             'rating' => 'float',
         ];
+    }
+
+    public function scopeForPlayer(Builder $query, Player $player): Builder
+    {
+        return $query->where('game_player_stats.player_id', $player->id)
+            ->where('game_player_stats.instance_id', $player->instance_id);
+    }
+
+    public function scopeCompletedAppearances(Builder $query, ?int $seasonId, string $date): Builder
+    {
+        return $query->where('game_player_stats.minutes_played', '>', 0)
+            ->join('games', function (JoinClause $join): void {
+                $join->on('games.id', '=', 'game_player_stats.game_id')
+                    ->on('games.instance_id', '=', 'game_player_stats.instance_id');
+            })
+            ->where('games.season_id', $seasonId)->where('games.status', Game::STATUS_COMPLETED)
+            ->whereDate('games.match_start', '<=', $date);
     }
 
     public function game(): BelongsTo

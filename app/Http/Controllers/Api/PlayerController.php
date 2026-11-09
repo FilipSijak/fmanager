@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Domain\PlayerPerformance;
 use App\Helpers\ResponseHelper;
 use App\Http\Requests\BrowseSeasonRequest;
 use App\Http\Resources\PlayerResource;
-use App\Models\Player;
-use App\Repositories\PlayerPerformanceRepository;
+use App\Repositories\PlayerRepository;
 use App\Support\GameContext;
 use Illuminate\Http\JsonResponse;
 
@@ -14,17 +14,15 @@ class PlayerController extends CoreController
 {
     public function __construct(
         private readonly GameContext $gameContext,
-        private readonly PlayerPerformanceRepository $performance
+        private readonly PlayerRepository $players,
+        private readonly PlayerPerformance $performance
     ) {}
 
     public function show(BrowseSeasonRequest $request, int $playerId): JsonResponse
     {
         $instanceId = $this->gameContext->instanceId();
 
-        $player = Player::query()
-            ->with(['person', 'club', 'contract'])
-            ->forInstance($instanceId)
-            ->findOrFail($playerId);
+        $player = $this->players->profile($instanceId, $playerId);
 
         $date = $this->gameContext->instanceDate();
         $seasons = $this->performance->seasons($player, $date);

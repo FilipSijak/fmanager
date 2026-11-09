@@ -4,7 +4,10 @@ namespace App\Repositories;
 
 use App\Helpers\DisplayHelpers;
 use App\Models\Club;
+use App\Models\GamePlayerStat;
 use App\Models\Player;
+use App\Models\PlayerInjury;
+use App\Models\Season;
 use App\Repositories\Interfaces\IPlayerRepository;
 use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\PersonService\GeneratePeople\PlayerPosition;
@@ -12,9 +15,12 @@ use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
 use App\Services\TransferService\TransferStatusTypes;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 use RuntimeException;
+use stdClass;
 
 class PlayerRepository implements IPlayerRepository
 {
@@ -34,6 +40,64 @@ class PlayerRepository implements IPlayerRepository
     public function __construct(PlayerDataSource $playerDataSource)
     {
         $this->playerDataSource = $playerDataSource;
+    }
+
+    public function profile(int $instanceId, int $playerId): Player
+    {
+        return Player::query()->forInstance($instanceId)
+            ->with(['person', 'club', 'contract'])->findOrFail($playerId);
+    }
+
+    /** @return EloquentCollection<int, Season> */
+    public function performanceSeasons(Player $player, string $date): EloquentCollection
+    {
+        return Season::query()->where('instance_id', $player->instance_id)
+            ->whereDate('start_date', '<=', $date)->orderByDesc('start_date')->orderByDesc('id')
+            ->get(['id', 'start_date', 'end_date']);
+    }
+
+    public function fitnessProgress(Player $player): ?stdClass
+    {
+        return DB::table('players_progress')->where('player_id', $player->id)
+            ->where('instance_id', $player->instance_id)->first(['condition', 'morale']);
+    }
+
+    /** @return EloquentCollection<int, PlayerInjury> */
+    public function activeInjuries(Player $player, string $date): EloquentCollection
+    {
+        return PlayerInjury::query()->forPlayer($player)->activeOn($date)
+            ->join('injuries', 'injuries.id', '=', 'player_injuries.injury_id')
+            ->orderBy('injury_end_date')->orderBy('player_injuries.id')
+            ->get(['injuries.type', 'injury_start_date', 'injury_end_date']);
+    }
+
+    /** @return EloquentCollection<int, GamePlayerStat> */
+    public function recentAppearances(Player $player, ?int $seasonId, string $date): EloquentCollection
+    {
+        return GamePlayerStat::query()->forPlayer($player)->completedAppearances($seasonId, $date)
+            ->join('clubs as home', function (JoinClause $join): void {
+                $join->on('home.id', '=', 'games.hometeam_id')->on('home.instance_id', '=', 'games.instance_id');
+            })
+            ->join('clubs as away', function (JoinClause $join): void {
+                $join->on('away.id', '=', 'games.awayteam_id')->on('away.instance_id', '=', 'games.instance_id');
+            })
+            ->select(['game_player_stats.*', 'games.match_start', 'games.hometeam_id',
+                'games.home_team_goals', 'games.away_team_goals', 'home.name as home_name', 'away.name as away_name'])
+            ->orderByDesc('games.match_start')->orderByDesc('games.id')->limit(5)->get();
+    }
+
+    /** @return Collection<int, stdClass> */
+    public function performanceByCompetition(Player $player, ?int $seasonId, string $date): Collection
+    {
+        return GamePlayerStat::query()->forPlayer($player)->completedAppearances($seasonId, $date)
+            ->join('competitions', function (JoinClause $join): void {
+                $join->on('competitions.id', '=', 'games.competition_id')
+                    ->on('competitions.instance_id', '=', 'games.instance_id');
+            })
+            ->select(['competitions.id', 'competitions.name'])
+            ->selectRaw('COUNT(*) as appearances, SUM(minutes_played) as minutes, SUM(goals) as goals, SUM(assists) as assists, AVG(rating) as average_rating')
+            ->groupBy('competitions.id', 'competitions.name')->orderBy('competitions.name')->orderBy('competitions.id')
+            ->toBase()->get();
     }
 
     /** @return EloquentCollection<int, Player> */
