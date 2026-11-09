@@ -226,6 +226,20 @@ class PlayerPerformanceTest extends TestCase
     }
 
     #[Test]
+    public function player_performance_remains_available_when_the_manager_has_no_club(): void
+    {
+        [$instance, $player] = $this->world();
+        $competition = Competition::factory()->create(['instance_id' => $instance->id]);
+        $this->appearance($instance, $player, $competition, ['goals' => 2]);
+        $instance->forceFill(['club_id' => null])->save();
+
+        $this->getJson('/api/player/'.$player->id)->assertOk()
+            ->assertJsonPath('data.id', $player->id)
+            ->assertJsonPath('data.performance.season_id', $instance->season_id)
+            ->assertJsonPath('data.performance.competitions.0.goals', 2);
+    }
+
+    #[Test]
     public function guests_cannot_read_player_performance(): void
     {
         $this->getJson('/api/player/1')->assertUnauthorized();
