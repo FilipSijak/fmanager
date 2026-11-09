@@ -70,6 +70,12 @@ class PersonService
             if ($this->playerRepository->annualContractWages($club, $player->id, $date) + $terms['salary'] * 52 > (int) $account->salaries_yearly_budget) {
                 throw ValidationException::withMessages(['salary' => 'The salary exceeds the annual wage budget.']);
             }
+            $decision = $this->contractRenewal->consider((int) $player->ambition, (int) $club->rank, $player->contract, $terms);
+            if ($decision['status'] !== 'accepted') {
+                $this->playerRepository->recordRenewalOffer($player, $terms, $date, $endsAt, $months, $decision['status']);
+
+                return $decision;
+            }
             $this->playerRepository->applyContractRenewal($player, $account, $terms, $date, $endsAt, $months);
 
             return ['status' => 'accepted', 'message' => 'Contract renewed until '.$endsAt.'.', 'ends_at' => $endsAt];

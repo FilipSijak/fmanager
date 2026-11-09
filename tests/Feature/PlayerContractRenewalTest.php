@@ -141,6 +141,40 @@ class PlayerContractRenewalTest extends TestCase
         $this->assertDatabaseCount('player_contract_renewals', 0);
     }
 
+    #[Test]
+    public function player_counteroffers_require_a_second_manual_submission_and_do_not_spend_money(): void
+    {
+        [, $club, $player] = $this->world();
+        $payload = $this->offer($player) + ['months' => 12];
+        $payload['salary'] = 700;
+
+        $this->postJson('/api/contracts/'.$player->id.'/renew', $payload)->assertOk()
+            ->assertJsonPath('data.status', 'counter')->assertJsonPath('data.counter_salary', 950);
+        $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'salary' => 1000, 'contract_end' => '2026-12-31']);
+        $this->assertDatabaseHas('accounts', ['club_id' => $club->id, 'balance' => 1000000]);
+        $payload['salary'] = 950;
+        $this->postJson('/api/contracts/'.$player->id.'/renew', $payload)->assertOk()->assertJsonPath('data.status', 'accepted');
+        $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'salary' => 950, 'contract_end' => '2027-09-01']);
+        $this->assertDatabaseCount('player_contract_renewals', 2);
+    }
+
+    #[Test]
+    #[TestWith([20, 1200])]
+    #[TestWith([10, 100])]
+    public function an_ambitious_player_or_an_insulting_offer_can_be_rejected_without_changing_the_contract(int $ambition, int $salary): void
+    {
+        [, $club, $player] = $this->world();
+        $player->forceFill(['ambition' => $ambition])->save();
+        $payload = $this->offer($player) + ['months' => 12];
+        $payload['salary'] = $salary;
+
+        $this->postJson('/api/contracts/'.$player->id.'/renew', $payload)->assertOk()->assertJsonPath('data.status', 'rejected');
+
+        $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'salary' => 1000, 'contract_end' => '2026-12-31']);
+        $this->assertDatabaseHas('accounts', ['club_id' => $club->id, 'balance' => 1000000]);
+        $this->assertDatabaseHas('player_contract_renewals', ['player_id' => $player->id, 'status' => 'rejected']);
+    }
+
     /** @return array<string, mixed> */
     private function offer(Player $player): array
     {

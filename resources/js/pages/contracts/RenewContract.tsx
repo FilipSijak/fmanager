@@ -24,6 +24,7 @@ export default function RenewContract({
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState<string | null>(null);
     const [errors, setErrors] = useState<string[]>([]);
+    const [counterSalary, setCounterSalary] = useState<number | null>(null);
     const [accepted, setAccepted] = useState(false);
 
     async function submit(event: FormEvent<HTMLFormElement>) {
@@ -32,6 +33,7 @@ export default function RenewContract({
         setBusy(true);
         setErrors([]);
         setMessage(null);
+        setCounterSalary(null);
         try {
             const response = await api.post(renewContract.url(player.id), {
                 ...terms,
@@ -40,6 +42,7 @@ export default function RenewContract({
             });
             setMessage(response.data.data.message);
             setAccepted(response.data.data.status === 'accepted');
+            setCounterSalary(response.data.data.counter_salary ?? null);
         } catch (error) {
             const messages = isAxiosError(error)
                 ? error.response?.data?.errors
@@ -118,6 +121,24 @@ export default function RenewContract({
                             <p role="status" className="text-[#39ff14]">
                                 {message}
                             </p>
+                        )}
+                        {counterSalary !== null && (
+                            <button
+                                type="button"
+                                className={buttonClass}
+                                onClick={() => {
+                                    setTerms({
+                                        ...terms,
+                                        salary: counterSalary,
+                                    });
+                                    setCounterSalary(null);
+                                    setMessage(
+                                        'Requested salary filled in. Submit the offer to confirm these terms.',
+                                    );
+                                }}
+                            >
+                                Use player’s requested salary
+                            </button>
                         )}
                         <button
                             type="submit"

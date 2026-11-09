@@ -78,16 +78,21 @@ class PlayerRepository implements IPlayerRepository
     /** @param array<string, int> $terms */
     public function applyContractRenewal(Player $player, Account $account, array $terms, string $date, string $endsAt, int $months): void
     {
-        $oldEnd = $player->contract->contract_end;
+        $this->recordRenewalOffer($player, $terms, $date, $endsAt, $months, 'accepted');
         $player->contract->forceFill($terms + ['contract_start' => $date, 'contract_end' => $endsAt])->save();
         $account->balance -= $terms['signing_fee'];
         $account->future_balance -= $terms['signing_fee'];
         $account->transfer_budget -= $terms['signing_fee'];
         $account->save();
+    }
+
+    /** @param array<string, int> $terms */
+    public function recordRenewalOffer(Player $player, array $terms, string $date, string $endsAt, int $months, string $status): void
+    {
         DB::table('player_contract_renewals')->insert([
             'instance_id' => $player->instance_id, 'club_id' => $player->club_id, 'player_id' => $player->id,
-            'contract_id' => $player->contract_id, 'status' => 'accepted', 'months' => $months,
-            'previous_contract_end' => $oldEnd, 'contract_end' => $endsAt, 'offered_on' => $date,
+            'contract_id' => $player->contract_id, 'status' => $status, 'months' => $months,
+            'previous_contract_end' => $player->contract->contract_end, 'contract_end' => $endsAt, 'offered_on' => $date,
             'terms' => json_encode($terms, JSON_THROW_ON_ERROR),
         ]);
     }
