@@ -1,0 +1,27 @@
+app/Repositories/PlayerRepository.php
+  s_b08adfe8862052::t_da09c304fe52aa 81,87-91,94-95
+app/Services/PersonService/Domain/PlayerContractRenewal.php
+  s_b08adfe8862052::t_49b36b5cc73fae 5,17-41
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_71e63c8c05b0c4 73-78
+resources/js/pages/contracts/RenewContract.tsx
+  s_b08adfe8862052::t_5535e4a2a2a953 27,36,45,125-142
+tests/Feature/PlayerContractRenewalTest.php
+  s_b08adfe8862052::t_f86ffd23b4848b 144-177
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "b055eded8ff583bcfbe85acad00e7a2f940e8f95",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
