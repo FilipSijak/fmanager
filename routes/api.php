@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\InstanceController;
 use App\Http\Controllers\Api\LiveMatchController;
 use App\Http\Controllers\Api\NewsController;
+use App\Http\Controllers\Api\PlayerContractController;
 use App\Http\Controllers\Api\PlayerController;
 use App\Http\Controllers\Api\PlayerSearchController;
 use App\Http\Controllers\Api\SponsorshipOfferController;
@@ -36,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index']);
 
         Route::middleware(EnsureUserHasClub::class)->group(function (): void {
+            Route::post('/contracts/{playerId}/renew', [PlayerContractController::class, 'store'])->whereNumber('playerId')->name('contracts.renew');
             Route::get('/training', [TrainingController::class, 'show'])->name('training.show');
             Route::put('/training', [TrainingController::class, 'update'])->name('training.update');
             Route::post('/transfers', [TransferManagementController::class, 'store'])->name('transfers.store');

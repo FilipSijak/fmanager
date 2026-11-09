@@ -14,6 +14,7 @@ use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\Data\PotentialByCategoryData;
+use App\Services\PersonService\Domain\PlayerContractRenewal;
 use App\Services\PersonService\Domain\PlayerPerformance;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
@@ -25,6 +26,7 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class PersonService
 {
@@ -41,7 +43,38 @@ class PersonService
         private readonly GameContext $gameContext,
         private readonly PlayerAttributeCeiling $playerAttributeCeiling,
         private readonly PlayerPerformance $playerPerformance,
+        private readonly PlayerContractRenewal $contractRenewal,
     ) {}
+
+    /** @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    public function renewPlayerContract(int $playerId, array $data): array
+    {
+        return DB::transaction(function () use ($playerId, $data): array {
+            $instance = $this->playerRepository->managedInstance($this->gameContext->instanceId(), true);
+            abort_if($instance->club_id === null, 403);
+            $date = (string) $instance->instance_date;
+            $club = $instance->club;
+            $player = $this->playerRepository->playerForRenewal($club, $playerId, $date, true);
+            if ($data['expected_contract_end'] !== $player->contract->contract_end) {
+                throw ValidationException::withMessages(['expected_contract_end' => 'The contract changed. Reload this screen before making another offer.']);
+            }
+            $months = (int) $data['months'];
+            $endsAt = $this->contractRenewal->endsAt($date, $months, $player->contract->contract_end);
+            $terms = $this->contractRenewal->terms($data);
+            $account = $this->playerRepository->contractAccount($club);
+            if ($terms['signing_fee'] > min((int) $account->balance, (int) $account->transfer_budget)) {
+                throw ValidationException::withMessages(['transfer_fee' => 'The signing fee exceeds the available cash or transfer budget.']);
+            }
+            if ($this->playerRepository->annualContractWages($club, $player->id, $date) + $terms['salary'] * 52 > (int) $account->salaries_yearly_budget) {
+                throw ValidationException::withMessages(['salary' => 'The salary exceeds the annual wage budget.']);
+            }
+            $this->playerRepository->applyContractRenewal($player, $account, $terms, $date, $endsAt, $months);
+
+            return ['status' => 'accepted', 'message' => 'Contract renewed until '.$endsAt.'.', 'ends_at' => $endsAt];
+        });
+    }
 
     /** @return array<string, mixed> */
     public function contractOverview(?int $playerId = null): array

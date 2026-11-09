@@ -1,7 +1,17 @@
 import { Head, Link } from '@inertiajs/react';
+import { isAxiosError } from 'axios';
+import { type FormEvent, useState } from 'react';
+import { store as renewContract } from '@/actions/App/Http/Controllers/Api/PlayerContractController';
 import { index as contracts } from '@/actions/App/Http/Controllers/PlayerContractController';
+import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
-import { buttonClass, money } from '../transfers/types';
+import ContractFields from '../transfers/ContractFields';
+import {
+    buttonClass,
+    type ContractTerms,
+    fieldClass,
+    money,
+} from '../transfers/types';
 import type { ContractPage, ContractPlayer } from './types';
 
 export default function RenewContract({
@@ -9,6 +19,41 @@ export default function RenewContract({
     date,
     player,
 }: ContractPage & { player: ContractPlayer }) {
+    const [terms, setTerms] = useState<ContractTerms>(player.terms);
+    const [months, setMonths] = useState(36);
+    const [busy, setBusy] = useState(false);
+    const [message, setMessage] = useState<string | null>(null);
+    const [errors, setErrors] = useState<string[]>([]);
+    const [accepted, setAccepted] = useState(false);
+
+    async function submit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        if (busy || accepted) return;
+        setBusy(true);
+        setErrors([]);
+        setMessage(null);
+        try {
+            const response = await api.post(renewContract.url(player.id), {
+                ...terms,
+                months,
+                expected_contract_end: player.ends_at,
+            });
+            setMessage(response.data.data.message);
+            setAccepted(response.data.data.status === 'accepted');
+        } catch (error) {
+            const messages = isAxiosError(error)
+                ? error.response?.data?.errors
+                : null;
+            setErrors(
+                messages
+                    ? (Object.values(messages).flat() as string[])
+                    : ['Unable to submit the renewal. Please try again.'],
+            );
+        } finally {
+            setBusy(false);
+        }
+    }
+
     return (
         <GameLayout active="Contracts">
             <Head title={`${player.name} – Contract renewal`} />
@@ -31,6 +76,61 @@ export default function RenewContract({
                             Weekly salary: {money(player.terms.salary)}
                         </p>
                     </section>
+                    <form
+                        onSubmit={submit}
+                        className="flex flex-col gap-5 border border-[#3355dd] p-5"
+                    >
+                        <label className="flex flex-col gap-2 text-sm">
+                            Contract length in months
+                            <input
+                                type="number"
+                                min={6}
+                                max={60}
+                                step={1}
+                                required
+                                value={months}
+                                disabled={busy || accepted}
+                                onChange={(event) =>
+                                    setMonths(Number(event.target.value))
+                                }
+                                className={fieldClass}
+                            />
+                        </label>
+                        <p className="text-sm text-slate-300">
+                            6 months to 5 years from {date}. The new expiry must
+                            be later than {player.ends_at}. Signing fees are
+                            paid immediately; bonuses are additional to the
+                            weekly salary.
+                        </p>
+                        <ContractFields
+                            terms={terms}
+                            onChange={setTerms}
+                            disabled={busy || accepted}
+                        />
+                        {errors.length > 0 && (
+                            <div role="alert" className="text-red-300">
+                                {errors.map((error) => (
+                                    <p key={error}>{error}</p>
+                                ))}
+                            </div>
+                        )}
+                        {message && (
+                            <p role="status" className="text-[#39ff14]">
+                                {message}
+                            </p>
+                        )}
+                        <button
+                            type="submit"
+                            disabled={busy || accepted}
+                            className={buttonClass}
+                        >
+                            {accepted
+                                ? 'Contract renewed'
+                                : busy
+                                  ? 'Submitting…'
+                                  : 'Submit renewal offer'}
+                        </button>
+                    </form>
                     <Link href={contracts.url()} className={buttonClass}>
                         All contracts
                     </Link>

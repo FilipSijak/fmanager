@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Helpers\DisplayHelpers;
+use App\Models\Account;
 use App\Models\Club;
 use App\Models\GamePlayerStat;
 use App\Models\Instance;
@@ -60,6 +61,35 @@ class PlayerRepository implements IPlayerRepository
         return Player::query()->forClub($club)->withCurrentContractOn($date)
             ->with(['person', 'contract'])->when($lockForUpdate, fn ($query) => $query->lockForUpdate())
             ->findOrFail($playerId);
+    }
+
+    public function contractAccount(Club $club): Account
+    {
+        return Account::query()->where('club_id', $club->id)->lockForUpdate()->firstOrFail();
+    }
+
+    public function annualContractWages(Club $club, int $excludingPlayerId, string $date): int
+    {
+        return (int) Player::query()->forClub($club)->withCurrentContractOn($date)
+            ->where('players.id', '!=', $excludingPlayerId)
+            ->join('players_contracts', 'players_contracts.id', '=', 'players.contract_id')->sum('players_contracts.salary') * 52;
+    }
+
+    /** @param array<string, int> $terms */
+    public function applyContractRenewal(Player $player, Account $account, array $terms, string $date, string $endsAt, int $months): void
+    {
+        $oldEnd = $player->contract->contract_end;
+        $player->contract->forceFill($terms + ['contract_start' => $date, 'contract_end' => $endsAt])->save();
+        $account->balance -= $terms['signing_fee'];
+        $account->future_balance -= $terms['signing_fee'];
+        $account->transfer_budget -= $terms['signing_fee'];
+        $account->save();
+        DB::table('player_contract_renewals')->insert([
+            'instance_id' => $player->instance_id, 'club_id' => $player->club_id, 'player_id' => $player->id,
+            'contract_id' => $player->contract_id, 'status' => 'accepted', 'months' => $months,
+            'previous_contract_end' => $oldEnd, 'contract_end' => $endsAt, 'offered_on' => $date,
+            'terms' => json_encode($terms, JSON_THROW_ON_ERROR),
+        ]);
     }
 
     public function profile(int $instanceId, int $playerId): Player
