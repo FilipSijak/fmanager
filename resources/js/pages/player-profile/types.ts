@@ -16,6 +16,18 @@ export type PlayerProfileData = {
     club: { id: number; name: string } | null;
     performance: {
         season_id: number;
+        recent: {
+            game_id: number;
+            date: string;
+            opponent: string;
+            venue: 'Home' | 'Away';
+            home_goals: number | null;
+            away_goals: number | null;
+            minutes: number;
+            goals: number;
+            assists: number;
+            rating: number;
+        }[];
         competitions: {
             id: number;
             name: string;

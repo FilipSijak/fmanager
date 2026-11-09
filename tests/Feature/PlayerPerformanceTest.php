@@ -46,11 +46,40 @@ class PlayerPerformanceTest extends TestCase
     }
 
     #[Test]
+    public function recent_form_contains_only_the_last_five_completed_appearances_in_date_order(): void
+    {
+        [$instance, $player] = $this->world();
+        $opponent = Club::factory()->create(['instance_id' => $instance->id, 'name' => 'Opponent', 'stadium_id' => 200]);
+        $competition = Competition::factory()->create(['instance_id' => $instance->id]);
+        for ($day = 1; $day <= 6; $day++) {
+            $this->appearance($instance, $player, $competition, ['rating' => 6], [
+                'awayteam_id' => $opponent->id, 'match_start' => "2026-08-0{$day} 15:00:00",
+            ]);
+        }
+        $latest = $this->appearance($instance, $player, $competition, ['rating' => 8.5, 'minutes_played' => 25], [
+            'hometeam_id' => $opponent->id, 'awayteam_id' => $player->club_id,
+            'home_team_goals' => 1, 'away_team_goals' => 2,
+        ]);
+        $this->appearance($instance, $player, $competition, ['rating' => 10], ['status' => Game::STATUS_IN_PROGRESS]);
+        $this->appearance($instance, $player, $competition, ['rating' => 10, 'minutes_played' => 0]);
+
+        $this->getJson('/api/player/'.$player->id)->assertOk()
+            ->assertJsonCount(5, 'data.performance.recent')
+            ->assertJsonPath('data.performance.recent.0', [
+                'game_id' => $latest->id, 'date' => '2026-09-01', 'opponent' => 'Opponent', 'venue' => 'Away',
+                'home_goals' => 1, 'away_goals' => 2, 'minutes' => 25, 'goals' => 0, 'assists' => 0, 'rating' => 8.5,
+            ])
+            ->assertJsonPath('data.performance.recent.1.date', '2026-08-06')
+            ->assertJsonPath('data.performance.recent.1.venue', 'Home')
+            ->assertJsonPath('data.performance.recent.4.date', '2026-08-03');
+    }
+
+    #[Test]
     public function a_player_without_appearances_has_an_empty_summary(): void
     {
         [, $player] = $this->world();
 
-        $this->getJson('/api/player/'.$player->id)->assertOk()->assertJsonPath('data.performance.competitions', []);
+        $this->getJson('/api/player/'.$player->id)->assertOk()->assertJsonPath('data.performance.competitions', [])->assertJsonPath('data.performance.recent', []);
     }
 
     #[Test]

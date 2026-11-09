@@ -6,6 +6,7 @@ import {
 } from '@/actions/App/Http/Controllers/TransferManagementController';
 import GameLayout from '@/layouts/GameLayout';
 import AttributeColumn from './components/AttributeColumn';
+import RecentAppearances from './components/RecentAppearances';
 import { usePlayerProfile } from './usePlayerProfile';
 import { ageFromDob, formatDob, POSITION_LABELS } from './utils';
 
@@ -16,7 +17,6 @@ type ExtraAttribute = {
 
 const extraAttributes: ExtraAttribute[] = [
     { label: 'Preferred Foot', value: 'Right Only' },
-    { label: 'Form', value: '8-7-7-7' },
     { label: 'Morale', value: 'Superb' },
     { label: 'Condition', value: '100%' },
 ];
@@ -163,7 +163,16 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
                     </div>
 
                     <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1 sm:grid-cols-4">
-                        {extraAttributes.map((attribute) => (
+                        {[
+                            {
+                                label: 'Form',
+                                value:
+                                    player.performance.recent
+                                        .map((match) => match.rating.toFixed(1))
+                                        .join(' / ') || '—',
+                            },
+                            ...extraAttributes,
+                        ].map((attribute) => (
                             <div
                                 key={attribute.label}
                                 className="flex items-center justify-between border-b border-white/10 py-1 text-sm"
@@ -248,6 +257,9 @@ export default function PlayerProfile({ playerId }: { playerId: number }) {
                             </table>
                         )}
                     </section>
+                    <RecentAppearances
+                        appearances={player.performance.recent}
+                    />
                 </div>
 
                 <p className="relative border-t border-white/10 bg-black/20 py-3 text-center text-base font-bold text-cyan-300">
