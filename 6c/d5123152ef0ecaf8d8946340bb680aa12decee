@@ -1,0 +1,28 @@
+app/Services/ContractService/Domain/PlayerContractTerms.php
+  s_b08adfe8862052::t_b55a2d36aff190 5-6,9-28
+app/Services/TransferService/TransferWorkflow.php
+  s_b08adfe8862052::t_b55a2d36aff190 273-275,283-285
+tests/Unit/Services/ContractService/PlayerContractTermsTest.php
+  s_b08adfe8862052::t_b55a2d36aff190 38-53
+app/Repositories/ContractRepository.php
+  s_b08adfe8862052::t_b55a2d36aff190 26-36
+app/Services/ContractService/ContractService.php
+  s_b08adfe8862052::t_b55a2d36aff190 9,62-81
+  s_b08adfe8862052::t_e153fe8af07a40 82-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6cd5123152ef0ecaf8d8946340bb680aa12decee",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
