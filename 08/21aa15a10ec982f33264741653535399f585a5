@@ -1,0 +1,25 @@
+app/Http/Controllers/Api/PlayerContractController.php
+  s_b08adfe8862052::t_6928b9a3f25309 8,13,17
+app/Http/Controllers/PlayerContractController.php
+  s_b08adfe8862052::t_49457ae2e247fe 5,11,15,20
+app/Listeners/ProcessPlayerContracts.php
+  s_b08adfe8862052::t_b74b8676b871ef 6,10,14
+app/Services/ContractService/ContractService.php
+  s_b08adfe8862052::t_3eddffaf0b0256 1-148
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0821aa15a10ec982f33264741653535399f585a5",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
