@@ -1,0 +1,44 @@
+tests/Integration/Services/TransferService/TransferStatusUpdates/PermanentTransferWaitingPlayerStatusUpdatesTest.php
+  s_b08adfe8862052::t_656fe0bdae04d6 382-384
+  s_b08adfe8862052::t_c952b7ea5edde1 259,280,385
+app/Services/ContractService/Domain/PlayerSalaryExpectation.php
+  s_b08adfe8862052::t_e5d4a5fede6661 1-8,11,17,20,28,32,34,41-42
+  s_b08adfe8862052::t_2ee6941a7d1cb8 9-10,12-16,18-19,21-27,29-31,33,35-40
+tests/Feature/InitialPlayerContractsTest.php
+  s_b08adfe8862052::t_4ab0e452347a64 9-10,73-84
+  s_b08adfe8862052::t_28eabbd49a357a 85-86
+tests/Unit/Services/ContractService/PlayerSalaryExpectationTest.php
+  s_b08adfe8862052::t_4ab0e452347a64 31
+  s_b08adfe8862052::t_ce62e2bd564ba1 1-30,32-35
+tests/EndToEnd/TransferService/PermanentTransfersEndToEndTest.php
+  s_b08adfe8862052::t_656fe0bdae04d6 395-397
+  s_b08adfe8862052::t_5b8c2518dff2c1 370,398
+app/Repositories/ContractRepository.php
+  s_b08adfe8862052::t_9febe22740360c 13,19-24
+app/Services/ContractService/ContractService.php
+  s_b08adfe8862052::t_f4815c281d00b7 16,36,84,90,122,124-127,129-131
+app/Services/ContractService/Domain/PlayerContractTerms.php
+  s_b08adfe8862052::t_d36d6feb8017b1 9-10,32,34-35,37-38
+app/Services/TransferService/TransferConsiderations/ClubConsideration.php
+  s_b08adfe8862052::t_1e6f99293d16e2 58
+app/Services/TransferService/TransferWorkflow.php
+  s_b08adfe8862052::t_de3bd2eadc8f91 225
+tests/Unit/Services/ContractService/PlayerContractTermsTest.php
+  s_b08adfe8862052::t_f9fa7acffa2805 17,19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c53754e55489043a0724123b51e69d8dbbf918fe",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
