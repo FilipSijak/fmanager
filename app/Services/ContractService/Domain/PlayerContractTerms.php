@@ -2,8 +2,30 @@
 
 namespace App\Services\ContractService\Domain;
 
+use Carbon\CarbonImmutable;
+
 class PlayerContractTerms
 {
+    /** @param array<string, mixed> $offer
+     * @return array<string, int|float|string>
+     */
+    public function agreed(array $offer, string $date, ?string $currentStart = null, ?string $currentEnd = null): array
+    {
+        $startedAt = CarbonImmutable::parse($date);
+        $data = [
+            'contract_start' => $currentStart ?? $startedAt->toDateString(),
+            'contract_end' => $currentEnd ?? $startedAt->addYearsNoOverflow(3)->toDateString(),
+            'signing_fee' => (int) ($offer['transfer_fee'] ?? 0),
+            'pc_promotion_salary_raise' => (float) ($offer['pc_promotion_salary_raise'] ?? 0),
+            'pc_demotion_salary_cut' => (float) ($offer['pc_demotion_salary_cut'] ?? 0),
+        ];
+        foreach (PlayerContractRenewal::MONEY_FIELDS as $field) {
+            $data[$field] = (int) ($offer[$field] ?? 0);
+        }
+
+        return $data;
+    }
+
     /** @return array<string, int|float> */
     public function forPlayer(int $potential, int $marketingRank, string $position, bool $hasContract): array
     {

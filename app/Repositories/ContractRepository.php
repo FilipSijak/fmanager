@@ -23,6 +23,17 @@ class ContractRepository
         return $contract;
     }
 
+    public function currentPlayerContract(Player $player): ?PlayerContract
+    {
+        return $player->contract()->lockForUpdate()->first();
+    }
+
+    /** @param array<string, mixed> $data */
+    public function updatePlayerContract(PlayerContract $contract, array $data): void
+    {
+        $contract->forceFill($data)->save();
+    }
+
     public function managedInstance(int $instanceId, bool $lockForUpdate = false): Instance
     {
         return Instance::query()->when($lockForUpdate, fn ($query) => $query->lockForUpdate())->findOrFail($instanceId);

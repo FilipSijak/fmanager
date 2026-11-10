@@ -7,7 +7,6 @@ use App\Events\Transfers\TransferEventType;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
-use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
@@ -16,7 +15,6 @@ use App\Services\ContractService\ContractService;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferEntityAnalysis\PlayerValuation;
 use App\Services\TransferService\TransferWindowConfig\TransferWindowAvailability;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class TransferWorkflow
@@ -271,29 +269,20 @@ class TransferWorkflow
     private function handleFreeTransferPlayerMove(Transfer $transfer, TransferContractOffer $transferContractOffer): void
     {
         $player = $transfer->player()->first();
-        $offeredContract = new PlayerContract($transferContractOffer->toArray());
-        $contractStart = Carbon::parse($transfer->instance->instance_date);
-        $offeredContract->contract_start = $contractStart->toDateString();
-        $offeredContract->contract_end = $contractStart->copy()->addYears(3)->toDateString();
-        $offeredContract->signing_fee = $transferContractOffer->transfer_fee;
-
-        $offeredContract->save();
-        $player->contract_id = $offeredContract->id;
         $player->club_id = $transfer->source_club_id;
-
-        $player->update();
+        $player->save();
+        $this->contractService->signPlayerContract($player, $transferContractOffer->toArray(),
+            (string) $transfer->instance->instance_date, replaceExisting: true);
     }
 
     private function handlePermanentTransferPlayerMove(Transfer $transfer, TransferContractOffer $transferContractOffer): void
     {
         $player = $transfer->player()->first();
-        $currentContract = $player->contract()->first();
-
         $player->club_id = $transfer->source_club_id;
-        $this->transferFinancialSettlement->transferMoneyBetweenClubs($transfer);
-        $currentContract->update($transferContractOffer->toArray());
-
         $player->save();
+        $this->transferFinancialSettlement->transferMoneyBetweenClubs($transfer);
+        $this->contractService->signPlayerContract($player, $transferContractOffer->toArray(),
+            (string) $transfer->instance->instance_date, replaceExisting: false);
     }
 
     private function checkTransferAffordabilityBeforeCompletion(Transfer $transfer, TransferContractOffer $transferContractOffer): bool

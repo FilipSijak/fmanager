@@ -6,6 +6,7 @@ use App\Contracts\Search\PlayerSearchIndexDispatcher;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
+use App\Models\PlayerContract;
 use App\Repositories\ContractRepository;
 use App\Repositories\PlayerRepository;
 use App\Services\ContractService\Domain\InitialPlayerContract;
@@ -55,6 +56,29 @@ class ContractService
                 ));
                 $this->playerRepository->assignPlayerContract($player, (int) $contract->id);
             }
+        });
+    }
+
+    /** @param array<string, mixed> $offer */
+    public function signPlayerContract(Player $player, array $offer, string $date, bool $replaceExisting): PlayerContract
+    {
+        return DB::transaction(function () use ($player, $offer, $date, $replaceExisting): PlayerContract {
+            $current = $this->contractRepository->currentPlayerContract($player);
+            $data = $this->playerContractTerms->agreed($offer, $date,
+                $replaceExisting ? null : $current?->contract_start,
+                $replaceExisting ? null : $current?->contract_end);
+            if ($current !== null && ! $replaceExisting) {
+                $this->contractRepository->updatePlayerContract($current, $data);
+                $contract = $current;
+            } else {
+                $contract = $this->contractRepository->createPlayerContract($data);
+            }
+            $this->playerRepository->assignPlayerContract($player, (int) $contract->id);
+            if ($replaceExisting && $current !== null) {
+                $this->contractRepository->deletePlayerContract($current);
+            }
+
+            return $contract;
         });
     }
 

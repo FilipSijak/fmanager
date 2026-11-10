@@ -35,4 +35,20 @@ class PlayerContractTermsTest extends TestCase
         $this->assertSame(216665, $free['transfer_fee']);
         $this->assertSame(133332, $contracted['league']);
     }
+
+    #[Test]
+    public function agreed_contracts_preserve_existing_dates_and_use_the_game_date_for_new_contracts(): void
+    {
+        $generator = new PlayerContractTerms;
+        $offer = ['salary' => 1200, 'appearance' => 50, 'transfer_fee' => 10000];
+        $new = $generator->agreed($offer, '2024-02-29');
+        $existing = $generator->agreed($offer, '2026-08-31', '2025-07-01', '2028-06-30');
+
+        $this->assertSame('2024-02-29', $new['contract_start']);
+        $this->assertSame('2027-02-28', $new['contract_end']);
+        $this->assertSame(10000, $new['signing_fee']);
+        $this->assertSame('2025-07-01', $existing['contract_start']);
+        $this->assertSame('2028-06-30', $existing['contract_end']);
+        $this->assertSame(1200, $existing['salary']);
+    }
 }
