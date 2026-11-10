@@ -10,13 +10,9 @@ use App\Models\Season;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
-use App\Repositories\PlayerRepository;
-use App\Repositories\TransferRepository;
+use App\Services\ContractService\ContractService;
 use App\Services\NewsService\NewsPriority;
 use App\Services\NewsService\NewsType;
-use App\Services\TransferService\TransferConsiderations\ClubConsideration;
-use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
-use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferType;
@@ -259,7 +255,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
     {
         $transfer = $this->createPlayerCounterOfferTransfer();
 
-        $baselineOffer = app()->make(PlayerRepository::class)
+        $baselineOffer = app()->make(ContractService::class)
             ->contractBasedOnPotential($transfer->player()->first());
 
         TransferContractOffer::factory()->create(array_merge(
@@ -280,7 +276,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
     {
         $transfer = $this->createPlayerCounterOfferTransfer();
 
-        $baselineOffer = app()->make(PlayerRepository::class)
+        $baselineOffer = app()->make(ContractService::class)
             ->contractBasedOnPotential($transfer->player()->first());
 
         TransferContractOffer::factory()->create(array_merge(

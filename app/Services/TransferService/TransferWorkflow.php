@@ -11,8 +11,8 @@ use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
-use App\Repositories\PlayerRepository;
 use App\Repositories\TransferRepository;
+use App\Services\ContractService\ContractService;
 use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferEntityAnalysis\PlayerValuation;
 use App\Services\TransferService\TransferWindowConfig\TransferWindowAvailability;
@@ -23,7 +23,7 @@ class TransferWorkflow
 {
     private TransferRepository $transferRepository;
 
-    private PlayerRepository $playerRepository;
+    private ContractService $contractService;
 
     private TransferFinancialSettlement $transferFinancialSettlement;
 
@@ -31,12 +31,12 @@ class TransferWorkflow
 
     public function __construct(
         TransferRepository $transferRepository,
-        PlayerRepository $playerRepository,
+        ContractService $contractService,
         TransferFinancialSettlement $transferFinancialSettlement,
         TransferConsiderations $transferConsiderations
     ) {
         $this->transferRepository = $transferRepository;
-        $this->playerRepository = $playerRepository;
+        $this->contractService = $contractService;
         $this->transferFinancialSettlement = $transferFinancialSettlement;
         $this->transferConsiderations = $transferConsiderations;
     }
@@ -224,7 +224,7 @@ class TransferWorkflow
     {
         $player = Player::find($transfer->player_id);
 
-        $contractOffer = $this->playerRepository->contractBasedOnPotential($player);
+        $contractOffer = $this->contractService->contractBasedOnPotential($player);
 
         DB::table('transfer_contract_offers')->insert(
             [

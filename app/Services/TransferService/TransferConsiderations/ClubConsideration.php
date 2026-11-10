@@ -7,24 +7,26 @@ use App\Models\Club;
 use App\Models\Player;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
-use App\Repositories\PlayerRepository;
+use App\Services\ContractService\ContractService;
 use App\Services\TransferService\TransferEntityAnalysis\ClubFinancialTransferAnalysis;
 use App\Services\TransferService\TransferEntityAnalysis\SquadTransferAnalysis;
 
 class ClubConsideration
 {
     private SquadTransferAnalysis $squadTransferAnalysis;
+
     private ClubFinancialTransferAnalysis $clubFinancialTransferAnalysis;
-    private PlayerRepository $playerRepository;
+
+    private ContractService $contractService;
 
     public function __construct(
         SquadTransferAnalysis $squadTransferAnalysis,
         ClubFinancialTransferAnalysis $clubFinancialTransferAnalysis,
-        PlayerRepository $playerRepository,
+        ContractService $contractService,
     ) {
         $this->squadTransferAnalysis = $squadTransferAnalysis;
         $this->clubFinancialTransferAnalysis = $clubFinancialTransferAnalysis;
-        $this->playerRepository = $playerRepository;
+        $this->contractService = $contractService;
     }
 
     public function considerOffer(Transfer $transfer): ClubTransferDecision
@@ -32,13 +34,12 @@ class ClubConsideration
         $player = Player::find($transfer->player_id);
         $club = Club::find($transfer->target_club_id);
         $playerImportance = $this->squadTransferAnalysis->isAcceptableTransfer($club, $player);
-        $clubTransferDecision = new ClubTransferDecision();
+        $clubTransferDecision = new ClubTransferDecision;
         $financialDecision = $this->clubFinancialTransferAnalysis->isFinanciallyAcceptableTransfer($transfer, $playerImportance);
-
 
         // if financial decision is positive and player importance is positive, ClubTransferDecision set acceptable transfer to true
 
-        if (!$financialDecision->isAcceptableTransfer() && $financialDecision->getCounterOffer()) {
+        if (! $financialDecision->isAcceptableTransfer() && $financialDecision->getCounterOffer()) {
             $clubTransferDecision->setCounterOffer($financialDecision->getCounterOffer());
         }
 
@@ -54,7 +55,7 @@ class ClubConsideration
         $buyingClub = Club::find($transfer->source_club_id);
         $player = Player::find($transfer->player_id);
         $transferContractDetails = TransferContractOffer::where('transfer_id', $transfer->id)->firstOrFail();
-        $contractOffer = (object) $this->playerRepository->contractBasedOnPotential($player);
+        $contractOffer = (object) $this->contractService->contractBasedOnPotential($player);
         $positionShortage = $this->squadTransferAnalysis->positionShortage($buyingClub, $player->position);
 
         $countableContractFields = [
@@ -68,7 +69,7 @@ class ClubConsideration
             'cup',
             'el',
             'cl',
-            'transfer_fee'
+            'transfer_fee',
         ];
 
         $initialContractValue = 0;
@@ -79,8 +80,7 @@ class ClubConsideration
             $counterOfferValue += $transferContractDetails->{$field};
         }
 
-
-        if ($positionShortage && ($counterOfferValue <=  $initialContractValue * 1.1)) {
+        if ($positionShortage && ($counterOfferValue <= $initialContractValue * 1.1)) {
             return true;
         }
 

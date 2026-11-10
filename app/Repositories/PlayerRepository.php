@@ -351,9 +351,4 @@ class PlayerRepository implements IPlayerRepository
         DB::table('transfer_payments')->whereIn('transfer_id', $ongoingTransferIds)->delete();
         DB::table('transfers')->whereIn('id', $ongoingTransferIds)->delete();
     }
-
-    public function contractBasedOnPotential(Player $player): array
-    {
-        return $this->playerDataSource->contractBasedOnPotential($player);
-    }
 }

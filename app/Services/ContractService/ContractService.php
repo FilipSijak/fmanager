@@ -8,6 +8,7 @@ use App\Models\Player;
 use App\Repositories\ContractRepository;
 use App\Repositories\PlayerRepository;
 use App\Services\ContractService\Domain\PlayerContractRenewal;
+use App\Services\ContractService\Domain\PlayerContractTerms;
 use App\Services\NewsService\NewsService;
 use App\Services\NewsService\NewsTypes\PlayerContractNews;
 use App\Support\GameContext;
@@ -22,10 +23,19 @@ class ContractService
         private readonly PlayerRepository $playerRepository,
         private readonly GameContext $gameContext,
         private readonly PlayerContractRenewal $contractRenewal,
+        private readonly PlayerContractTerms $playerContractTerms,
         private readonly NewsService $news,
         private readonly PlayerContractNews $contractNews,
         private readonly PlayerSearchIndexDispatcher $playerSearch,
     ) {}
+
+    /** @return array<string, int|float> */
+    public function contractBasedOnPotential(Player $player): array
+    {
+        return $this->playerContractTerms->forPlayer(
+            (int) $player->potential, (int) $player->marketing_rank, $player->position, $player->contract_id !== null,
+        );
+    }
 
     /** @param array<string, mixed> $data
      * @return array<string, mixed>
