@@ -11,6 +11,7 @@ use App\Models\Player;
 use App\Models\Season;
 use App\Models\StaffCoaching;
 use App\Models\User;
+use App\Repositories\ContractRepository;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
 use App\Services\NewsService\NewsService;
@@ -40,6 +41,7 @@ class PersonService
     public function __construct(
         private readonly StaffRepository $staffRepository,
         private readonly PlayerRepository $playerRepository,
+        private readonly ContractRepository $contractRepository,
         private readonly PlayerCreator $playerCreator,
         private readonly StaffCreator $staffCreator,
         private readonly PlayerPotential $playerPotential,
@@ -58,33 +60,33 @@ class PersonService
     public function renewPlayerContract(int $playerId, array $data): array
     {
         return DB::transaction(function () use ($playerId, $data): array {
-            $instance = $this->playerRepository->managedInstance($this->gameContext->instanceId(), true);
+            $instance = $this->contractRepository->managedInstance($this->gameContext->instanceId(), true);
             abort_if($instance->club_id === null, 403);
             $date = (string) $instance->instance_date;
             $club = $instance->club;
-            $player = $this->playerRepository->playerForRenewal($club, $playerId, $date, true);
+            $player = $this->contractRepository->playerForRenewal($club, $playerId, $date, true);
             if ($data['expected_contract_end'] !== $player->contract->contract_end) {
                 throw ValidationException::withMessages(['expected_contract_end' => 'The contract changed. Reload this screen before making another offer.']);
             }
             $months = (int) $data['months'];
             $endsAt = $this->contractRenewal->endsAt($date, $months, $player->contract->contract_end);
             $terms = $this->contractRenewal->terms($data);
-            $account = $this->playerRepository->contractAccount($club);
+            $account = $this->contractRepository->contractAccount($club);
             if ($terms['signing_fee'] > min((int) $account->balance, (int) $account->transfer_budget)) {
                 throw ValidationException::withMessages(['transfer_fee' => 'The signing fee exceeds the available cash or transfer budget.']);
             }
-            if ($this->playerRepository->annualContractWages($club, $player->id, $date) + $terms['salary'] * 52 > (int) $account->salaries_yearly_budget) {
+            if ($this->contractRepository->annualContractWages($club, $player->id, $date) + $terms['salary'] * 52 > (int) $account->salaries_yearly_budget) {
                 throw ValidationException::withMessages(['salary' => 'The salary exceeds the annual wage budget.']);
             }
             $decision = $this->contractRenewal->consider((int) $player->ambition, (int) $club->rank, $player->contract, $terms);
             if ($decision['status'] !== 'accepted') {
-                $this->playerRepository->recordRenewalOffer($player, $terms, $date, $endsAt, $months, $decision['status']);
+                $this->contractRepository->recordRenewalOffer($player, $terms, $date, $endsAt, $months, $decision['status']);
 
                 $this->news->publish($this->contractNews->decision($player, $instance, $decision['message']));
 
                 return $decision;
             }
-            $this->playerRepository->applyContractRenewal($player, $account, $terms, $date, $endsAt, $months);
+            $this->contractRepository->applyContractRenewal($player, $account, $terms, $date, $endsAt, $months);
 
             $this->news->publish($this->contractNews->decision($player, $instance, 'Contract renewed until '.$endsAt.'.'));
 
@@ -95,15 +97,17 @@ class PersonService
     public function processPlayerContracts(Instance $instance): void
     {
         DB::transaction(function () use ($instance): void {
-            $instance = $this->playerRepository->managedInstance((int) $instance->id, true);
+            $instance = $this->contractRepository->managedInstance((int) $instance->id, true);
             $date = (string) $instance->instance_date;
             $reminderDate = CarbonImmutable::parse($date)->addMonthsNoOverflow(6)->toDateString();
-            foreach ($this->playerRepository->contractsEndingBy((int) $instance->id, $reminderDate) as $player) {
+            foreach ($this->contractRepository->contractsEndingBy((int) $instance->id, $reminderDate) as $player) {
                 if ($player->contract->contract_end < $date) {
                     if ($player->club_id === $instance->club_id) {
                         $this->news->publish($this->contractNews->expired($player, $instance));
                     }
-                    $this->playerRepository->releaseExpiredPlayer($player);
+                    $contract = $player->contract;
+                    $this->playerRepository->releasePlayer($player);
+                    $this->contractRepository->deletePlayerContract($contract);
                     $this->playerSearch->synchronizePlayer((int) $player->id);
 
                     continue;
@@ -111,7 +115,7 @@ class PersonService
                 if ($player->club_id === $instance->club_id) {
                     if ($player->contract->renewal_reminded_for !== $player->contract->contract_end) {
                         $this->news->publish($this->contractNews->reminder($player, $instance));
-                        $this->playerRepository->markContractReminder($player);
+                        $this->contractRepository->markContractReminder($player);
                     }
 
                     continue;
@@ -134,24 +138,24 @@ class PersonService
             return;
         }
         $terms['salary'] = $decision['counter_salary'] ?? $terms['salary'];
-        $account = $this->playerRepository->contractAccount($club);
-        if ($this->playerRepository->annualContractWages($club, $player->id, $date) + $terms['salary'] * 52 > (int) $account->salaries_yearly_budget) {
+        $account = $this->contractRepository->contractAccount($club);
+        if ($this->contractRepository->annualContractWages($club, $player->id, $date) + $terms['salary'] * 52 > (int) $account->salaries_yearly_budget) {
             return;
         }
         $endsAt = $this->contractRenewal->endsAt($date, 36, $player->contract->contract_end);
-        $this->playerRepository->applyContractRenewal($player, $account, $terms, $date, $endsAt, 36);
+        $this->contractRepository->applyContractRenewal($player, $account, $terms, $date, $endsAt, 36);
     }
 
     /** @return array<string, mixed> */
     public function contractOverview(?int $playerId = null): array
     {
-        $instance = $this->playerRepository->managedInstance($this->gameContext->instanceId());
+        $instance = $this->contractRepository->managedInstance($this->gameContext->instanceId());
         abort_if($instance->club_id === null, 403);
         $date = $this->gameContext->instanceDate();
         $club = $instance->club;
         $players = $playerId === null
-            ? $this->playerRepository->clubContracts($club, $date)
-            : collect([$this->playerRepository->playerForRenewal($club, $playerId, $date)]);
+            ? $this->contractRepository->clubContracts($club, $date)
+            : collect([$this->contractRepository->playerForRenewal($club, $playerId, $date)]);
         $contracts = $players->map(function (Player $player) use ($date): array {
             $contract = $player->contract;
             $endsAt = CarbonImmutable::parse($contract->contract_end);

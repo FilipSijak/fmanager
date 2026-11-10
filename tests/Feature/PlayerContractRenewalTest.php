@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Contracts\Search\PlayerSearchIndexDispatcher;
 use App\Events\NextDay;
 use App\Jobs\SynchronizePlayerSearchDocument;
 use App\Listeners\ProcessPlayerContracts;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Bus;
 use Inertia\Testing\AssertableInertia as Assert;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
+use RuntimeException;
 use Tests\TestCase;
 
 class PlayerContractRenewalTest extends TestCase
@@ -307,6 +309,26 @@ class PlayerContractRenewalTest extends TestCase
         $player->forceFill(['is_retired' => true])->save();
         $this->postJson('/api/contracts/'.$player->id.'/renew', $this->offer($player) + ['months' => 12])->assertNotFound();
         $this->assertDatabaseCount('player_contract_renewals', 0);
+    }
+
+    #[Test]
+    public function failed_expiry_processing_rolls_back_player_contract_and_news_changes(): void
+    {
+        [$instance, $club, $player] = $this->world();
+        $instance->forceFill(['instance_date' => '2027-01-01'])->save();
+        $this->mock(PlayerSearchIndexDispatcher::class)->shouldReceive('synchronizePlayer')->once()
+            ->with((int) $player->id)->andThrow(new RuntimeException('Processing failed.'));
+
+        try {
+            app(ProcessPlayerContracts::class)->handle(new NextDay($instance));
+            $this->fail('Expected expiry processing to fail.');
+        } catch (RuntimeException $exception) {
+            $this->assertSame('Processing failed.', $exception->getMessage());
+        }
+
+        $this->assertDatabaseHas('players', ['id' => $player->id, 'club_id' => $club->id, 'contract_id' => $player->contract_id]);
+        $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'contract_end' => '2026-12-31']);
+        $this->assertDatabaseCount('news', 0);
     }
 
     /** @return array<string, mixed> */
