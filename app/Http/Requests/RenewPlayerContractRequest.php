@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Services\PersonService\Domain\PlayerContractRenewal;
+use App\Services\ContractService\Domain\PlayerContractRenewal;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RenewPlayerContractRequest extends FormRequest

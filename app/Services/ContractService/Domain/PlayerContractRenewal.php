@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\PersonService\Domain;
+namespace App\Services\ContractService\Domain;
 
 use App\Models\PlayerContract;
 use Carbon\CarbonImmutable;
