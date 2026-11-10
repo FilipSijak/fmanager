@@ -1,0 +1,45 @@
+tests/Unit/Services/ContractService/StaffContractTermsTest.php
+  s_b08adfe8862052::t_37edb0f015c8b2 1-4,11-14,19,36-37
+  s_b08adfe8862052::t_d36cdeacb93be9 5-10,15-18,20-35
+app/Services/ContractService/ContractService.php
+  s_b08adfe8862052::t_d36cdeacb93be9 10,16,19,36,42-69
+  s_b08adfe8862052::t_8ae524f72e79be 70
+app/Repositories/ContractRepository.php
+  s_b08adfe8862052::t_d36cdeacb93be9 10,38-41
+  s_b08adfe8862052::t_c3cf491fcac15e 42-43
+app/Services/ContractService/Domain/StaffSalary.php
+  s_b08adfe8862052::t_d36cdeacb93be9 1-48
+tests/Feature/InitialStaffContractsTest.php
+  s_b08adfe8862052::t_1d94dd9361dcc9 1-41
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_d36cdeacb93be9 21,190-199,204,275
+tests/Integration/Person/StaffRepositoryTest.php
+  s_b08adfe8862052::t_d36cdeacb93be9 9-10,42-43
+app/Services/ManagerJobService/ManagerJobService.php
+  s_b08adfe8862052::t_d36cdeacb93be9 9,32,188-189
+app/Repositories/StaffRepository.php
+  s_b08adfe8862052::t_d36cdeacb93be9 31,33,35,40-44
+app/Services/ContractService/Domain/StaffContractTerms.php
+  s_b08adfe8862052::t_d36cdeacb93be9 5-7,10-13,15-25
+  s_b08adfe8862052::t_37edb0f015c8b2 1-4,8-9,14,26-27
+tests/Unit/Staff/StaffSalaryTest.php
+  s_b08adfe8862052::t_d36cdeacb93be9 5
+tests/Integration/Instance/CreateInstanceTest.php
+  s_b08adfe8862052::t_dd3b090ac0ea88 83-84
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7df7a6c45eed525dbe211e641d30fda9cda82c6a",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
