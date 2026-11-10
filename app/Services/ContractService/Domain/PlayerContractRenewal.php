@@ -17,26 +17,35 @@ class PlayerContractRenewal
     /** @param array<string, int> $terms
      * @return array{status: string, message: string, counter_salary?: int}
      */
-    public function consider(int $ambition, int $clubRank, PlayerContract $contract, array $terms): array
+    public function consider(PlayerContractContext $context, PlayerContract $contract, array $terms, int $months): array
     {
-        if ($ambition - $clubRank > 4) {
+        if (! $context->isWillingToRenew()) {
             return ['status' => 'rejected', 'message' => 'The player wants to play for a more ambitious club and will not renew.'];
         }
         if ($terms['salary'] < (int) $contract->salary / 2) {
             return ['status' => 'rejected', 'message' => 'The player rejected the proposed salary reduction.'];
         }
-        $currentPackage = (int) $contract->salary;
-        $offeredBonuses = 0;
-        foreach (['appearance', 'goal', 'assist', 'clean_sheet'] as $field) {
-            $currentPackage += (int) $contract->{$field};
-            $offeredBonuses += $terms[$field];
-        }
-        $requiredSalary = max(1, (int) ceil($currentPackage * (1 + max(0, $ambition - $clubRank) / 10)) - $offeredBonuses);
+        $requiredSalary = $this->requiredSalary($context, $contract->getAttributes(), $terms, $months);
         if ($terms['salary'] < $requiredSalary) {
             return ['status' => 'counter', 'message' => 'The player requests a weekly salary of £'.number_format($requiredSalary).' with these bonuses.', 'counter_salary' => $requiredSalary];
         }
 
         return ['status' => 'accepted', 'message' => 'The player accepted your renewal offer.'];
+    }
+
+    /** @param array<string, mixed> $current
+     * @param  array<string, int>  $terms
+     */
+    public function requiredSalary(PlayerContractContext $context, array $current, array $terms, int $months): int
+    {
+        $currentSalary = (int) $current['salary'];
+        $currentBonuses = $context->performance->weeklyBonuses(array_map(intval(...), $current));
+        $salaryAnchor = ($currentSalary + min($currentSalary * 0.25, $currentBonuses)) * 0.95;
+        $expectation = max($salaryAnchor, $context->marketSalary * $context->salaryAdjustment($months));
+        $weeklySigningFee = ($terms['signing_fee'] ?? 0) / ($months * 52 / 12);
+        $bonusCredit = min($expectation * 0.25, $context->performance->weeklyBonuses($terms) + $weeklySigningFee);
+
+        return max(1, (int) ceil(round($expectation - $bonusCredit, 8)));
     }
 
     public function endsAt(string $date, int $months, string $currentEnd): string

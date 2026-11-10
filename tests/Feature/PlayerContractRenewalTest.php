@@ -10,11 +10,15 @@ use App\Models\Account;
 use App\Models\Club;
 use App\Models\ClubTactic;
 use App\Models\ClubTacticPlayerSlot;
+use App\Models\Competition;
+use App\Models\Game;
+use App\Models\GamePlayerStat;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
 use App\Models\Season;
 use App\Models\TransferList;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\TacticsService\Mentality;
 use App\Services\TacticsService\PassingStyle;
 use App\Services\TacticsService\PressingIntensity;
@@ -162,6 +166,8 @@ class PlayerContractRenewalTest extends TestCase
         [, $club, $player] = $this->world();
         $payload = $this->offer($player) + ['months' => 12];
         $payload['salary'] = 700;
+        $payload['appearance'] = 0;
+        $payload['transfer_fee'] = 0;
 
         $this->postJson('/api/contracts/'.$player->id.'/renew', $payload)->assertOk()
             ->assertJsonPath('data.status', 'counter')->assertJsonPath('data.counter_salary', 950);
@@ -331,6 +337,71 @@ class PlayerContractRenewalTest extends TestCase
         $this->assertDatabaseCount('news', 0);
     }
 
+    #[Test]
+    public function improved_players_demand_market_pay_and_trophy_bonuses_cannot_buy_their_agreement(): void
+    {
+        [, $club, $player] = $this->world();
+        $player->forceFill(array_fill_keys(array_merge(PlayerFields::TECHNICAL_FIELDS, PlayerFields::MENTAL_FIELDS, PlayerFields::PHYSICAL_FIELDS), 10)
+            + ['marketing_rank' => 100, 'max_potential' => 100])->save();
+        $payload = array_replace($this->offer($player), ['months' => 36, 'transfer_fee' => 0, 'appearance' => 0, 'goal' => 1000000, 'league' => 1000000]);
+
+        $this->postJson('/api/contracts/'.$player->id.'/renew', $payload)->assertOk()
+            ->assertJsonPath('data.status', 'counter')->assertJsonPath('data.counter_salary', 33333);
+        $club->account->forceFill(['salaries_yearly_budget' => 100000])->save();
+        $this->postJson('/api/contracts/'.$player->id.'/renew', $payload)->assertOk()
+            ->assertJsonPath('data.status', 'counter')->assertJsonPath('data.counter_salary', 33333);
+
+        $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'salary' => 1000, 'contract_end' => '2026-12-31']);
+        $this->assertDatabaseHas('accounts', ['club_id' => $club->id, 'balance' => 1000000]);
+        $this->assertDatabaseCount('player_contract_renewals', 2);
+    }
+
+    #[Test]
+    public function renewal_demands_use_only_recent_completed_matches_in_the_players_save_and_season(): void
+    {
+        [$instance, , $player] = $this->world();
+        $player->forceFill(array_fill_keys(array_merge(PlayerFields::TECHNICAL_FIELDS, PlayerFields::MENTAL_FIELDS, PlayerFields::PHYSICAL_FIELDS), 10)
+            + ['marketing_rank' => 100, 'max_potential' => 100])->save();
+        $competition = Competition::factory()->create(['instance_id' => $instance->id]);
+        $base = ['instance_id' => $instance->id, 'season_id' => $instance->season_id,
+            'competition_id' => $competition->id, 'stadium_id' => 100, 'hometeam_id' => $player->club_id, 'awayteam_id' => $player->club_id,
+            'match_start' => '2026-08-01 15:00:00', 'status' => Game::STATUS_COMPLETED];
+        foreach (range(1, 10) as $day) {
+            $game = Game::factory()->create($base);
+            GamePlayerStat::factory()->create(['instance_id' => $instance->id, 'game_id' => $game->id,
+                'club_id' => $player->club_id, 'player_id' => $player->id, 'minutes_played' => 90, 'rating' => 8.5]);
+        }
+        $foreign = Instance::factory()->create();
+        $pastSeason = Season::factory()->create(['instance_id' => $instance->id]);
+        foreach ([['status' => Game::STATUS_SCHEDULED], ['match_start' => '2026-09-02 15:00:00'], ['match_start' => '2026-07-01 15:00:00'],
+            ['instance_id' => $foreign->id], ['season_id' => $pastSeason->id]] as $attributes) {
+            $game = Game::factory()->create($attributes + $base);
+            GamePlayerStat::factory()->create(['instance_id' => $attributes['instance_id'] ?? $instance->id,
+                'game_id' => $game->id, 'club_id' => $player->club_id, 'player_id' => $player->id, 'rating' => 1]);
+        }
+        $payload = array_replace($this->offer($player), ['months' => 36, 'transfer_fee' => 0, 'appearance' => 0]);
+
+        $this->postJson('/api/contracts/'.$player->id.'/renew', $payload)->assertOk()
+            ->assertJsonPath('data.status', 'counter')->assertJsonPath('data.counter_salary', 38333);
+
+        $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'salary' => 1000]);
+    }
+
+    #[Test]
+    public function ai_clubs_pay_the_same_market_expectation_as_a_manual_renewal(): void
+    {
+        [$instance, , $player] = $this->world();
+        $ai = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => 200, 'rank' => 10]);
+        Account::factory()->create(['club_id' => $ai->id, 'salaries_yearly_budget' => 2000000]);
+        $skills = array_fill_keys(array_merge(PlayerFields::TECHNICAL_FIELDS, PlayerFields::MENTAL_FIELDS, PlayerFields::PHYSICAL_FIELDS), 10);
+        $player->forceFill($skills + ['club_id' => $ai->id, 'marketing_rank' => 100, 'max_potential' => 100])->save();
+
+        app(ProcessPlayerContracts::class)->handle(new NextDay($instance));
+
+        $this->assertDatabaseHas('players_contracts', ['id' => $player->contract_id, 'salary' => 33333, 'contract_end' => '2029-09-01']);
+        $this->assertDatabaseHas('player_contract_renewals', ['player_id' => $player->id, 'status' => 'accepted']);
+    }
+
     /** @return array<string, mixed> */
     private function offer(Player $player): array
     {
@@ -346,7 +417,9 @@ class PlayerContractRenewalTest extends TestCase
         Account::factory()->create(['club_id' => $club->id, 'balance' => 1000000, 'future_balance' => 1000000, 'transfer_budget' => 1000000]);
         $instance->forceFill(['club_id' => $club->id, 'season_id' => $season->id])->save();
         $contract = PlayerContract::factory()->create(['contract_start' => '2025-07-01', 'contract_end' => '2026-12-31', 'salary' => 1000, 'appearance' => 0, 'goal' => 0, 'assist' => 0, 'clean_sheet' => 0]);
-        $player = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'contract_id' => $contract->id, 'ambition' => 10]);
+        $skills = array_fill_keys(array_merge(PlayerFields::TECHNICAL_FIELDS, PlayerFields::MENTAL_FIELDS, PlayerFields::PHYSICAL_FIELDS), 2);
+        $player = Player::factory()->create($skills + ['instance_id' => $instance->id, 'club_id' => $club->id, 'contract_id' => $contract->id, 'ambition' => 10, 'loyalty' => 10, 'marketing_rank' => 20, 'potential' => 20, 'max_potential' => 20]);
+        $player->person->forceFill(['dob' => '2000-01-01'])->save();
         $this->actingAs($instance->user)->withHeaders(['instanceHash' => $instance->instance_hash])->withSession(['active_instance_hash' => $instance->instance_hash]);
         app(GameContext::class)->set($instance->id, $season->id, '2026-09-01');
 

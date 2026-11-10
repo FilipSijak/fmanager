@@ -4,6 +4,8 @@ namespace App\Repositories;
 
 use App\Models\Account;
 use App\Models\Club;
+use App\Models\Game;
+use App\Models\GamePlayerStat;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
@@ -65,6 +67,21 @@ class ContractRepository
         return Player::query()->forClub($club)->withCurrentContractOn($date)
             ->with(['person', 'contract'])->when($lockForUpdate, fn ($query) => $query->lockForUpdate())
             ->findOrFail($playerId);
+    }
+
+    /** @return array{games: int, appearances: list<array<string, mixed>>} */
+    public function recentContractPerformance(Player $player, ?int $seasonId, string $date): array
+    {
+        $clubId = (int) ($player->loan_club_id ?? $player->club_id);
+        $games = Game::query()->forInstance((int) $player->instance_id)->forClub($clubId)
+            ->where('season_id', $seasonId)->where('status', Game::STATUS_COMPLETED)
+            ->whereDate('match_start', '<=', $date)->orderByDesc('match_start')->orderByDesc('id')
+            ->limit(10)->pluck('id');
+        $appearances = $games->isEmpty() ? [] : GamePlayerStat::query()->forPlayer($player)
+            ->completedAppearances($seasonId, $date)->whereIn('game_player_stats.game_id', $games)
+            ->where('game_player_stats.club_id', $clubId)->select('game_player_stats.*')->get()->toArray();
+
+        return ['games' => $games->count(), 'appearances' => $appearances];
     }
 
     public function contractAccount(Club $club): Account

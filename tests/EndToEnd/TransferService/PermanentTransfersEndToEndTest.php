@@ -393,7 +393,7 @@ class PermanentTransfersEndToEndTest extends TestCase
     private function createClub(int $id, int $transferBudget = 68000000): Club
     {
         if (! Instance::query()->whereKey(1)->exists()) {
-            Instance::factory()->create(['id' => 1, 'instance_date' => '2026-09-01']);
+            Instance::factory()->create(['id' => 1, 'instance_date' => '2026-09-01', 'club_id' => null]);
         }
 
         $club = Club::factory()->create([

@@ -11,6 +11,8 @@ use App\Models\StaffContract;
 use App\Repositories\ContractRepository;
 use App\Repositories\PlayerRepository;
 use App\Services\ContractService\Domain\InitialPlayerContract;
+use App\Services\ContractService\Domain\PlayerContractContext;
+use App\Services\ContractService\Domain\PlayerContractPerformance;
 use App\Services\ContractService\Domain\PlayerContractRenewal;
 use App\Services\ContractService\Domain\PlayerContractTerms;
 use App\Services\ContractService\Domain\PlayerSalaryExpectation;
@@ -156,7 +158,7 @@ class ContractService
             if ($this->contractRepository->annualContractWages($club, $player->id, $date) + $terms['salary'] * 52 > (int) $account->salaries_yearly_budget) {
                 throw ValidationException::withMessages(['salary' => 'The salary exceeds the annual wage budget.']);
             }
-            $decision = $this->contractRenewal->consider((int) $player->ambition, (int) $club->rank, $player->contract, $terms);
+            $decision = $this->contractRenewal->consider($this->renewalContext($player, $club, $instance), $player->contract, $terms, $months);
             if ($decision['status'] !== 'accepted') {
                 $this->contractRepository->recordRenewalOffer($player, $terms, $date, $endsAt, $months, $decision['status']);
 
@@ -198,20 +200,21 @@ class ContractService
 
                     continue;
                 }
-                $this->renewAiPlayerContract($player, $date);
+                $this->renewAiPlayerContract($player, $instance);
             }
         });
     }
 
-    private function renewAiPlayerContract(Player $player, string $date): void
+    private function renewAiPlayerContract(Player $player, Instance $instance): void
     {
+        $date = (string) $instance->instance_date;
         $club = $player->club;
         if ($club === null || $club->account === null) {
             return;
         }
         $terms = $this->contractRenewal->terms($player->contract->getAttributes());
         $terms['signing_fee'] = 0;
-        $decision = $this->contractRenewal->consider((int) $player->ambition, (int) $club->rank, $player->contract, $terms);
+        $decision = $this->contractRenewal->consider($this->renewalContext($player, $club, $instance), $player->contract, $terms, 36);
         if ($decision['status'] === 'rejected') {
             return;
         }
@@ -222,6 +225,19 @@ class ContractService
         }
         $endsAt = $this->contractRenewal->endsAt($date, 36, $player->contract->contract_end);
         $this->contractRepository->applyContractRenewal($player, $account, $terms, $date, $endsAt, 36);
+    }
+
+    private function renewalContext(Player $player, Club $club, Instance $instance): PlayerContractContext
+    {
+        $date = (string) $instance->instance_date;
+        $terms = $this->suggestedPlayerTerms($player, $date);
+        $recent = $this->contractRepository->recentContractPerformance($player, $instance->season_id, $date);
+
+        return new PlayerContractContext(
+            (int) $terms['salary'], (int) CarbonImmutable::parse($player->person->dob)->diffInYears(CarbonImmutable::parse($date)),
+            (int) $player->ambition, (int) $club->rank, (int) $player->loyalty,
+            new PlayerContractPerformance($recent['games'], $recent['appearances']),
+        );
     }
 
     /** @return array<string, mixed> */
