@@ -13,6 +13,7 @@ use App\Repositories\PlayerRepository;
 use App\Services\ContractService\Domain\InitialPlayerContract;
 use App\Services\ContractService\Domain\PlayerContractRenewal;
 use App\Services\ContractService\Domain\PlayerContractTerms;
+use App\Services\ContractService\Domain\PlayerSalaryExpectation;
 use App\Services\ContractService\Domain\StaffContractTerms;
 use App\Services\NewsService\NewsService;
 use App\Services\NewsService\NewsTypes\PlayerContractNews;
@@ -32,6 +33,7 @@ class ContractService
         private readonly GameContext $gameContext,
         private readonly PlayerContractRenewal $contractRenewal,
         private readonly PlayerContractTerms $playerContractTerms,
+        private readonly PlayerSalaryExpectation $salaryExpectation,
         private readonly InitialPlayerContract $initialPlayerContract,
         private readonly StaffContractTerms $staffContractTerms,
         private readonly NewsService $news,
@@ -79,12 +81,13 @@ class ContractService
             if ((int) $club->instance_id !== $instanceId) {
                 throw new InvalidArgumentException('The club must belong to the current game.');
             }
+            $this->contractRepository->loadPlayerPeople($players);
             foreach ($players as $player) {
                 if ((int) $player->instance_id !== $instanceId || (int) $player->club_id !== (int) $club->id || $player->contract_id !== null) {
                     throw new InvalidArgumentException('Initial contracts require unsigned players from the selected club and game.');
                 }
                 $contract = $this->contractRepository->createPlayerContract($this->initialPlayerContract->data(
-                    $this->contractBasedOnPotential($player), (string) $instance->instance_date,
+                    $this->suggestedPlayerTerms($player, (string) $instance->instance_date), (string) $instance->instance_date,
                     rand(PlayerContractRenewal::MIN_MONTHS, PlayerContractRenewal::MAX_MONTHS),
                 ));
                 $this->playerRepository->assignPlayerContract($player, (int) $contract->id);
@@ -116,10 +119,16 @@ class ContractService
     }
 
     /** @return array<string, int|float> */
-    public function contractBasedOnPotential(Player $player): array
+    public function suggestedPlayerTerms(Player $player, ?string $date = null): array
     {
+        $date ??= (string) $this->contractRepository->managedInstance((int) $player->instance_id)->instance_date;
+        $this->contractRepository->loadPlayerPeople(collect([$player]));
+        $age = (int) CarbonImmutable::parse($player->person->dob)->diffInYears(CarbonImmutable::parse($date));
+
         return $this->playerContractTerms->forPlayer(
-            (int) $player->potential, (int) $player->marketing_rank, $player->position, $player->contract_id !== null,
+            $this->salaryExpectation->ability($player->getAttributes(), $player->position),
+            (int) $player->marketing_rank, $player->position, $player->contract_id !== null,
+            $age, (int) $player->max_potential,
         );
     }
 

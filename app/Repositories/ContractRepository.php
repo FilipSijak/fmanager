@@ -10,11 +10,18 @@ use App\Models\PlayerContract;
 use App\Models\StaffContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 
 class ContractRepository
 {
+    /** @param Collection<int, Player> $players */
+    public function loadPlayerPeople(Collection $players): void
+    {
+        (new EloquentCollection($players->all()))->loadMissing('person');
+    }
+
     /** @param array<string, mixed> $data */
     public function createPlayerContract(array $data): PlayerContract
     {

@@ -256,7 +256,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
         $transfer = $this->createPlayerCounterOfferTransfer();
 
         $baselineOffer = app()->make(ContractService::class)
-            ->contractBasedOnPotential($transfer->player()->first());
+            ->suggestedPlayerTerms($transfer->player()->first());
 
         TransferContractOffer::factory()->create(array_merge(
             ['transfer_id' => $transfer->id],
@@ -277,7 +277,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
         $transfer = $this->createPlayerCounterOfferTransfer();
 
         $baselineOffer = app()->make(ContractService::class)
-            ->contractBasedOnPotential($transfer->player()->first());
+            ->suggestedPlayerTerms($transfer->player()->first());
 
         TransferContractOffer::factory()->create(array_merge(
             ['transfer_id' => $transfer->id],
@@ -379,6 +379,10 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
 
     private function createClub(int $id): Club
     {
+        if (! Instance::query()->whereKey(1)->exists()) {
+            Instance::factory()->create(['id' => 1, 'instance_date' => '2026-09-01']);
+        }
+
         return Club::factory()->create([
             'id' => $id,
             'instance_id' => 1,

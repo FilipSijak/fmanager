@@ -55,7 +55,7 @@ class ClubConsideration
         $buyingClub = Club::find($transfer->source_club_id);
         $player = Player::find($transfer->player_id);
         $transferContractDetails = TransferContractOffer::where('transfer_id', $transfer->id)->firstOrFail();
-        $contractOffer = (object) $this->contractService->contractBasedOnPotential($player);
+        $contractOffer = (object) $this->contractService->suggestedPlayerTerms($player);
         $positionShortage = $this->squadTransferAnalysis->positionShortage($buyingClub, $player->position);
 
         $countableContractFields = [

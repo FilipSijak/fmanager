@@ -6,6 +6,8 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Repositories\ContractRepository;
+use App\Services\ContractService\ContractService;
+use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
@@ -66,6 +68,20 @@ class InitialPlayerContractsTest extends TestCase
         $this->assertDatabaseCount('people', 0);
         $this->assertDatabaseCount('players_progress', 0);
         $this->assertDatabaseCount('players_contracts', 0);
+    }
+
+    #[Test]
+    public function setup_salary_uses_current_ability_instead_of_a_players_ceiling(): void
+    {
+        [$instance, $club] = $this->world();
+        $skills = array_fill_keys(array_merge(PlayerFields::TECHNICAL_FIELDS, PlayerFields::MENTAL_FIELDS, PlayerFields::PHYSICAL_FIELDS), 2);
+        $player = Player::factory()->create($skills + ['instance_id' => $instance->id, 'club_id' => $club->id,
+            'contract_id' => null, 'marketing_rank' => 20, 'potential' => 200, 'max_potential' => 200]);
+        $player->person->forceFill(['dob' => '2000-01-01'])->save();
+
+        app(ContractService::class)->createInitialPlayerContracts($instance->id, $club, collect([$player]));
+
+        $this->assertSame(267, (int) $player->fresh()->contract->salary);
     }
 
     /** @return array{Instance, Club} */

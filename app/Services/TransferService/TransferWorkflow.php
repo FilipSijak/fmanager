@@ -222,7 +222,7 @@ class TransferWorkflow
     {
         $player = Player::find($transfer->player_id);
 
-        $contractOffer = $this->contractService->contractBasedOnPotential($player);
+        $contractOffer = $this->contractService->suggestedPlayerTerms($player);
 
         DB::table('transfer_contract_offers')->insert(
             [

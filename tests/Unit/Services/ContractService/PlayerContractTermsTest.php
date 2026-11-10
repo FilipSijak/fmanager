@@ -14,9 +14,9 @@ class PlayerContractTermsTest extends TestCase
     #[TestWith([11, 733, 110])]
     #[TestWith([100, 33333, 5000])]
     #[TestWith([200, 133333, 20000])]
-    public function salary_and_bonuses_use_the_matching_potential_tier(int $potential, int $salary, int $appearance): void
+    public function salary_and_bonuses_use_the_matching_ability_tier(int $ability, int $salary, int $appearance): void
     {
-        $terms = (new PlayerContractTerms)->forPlayer($potential, 100, 'CB', true);
+        $terms = (new PlayerContractTerms)->forPlayer($ability, 100, 'CB', true);
 
         $this->assertSame($salary, $terms['salary']);
         $this->assertSame($appearance, $terms['appearance']);

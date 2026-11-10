@@ -6,6 +6,8 @@ use Carbon\CarbonImmutable;
 
 class PlayerContractTerms
 {
+    public function __construct(private readonly PlayerSalaryExpectation $salaryExpectation = new PlayerSalaryExpectation) {}
+
     /** @param array<string, mixed> $offer
      * @return array<string, int|float|string>
      */
@@ -27,13 +29,13 @@ class PlayerContractTerms
     }
 
     /** @return array<string, int|float> */
-    public function forPlayer(int $potential, int $marketingRank, string $position, bool $hasContract): array
+    public function forPlayer(int $ability, int $marketingRank, string $position, bool $hasContract, int $age = 26, ?int $potential = null): array
     {
-        $potential = min(200, max(1, $potential));
-        $tier = (int) ceil($potential / 10);
+        $ability = min(200, max(1, $ability));
+        $tier = (int) ceil($ability / 10);
         $factor = $tier / 10;
-        $salary = max(1, (int) round($potential * $factor * 1000 * ($marketingRank / 100) / 3));
-        $appearance = (int) round($potential * $factor * 50);
+        $salary = $this->salaryExpectation->salary($ability, $marketingRank, $age, $potential);
+        $appearance = (int) round($ability * $factor * 50);
 
         return [
             'transfer_fee' => (int) round($salary * ((23 - $tier) / 10) * ($hasContract ? 1 : 5)),
