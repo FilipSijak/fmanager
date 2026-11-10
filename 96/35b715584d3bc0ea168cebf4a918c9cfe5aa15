@@ -1,0 +1,25 @@
+app/Repositories/ContractRepository.php
+  s_b08adfe8862052::t_5cd582b967b153 1-88
+app/Repositories/PlayerRepository.php
+  s_b08adfe8862052::t_7d88a924232d04 46
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_646c83d6201e4f 14,44,63,67,74,78,83,89,100,103,108-110,118,141-142,146,152,157-158
+tests/Feature/PlayerContractRenewalTest.php
+  s_b08adfe8862052::t_3eb61163998578 5,28,314-333
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "9635b715584d3bc0ea168cebf4a918c9cfe5aa15",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
