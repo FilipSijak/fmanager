@@ -80,6 +80,8 @@ class CreateInstanceTest extends TestCase
         $this->assertNull($instance->club_id);
         $this->assertNull($instance->manager_id);
         $this->assertSame(200, Player::query()->forInstance($instance->id)->whereNull('club_id')->count());
+        $this->assertSame(200, Player::query()->forInstance($instance->id)->whereNull('club_id')->whereNull('contract_id')->count());
+        $this->assertFalse(Player::query()->forInstance($instance->id)->whereNotNull('club_id')->whereNull('contract_id')->exists());
         $this->assertNotNull(Game::query()->where('instance_id', $instance->id)->first());
         $previousManager = StaffCoaching::query()->where('club_id', $managedClub->id)->where('type', 'MANAGER')->firstOrFail();
         $this->withoutVite();

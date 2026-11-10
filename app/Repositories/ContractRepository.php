@@ -7,6 +7,7 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
+use App\Models\StaffContract;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
@@ -32,6 +33,12 @@ class ContractRepository
     public function updatePlayerContract(PlayerContract $contract, array $data): void
     {
         $contract->forceFill($data)->save();
+    }
+
+    /** @param array<string, mixed> $data */
+    public function createStaffContract(array $data): StaffContract
+    {
+        return StaffContract::query()->create($data);
     }
 
     public function managedInstance(int $instanceId, bool $lockForUpdate = false): Instance

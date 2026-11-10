@@ -4,15 +4,12 @@ namespace App\Repositories;
 
 use App\Models\BaseData\BaseFormation;
 use App\Models\Club;
-use App\Models\Instance;
 use App\Models\StaffCoaching;
 use App\Models\StaffPhysio;
 use App\Models\StaffScout;
 use App\Services\PersonService\GeneratePeople\StaffType\GeneratedStaffData;
-use App\Services\PersonService\GeneratePeople\StaffType\StaffSalary;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\TacticsService\TacticsService;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
@@ -26,33 +23,25 @@ class StaffRepository
     ];
 
     public function __construct(
-        private readonly StaffSalary $staffSalary,
         private readonly TacticsService $tacticsService,
     ) {}
 
     /**
      * @param  list<GeneratedStaffData>  $staffMembers
+     * @param  list<int>  $contractIds
      */
-    public function bulkStaffInsert(int $instanceId, ?Club $club, array $staffMembers): void
+    public function bulkStaffInsert(int $instanceId, ?Club $club, array $staffMembers, array $contractIds = []): void
     {
-        DB::transaction(function () use ($instanceId, $club, $staffMembers): void {
+        DB::transaction(function () use ($instanceId, $club, $staffMembers, $contractIds): void {
             foreach ($staffMembers as $staffMember) {
                 $this->assertSupportedRole($staffMember->role);
             }
 
-            $contractStart = $club ? Instance::query()->findOrFail($instanceId)->instance_date : null;
-            foreach ($staffMembers as $staffMember) {
-                $contractId = $contractStart
-                    ? DB::table('staff_contracts')->insertGetId([
-                        'contract_start' => $contractStart,
-                        'contract_end' => Carbon::parse($contractStart)->addYears(rand(1, 3))->toDateString(),
-                        'salary' => $this->staffSalary->estimatedSalaryForStaffRole(
-                            $staffMember->role,
-                            $staffMember->potential
-                        ),
-                        'signing_fee' => null,
-                    ])
-                    : null;
+            if (($club !== null && count($contractIds) !== count($staffMembers)) || ($club === null && $contractIds !== [])) {
+                throw new InvalidArgumentException('Club staff require matching contract IDs; free staff cannot have contracts.');
+            }
+            foreach ($staffMembers as $index => $staffMember) {
+                $contractId = $contractIds[$index] ?? null;
                 $personId = DB::table('people')->insertGetId([
                     'instance_id' => $instanceId,
                     'first_name' => $staffMember->personDetails->firstName,

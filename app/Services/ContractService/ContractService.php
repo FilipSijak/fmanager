@@ -7,13 +7,16 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\PlayerContract;
+use App\Models\StaffContract;
 use App\Repositories\ContractRepository;
 use App\Repositories\PlayerRepository;
 use App\Services\ContractService\Domain\InitialPlayerContract;
 use App\Services\ContractService\Domain\PlayerContractRenewal;
 use App\Services\ContractService\Domain\PlayerContractTerms;
+use App\Services\ContractService\Domain\StaffContractTerms;
 use App\Services\NewsService\NewsService;
 use App\Services\NewsService\NewsTypes\PlayerContractNews;
+use App\Services\PersonService\GeneratePeople\StaffType\GeneratedStaffData;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -30,10 +33,40 @@ class ContractService
         private readonly PlayerContractRenewal $contractRenewal,
         private readonly PlayerContractTerms $playerContractTerms,
         private readonly InitialPlayerContract $initialPlayerContract,
+        private readonly StaffContractTerms $staffContractTerms,
         private readonly NewsService $news,
         private readonly PlayerContractNews $contractNews,
         private readonly PlayerSearchIndexDispatcher $playerSearch,
     ) {}
+
+    /** @param list<GeneratedStaffData> $staffMembers
+     * @return list<int>
+     */
+    public function createInitialStaffContracts(int $instanceId, ?Club $club, array $staffMembers): array
+    {
+        if ($club === null) {
+            return [];
+        }
+
+        return DB::transaction(function () use ($instanceId, $club, $staffMembers): array {
+            if ((int) $club->instance_id !== $instanceId) {
+                throw new InvalidArgumentException('The club must belong to the current game.');
+            }
+            $instance = $this->contractRepository->managedInstance($instanceId, true);
+            $ids = [];
+            foreach ($staffMembers as $staff) {
+                $ids[] = (int) $this->createStaffContract($staff->role, $staff->potential,
+                    (string) $instance->instance_date, rand(1, 3) * 12)->id;
+            }
+
+            return $ids;
+        });
+    }
+
+    public function createStaffContract(string $role, int $potential, string $date, int $months): StaffContract
+    {
+        return $this->contractRepository->createStaffContract($this->staffContractTerms->data($role, $potential, $date, $months));
+    }
 
     /** @param Collection<int, Player> $players */
     public function createInitialPlayerContracts(int $instanceId, ?Club $club, Collection $players): void

@@ -6,9 +6,10 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Person;
 use App\Repositories\StaffRepository;
+use App\Services\ContractService\ContractService;
+use App\Services\ContractService\Domain\StaffSalary;
 use App\Services\PersonService\GeneratePeople\StaffType\GeneratedStaffData;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
-use App\Services\PersonService\GeneratePeople\StaffType\StaffSalary;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +39,8 @@ class StaffRepositoryTest extends TestCase
         ];
         $repository = app(StaffRepository::class);
 
-        $repository->bulkStaffInsert($instance->id, $club, $staff);
+        $contracts = app(ContractService::class)->createInitialStaffContracts($instance->id, $club, $staff);
+        $repository->bulkStaffInsert($instance->id, $club, $staff, $contracts);
         $repository->bulkStaffInsert($instance->id, null, $staff);
 
         foreach (['staff_coaching', 'staff_scouts', 'staff_physio'] as $table) {

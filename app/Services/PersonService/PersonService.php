@@ -18,6 +18,7 @@ use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\Domain\PlayerPerformance;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
+use App\Services\PersonService\GeneratePeople\StaffType\GeneratedStaffData;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
@@ -186,15 +187,21 @@ class PersonService
         });
     }
 
+    /** @param list<GeneratedStaffData> $staffMembers */
+    private function persistGeneratedStaff(?Club $club, array $staffMembers): void
+    {
+        DB::transaction(function () use ($club, $staffMembers): void {
+            $instanceId = $this->gameContext->instanceId();
+            $contractIds = $this->contracts->createInitialStaffContracts($instanceId, $club, $staffMembers);
+            $this->staffRepository->bulkStaffInsert($instanceId, $club, $staffMembers, $contractIds);
+        });
+    }
+
     public function initialStaffClubSeed(Club $club): void
     {
         $staffMembers = $this->staffCreator->generateForClubRank($club->rank);
 
-        $this->staffRepository->bulkStaffInsert(
-            $this->gameContext->instanceId(),
-            $club,
-            $staffMembers
-        );
+        $this->persistGeneratedStaff($club, $staffMembers);
     }
 
     public function assignUserManager(Club $club, User $user): StaffCoaching
@@ -265,10 +272,6 @@ class PersonService
     {
         $freeStaff = $this->staffCreator->generateFreeStaff($count);
 
-        $this->staffRepository->bulkStaffInsert(
-            $this->gameContext->instanceId(),
-            null,
-            $freeStaff
-        );
+        $this->persistGeneratedStaff(null, $freeStaff);
     }
 }
