@@ -1,0 +1,23 @@
+app/Http/Requests/RenewPlayerContractRequest.php
+  s_b08adfe8862052::t_d9f355b09d844d 5
+app/Services/ContractService/Domain/PlayerContractRenewal.php
+  s_b08adfe8862052::t_cb76f0d1a0ec2f 3
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_8cbfbdd4080584 17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cd5ac5b9f093a1459f22c687804559582a1780b8",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
