@@ -1,0 +1,34 @@
+app/Services/ContractService/Domain/InitialPlayerContract.php
+  s_b08adfe8862052::t_5e21bb15d434fc 1-9,12,14-29
+  s_b08adfe8862052::t_9ccb41d4aa5954 10-11,13
+tests/Feature/InitialPlayerContractsTest.php
+  s_b08adfe8862052::t_5e21bb15d434fc 1-12,15-18,23,39,43,50,54,69,73,77,79-80
+  s_b08adfe8862052::t_e51c626bec556c 13-14,19-22,24-38,40-42,44-49,51-53,55-68,70-72,74-76,78
+tests/Unit/Services/ContractService/InitialPlayerContractTest.php
+  s_b08adfe8862052::t_5e21bb15d434fc 1-13,18,36-37
+  s_b08adfe8862052::t_840ff578aec9fe 14-17,19-20,22-25,28-31,33,35
+app/Repositories/PlayerRepository.php
+  s_b08adfe8862052::t_fc7a70fcabfb02 38,40-41,117,210
+app/Services/PersonService/PersonService.php
+  s_b08adfe8862052::t_e4986a7b05bee1 15,39,184
+app/Repositories/ContractRepository.php
+  s_b08adfe8862052::t_fed53217cc55fb 17-25
+app/Services/ContractService/ContractService.php
+  s_b08adfe8862052::t_becf07cc6372d5 6,11,18,21,31,37-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4119fc1a5fe6df4cf8ad991eab8d97fa2dcdc594",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
