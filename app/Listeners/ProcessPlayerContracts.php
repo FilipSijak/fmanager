@@ -3,14 +3,14 @@
 namespace App\Listeners;
 
 use App\Events\NextDay;
-use App\Services\PersonService\PersonService;
+use App\Services\ContractService\ContractService;
 
 class ProcessPlayerContracts
 {
-    public function __construct(private readonly PersonService $persons) {}
+    public function __construct(private readonly ContractService $contracts) {}
 
     public function handle(NextDay $event): void
     {
-        $this->persons->processPlayerContracts($event->instance);
+        $this->contracts->processPlayerContracts($event->instance);
     }
 }
