@@ -12,6 +12,7 @@ use App\Models\StaffCoaching;
 use App\Models\User;
 use App\Repositories\PlayerRepository;
 use App\Repositories\StaffRepository;
+use App\Services\ContractService\ContractService;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\Data\PotentialByCategoryData;
 use App\Services\PersonService\Domain\PlayerPerformance;
@@ -35,6 +36,7 @@ class PersonService
     public function __construct(
         private readonly StaffRepository $staffRepository,
         private readonly PlayerRepository $playerRepository,
+        private readonly ContractService $contracts,
         private readonly PlayerCreator $playerCreator,
         private readonly StaffCreator $staffCreator,
         private readonly PlayerPotential $playerPotential,
@@ -179,6 +181,7 @@ class PersonService
                 $generatedPlayers
             );
 
+            $this->contracts->createInitialPlayerContracts($this->gameContext->instanceId(), $club, $players);
             $this->playerRepository->bulkAssignmentPlayersPositions($players);
         });
     }

@@ -3,18 +3,22 @@
 namespace App\Services\ContractService;
 
 use App\Contracts\Search\PlayerSearchIndexDispatcher;
+use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Repositories\ContractRepository;
 use App\Repositories\PlayerRepository;
+use App\Services\ContractService\Domain\InitialPlayerContract;
 use App\Services\ContractService\Domain\PlayerContractRenewal;
 use App\Services\ContractService\Domain\PlayerContractTerms;
 use App\Services\NewsService\NewsService;
 use App\Services\NewsService\NewsTypes\PlayerContractNews;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 class ContractService
 {
@@ -24,10 +28,35 @@ class ContractService
         private readonly GameContext $gameContext,
         private readonly PlayerContractRenewal $contractRenewal,
         private readonly PlayerContractTerms $playerContractTerms,
+        private readonly InitialPlayerContract $initialPlayerContract,
         private readonly NewsService $news,
         private readonly PlayerContractNews $contractNews,
         private readonly PlayerSearchIndexDispatcher $playerSearch,
     ) {}
+
+    /** @param Collection<int, Player> $players */
+    public function createInitialPlayerContracts(int $instanceId, ?Club $club, Collection $players): void
+    {
+        if ($club === null) {
+            return;
+        }
+        DB::transaction(function () use ($instanceId, $club, $players): void {
+            $instance = $this->contractRepository->managedInstance($instanceId, true);
+            if ((int) $club->instance_id !== $instanceId) {
+                throw new InvalidArgumentException('The club must belong to the current game.');
+            }
+            foreach ($players as $player) {
+                if ((int) $player->instance_id !== $instanceId || (int) $player->club_id !== (int) $club->id || $player->contract_id !== null) {
+                    throw new InvalidArgumentException('Initial contracts require unsigned players from the selected club and game.');
+                }
+                $contract = $this->contractRepository->createPlayerContract($this->initialPlayerContract->data(
+                    $this->contractBasedOnPotential($player), (string) $instance->instance_date,
+                    rand(PlayerContractRenewal::MIN_MONTHS, PlayerContractRenewal::MAX_MONTHS),
+                ));
+                $this->playerRepository->assignPlayerContract($player, (int) $contract->id);
+            }
+        });
+    }
 
     /** @return array<string, int|float> */
     public function contractBasedOnPotential(Player $player): array

@@ -14,6 +14,15 @@ use Illuminate\Support\LazyCollection;
 
 class ContractRepository
 {
+    /** @param array<string, mixed> $data */
+    public function createPlayerContract(array $data): PlayerContract
+    {
+        $contract = new PlayerContract;
+        $contract->forceFill($data)->save();
+
+        return $contract;
+    }
+
     public function managedInstance(int $instanceId, bool $lockForUpdate = false): Instance
     {
         return Instance::query()->when($lockForUpdate, fn ($query) => $query->lockForUpdate())->findOrFail($instanceId);
