@@ -1,0 +1,40 @@
+app/Services/ContractService/Domain/PlayerContractRenewal.php
+  s_b08adfe8862052::t_fb1809daeff8a6 20,22,28,36-47
+  s_b08adfe8862052::t_00d3e3121efc1a 48
+  s_b08adfe8862052::t_423f80daaba986 49-50
+tests/Integration/Services/TransferService/TransferStatusUpdates/SellingClubTransferDecisionsTest.php
+  s_b08adfe8862052::t_ac362d63895b7c 7,162,164-165
+  s_b08adfe8862052::t_66afa8f7f2bee5 163
+tests/Unit/Services/ContractService/PlayerContractRenewalTest.php
+  s_b08adfe8862052::t_fb1809daeff8a6 1-95
+app/Services/ContractService/Domain/PlayerContractContext.php
+  s_b08adfe8862052::t_8feaa8ff8f341a 1-37
+app/Services/ContractService/Domain/PlayerContractPerformance.php
+  s_b08adfe8862052::t_8feaa8ff8f341a 1-41
+app/Repositories/ContractRepository.php
+  s_b08adfe8862052::t_fc8ad4a7e1ed8c 7-8,72-86
+app/Services/ContractService/ContractService.php
+  s_b08adfe8862052::t_3f5c75d4a613a0 14-15,161,203,208,210,217,230-242
+tests/EndToEnd/TransferService/PermanentTransfersEndToEndTest.php
+  s_b08adfe8862052::t_214ffb8420baa1 396
+tests/Feature/PlayerContractRenewalTest.php
+  s_b08adfe8862052::t_6287757545136e 13-15,21,169-170,340-404,420-422
+tests/Integration/Services/TransferService/TransferStatusUpdates/PermanentTransferWaitingPlayerStatusUpdatesTest.php
+  s_b08adfe8862052::t_ea2fa5d4225b3f 383
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "425e1d100898fad5b6ee31cf5e12298ffa740954",
+  "prompts": {},
+  "sessions": {
+    "s_b08adfe8862052": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1bfee-65e5-7173-bd7f-ea733315097b",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
