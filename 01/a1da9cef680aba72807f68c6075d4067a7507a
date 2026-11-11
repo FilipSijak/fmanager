@@ -1,0 +1,58 @@
+app/Services/PersonService/GeneratePeople/PlayerCreator.php
+  s_a4f9c6476ad8cf::t_81750c724e7701 7,17-23
+app/Models/Season.php
+  s_a4f9c6476ad8cf::t_81750c724e7701 5,11
+app/Repositories/PlayerRepository.php
+  s_a4f9c6476ad8cf::t_81750c724e7701 38-53
+tests/Unit/Services/PlayerService/Domain/YouthIntakeTest.php
+  s_a4f9c6476ad8cf::t_b8da32dcbdb4e5 1-56
+app/Services/PlayerService/Domain/YouthIntake.php
+  s_a4f9c6476ad8cf::t_30f741250c6bd2 1-4,10-11,25,42-43
+  s_a4f9c6476ad8cf::t_81750c724e7701 5-9,12-24,26-41
+app/Services/PlayerService/PlayerService.php
+  s_a4f9c6476ad8cf::t_81750c724e7701 5,12-13,20,23,41-45,101-110,112-125,127-134,139-141,153,166,173,175,177,182,184-185
+  s_a4f9c6476ad8cf::t_74a3524c9f1f12 170
+  s_a4f9c6476ad8cf::t_9c6d769c46d741 15
+  s_a4f9c6476ad8cf::t_3ac481c00ab247 111,126,135-138
+  s_a4f9c6476ad8cf::t_4ed8d2a88e8db9 169,171-172
+database/migrations/2026_11_11_143951_add_youth_intake_completed_on_to_seasons_table.php
+  s_a4f9c6476ad8cf::t_30f741250c6bd2 1-13,16-23,26-28
+  s_a4f9c6476ad8cf::t_81750c724e7701 14-15,24-25
+app/Services/NewsService/NewsType.php
+  s_a4f9c6476ad8cf::t_81750c724e7701 12
+tests/Integration/Instance/SeasonStartSchedulingTest.php
+  s_a4f9c6476ad8cf::t_3ac481c00ab247 5,13,60,68
+.gitignore
+  s_a4f9c6476ad8cf::t_889c85591dcc78 29
+app/Services/NewsService/NewsTypes/YouthIntakeNews.php
+  s_a4f9c6476ad8cf::t_30f741250c6bd2 1-4,14-15,18,37-38
+  s_a4f9c6476ad8cf::t_81750c724e7701 5-13,16-17,19-36
+tests/Feature/AnnualYouthIntakeTest.php
+  s_a4f9c6476ad8cf::t_4ed8d2a88e8db9 17,158-194
+  s_a4f9c6476ad8cf::t_30f741250c6bd2 1-4,18,22-25,200,205,207-208
+  s_a4f9c6476ad8cf::t_37f3a8d4d0cca3 12,41,53-56
+  s_a4f9c6476ad8cf::t_b8da32dcbdb4e5 5-11,13-16,19-21,26-40,42-52,57-157,195-199,201-204,206
+app/Services/PersonService/GeneratePeople/PlayerAttributesGenerator.php
+  s_a4f9c6476ad8cf::t_81750c724e7701 24,27
+app/Services/PersonService/GeneratePeople/PersonDetailsGenerator.php
+  s_a4f9c6476ad8cf::t_81750c724e7701 7-8,22-34
+  s_a4f9c6476ad8cf::t_47642d545d6863 35-36
+app/Services/SeasonService/SeasonStart.php
+  s_a4f9c6476ad8cf::t_81750c724e7701 40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "01a1da9cef680aba72807f68c6075d4067a7507a",
+  "prompts": {},
+  "sessions": {
+    "s_a4f9c6476ad8cf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1caf3-26cb-7950-a9c9-b4991e9b6709",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
