@@ -8,9 +8,9 @@ use App\Models\Instance;
 use App\Models\News;
 use App\Models\Player;
 use App\Models\Season;
+use App\Services\ClubService\ClubService;
 use App\Services\NewsService\NewsService;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
-use App\Services\PlayerService\PlayerService;
 use App\Services\SeasonService\SeasonService;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
@@ -77,7 +77,7 @@ class AnnualYouthIntakeTest extends TestCase
     {
         [$instance] = $this->world();
         Queue::fake([ReindexInstancePlayers::class]);
-        $service = app(PlayerService::class);
+        $service = app(ClubService::class);
         $service->annualYouthIntake($instance);
 
         $service->annualYouthIntake($instance);
@@ -95,11 +95,11 @@ class AnnualYouthIntakeTest extends TestCase
     {
         [$instance] = $this->world();
         Queue::fake([ReindexInstancePlayers::class]);
-        app(PlayerService::class)->annualYouthIntake($instance);
+        app(ClubService::class)->annualYouthIntake($instance);
         $nextSeason = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2028-08-15', 'end_date' => '2029-06-15']);
         $instance->forceFill(['season_id' => $nextSeason->id, 'instance_date' => '2028-06-16'])->save();
 
-        app(PlayerService::class)->annualYouthIntake($instance);
+        app(ClubService::class)->annualYouthIntake($instance);
 
         $this->assertDatabaseCount('players', 6);
         $this->assertSame('2028-06-16', $nextSeason->fresh()->youth_intake_completed_on);
@@ -115,7 +115,7 @@ class AnnualYouthIntakeTest extends TestCase
         app(GameContext::class)->set($otherInstance->id, 999, '2040-01-01');
         Queue::fake([ReindexInstancePlayers::class]);
 
-        app(PlayerService::class)->annualYouthIntake($instance);
+        app(ClubService::class)->annualYouthIntake($instance);
 
         $this->assertSame(3, Player::query()->forClub($club)->count());
         $this->assertSame(0, Player::query()->forInstance($otherInstance->id)->count());
@@ -130,7 +130,7 @@ class AnnualYouthIntakeTest extends TestCase
         $instance->forceFill(['club_id' => null])->save();
         Queue::fake([ReindexInstancePlayers::class]);
 
-        app(PlayerService::class)->annualYouthIntake($instance);
+        app(ClubService::class)->annualYouthIntake($instance);
 
         $this->assertSame(3, Player::query()->forClub($club)->count());
         $this->assertSame(0, News::query()->where('type', 'youth_intake')->count());
@@ -145,7 +145,7 @@ class AnnualYouthIntakeTest extends TestCase
         $this->mock(NewsService::class)->shouldReceive('publish')->once()->andThrow(new RuntimeException('Report failed.'));
 
         try {
-            app(PlayerService::class)->annualYouthIntake($instance);
+            app(ClubService::class)->annualYouthIntake($instance);
             $this->fail('Expected intake report creation to fail.');
         } catch (RuntimeException $exception) {
             $this->assertSame('Report failed.', $exception->getMessage());
@@ -166,7 +166,7 @@ class AnnualYouthIntakeTest extends TestCase
         $instance->forceFill(['season_id' => $season->id])->save();
         Queue::fake([ReindexInstancePlayers::class]);
 
-        app(PlayerService::class)->annualYouthIntake($instance);
+        app(ClubService::class)->annualYouthIntake($instance);
 
         $this->assertSame('2027-06-16', $season->fresh()->youth_intake_completed_on);
         $this->assertDatabaseCount('players', 0);
@@ -183,7 +183,7 @@ class AnnualYouthIntakeTest extends TestCase
         Queue::fake([ReindexInstancePlayers::class]);
 
         try {
-            app(PlayerService::class)->annualYouthIntake($instance);
+            app(ClubService::class)->annualYouthIntake($instance);
             $this->fail('Expected a season from another instance to be rejected.');
         } catch (ModelNotFoundException $exception) {
             $this->assertSame(Season::class, $exception->getModel());

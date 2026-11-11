@@ -1,10 +1,10 @@
 <?php
 
-namespace Tests\Unit\Services\PlayerService\Domain;
+namespace Tests\Unit\Services\ClubService\Domain;
 
+use App\Services\ClubService\Domain\YouthIntake;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
-use App\Services\PlayerService\Domain\YouthIntake;
 use Random\Engine\Mt19937;
 use Random\Randomizer;
 use Tests\TestCase;

@@ -2,22 +2,17 @@
 
 namespace App\Services\PlayerService;
 
-use App\Contracts\Search\PlayerSearchIndexDispatcher;
 use App\Models\Club;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\Season;
 use App\Repositories\PlayerRepository;
 use App\Services\ContractService\ContractService;
-use App\Services\NewsService\NewsService;
-use App\Services\NewsService\NewsTypes\YouthIntakeNews;
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
-use App\Services\PersonService\GeneratePeople\PersonDetailsGenerator;
 use App\Services\PersonService\GeneratePeople\PlayerCreator;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;
 use App\Services\PlayerService\Domain\PlayerAgeing;
 use App\Services\PlayerService\Domain\PlayerPerformance;
-use App\Services\PlayerService\Domain\YouthIntake;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -38,11 +33,6 @@ class PlayerService
         private readonly GameContext $gameContext,
         private readonly PlayerAgeing $playerAgeing,
         private readonly PlayerPerformance $playerPerformance,
-        private readonly YouthIntake $youthIntake,
-        private readonly PersonDetailsGenerator $personDetailsGenerator,
-        private readonly NewsService $news,
-        private readonly YouthIntakeNews $youthIntakeNews,
-        private readonly PlayerSearchIndexDispatcher $playerSearch,
     ) {}
 
     /** @return array{player: Player, fitness: array<string, mixed>, performance: array<string, mixed>} */
@@ -98,47 +88,6 @@ class PlayerService
         }
     }
 
-    public function annualYouthIntake(Instance $instance): void
-    {
-        DB::transaction(function () use ($instance): void {
-            $season = $this->playerRepository->youthIntakeSeason((int) $instance->id, (int) $instance->season_id);
-
-            if ($season->youth_intake_completed_on !== null) {
-                return;
-            }
-
-            $date = CarbonImmutable::parse($instance->instance_date)->startOfDay();
-            $hasGeneratedPlayers = false;
-
-            foreach ($this->playerRepository->clubsForYouthIntake((int) $instance->id) as $club) {
-                $generatedPlayers = [];
-
-                foreach ($this->youthIntake->profiles((int) $club->rank_academy) as $profile) {
-                    $generatedPlayers[] = $this->playerCreator->create(
-                        $profile,
-                        (int) $instance->id,
-                        $date,
-                        $this->personDetailsGenerator->generateYouth($club->country_code, $date),
-                    );
-                }
-
-                $players = $this->persistGeneratedPlayers((int) $instance->id, $club, $generatedPlayers);
-                $hasGeneratedPlayers = true;
-
-                if ((int) $club->id === (int) $instance->club_id) {
-                    $players->load('person');
-                    $this->news->publish($this->youthIntakeNews->report($instance, $club, $players));
-                }
-            }
-
-            $this->playerRepository->completeYouthIntake($season, $date->toDateString());
-
-            if ($hasGeneratedPlayers) {
-                $this->playerSearch->reindexInstance((int) $instance->id);
-            }
-        });
-    }
-
     public function createPlayersForClub(Club $club): void
     {
         $playersPotentialWithPosition = $this->playerPotential->createForClubRank($club->rank_academy);
@@ -150,7 +99,7 @@ class PlayerService
             $generatedPlayers[] = $player;
         }
 
-        $this->persistGeneratedPlayers($this->gameContext->instanceId(), $club, $generatedPlayers);
+        $this->registerGeneratedPlayers($this->gameContext->instanceId(), $club, $generatedPlayers);
     }
 
     public function createFreePlayers(int $count = self::FREE_AGENTS_COUNT): void
@@ -163,14 +112,14 @@ class PlayerService
             $generatedPlayers[] = $this->createPlayer($playerWithPositionAndPotential);
         }
 
-        $this->persistGeneratedPlayers($this->gameContext->instanceId(), null, $generatedPlayers);
+        $this->registerGeneratedPlayers($this->gameContext->instanceId(), null, $generatedPlayers);
     }
 
     /**
      * @param  list<Player>  $generatedPlayers
      * @return Collection<int, Player>
      */
-    private function persistGeneratedPlayers(int $instanceId, ?Club $club, array $generatedPlayers): Collection
+    public function registerGeneratedPlayers(int $instanceId, ?Club $club, array $generatedPlayers): Collection
     {
         return DB::transaction(function () use ($instanceId, $club, $generatedPlayers): Collection {
             $players = $this->playerRepository->bulkPlayerInsert(

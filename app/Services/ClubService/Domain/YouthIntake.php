@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\PlayerService\Domain;
+namespace App\Services\ClubService\Domain;
 
 use App\Services\PersonService\Data\GeneratedPlayerProfile;
 use App\Services\PersonService\GeneratePeople\PlayerPotential;

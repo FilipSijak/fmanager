@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\DataModels\ClubFinancialSummary;
 use App\Models\Club;
 use App\Models\Player;
+use App\Models\Season;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 
 class ClubRepository
@@ -28,6 +30,22 @@ class ClubRepository
     ];
 
     public function __construct(private readonly GameContext $gameContext) {}
+
+    public function youthIntakeSeason(int $instanceId, int $seasonId): Season
+    {
+        return Season::query()->forInstance($instanceId)->lockForUpdate()->findOrFail($seasonId);
+    }
+
+    /** @return LazyCollection<int, Club> */
+    public function clubsForYouthIntake(int $instanceId): LazyCollection
+    {
+        return Club::query()->forInstance($instanceId)->lazyById(100);
+    }
+
+    public function completeYouthIntake(Season $season, string $date): void
+    {
+        $season->forceFill(['youth_intake_completed_on' => $date])->save();
+    }
 
     public function find(int $clubId): ?Club
     {
