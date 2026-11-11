@@ -8,7 +8,7 @@ use App\Models\Player;
 use App\Repositories\ContractRepository;
 use App\Services\ContractService\ContractService;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
-use App\Services\PersonService\PersonService;
+use App\Services\PlayerService\PlayerService;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -25,7 +25,7 @@ class InitialPlayerContractsTest extends TestCase
     {
         [$instance, $club] = $this->world();
 
-        app(PersonService::class)->createPlayersForClub($club);
+        app(PlayerService::class)->createPlayersForClub($club);
 
         $players = Player::query()->forClub($club)->with('contract')->get();
         $this->assertNotEmpty($players);
@@ -45,7 +45,7 @@ class InitialPlayerContractsTest extends TestCase
     {
         $this->world();
 
-        app(PersonService::class)->createFreePlayers(3);
+        app(PlayerService::class)->createFreePlayers(3);
 
         $this->assertSame(3, Player::query()->whereNull('club_id')->whereNull('contract_id')->count());
         $this->assertDatabaseCount('players_contracts', 0);
@@ -58,7 +58,7 @@ class InitialPlayerContractsTest extends TestCase
         $this->partialMock(ContractRepository::class)->shouldReceive('createPlayerContract')
             ->once()->andThrow(new RuntimeException('Contract creation failed.'));
         try {
-            app(PersonService::class)->createPlayersForClub($club);
+            app(PlayerService::class)->createPlayersForClub($club);
             $this->fail('Expected contract creation to fail.');
         } catch (RuntimeException $exception) {
             $this->assertSame('Contract creation failed.', $exception->getMessage());

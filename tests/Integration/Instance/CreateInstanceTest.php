@@ -25,6 +25,7 @@ use App\Services\CompetitionService\DataLayer\CompetitionDataSource;
 use App\Services\FinanceService\SponsorshipService;
 use App\Services\InstanceService\CreateInstance;
 use App\Services\PersonService\PersonService;
+use App\Services\PlayerService\PlayerService;
 use App\Services\StadiumService\StadiumType;
 use App\Services\TacticsService\TacticsService;
 use App\Support\GameContext;
@@ -427,7 +428,8 @@ class CreateInstanceTest extends TestCase
                 app()->make(CompetitionService::class),
                 app()->make(PersonService::class),
                 app()->make(CompetitionSeasonRepository::class),
-                app()->make(SponsorshipService::class)
+                app()->make(SponsorshipService::class),
+                app()->make(PlayerService::class)
             );
     }
 }
