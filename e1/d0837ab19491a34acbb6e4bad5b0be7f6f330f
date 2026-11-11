@@ -1,0 +1,42 @@
+tests/Feature/InitialPlayerContractsTest.php
+  s_a4f9c6476ad8cf::t_ce512fbfcf661e 11,28,48,61
+app/Http/Controllers/Api/PlayerController.php
+  s_a4f9c6476ad8cf::t_ce512fbfcf661e 8,13,17
+app/Services/PlayerService/PlayerService.php
+  s_a4f9c6476ad8cf::t_4e47211cd44338 14-15
+  s_a4f9c6476ad8cf::t_ea462c67f82ab3 1-4,21-22,39,66,131
+  s_a4f9c6476ad8cf::t_d2fe93715927b9 5-13,16-20,23-38,40-65,67-130
+app/Repositories/PlayerRepository.php
+  s_a4f9c6476ad8cf::t_ce512fbfcf661e 268-273
+app/Services/PlayerService/Domain/PlayerAgeing.php
+  s_a4f9c6476ad8cf::t_ea462c67f82ab3 1-4,14-15,23,58-59
+  s_a4f9c6476ad8cf::t_ce512fbfcf661e 5-13,16-22,24-57
+app/Services/SeasonService/SeasonStart.php
+  s_a4f9c6476ad8cf::t_ce512fbfcf661e 14,29,39
+tests/Integration/Instance/CreateInstanceTest.php
+  s_a4f9c6476ad8cf::t_ce512fbfcf661e 28,431-432
+app/Services/PlayerService/Domain/PlayerPerformance.php
+  s_a4f9c6476ad8cf::t_ea462c67f82ab3 1-4,11-13,16,18,76-77
+  s_a4f9c6476ad8cf::t_8188739e3e89b0 5-10,14-15,17,19-75
+app/Services/InstanceService/CreateInstance.php
+  s_a4f9c6476ad8cf::t_ce512fbfcf661e 15,39,178,187
+tests/Integration/Services/PlayerService/UpdatePlayerPotentialsTest.php
+  s_a4f9c6476ad8cf::t_4715231e0aa39f 3,8,28,50,73-74,78
+  s_a4f9c6476ad8cf::t_e05a2e145d8b0e 90-113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "e1d0837ab19491a34acbb6e4bad5b0be7f6f330f",
+  "prompts": {},
+  "sessions": {
+    "s_a4f9c6476ad8cf": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1caf3-26cb-7950-a9c9-b4991e9b6709",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
