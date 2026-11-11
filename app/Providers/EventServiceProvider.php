@@ -22,6 +22,7 @@ use App\Listeners\PayLeagueCompetitionPrizes;
 use App\Listeners\PayLeagueTvRights;
 use App\Listeners\PayTournamentTvRights;
 use App\Listeners\ProcessFinanceEntityLoanInstallments;
+use App\Listeners\ProcessPlayerContracts;
 use App\Listeners\ProcessSponsorshipOffers;
 use App\Listeners\ProcessTransfers;
 use App\Listeners\RunDailyTraining;
@@ -50,6 +51,7 @@ class EventServiceProvider extends ServiceProvider
             CompleteStadiumStandConstruction::class,
             ProcessFinanceEntityLoanInstallments::class,
             ProcessTransfers::class,
+            ProcessPlayerContracts::class,
             RunDailyTraining::class,
             FillManagerVacancies::class,
         ],

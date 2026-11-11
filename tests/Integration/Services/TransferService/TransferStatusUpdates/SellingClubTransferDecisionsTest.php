@@ -4,6 +4,7 @@ namespace Tests\Integration\Services\TransferService\TransferStatusUpdates;
 
 use App\Models\Account;
 use App\Models\Club;
+use App\Models\Instance;
 use App\Models\Player;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
@@ -158,6 +159,10 @@ class SellingClubTransferDecisionsTest extends TestCase
 
     private function createClub(int $id, array $accountAttributes = []): Club
     {
+        if (! Instance::query()->whereKey(1)->exists()) {
+            Instance::factory()->create(['id' => 1, 'instance_date' => '2026-09-01', 'club_id' => null]);
+        }
+
         $club = Club::factory()->create([
             'id' => $id,
             'instance_id' => 1,

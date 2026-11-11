@@ -10,13 +10,9 @@ use App\Models\Season;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
-use App\Repositories\PlayerRepository;
-use App\Repositories\TransferRepository;
+use App\Services\ContractService\ContractService;
 use App\Services\NewsService\NewsPriority;
 use App\Services\NewsService\NewsType;
-use App\Services\TransferService\TransferConsiderations\ClubConsideration;
-use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
-use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferType;
@@ -259,8 +255,8 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
     {
         $transfer = $this->createPlayerCounterOfferTransfer();
 
-        $baselineOffer = app()->make(PlayerRepository::class)
-            ->contractBasedOnPotential($transfer->player()->first());
+        $baselineOffer = app()->make(ContractService::class)
+            ->suggestedPlayerTerms($transfer->player()->first());
 
         TransferContractOffer::factory()->create(array_merge(
             ['transfer_id' => $transfer->id],
@@ -280,8 +276,8 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
     {
         $transfer = $this->createPlayerCounterOfferTransfer();
 
-        $baselineOffer = app()->make(PlayerRepository::class)
-            ->contractBasedOnPotential($transfer->player()->first());
+        $baselineOffer = app()->make(ContractService::class)
+            ->suggestedPlayerTerms($transfer->player()->first());
 
         TransferContractOffer::factory()->create(array_merge(
             ['transfer_id' => $transfer->id],
@@ -383,6 +379,10 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
 
     private function createClub(int $id): Club
     {
+        if (! Instance::query()->whereKey(1)->exists()) {
+            Instance::factory()->create(['id' => 1, 'instance_date' => '2026-09-01', 'club_id' => null]);
+        }
+
         return Club::factory()->create([
             'id' => $id,
             'instance_id' => 1,

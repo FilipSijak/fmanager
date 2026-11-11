@@ -12,13 +12,9 @@ use App\Models\PlayerContract;
 use App\Models\Transfer;
 use App\Models\TransferContractOffer;
 use App\Models\TransferFinancialDetails;
-use App\Repositories\PlayerRepository;
-use App\Repositories\TransferRepository;
+use App\Services\ContractService\ContractService;
 use App\Services\NewsService\NewsPriority;
 use App\Services\NewsService\NewsType;
-use App\Services\TransferService\TransferConsiderations\ClubConsideration;
-use App\Services\TransferService\TransferConsiderations\PlayerConsideration;
-use App\Services\TransferService\TransferConsiderations\TransferConsiderations;
 use App\Services\TransferService\TransferStatusTypes;
 use App\Services\TransferService\TransferStatusUpdates;
 use App\Services\TransferService\TransferType;
@@ -371,7 +367,7 @@ class PermanentTransfersEndToEndTest extends TestCase
     private function createPlayerCounterOfferTransfer(float $counterOfferMultiplier): Transfer
     {
         $transfer = $this->createBasePermanentTransfer(TransferStatusTypes::PLAYER_COUNTEROFFER->value);
-        $baselineOffer = app()->make(PlayerRepository::class)->contractBasedOnPotential($transfer->player()->first());
+        $baselineOffer = app()->make(ContractService::class)->suggestedPlayerTerms($transfer->player()->first());
 
         TransferContractOffer::factory()->create(array_merge(
             ['transfer_id' => $transfer->id],
@@ -396,6 +392,10 @@ class PermanentTransfersEndToEndTest extends TestCase
 
     private function createClub(int $id, int $transferBudget = 68000000): Club
     {
+        if (! Instance::query()->whereKey(1)->exists()) {
+            Instance::factory()->create(['id' => 1, 'instance_date' => '2026-09-01', 'club_id' => null]);
+        }
+
         $club = Club::factory()->create([
             'id' => $id,
             'instance_id' => 1,

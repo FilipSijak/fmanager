@@ -4,12 +4,12 @@ namespace App\Repositories;
 
 use App\Helpers\DisplayHelpers;
 use App\Models\Club;
+use App\Models\ClubTacticPlayerSlot;
 use App\Models\GamePlayerStat;
 use App\Models\Player;
 use App\Models\PlayerInjury;
 use App\Models\Season;
 use App\Repositories\Interfaces\IPlayerRepository;
-use App\Services\PersonService\DataLayer\PlayerDataSource;
 use App\Services\PersonService\GeneratePeople\PlayerPosition;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Services\PersonService\PersonConfig\Player\PlayerPositionConfig;
@@ -35,11 +35,18 @@ class PlayerRepository implements IPlayerRepository
         'balance', 'jumping', 'natural_fitness', 'pace', 'stamina', 'strength',
     ];
 
-    private PlayerDataSource $playerDataSource;
-
-    public function __construct(PlayerDataSource $playerDataSource)
+    public function assignPlayerContract(Player $player, int $contractId): void
     {
-        $this->playerDataSource = $playerDataSource;
+        $player->forceFill(['contract_id' => $contractId])->save();
+        $player->unsetRelation('contract');
+    }
+
+    public function releasePlayer(Player $player): void
+    {
+        $player->forceFill(['club_id' => null, 'contract_id' => null, 'loan_club_id' => null, 'loan_start' => null, 'loan_end' => null])->save();
+        ClubTacticPlayerSlot::query()->where('instance_id', $player->instance_id)->where('player_id', $player->id)->delete();
+        DB::table('transfer_list')->where('player_id', $player->id)->delete();
+        $this->voidOngoingTransfersForPlayer($player->id);
     }
 
     public function profile(int $instanceId, int $playerId): Player
@@ -107,9 +114,7 @@ class PlayerRepository implements IPlayerRepository
         array $generatedPlayers
     ): EloquentCollection {
         return DB::transaction(function () use ($instanceId, $club, $generatedPlayers): EloquentCollection {
-            $instanceDate = DB::table('instances')->where('id', $instanceId)->value('instance_date');
-
-            if ($instanceDate === null) {
+            if (! DB::table('instances')->where('id', $instanceId)->exists()) {
                 throw new RuntimeException("Instance {$instanceId} does not exist.");
             }
 
@@ -128,16 +133,11 @@ class PlayerRepository implements IPlayerRepository
                     'dob' => $player->dob,
                 ]);
 
-                $contractId = DB::table('players_contracts')->insertGetId(
-                    $this->playerDataSource->generatedContractData($player, (string) $instanceDate)
-                );
-
                 $personIds[] = $personId;
                 $playerRows[] = $this->playerInsertRow(
                     $player,
                     $instanceId,
                     $personId,
-                    $contractId,
                     $club?->id,
                     $playerValue
                 );
@@ -199,7 +199,6 @@ class PlayerRepository implements IPlayerRepository
         Player $player,
         int $instanceId,
         int $personId,
-        int $contractId,
         ?int $clubId,
         int $playerValue
     ): array {
@@ -208,7 +207,7 @@ class PlayerRepository implements IPlayerRepository
             'instance_id' => $instanceId,
             'person_id' => $personId,
             'club_id' => $clubId,
-            'contract_id' => $contractId,
+            'contract_id' => null,
             'value' => $playerValue,
             'marketing_rank' => $player->marketing_rank,
             'potential' => $player->potential,
@@ -341,10 +340,5 @@ class PlayerRepository implements IPlayerRepository
         DB::table('transfer_financial_details')->whereIn('transfer_id', $ongoingTransferIds)->delete();
         DB::table('transfer_payments')->whereIn('transfer_id', $ongoingTransferIds)->delete();
         DB::table('transfers')->whereIn('id', $ongoingTransferIds)->delete();
-    }
-
-    public function contractBasedOnPotential(Player $player): array
-    {
-        return $this->playerDataSource->contractBasedOnPotential($player);
     }
 }

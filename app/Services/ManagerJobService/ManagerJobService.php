@@ -6,12 +6,11 @@ use App\Models\Club;
 use App\Models\Instance;
 use App\Models\ManagerJobApplication;
 use App\Models\StaffCoaching;
-use App\Models\StaffContract;
+use App\Services\ContractService\ContractService;
 use App\Services\NewsService\NewsItem;
 use App\Services\NewsService\NewsPriority;
 use App\Services\NewsService\NewsService;
 use App\Services\NewsService\NewsType;
-use App\Services\PersonService\GeneratePeople\StaffType\StaffSalary;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Carbon\Carbon;
 use DomainException;
@@ -30,7 +29,7 @@ class ManagerJobService
 
     public function __construct(
         private readonly NewsService $newsService,
-        private readonly StaffSalary $staffSalary,
+        private readonly ContractService $contracts,
     ) {}
 
     /**
@@ -186,12 +185,8 @@ class ManagerJobService
 
     private function appoint(Instance $instance, Club $club, StaffCoaching $manager): void
     {
-        $contract = StaffContract::query()->create([
-            'contract_start' => $instance->instance_date,
-            'contract_end' => Carbon::parse($instance->instance_date)->addYears(self::CONTRACT_YEARS)->toDateString(),
-            'salary' => $this->staffSalary->estimatedSalaryForStaffRole(PersonTypes::MANAGER, $manager->reputation),
-            'signing_fee' => null,
-        ]);
+        $contract = $this->contracts->createStaffContract(PersonTypes::MANAGER, (int) $manager->reputation,
+            (string) $instance->instance_date, self::CONTRACT_YEARS * 12);
         $manager->club_id = $club->id;
         $manager->contract_id = $contract->id;
         $manager->save();
