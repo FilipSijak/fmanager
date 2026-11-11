@@ -12,6 +12,7 @@ use App\Services\CompetitionService\CompetitionService;
 use App\Services\FinanceService\SponsorshipService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use App\Services\PersonService\PersonService;
+use App\Services\PlayerService\PlayerService;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -28,10 +29,6 @@ class CreateInstance
 
     private CompetitionSeasonRepository $competitionRepository;
 
-    const FREE_AGENTS_COUNT = 200;
-
-    const FREE_AGENTS_POTENTIAL_LIMIT = 150;
-
     const FREE_STAFF_PER_CLUB = 5;
 
     public function __construct(
@@ -39,6 +36,7 @@ class CreateInstance
         PersonService $personService,
         CompetitionSeasonRepository $competitionRepository,
         private readonly SponsorshipService $sponsorships,
+        private readonly PlayerService $playerService,
     ) {
         $this->competitionService = $competitionService;
         $this->personService = $personService;
@@ -177,7 +175,7 @@ class CreateInstance
             ->get();
 
         foreach ($clubs as $club) {
-            $this->personService->createPlayersForClub($club);
+            $this->playerService->createPlayersForClub($club);
             $this->personService->initialStaffClubSeed($club);
         }
 
@@ -186,6 +184,6 @@ class CreateInstance
 
     public function generateFreeAgents()
     {
-        $this->personService->createFreePlayers(self::FREE_AGENTS_COUNT);
+        $this->playerService->createFreePlayers();
     }
 }

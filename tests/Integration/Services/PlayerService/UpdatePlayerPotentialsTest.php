@@ -1,11 +1,11 @@
 <?php
 
-namespace Tests\Integration\Services\PersonService;
+namespace Tests\Integration\Services\PlayerService;
 
 use App\Models\Instance;
 use App\Models\Person;
 use App\Models\Player;
-use App\Services\PersonService\PersonService;
+use App\Services\PlayerService\PlayerService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -25,7 +25,7 @@ class UpdatePlayerPotentialsTest extends TestCase
         $retiredPlayer = $this->player($instance, '2006-06-16', 180, 120, true);
         $otherPlayer = $this->player($otherInstance, '2006-06-16', 180, 120);
 
-        app(PersonService::class)->updatePlayerPotentials($instance);
+        app(PlayerService::class)->updatePlayerPotentials($instance);
 
         $this->assertSame(171, (int) $developingPlayer->fresh()->potential);
         $this->assertSame(176, (int) $decliningPlayer->fresh()->potential);
@@ -47,7 +47,7 @@ class UpdatePlayerPotentialsTest extends TestCase
             'strength' => 11,
         ])->save();
 
-        app(PersonService::class)->updatePlayerPotentials($instance);
+        app(PlayerService::class)->updatePlayerPotentials($instance);
 
         $updatedPlayer = $player->fresh();
         $this->assertSame(176, (int) $updatedPlayer->potential);
@@ -70,12 +70,12 @@ class UpdatePlayerPotentialsTest extends TestCase
             'strength' => 20,
         ])->save();
 
-        $personService = app(PersonService::class);
-        $personService->updatePlayerPotentials($instance);
+        $playerService = app(PlayerService::class);
+        $playerService->updatePlayerPotentials($instance);
         $atPeak = $player->fresh();
 
         $instance->forceFill(['instance_date' => '2044-06-16'])->save();
-        $personService->updatePlayerPotentials($instance->fresh());
+        $playerService->updatePlayerPotentials($instance->fresh());
         $atAge38 = $player->fresh();
 
         $this->assertLessThanOrEqual((float) $atPeak->potential, (float) $atAge38->potential);
@@ -85,6 +85,30 @@ class UpdatePlayerPotentialsTest extends TestCase
         $this->assertLessThanOrEqual((int) $atPeak->marking, (int) $atAge38->marking);
         $this->assertLessThanOrEqual((int) $atPeak->positioning, (int) $atAge38->positioning);
         $this->assertLessThanOrEqual((int) $atPeak->strength, (int) $atAge38->strength);
+    }
+
+    #[Test]
+    public function goalkeeper_attributes_are_reduced_to_the_technical_ceiling_without_increasing_lower_attributes(): void
+    {
+        $instance = Instance::factory()->create(['instance_date' => '2027-06-16']);
+        $player = $this->player($instance, '1998-06-16', 180, 180);
+        $player->forceFill([
+            'position' => 'GK',
+            'technical' => 100,
+            'mental' => 100,
+            'physical' => 100,
+            'handling' => 20,
+            'reflexes' => 7,
+        ])->save();
+
+        app(PlayerService::class)->updatePlayerPotentials($instance);
+
+        $this->assertDatabaseHas('players', [
+            'id' => $player->id,
+            'current_technical_potential' => 99,
+            'handling' => 9,
+            'reflexes' => 7,
+        ]);
     }
 
     private function player(

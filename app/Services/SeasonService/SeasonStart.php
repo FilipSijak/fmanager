@@ -11,7 +11,7 @@ use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Repositories\StaffRepository;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\PersonService\GeneratePeople\StaffType\StaffCreator;
-use App\Services\PersonService\PersonService;
+use App\Services\PlayerService\PlayerService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Lottery;
@@ -26,7 +26,7 @@ class SeasonStart
         private readonly StaffCountValidator $staffCountValidator,
         private readonly StaffCreator $staffCreator,
         private readonly StaffRepository $staffRepository,
-        private readonly PersonService $personService,
+        private readonly PlayerService $playerService,
     ) {}
 
     public function process(Instance $instance): void
@@ -36,7 +36,7 @@ class SeasonStart
             ->findOrFail($instance->season_id);
 
         $retiredPlayers = $this->playerRetirement->retireEligiblePlayers($instance);
-        $this->personService->updatePlayerPotentials($instance);
+        $this->playerService->updatePlayerPotentials($instance);
         $this->retiredPlayerTransitionToStaff($retiredPlayers);
         $this->staffRetirement->retireEligibleStaff($instance);
         $this->generateMissingStaff($instance);

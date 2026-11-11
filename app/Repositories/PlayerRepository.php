@@ -265,6 +265,12 @@ class PlayerRepository implements IPlayerRepository
         return $value;
     }
 
+    /** @param array<string, int|float> $attributes */
+    public function updatePotential(Player $player, array $attributes): void
+    {
+        $player->forceFill($attributes)->save();
+    }
+
     public function activePlayers(int $instanceId): LazyCollection
     {
         return Player::query()
