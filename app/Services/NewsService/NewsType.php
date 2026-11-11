@@ -9,4 +9,5 @@ enum NewsType: string
     case Match = 'match';
     case Job = 'job';
     case Sponsorship = 'sponsorship';
+    case YouthIntake = 'youth_intake';
 }

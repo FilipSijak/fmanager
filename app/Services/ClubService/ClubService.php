@@ -4,6 +4,7 @@ namespace App\Services\ClubService;
 
 use App\Models\Club;
 use App\Models\ClubTacticPlayerSlot;
+use App\Models\Instance;
 use App\Services\ClubService\SquadLineup\AiLineupSelector;
 use App\Services\ClubService\SquadLineup\SquadLineup;
 use Illuminate\Database\Eloquent\Collection;
@@ -13,7 +14,13 @@ class ClubService
     public function __construct(
         private readonly SquadLineup $squadLineup,
         private readonly AiLineupSelector $aiLineupSelector,
+        private readonly AnnualYouthIntake $youthIntake,
     ) {}
+
+    public function annualYouthIntake(Instance $instance): void
+    {
+        $this->youthIntake->process($instance);
+    }
 
     /** @return Collection<int, ClubTacticPlayerSlot> */
     public function currentLineup(Club $club): Collection

@@ -2,6 +2,7 @@
 
 namespace Tests\Integration\Instance;
 
+use App\Jobs\ReindexInstancePlayers;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Instance;
@@ -9,6 +10,7 @@ use App\Models\Season;
 use App\Services\SeasonService\SeasonStart;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -55,6 +57,7 @@ class SeasonStartSchedulingTest extends TestCase
         }
 
         $service = app(SeasonStart::class);
+        Queue::fake([ReindexInstancePlayers::class]);
         $service->process($instance);
         $service->process($instance);
 
@@ -62,6 +65,7 @@ class SeasonStartSchedulingTest extends TestCase
         $this->assertSame(12, DB::table('games')->where('competition_id', $groupTournament->id)->count());
         $this->assertSame(4, DB::table('games')->where('competition_id', $knockoutCup->id)->count());
         $this->assertSame(28, DB::table('games')->count());
+        Queue::assertPushed(ReindexInstancePlayers::class, 1);
         $this->assertSame(
             100,
             DB::table('staff_coaching')->where('is_retired', false)->count()

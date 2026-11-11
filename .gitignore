@@ -26,5 +26,6 @@ integration-tests.sh
 .phplint.cache
 season-test.md
 full-test.md
+/features.md
 /screenshots
 *.deb

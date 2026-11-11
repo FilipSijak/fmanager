@@ -21,10 +21,10 @@ class PlayerAttributesGenerator
         private readonly PlayerPotential $playerPotential = new PlayerPotential,
     ) {}
 
-    public function setPlayerDetails(GeneratedPlayerProfile $playerProfile): self
+    public function setPlayerDetails(GeneratedPlayerProfile $playerProfile, ?PersonInfo $personDetails = null): self
     {
         $this->playerProfile = $playerProfile;
-        $this->personDetails = $this->personDetailsGenerator->generate(PersonTypes::PLAYER);
+        $this->personDetails = $personDetails ?? $this->personDetailsGenerator->generate(PersonTypes::PLAYER);
 
         return $this;
     }

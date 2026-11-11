@@ -15,6 +15,7 @@ use App\Services\PlayerService\Domain\PlayerAgeing;
 use App\Services\PlayerService\Domain\PlayerPerformance;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
@@ -98,7 +99,7 @@ class PlayerService
             $generatedPlayers[] = $player;
         }
 
-        $this->persistGeneratedPlayers($club, $generatedPlayers);
+        $this->registerGeneratedPlayers($this->gameContext->instanceId(), $club, $generatedPlayers);
     }
 
     public function createFreePlayers(int $count = self::FREE_AGENTS_COUNT): void
@@ -111,21 +112,26 @@ class PlayerService
             $generatedPlayers[] = $this->createPlayer($playerWithPositionAndPotential);
         }
 
-        $this->persistGeneratedPlayers(null, $generatedPlayers);
+        $this->registerGeneratedPlayers($this->gameContext->instanceId(), null, $generatedPlayers);
     }
 
-    /** @param list<Player> $generatedPlayers */
-    private function persistGeneratedPlayers(?Club $club, array $generatedPlayers): void
+    /**
+     * @param  list<Player>  $generatedPlayers
+     * @return Collection<int, Player>
+     */
+    public function registerGeneratedPlayers(int $instanceId, ?Club $club, array $generatedPlayers): Collection
     {
-        DB::transaction(function () use ($club, $generatedPlayers): void {
+        return DB::transaction(function () use ($instanceId, $club, $generatedPlayers): Collection {
             $players = $this->playerRepository->bulkPlayerInsert(
-                $this->gameContext->instanceId(),
+                $instanceId,
                 $club,
                 $generatedPlayers
             );
 
-            $this->contracts->createInitialPlayerContracts($this->gameContext->instanceId(), $club, $players);
+            $this->contracts->createInitialPlayerContracts($instanceId, $club, $players);
             $this->playerRepository->bulkAssignmentPlayersPositions($players);
+
+            return $players;
         });
     }
 }
