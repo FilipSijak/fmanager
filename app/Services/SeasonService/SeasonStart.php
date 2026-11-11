@@ -37,6 +37,7 @@ class SeasonStart
 
         $retiredPlayers = $this->playerRetirement->retireEligiblePlayers($instance);
         $this->playerService->updatePlayerPotentials($instance);
+        $this->playerService->annualYouthIntake($instance);
         $this->retiredPlayerTransitionToStaff($retiredPlayers);
         $this->staffRetirement->retireEligibleStaff($instance);
         $this->generateMissingStaff($instance);

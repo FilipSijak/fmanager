@@ -35,6 +35,22 @@ class PlayerRepository implements IPlayerRepository
         'balance', 'jumping', 'natural_fitness', 'pace', 'stamina', 'strength',
     ];
 
+    public function youthIntakeSeason(int $instanceId, int $seasonId): Season
+    {
+        return Season::query()->forInstance($instanceId)->lockForUpdate()->findOrFail($seasonId);
+    }
+
+    /** @return LazyCollection<int, Club> */
+    public function clubsForYouthIntake(int $instanceId): LazyCollection
+    {
+        return Club::query()->forInstance($instanceId)->lazyById(100);
+    }
+
+    public function completeYouthIntake(Season $season, string $date): void
+    {
+        $season->forceFill(['youth_intake_completed_on' => $date])->save();
+    }
+
     public function assignPlayerContract(Player $player, int $contractId): void
     {
         $player->forceFill(['contract_id' => $contractId])->save();

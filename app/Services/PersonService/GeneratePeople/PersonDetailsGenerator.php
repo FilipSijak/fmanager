@@ -4,6 +4,8 @@ namespace App\Services\PersonService\GeneratePeople;
 
 use App\Services\PersonService\Data\PersonInfo;
 use App\Services\PersonService\PersonConfig\PersonTypes;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Faker\Factory;
 use Faker\Generator;
 use InvalidArgumentException;
@@ -15,6 +17,21 @@ class PersonDetailsGenerator
     public function __construct(?Generator $faker = null)
     {
         $this->faker = $faker ?? Factory::create();
+    }
+
+    public function generateYouth(string $countryCode, CarbonInterface $asOfDate): PersonInfo
+    {
+        $date = CarbonImmutable::instance($asOfDate)->startOfDay();
+
+        return new PersonInfo(
+            firstName: $this->faker->firstNameMale(),
+            lastName: $this->faker->lastName(),
+            countryCode: $countryCode,
+            dateOfBirth: $this->faker->dateTimeBetween(
+                $date->subYears(19)->addDay(),
+                $date->subYears(16),
+            )->format('Y-m-d'),
+        );
     }
 
     public function generate(string $personType): PersonInfo
