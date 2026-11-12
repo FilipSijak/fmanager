@@ -23,7 +23,7 @@ class PayrollRepository
     /** @return LazyCollection<int, Club> */
     public function clubs(int $instanceId): LazyCollection
     {
-        return Club::query()->where('instance_id', $instanceId)->lazyById(200);
+        return Club::query()->forInstance($instanceId)->lazyById(200);
     }
 
     public function clubAccountForUpdate(int $clubId): Account
@@ -39,18 +39,15 @@ class PayrollRepository
     /** @return array{players: list<int>, staff: list<int>} */
     public function salariesForClub(Club $club, string $payday): array
     {
-        $players = Player::query()->where('players.instance_id', $club->instance_id)
-            ->where('players.club_id', $club->id)->active()
+        $players = Player::query()->forClub($club)->active()
+            ->whereHas('contract', fn (Builder $query): Builder => $query->activeOn($payday))
             ->join('players_contracts as contracts', 'contracts.id', '=', 'players.contract_id')
-            ->whereDate('contracts.contract_start', '<=', $payday)->whereDate('contracts.contract_end', '>=', $payday)
             ->pluck('contracts.salary')->map(fn (int|string $salary): int => (int) $salary)->all();
         $staff = [];
         foreach ([StaffCoaching::class, StaffScout::class, StaffPhysio::class] as $staffClass) {
-            $salaries = $staffClass::query()->where('instance_id', $club->instance_id)
+            $salaries = $staffClass::query()->forInstance($club->instance_id)
                 ->where('club_id', $club->id)->active()
-                ->whereHas('contract', function (Builder $query) use ($payday): void {
-                    $query->whereDate('contract_start', '<=', $payday)->whereDate('contract_end', '>=', $payday);
-                })
+                ->whereHas('contract', fn (Builder $query): Builder => $query->activeOn($payday))
                 ->join('staff_contracts as contracts', 'contracts.id', '=', (new $staffClass)->getTable().'.contract_id')
                 ->pluck('contracts.salary')->map(fn (int|string $salary): int => (int) $salary)->all();
             $staff = array_merge($staff, $salaries);

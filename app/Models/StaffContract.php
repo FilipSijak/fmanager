@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -19,4 +20,10 @@ class StaffContract extends Model
         'salary' => 'integer',
         'signing_fee' => 'integer',
     ];
+
+    public function scopeActiveOn(Builder $query, string $date): Builder
+    {
+        return $query->whereDate('contract_start', '<=', $date)
+            ->whereDate('contract_end', '>=', $date);
+    }
 }

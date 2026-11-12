@@ -102,6 +102,7 @@ class PayrollServiceTest extends TestCase
         $this->player($club, 4000, [], ['is_retired' => true]);
         Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'contract_id' => null]);
         $this->staff($club, StaffCoaching::class, 100, ['contract_start' => '2030-01-07', 'contract_end' => '2030-01-07']);
+        $this->staff($club, StaffScout::class, 50, ['contract_start' => '2030-01-07', 'contract_end' => '2030-01-07']);
         $this->staff($club, StaffScout::class, 200, ['contract_end' => '2030-01-06']);
         $this->staff($club, StaffPhysio::class, 300, ['contract_start' => '2030-01-08']);
         $this->staff($club, StaffCoaching::class, 400, [], ['is_retired' => true]);
@@ -109,8 +110,8 @@ class PayrollServiceTest extends TestCase
 
         app(PayrollService::class)->payDueWages($instance);
 
-        $this->assertSame(8900, $account->fresh()->balance);
-        $this->assertDatabaseHas('club_payroll_runs', ['club_id' => $club->id, 'player_wages' => 1000, 'staff_wages' => 100]);
+        $this->assertSame(8850, $account->fresh()->balance);
+        $this->assertDatabaseHas('club_payroll_runs', ['club_id' => $club->id, 'player_wages' => 1000, 'staff_wages' => 150]);
     }
 
     #[Test]
