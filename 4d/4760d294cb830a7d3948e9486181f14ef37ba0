@@ -1,0 +1,25 @@
+app/Repositories/PayrollRepository.php
+  s_6d5908e4b507d4::t_1f7c5bc5a8497b 26,42-43,48,50
+app/Models/StaffContract.php
+  s_6d5908e4b507d4::t_1f7c5bc5a8497b 5,23-28
+tests/Feature/PayrollServiceTest.php
+  s_6d5908e4b507d4::t_1f7c5bc5a8497b 105,113-114
+app/Models/PlayerContract.php
+  s_6d5908e4b507d4::t_1f7c5bc5a8497b 5,32-37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4d4760d294cb830a7d3948e9486181f14ef37ba0",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
