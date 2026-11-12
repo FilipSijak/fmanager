@@ -1,0 +1,26 @@
+app/Repositories/TicketDemandRepository.php
+  s_6d5908e4b507d4::t_78d4e4b670dc94 5-9,12-15,17-32
+  s_6d5908e4b507d4::t_082587f76148e9 1-4,10-11,16,33-34
+app/Services/CommercialService/Domain/TicketDemandCalculator.php
+  s_6d5908e4b507d4::t_082587f76148e9 1-4,7-8,75-76
+  s_6d5908e4b507d4::t_78d4e4b670dc94 5-6,9-74
+tests/Unit/TicketDemandCalculatorTest.php
+  s_6d5908e4b507d4::t_082587f76148e9 1-4,8-11,82-83
+  s_6d5908e4b507d4::t_32e65d4be69872 5-7,12-81
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a94841493398eea7b59b54894df9bc060e944b0f",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
