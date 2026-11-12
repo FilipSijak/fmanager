@@ -114,6 +114,43 @@ class AccountingServiceTest extends TestCase
     }
 
     #[Test]
+    public function a_transfer_cannot_pay_its_own_account(): void
+    {
+        $account = $this->account(Instance::factory()->create());
+
+        try {
+            app(AccountingService::class)->transfer($account, $account, 100, CarbonImmutable::parse('2030-01-07'), 'transfer', 'self-payment');
+            $this->fail('Expected self-payments to be rejected.');
+        } catch (DomainException $exception) {
+            $this->assertSame('A payment requires different accounts.', $exception->getMessage());
+            $this->assertSame(1000, $account->fresh()->balance);
+            $this->assertDatabaseCount('finance_transactions', 0);
+        }
+    }
+
+    #[Test]
+    #[DataProvider('missingPostingDetails')]
+    public function payments_require_a_category_and_reference(string $category, string $reference): void
+    {
+        $account = $this->account(Instance::factory()->create());
+
+        try {
+            app(AccountingService::class)->expense($account, 100, CarbonImmutable::parse('2030-01-07'), $category, $reference);
+            $this->fail('Expected incomplete payment details to be rejected.');
+        } catch (DomainException $exception) {
+            $this->assertSame('Payments require a category and reference.', $exception->getMessage());
+            $this->assertSame(1000, $account->fresh()->balance);
+            $this->assertDatabaseCount('finance_transactions', 0);
+        }
+    }
+
+    /** @return list<array{string, string}> */
+    public static function missingPostingDetails(): array
+    {
+        return [[' ', 'wages:1'], ['wages', ' ']];
+    }
+
+    #[Test]
     public function a_failed_business_operation_rolls_back_its_payment(): void
     {
         $account = $this->account(Instance::factory()->create());

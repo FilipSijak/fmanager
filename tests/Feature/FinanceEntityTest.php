@@ -144,6 +144,8 @@ class FinanceEntityTest extends TestCase
         $this->assertSame(FinanceEntityLoanStatus::COMPLETED, $loan->fresh()->status);
         $this->assertSame(8400, $clubAccount->fresh()->balance);
         $this->assertSame(11600, $entityAccount->fresh()->balance);
+        $this->assertSame(8400, $clubAccount->fresh()->future_balance);
+        $this->assertSame(11600, $entityAccount->fresh()->future_balance);
         $this->assertSame(24, AccountsDebtLinesEntity::query()->whereNotNull('paid_at')->count());
         $this->assertSame(24, $loan->fresh()->installments()->whereNotNull('transaction_id')->count());
     }
