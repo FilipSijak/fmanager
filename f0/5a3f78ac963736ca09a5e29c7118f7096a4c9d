@@ -1,0 +1,36 @@
+app/Services/MatchdayService/MatchdayService.php
+  s_6d5908e4b507d4::t_78d4e4b670dc94 8,11,27-28,52-53,56
+tests/Feature/SeasonTicketsTest.php
+  s_6d5908e4b507d4::t_32e65d4be69872 10,205-207,211-213
+  s_6d5908e4b507d4::t_abbaba4d5663fa 141
+app/Services/SeasonTicketService/Domain/SeasonTicketCalculator.php
+  s_6d5908e4b507d4::t_78d4e4b670dc94 8,14-15
+tests/Feature/TicketDemandTest.php
+  s_6d5908e4b507d4::t_8fbd6d25809a61 80,82,84,87,104-105,146
+  s_6d5908e4b507d4::t_32e65d4be69872 5-20,25-79,81,83,85-86,88-98,100-103,106-107,109-145,147-150
+  s_6d5908e4b507d4::t_082587f76148e9 1-4,21-24,99,108,151-152
+tests/Unit/MatchdayCalculatorTest.php
+  s_6d5908e4b507d4::t_32e65d4be69872 18-19,21,31-33,56,64
+app/Services/MatchdayService/Domain/MatchdayCalculator.php
+  s_6d5908e4b507d4::t_78d4e4b670dc94 5,10-11,30,32,34,41,44
+app/Services/SeasonTicketService/SeasonTicketService.php
+  s_6d5908e4b507d4::t_78d4e4b670dc94 12,15,29-30,68-72
+app/Repositories/SeasonTicketRepository.php
+  s_6d5908e4b507d4::t_78d4e4b670dc94 50-60,71
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f05a3f78ac963736ca09a5e29c7118f7096a4c9d",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
