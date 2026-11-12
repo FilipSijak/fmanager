@@ -1,0 +1,28 @@
+app/Services/CommercialService/Domain/TicketPriceCalculator.php
+  s_6d5908e4b507d4::t_616d344393f9af 1-4,7-8,10,16-17
+  s_6d5908e4b507d4::t_2f275c39ab1b40 5-6,9,11-15
+tests/Unit/MatchdayCalculatorTest.php
+  s_6d5908e4b507d4::t_616d344393f9af 1-11,14,48-49
+  s_6d5908e4b507d4::t_e1bf67c599da23 12-13,15-47
+app/Services/MatchdayService/Domain/MatchdayCalculator.php
+  s_6d5908e4b507d4::t_616d344393f9af 1-4,8-9,39,42,75,77-78
+  s_6d5908e4b507d4::t_2f275c39ab1b40 5-7,10-38,40-41,43-74,76
+app/Services/CommercialService/CommercialService.php
+  s_6d5908e4b507d4::t_2f275c39ab1b40 8,14-17,49
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "de421b346d61b7edcd9dd6e0b2926f1d2f3fef10",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
