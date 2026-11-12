@@ -1,0 +1,21 @@
+app/Services/TransferService/TransferFinancialSettlement.php
+  s_6d5908e4b507d4::t_956fda254d846f 8,11,13,17,19,21-29,31-36,38-39,41-43,45-51,53-54,56-59,61-74,76-79
+tests/Integration/Services/TransferService/TransferFinancialSettlementTest.php
+  s_6d5908e4b507d4::t_0f872259ba989e 9,46-48,50-54,77,93-95,112
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "8eeeec84afd883a64f706d859fbd595f95c4b43f",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
