@@ -1,0 +1,21 @@
+.gitignore
+  s_0c443728c029fa::t_808ab839b87417 32
+  s_0c443728c029fa::t_04e83e06fbe62f 30
+  s_0c443728c029fa::t_db5788e931cb95 31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "d7f4bbcbe29bf617e436d91f6ab3da5dcd484784",
+  "prompts": {},
+  "sessions": {
+    "s_0c443728c029fa": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf1d-0ec9-78b1-bcf8-bd5d77b650df",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
