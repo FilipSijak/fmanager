@@ -12,13 +12,13 @@ use App\Models\Account;
 use App\Models\AccountsDebtLinesEntity;
 use App\Models\FinanceEntityLoan;
 use App\Models\FinanceTransactionEntity;
-use App\Models\FinanceTransactions;
 use App\Models\Game;
 use App\Models\GameEntityAccount;
 use App\Models\Instance;
 use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStandConstruction;
 use App\Repositories\ClubRepository;
+use App\Services\AccountingService\AccountingService;
 use App\Services\FinanceService\Domain\CashLoanCalculator;
 use App\Services\FinanceService\Domain\CashLoanEligibility;
 use App\Services\FinanceService\Domain\CompetitionPrizeCalculator;
@@ -38,6 +38,7 @@ class FinanceService
 {
     public function __construct(
         private readonly ClubRepository $clubRepository,
+        private readonly AccountingService $accounting,
         private readonly GameContext $gameContext,
         private readonly CashLoanCalculator $cashLoanCalculator,
         private readonly CashLoanEligibility $cashLoanEligibility,
@@ -353,50 +354,9 @@ class FinanceService
         CarbonInterface $transactionDate,
         ?int $eventId = null,
     ): FinanceTransactionEntity {
-        if ($amount <= 0) {
-            throw new DomainException('Finance transaction amount must be greater than zero.');
-        }
-
-        return DB::transaction(function () use (
-            $gameEntityAccount,
-            $clubAccount,
-            $direction,
-            $eventType,
-            $amount,
-            $transactionDate,
-            $eventId,
-        ): FinanceTransactionEntity {
-            $lockedEntityAccount = GameEntityAccount::query()
-                ->whereKey($gameEntityAccount->id)
-                ->lockForUpdate()
-                ->firstOrFail();
-            $lockedClubAccount = Account::query()
-                ->whereKey($clubAccount->id)
-                ->lockForUpdate()
-                ->firstOrFail();
-
-            if ($direction === EntityTransactionDirection::ENTITY_TO_CLUB) {
-                $lockedEntityAccount->decrement('balance', $amount);
-                $lockedEntityAccount->decrement('future_balance', $amount);
-                $lockedClubAccount->increment('balance', $amount);
-                $lockedClubAccount->increment('future_balance', $amount);
-            } else {
-                $lockedEntityAccount->increment('balance', $amount);
-                $lockedEntityAccount->increment('future_balance', $amount);
-                $lockedClubAccount->decrement('balance', $amount);
-                $lockedClubAccount->decrement('future_balance', $amount);
-            }
-
-            return FinanceTransactionEntity::query()->create([
-                'game_entity_account_id' => $lockedEntityAccount->id,
-                'club_account_id' => $lockedClubAccount->id,
-                'direction' => $direction,
-                'event_type' => $eventType,
-                'event_id' => $eventId,
-                'amount' => $amount,
-                'transaction_date' => $transactionDate,
-            ]);
-        });
+        return $this->accounting->entityTransaction(
+            $gameEntityAccount, $clubAccount, $direction, $eventType, $amount, $transactionDate, $eventId,
+        );
     }
 
     public function payTournamentTvRights(Instance $instance): void
@@ -788,44 +748,6 @@ class FinanceService
         });
     }
 
-    public function makeTransaction(
-        Account $receivingAccount,
-        Account $sendingAccount,
-        int $amount,
-    ): bool {
-        try {
-            DB::beginTransaction();
-
-            // log transaction
-            $transaction = new FinanceTransactions([
-                'sending_account_id' => $sendingAccount->id,
-                'receiving_account_id' => $receivingAccount->id,
-                'amount' => $amount,
-                'transaction_date' => Carbon::today()->toDateString(),
-            ]);
-
-            // move amount
-            $sendingAccount->balance -= $amount;
-            $sendingAccount->future_balance -= $amount;
-            $receivingAccount->balance += $amount;
-            $receivingAccount->future_balance += $amount;
-
-            $receivingAccount->save();
-            $sendingAccount->save();
-            $transaction->save();
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            // log error
-
-            return false;
-        }
-
-        DB::commit();
-
-        return true;
-    }
-
     private function cashLoanInterestRate(GameEntityType $lenderType): float
     {
         return match ($lenderType) {
@@ -851,17 +773,10 @@ class FinanceService
         CarbonInterface $paidAt,
         int $loanId,
     ): FinanceTransactionEntity {
-        $entityAccount->increment('balance', $amount);
-        $clubAccount->decrement('balance', $amount);
-
-        return FinanceTransactionEntity::query()->create([
-            'game_entity_account_id' => $entityAccount->id,
-            'club_account_id' => $clubAccount->id,
-            'direction' => EntityTransactionDirection::CLUB_TO_ENTITY,
-            'event_type' => EntityTransactionType::LOAN_REPAYMENT,
-            'event_id' => $loanId,
-            'amount' => $amount,
-            'transaction_date' => $paidAt,
-        ]);
+        return $this->accounting->entityTransaction(
+            $entityAccount, $clubAccount, EntityTransactionDirection::CLUB_TO_ENTITY,
+            EntityTransactionType::LOAN_REPAYMENT, $amount, $paidAt, $loanId,
+            settlesCommitment: true,
+        );
     }
 }

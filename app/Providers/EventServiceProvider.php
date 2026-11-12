@@ -9,6 +9,7 @@ use App\Events\PostMatch;
 use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Events\Transfers\TransferEvent;
+use App\Events\WeeklyUpdate;
 use App\Listeners\CompleteSeason;
 use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
@@ -17,6 +18,7 @@ use App\Listeners\News\CreateMatchNews;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\PayClubSponsorships;
+use App\Listeners\PayClubWages;
 use App\Listeners\PayContinentalMatchPrizes;
 use App\Listeners\PayLeagueCompetitionPrizes;
 use App\Listeners\PayLeagueTvRights;
@@ -54,6 +56,9 @@ class EventServiceProvider extends ServiceProvider
             ProcessPlayerContracts::class,
             RunDailyTraining::class,
             FillManagerVacancies::class,
+        ],
+        WeeklyUpdate::class => [
+            PayClubWages::class,
         ],
         MonthlyUpdate::class => [
             DispatchMonthlyPlayerReindex::class,

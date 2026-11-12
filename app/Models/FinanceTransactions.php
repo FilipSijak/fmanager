@@ -11,7 +11,11 @@ class FinanceTransactions extends Model
         'receiving_account_id',
         'amount',
         'transaction_date',
+        'category',
+        'reference',
     ];
+
     public $table = 'finance_transactions';
+
     public $timestamps = false;
 }

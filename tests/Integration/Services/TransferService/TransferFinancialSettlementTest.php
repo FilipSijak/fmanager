@@ -6,11 +6,11 @@ use App\Models\Account;
 use App\Models\AccountsDebtLines;
 use App\Models\Club;
 use App\Models\FinanceTransactions;
+use App\Models\Instance;
 use App\Models\Transfer;
 use App\Models\TransferFinancialDetails;
 use App\Services\TransferService\TransferFinancialSettlement;
 use App\Services\TransferService\TransferType;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -43,8 +43,15 @@ class TransferFinancialSettlementTest extends TestCase
             'sending_account_id' => $sourceAccount->id,
             'receiving_account_id' => $targetAccount->id,
             'amount' => 10000,
-            'transaction_date' => Carbon::today()->toDateString(),
+            'transaction_date' => '2030-01-07 00:00:00',
+            'category' => 'transfer',
+            'reference' => 'transfer:'.$transfer->id,
         ]);
+        app(TransferFinancialSettlement::class)->transferMoneyBetweenClubs($transfer);
+        $this->assertSame(90000, $sourceAccount->fresh()->balance);
+        $this->assertSame(90000, $sourceAccount->fresh()->transfer_budget);
+        $this->assertSame(60000, $targetAccount->fresh()->transfer_budget);
+        $this->assertDatabaseCount('finance_transactions', 1);
         $this->assertSame(0, AccountsDebtLines::count());
     }
 
@@ -67,6 +74,7 @@ class TransferFinancialSettlementTest extends TestCase
             ->all();
 
         $this->assertSame([3000, 3000, 4000], $installmentAmounts);
+        $this->assertSame(['2030-02-07', '2030-03-07', '2030-04-07'], AccountsDebtLines::query()->orderBy('due_date')->pluck('due_date')->all());
         $this->assertSame(10000, array_sum($installmentAmounts));
 
         $this->assertSame(100000, $sourceAccount->refresh()->balance);
@@ -82,8 +90,9 @@ class TransferFinancialSettlementTest extends TestCase
 
     private function createTransferWithAccounts(): array
     {
-        $sourceClub = Club::factory()->create(['id' => 10]);
-        $targetClub = Club::factory()->create(['id' => 20]);
+        $instance = Instance::factory()->create(['instance_date' => '2030-01-07']);
+        $sourceClub = Club::factory()->create(['id' => 10, 'instance_id' => $instance->id]);
+        $targetClub = Club::factory()->create(['id' => 20, 'instance_id' => $instance->id]);
 
         $sourceAccount = Account::factory()->create([
             'club_id' => $sourceClub->id,
@@ -100,6 +109,7 @@ class TransferFinancialSettlementTest extends TestCase
         ]);
 
         $transfer = Transfer::factory()->create([
+            'instance_id' => $instance->id,
             'source_club_id' => $sourceClub->id,
             'target_club_id' => $targetClub->id,
             'transfer_type' => TransferType::PERMANENT_TRANSFER->value,

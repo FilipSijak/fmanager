@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -28,4 +29,10 @@ class PlayerContract extends Model
         'pc_promotion_salary_raise',
         'pc_demotion_salary_cut',
     ];
+
+    public function scopeActiveOn(Builder $query, string $date): Builder
+    {
+        return $query->whereDate('contract_start', '<=', $date)
+            ->whereDate('contract_end', '>=', $date);
+    }
 }
