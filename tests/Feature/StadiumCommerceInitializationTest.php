@@ -136,9 +136,22 @@ class StadiumCommerceInitializationTest extends TestCase
 
         $this->assertSame(100, $stadium->fresh()->ticket_price);
         $this->assertSame(100, $settlement->ticket_price);
-        $this->assertSame(100000, $settlement->gate_receipts);
+        $this->assertSame(60000, $settlement->gate_receipts);
         $this->assertSame(700, $settlement->commercial_income);
         $this->assertDatabaseCount('stadium_commercial_products', 2);
+    }
+
+    #[Test]
+    public function a_continental_league_does_not_inflate_the_initial_domestic_league_ticket_price(): void
+    {
+        [$instance, $stadium, $club, $domesticLeague] = $this->world();
+        $domesticLeague->forceFill(['rank' => 5000])->save();
+        $continentalLeague = Competition::factory()->create(['instance_id' => $instance->id, 'rank' => 10000, 'type' => 'league', 'competition_scope' => 'continental']);
+        DB::table('competition_season')->insert(['instance_id' => $instance->id, 'season_id' => $instance->season_id, 'club_id' => $club->id, 'competition_id' => $continentalLeague->id]);
+
+        app(CommercialService::class)->initializeStadium($stadium);
+
+        $this->assertSame(80, $stadium->fresh()->ticket_price);
     }
 
     /** @return array{Instance, Stadium, Club, Competition, BaseCommercialCategory} */

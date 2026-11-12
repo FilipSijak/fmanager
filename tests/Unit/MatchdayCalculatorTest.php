@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Services\CommercialService\Domain\TicketType;
 use App\Services\MatchdayService\Domain\MatchdayCalculator;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
@@ -44,5 +45,35 @@ class MatchdayCalculatorTest extends TestCase
 
         $this->assertSame(500, $calculator->availableCapacity(500, []));
         $this->assertSame(0, $calculator->availableCapacity(-100, []));
+    }
+
+    #[Test]
+    public function season_holders_are_counted_in_attendance_but_not_charged_at_the_league_gate(): void
+    {
+        $calculator = new MatchdayCalculator;
+
+        $league = $calculator->settlement(1000, 0, 0, 0, 100, [], TicketType::LEAGUE, 400);
+        $cup = $calculator->settlement(1000, 0, 0, 0, 80, [], TicketType::CUP, 400);
+
+        $this->assertSame(400, $league['attendance']);
+        $this->assertSame(400, $league['season_ticket_attendance']);
+        $this->assertSame(0, $league['paying_attendance']);
+        $this->assertSame(0, $league['gate_receipts']);
+        $this->assertSame(0, $cup['season_ticket_attendance']);
+        $this->assertSame(350, $cup['paying_attendance']);
+        $this->assertSame(28000, $cup['gate_receipts']);
+    }
+
+    #[Test]
+    public function reduced_capacity_limits_season_ticket_attendance_without_admitting_extra_supporters(): void
+    {
+        $calculator = new MatchdayCalculator;
+
+        $settlement = $calculator->settlement(200, 20, 20, 10000, 100, [], TicketType::LEAGUE, 400);
+
+        $this->assertSame(200, $settlement['attendance']);
+        $this->assertSame(200, $settlement['season_ticket_attendance']);
+        $this->assertSame(0, $settlement['paying_attendance']);
+        $this->assertSame(0, $settlement['gate_receipts']);
     }
 }

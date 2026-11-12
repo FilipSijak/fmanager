@@ -80,7 +80,7 @@ class MatchdayRepository
             ])->all();
     }
 
-    /** @param array{attendance: int, ticket_price: int, gate_receipts: int, commercial_income: int, operating_costs: int} $amounts */
+    /** @param array{attendance: int, ticket_type: string, ticket_price: int, season_ticket_attendance: int, paying_attendance: int, gate_receipts: int, commercial_income: int, operating_costs: int} $amounts */
     public function recordSettlement(Game $game, string $date, array $amounts): MatchdaySettlement
     {
         $game->forceFill(['attendance' => $amounts['attendance']])->save();

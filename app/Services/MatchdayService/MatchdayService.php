@@ -7,7 +7,10 @@ use App\Models\MatchdaySettlement;
 use App\Repositories\MatchdayRepository;
 use App\Services\AccountingService\AccountingService;
 use App\Services\CommercialService\CommercialService;
+use App\Services\CommercialService\Domain\TicketPriceCalculator;
+use App\Services\CommercialService\Domain\TicketType;
 use App\Services\MatchdayService\Domain\MatchdayCalculator;
+use App\Services\SeasonTicketService\SeasonTicketService;
 use Carbon\CarbonImmutable;
 
 class MatchdayService
@@ -17,6 +20,8 @@ class MatchdayService
         private readonly MatchdayCalculator $calculator,
         private readonly AccountingService $accounting,
         private readonly CommercialService $commercial,
+        private readonly TicketPriceCalculator $ticketPriceCalculator,
+        private readonly SeasonTicketService $seasonTickets,
     ) {}
 
     public function settle(Game $game): ?MatchdaySettlement
@@ -33,12 +38,16 @@ class MatchdayService
 
             $home = $this->repository->club($game, $game->hometeam_id);
             $away = $this->repository->club($game, $game->awayteam_id);
-            $stadium = $this->commercial->initializeStadium($this->repository->stadium($game));
+            $stadium = $this->repository->stadium($game);
             $competition = $this->repository->competition($game);
+            $seasonTicketHolders = $this->seasonTickets->holdersForMatch($home, $game, $competition);
+            $stadium = $this->commercial->initializeStadium($stadium);
+            $ticketType = TicketType::forCompetition($competition->type, $competition->competition_scope ?? 'domestic');
+            $ticketPrice = $this->ticketPriceCalculator->forType((int) $stadium->ticket_price, $ticketType);
             $date = CarbonImmutable::parse($game->match_start)->startOfDay();
             $capacity = $this->calculator->availableCapacity((int) $stadium->active_capacity, $this->repository->stands($stadium));
             $amounts = $this->calculator->settlement($capacity, (int) $home->rank, (int) $away->rank,
-                (int) $competition->rank, (int) $stadium->ticket_price, $this->repository->venues($stadium));
+                (int) $competition->rank, $ticketPrice, $this->repository->venues($stadium), $ticketType, $seasonTicketHolders);
             $account = $this->repository->accountForUpdate($home);
 
             foreach (['gate_receipts', 'commercial_income'] as $category) {

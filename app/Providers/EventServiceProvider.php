@@ -28,6 +28,7 @@ use App\Listeners\ProcessPlayerContracts;
 use App\Listeners\ProcessSponsorshipOffers;
 use App\Listeners\ProcessTransfers;
 use App\Listeners\RunDailyTraining;
+use App\Listeners\SellSeasonTickets;
 use App\Listeners\SettleMatchdayRevenue;
 use App\Listeners\StartSeason;
 use Illuminate\Auth\Events\Registered;
@@ -74,6 +75,7 @@ class EventServiceProvider extends ServiceProvider
             PayClubSponsorships::class,
             PayLeagueTvRights::class,
             StartSeason::class,
+            SellSeasonTickets::class,
         ],
         TransferEvent::class => [
             CreateTransferNews::class,

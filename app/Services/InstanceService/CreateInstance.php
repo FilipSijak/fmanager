@@ -14,6 +14,7 @@ use App\Services\FinanceService\SponsorshipService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use App\Services\PersonService\PersonService;
 use App\Services\PlayerService\PlayerService;
+use App\Services\SeasonTicketService\SeasonTicketService;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -39,6 +40,7 @@ class CreateInstance
         private readonly SponsorshipService $sponsorships,
         private readonly PlayerService $playerService,
         private readonly CommercialService $commercial,
+        private readonly SeasonTicketService $seasonTickets,
     ) {
         $this->competitionService = $competitionService;
         $this->personService = $personService;
@@ -58,6 +60,7 @@ class CreateInstance
         $this->mapInitialCompetitionsToSeasonsWithClubs();
         $this->commercial->initializeStadiums($this->instance->id);
         $this->setCompetitionsForTheFirstSeason();
+        $this->seasonTickets->sellForSeason($this->instance);
         $this->assignPeopleToClubs();
         $this->generateFreeAgents();
 

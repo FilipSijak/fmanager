@@ -51,12 +51,12 @@ class MatchdayRevenueTest extends TestCase
         $this->assertSame(10000, $awayAccount->fresh()->balance);
         $settlement = $completed->matchdaySettlement()->sole();
         $this->assertSame(100, $settlement->ticket_price);
-        $this->assertSame(100000, $settlement->gate_receipts);
+        $this->assertSame(60000, $settlement->gate_receipts);
         $this->assertSame(1800, $settlement->commercial_income);
         $this->assertSame(2600, $settlement->operating_costs);
         $this->assertSame('2030-01-07', $settlement->settled_on->toDateString());
-        $this->assertDatabaseCount('finance_transactions', 3);
-        $this->assertDatabaseHas('finance_transactions', ['reference' => 'matchday:'.$game->id.':gate_receipts', 'amount' => 100000, 'transaction_date' => '2030-01-07 00:00:00']);
+        $this->assertDatabaseCount('finance_transactions', 4);
+        $this->assertDatabaseHas('finance_transactions', ['reference' => 'matchday:'.$game->id.':gate_receipts', 'amount' => 60000, 'transaction_date' => '2030-01-07 00:00:00']);
         $this->assertDatabaseHas('finance_transactions', ['reference' => 'matchday:'.$game->id.':commercial_income', 'amount' => 1800]);
         $this->assertDatabaseHas('finance_transactions', ['reference' => 'matchday:'.$game->id.':operating_costs', 'amount' => 2600, 'sending_account_id' => $homeAccount->id]);
     }
@@ -78,7 +78,7 @@ class MatchdayRevenueTest extends TestCase
         $this->assertSame(109200, $account->fresh()->balance);
         $this->assertSame(1000, $game->fresh()->attendance);
         $this->assertDatabaseCount('matchday_settlements', 1);
-        $this->assertDatabaseCount('finance_transactions', 3);
+        $this->assertDatabaseCount('finance_transactions', 4);
     }
 
     #[Test]
@@ -112,7 +112,7 @@ class MatchdayRevenueTest extends TestCase
         $settlement = app(MatchdayService::class)->settle($game);
 
         $this->assertSame(200, $settlement->attendance);
-        $this->assertSame(20000, $settlement->gate_receipts);
+        $this->assertSame(12000, $settlement->gate_receipts);
         $this->assertSame(29500, $account->fresh()->balance);
     }
 
@@ -179,6 +179,7 @@ class MatchdayRevenueTest extends TestCase
         $this->assertSame(10000, $account->fresh()->balance);
         $this->assertDatabaseCount('finance_transactions', 0);
         $this->assertDatabaseCount('matchday_settlements', 0);
+        $this->assertDatabaseCount('season_ticket_sales', 0);
         $this->assertDatabaseHas('competition_season', ['club_id' => $game->hometeam_id, 'played' => 0]);
 
         app(CompleteGameService::class)->complete($game->id, 1, 0);
@@ -216,7 +217,7 @@ class MatchdayRevenueTest extends TestCase
         $repeated = app(MatchdayService::class)->settle($game);
 
         $this->assertSame(37, $first->ticket_price);
-        $this->assertSame(37000, $first->gate_receipts);
+        $this->assertSame(22200, $first->gate_receipts);
         $this->assertSame(37, $repeated->ticket_price);
         $this->assertSame(80, $stadium->fresh()->ticket_price);
     }
