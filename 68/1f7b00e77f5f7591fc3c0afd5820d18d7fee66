@@ -1,0 +1,66 @@
+app/Services/MatchdayService/Domain/MatchdayCalculator.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 6,39,41,43-45,66,68-70
+app/Models/Competition.php
+  s_6d5908e4b507d4::t_3e050048554958 17-20
+  s_6d5908e4b507d4::t_e4fddfb4e15714 6,13
+  s_6d5908e4b507d4::t_624056967c90b9 21
+tests/Integration/Instance/CreateInstanceTest.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 30,180,438-439
+database/migrations/2026_11_12_151850_add_ticket_breakdown_to_matchday_settlements_table.php
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-10,15-19,22-24
+  s_6d5908e4b507d4::t_3e050048554958 11-14,20-21
+app/Models/SeasonTicketSale.php
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-4,7,9-11,33
+  s_6d5908e4b507d4::t_3e050048554958 5-6,8,12-32
+app/Services/SeasonTicketService/SeasonTicketService.php
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-4,19-20,30,72-73
+  s_6d5908e4b507d4::t_3e050048554958 5-18,21-29,31-71
+app/Repositories/MatchdayRepository.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 83
+app/Services/InstanceService/CreateInstance.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 17,43,63
+database/migrations/2026_11_12_151849_create_season_ticket_sales_table.php
+  s_6d5908e4b507d4::t_3e050048554958 11,13-26
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-10,12,27-34
+tests/Feature/SeasonTicketsTest.php
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-224
+app/Models/MatchdaySettlement.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 5,17
+app/Services/SeasonTicketService/Domain/SeasonTicketCalculator.php
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-6,9,26-27
+  s_6d5908e4b507d4::t_3e050048554958 7-8,10-25
+tests/Feature/MatchdayRevenueTest.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 54,58-59,81,115,182,220
+tests/Feature/StadiumCommerceInitializationTest.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 139
+  s_6d5908e4b507d4::t_ba421ffefe137f 144-156
+app/Listeners/SellSeasonTickets.php
+  s_6d5908e4b507d4::t_3e050048554958 6,10,14
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-5,7-9,11-13,15-16
+app/Providers/EventServiceProvider.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 31,78
+app/Services/MatchdayService/MatchdayService.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 10-11,13,23-24,41,43-46,50
+app/Repositories/SeasonTicketRepository.php
+  s_6d5908e4b507d4::t_3e050048554958 5-13,16-20,23-70,73-87
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-4,21-22,88-89
+  s_6d5908e4b507d4::t_e4fddfb4e15714 14-15,71-72
+tests/Unit/MatchdayCalculatorTest.php
+  s_6d5908e4b507d4::t_6b52623ed8e507 5,49-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "681f7b00e77f5f7591fc3c0afd5820d18d7fee66",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
