@@ -27,5 +27,8 @@ integration-tests.sh
 season-test.md
 full-test.md
 /features.md
+/fixes.md
+/improvements.md
+/refactors.md
 /screenshots
 *.deb
