@@ -1,0 +1,60 @@
+app/Console/Commands/InitializeStadiumCommerce.php
+  s_6d5908e4b507d4::t_2f5c8b59624b58 5,7,11-15,19-33
+  s_6d5908e4b507d4::t_6a80029dceb845 1-4,6,8-10,16,34-35
+  s_6d5908e4b507d4::t_5be5199a2e3b16 17-18
+app/Http/Resources/StadiumResource.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 18
+app/Services/InstanceService/CreateInstance.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 11,41,59
+app/Services/MatchdayService/Domain/MatchdayCalculator.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 40,43
+app/Services/MatchdayService/MatchdayService.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 9,19,36,41
+tests/Integration/Instance/CreateInstanceTest.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 21,177-178,435-436
+tests/Integration/Services/CommercialService/CommercialServiceTest.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 6-7,23-24,31,42,46
+app/Services/CommercialService/CommercialService.php
+  s_6d5908e4b507d4::t_2f5c8b59624b58 7-9,17-18,21,23-34,36-47,50,52,55-56,58-61
+app/Models/Stadium.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 5,14,22
+tests/Feature/MatchdayRevenueTest.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 247
+  s_6d5908e4b507d4::t_b897fafff8c0db 207-238
+tests/Feature/StadiumCommerceInitializationTest.php
+  s_6d5908e4b507d4::t_6a80029dceb845 1-27,32,43,47,66,70,82,86,98,115,123,127,142,146,165,167-168
+  s_6d5908e4b507d4::t_fe4bbf581a87b1 30,45,68,84,100-113,125
+  s_6d5908e4b507d4::t_c66f33886c6fcb 28-29,31,33-42,44,46,48-65,67,69,71-81,83,85,87-97,99,114,116-122,124,126,128-141,143-145,147-164,166
+tests/Unit/MatchdayCalculatorTest.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 14,27,43
+app/Services/StadiumService/Operations/BuildCommercialVenue.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 8,19,40,51-53
+app/Repositories/CommercialRepository.php
+  s_6d5908e4b507d4::t_6a80029dceb845 1-4,19-20,92-93
+  s_6d5908e4b507d4::t_2f5c8b59624b58 5-18,21-91
+database/migrations/2026_11_12_140139_add_ticket_price_to_stadiums_table.php
+  s_6d5908e4b507d4::t_2f5c8b59624b58 11-12,18-19
+  s_6d5908e4b507d4::t_6a80029dceb845 1-10,13-17,20-22
+app/Services/CommercialService/Domain/StadiumCommercialDefaults.php
+  s_6d5908e4b507d4::t_a926de3ea2b125 16
+  s_6d5908e4b507d4::t_6a80029dceb845 1-6,15,18,20,29-30
+  s_6d5908e4b507d4::t_2f5c8b59624b58 7-14,17,19,21-28
+tests/Feature/StadiumApiTest.php
+  s_6d5908e4b507d4::t_0e36d0f3ac4d0b 65,300-302
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1cf07d28f199db879f796c677a97c4bbe1db37fa",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
