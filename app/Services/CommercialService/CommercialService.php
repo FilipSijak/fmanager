@@ -5,22 +5,16 @@ namespace App\Services\CommercialService;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\Country;
+use App\Services\CommercialService\Domain\TicketPriceCalculator;
 use App\Support\GameContext;
 use Illuminate\Support\Collection;
 
 class CommercialService
 {
-    private const int MINIMUM_TICKET_PRICE = 10;
-
-    private const int MAXIMUM_TICKET_PRICE = 100;
-
-    private const float COUNTRY_WEIGHT = 0.25;
-
-    private const float COMPETITION_WEIGHT = 0.45;
-
-    private const float CLUB_WEIGHT = 0.30;
-
-    public function __construct(private readonly GameContext $gameContext) {}
+    public function __construct(
+        private readonly GameContext $gameContext,
+        private readonly TicketPriceCalculator $ticketPriceCalculator,
+    ) {}
 
     public function ticketPriceForCompetition(Club $club, Competition $competition): int
     {
@@ -52,11 +46,6 @@ class CommercialService
 
     private function calculateTicketPrice(Club $club, Competition $competition, Country $country): int
     {
-        $demandScore = (CommercialRankingConfig::normalizeCountryRank((int) $country->ranking) * self::COUNTRY_WEIGHT)
-            + (CommercialRankingConfig::normalizeCompetitionRank((int) $competition->rank) * self::COMPETITION_WEIGHT)
-            + (CommercialRankingConfig::normalizeClubRank((int) $club->rank) * self::CLUB_WEIGHT);
-
-        return (int) round(self::MINIMUM_TICKET_PRICE
-            + ((self::MAXIMUM_TICKET_PRICE - self::MINIMUM_TICKET_PRICE) * $demandScore));
+        return $this->ticketPriceCalculator->calculate((int) $club->rank, (int) $competition->rank, (int) $country->ranking);
     }
 }
