@@ -32,6 +32,7 @@ class PayrollServiceTest extends TestCase
     {
         [$instance, $club, $account] = $this->world();
         $this->player($club, 1000);
+        $this->player($club, 250);
         $this->staff($club, StaffCoaching::class, 200);
         $this->staff($club, StaffScout::class, 300);
         $this->staff($club, StaffPhysio::class, 400);
@@ -45,13 +46,13 @@ class PayrollServiceTest extends TestCase
 
         app(PayrollService::class)->payDueWages($instance);
 
-        $this->assertSame(8100, $account->fresh()->balance);
-        $this->assertSame(8100, $account->fresh()->future_balance);
+        $this->assertSame(7850, $account->fresh()->balance);
+        $this->assertSame(7850, $account->fresh()->future_balance);
         $this->assertSame($budget, $account->fresh()->transfer_budget);
         $this->assertSame(9500, $otherAccount->fresh()->balance);
         $this->assertSame(10000, $foreignAccount->fresh()->balance);
-        $this->assertDatabaseHas('club_payroll_runs', ['club_id' => $club->id, 'paid_on' => '2030-01-07', 'player_wages' => 1000, 'staff_wages' => 900]);
-        $this->assertDatabaseHas('finance_transactions', ['sending_account_id' => $account->id, 'receiving_account_id' => null, 'amount' => 1000, 'category' => 'player_wages', 'transaction_date' => '2030-01-07 00:00:00']);
+        $this->assertDatabaseHas('club_payroll_runs', ['club_id' => $club->id, 'paid_on' => '2030-01-07', 'player_wages' => 1250, 'staff_wages' => 900]);
+        $this->assertDatabaseHas('finance_transactions', ['sending_account_id' => $account->id, 'receiving_account_id' => null, 'amount' => 1250, 'category' => 'player_wages', 'transaction_date' => '2030-01-07 00:00:00']);
         $this->assertDatabaseCount('finance_transactions', 3);
         $this->assertDatabaseCount('club_payroll_runs', 2);
     }
