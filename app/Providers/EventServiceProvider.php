@@ -17,6 +17,7 @@ use App\Listeners\News\CreateMatchNews;
 use App\Listeners\News\CreateTransferNews;
 use App\Listeners\NexDayTransfersSubscriber;
 use App\Listeners\PayClubSponsorships;
+use App\Listeners\PayClubWages;
 use App\Listeners\PayContinentalMatchPrizes;
 use App\Listeners\PayLeagueCompetitionPrizes;
 use App\Listeners\PayLeagueTvRights;
@@ -51,6 +52,7 @@ class EventServiceProvider extends ServiceProvider
             CompleteStadiumStandConstruction::class,
             ProcessFinanceEntityLoanInstallments::class,
             ProcessTransfers::class,
+            PayClubWages::class,
             ProcessPlayerContracts::class,
             RunDailyTraining::class,
             FillManagerVacancies::class,
