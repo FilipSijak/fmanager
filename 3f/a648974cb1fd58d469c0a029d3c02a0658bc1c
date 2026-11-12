@@ -1,0 +1,28 @@
+app/Repositories/PayrollRepository.php
+  s_6d5908e4b507d4::t_9e56c9c5fd4113 1-4,16-17,66-67
+  s_6d5908e4b507d4::t_e72127a33830f1 5-15,18-45,47-54,56-65
+  s_6d5908e4b507d4::t_b2fdb98bcc1107 46,55
+app/Services/FinanceService/Domain/PayrollCalculator.php
+  s_6d5908e4b507d4::t_9e56c9c5fd4113 1-4,8-9,29,32,34,47-48
+  s_6d5908e4b507d4::t_e72127a33830f1 5-7,10-28,30-31,33,35-46
+tests/Feature/PayrollServiceTest.php
+  s_6d5908e4b507d4::t_b2fdb98bcc1107 35,49-50,54-55
+app/Services/FinanceService/PayrollService.php
+  s_6d5908e4b507d4::t_e72127a33830f1 7-8,12-16,20-21,25-27,29,33-35,38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "3fa648974cb1fd58d469c0a029d3c02a0658bc1c",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
