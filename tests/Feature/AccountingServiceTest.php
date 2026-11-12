@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\Account;
 use App\Models\Club;
 use App\Models\Instance;
-use App\Services\FinanceService\AccountingService;
+use App\Services\AccountingService\AccountingService;
 use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;

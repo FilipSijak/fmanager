@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\FinanceService;
+namespace App\Services\AccountingService;
 
 use App\EntityTransactionDirection;
 use App\EntityTransactionType;
@@ -9,7 +9,7 @@ use App\Models\FinanceTransactionEntity;
 use App\Models\FinanceTransactions;
 use App\Models\GameEntityAccount;
 use App\Repositories\AccountingRepository;
-use App\Services\FinanceService\Domain\AccountingRules;
+use App\Services\AccountingService\Domain\AccountingRules;
 use Carbon\CarbonInterface;
 
 class AccountingService

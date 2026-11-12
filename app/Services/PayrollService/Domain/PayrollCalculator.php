@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\FinanceService\Domain;
+namespace App\Services\PayrollService\Domain;
 
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;

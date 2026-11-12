@@ -15,7 +15,7 @@ use App\Models\StaffCoaching;
 use App\Models\StaffContract;
 use App\Models\StaffPhysio;
 use App\Models\StaffScout;
-use App\Services\FinanceService\PayrollService;
+use App\Services\PayrollService\PayrollService;
 use App\Support\GameContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;

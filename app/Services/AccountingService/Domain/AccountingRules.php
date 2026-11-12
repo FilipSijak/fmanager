@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\FinanceService\Domain;
+namespace App\Services\AccountingService\Domain;
 
 use App\EntityTransactionDirection;
 use Carbon\CarbonInterface;

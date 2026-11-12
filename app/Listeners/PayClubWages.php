@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\WeeklyUpdate;
-use App\Services\FinanceService\PayrollService;
+use App\Services\PayrollService\PayrollService;
 
 class PayClubWages
 {

@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Services\FinanceService;
+namespace App\Services\PayrollService;
 
 use App\Models\Club;
 use App\Models\Instance;
 use App\Repositories\PayrollRepository;
-use App\Services\FinanceService\Domain\PayrollCalculator;
+use App\Services\AccountingService\AccountingService;
+use App\Services\PayrollService\Domain\PayrollCalculator;
 
 class PayrollService
 {

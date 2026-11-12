@@ -8,7 +8,7 @@ use App\Models\AccountsDebtLines;
 use App\Models\FinanceTransactions;
 use App\Models\Transfer;
 use App\Models\TransferFinancialDetails;
-use App\Services\FinanceService\AccountingService;
+use App\Services\AccountingService\AccountingService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
