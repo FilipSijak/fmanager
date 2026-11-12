@@ -1,0 +1,35 @@
+app/Providers/EventServiceProvider.php
+  s_6d5908e4b507d4::t_5aa6728b1f9fb0 20,55
+app/Listeners/PayClubWages.php
+  s_6d5908e4b507d4::t_5aa6728b1f9fb0 6,10,17
+  s_6d5908e4b507d4::t_3ca8a22f54a02d 1-5,7-9,11-16,18-19
+database/migrations/2026_11_12_094152_create_club_payroll_runs_table.php
+  s_6d5908e4b507d4::t_3ca8a22f54a02d 1-13,15,22-32
+  s_6d5908e4b507d4::t_5aa6728b1f9fb0 14,16-21
+tests/Feature/PayrollServiceTest.php
+  s_6d5908e4b507d4::t_6d82299e27fc67 23,188,198-199
+  s_6d5908e4b507d4::t_3ca8a22f54a02d 1-4,24-26,189,191,193,205-206
+  s_6d5908e4b507d4::t_70b9bf8cb0b500 5-22,27-187,190,192,194-197,200-204
+app/Services/FinanceService/PayrollService.php
+  s_6d5908e4b507d4::t_3ca8a22f54a02d 1-4,16-17,21,65-66
+  s_6d5908e4b507d4::t_5aa6728b1f9fb0 5-15,18-20,22-64
+database/factories/StaffContractFactory.php
+  s_6d5908e4b507d4::t_6a28d9255851e6 1-20,25-27
+  s_6d5908e4b507d4::t_70b9bf8cb0b500 21-24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f78d25b586acda6c606f3890f564ec6f8cb433f8",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
