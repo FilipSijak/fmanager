@@ -9,8 +9,10 @@ use App\Models\Instance;
 use App\Models\Season;
 use App\Models\SeasonTicketSale;
 use App\Repositories\SeasonTicketRepository;
+use App\Repositories\TicketDemandRepository;
 use App\Services\AccountingService\AccountingService;
 use App\Services\CommercialService\CommercialService;
+use App\Services\CommercialService\Domain\TicketDemandCalculator;
 use App\Services\CommercialService\Domain\TicketType;
 use App\Services\MatchdayService\Domain\MatchdayCalculator;
 use App\Services\SeasonTicketService\Domain\SeasonTicketCalculator;
@@ -24,6 +26,8 @@ class SeasonTicketService
         private readonly MatchdayCalculator $matchdayCalculator,
         private readonly CommercialService $commercial,
         private readonly AccountingService $accounting,
+        private readonly TicketDemandRepository $demandRepository,
+        private readonly TicketDemandCalculator $demandCalculator,
     ) {}
 
     public function sellForSeason(Instance $instance): void
@@ -61,7 +65,11 @@ class SeasonTicketService
             }
             $stadium = $this->commercial->initializeStadium($this->repository->stadium($club));
             $capacity = $this->matchdayCalculator->availableCapacity((int) $stadium->active_capacity, $this->repository->stands($stadium));
-            $offer = $this->calculator->offer($capacity, (int) $stadium->ticket_price, $homeGames);
+            $inputs = $this->demandRepository->inputs($club, $date);
+            $performance = $this->demandCalculator->performanceScore($club->id, $inputs['results']);
+            $competitionRank = $this->repository->competitionRank($club, $season, $date->toDateString(), $currentGameId);
+            $demand = $this->demandCalculator->seasonTicketDemand((int) $club->rank, $competitionRank, $inputs['country_rank'], $performance, (int) $stadium->ticket_price);
+            $offer = $this->calculator->offer($capacity, (int) $stadium->ticket_price, $homeGames, $demand);
             $transaction = $offer['amount'] > 0 ? $this->accounting->income(
                 $this->repository->accountForUpdate($club), $offer['amount'], $date,
                 'season_ticket_sales', 'season-tickets:'.$club->id.':'.$season->id,

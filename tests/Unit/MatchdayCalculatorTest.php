@@ -15,10 +15,10 @@ class MatchdayCalculatorTest extends TestCase
         $calculator = new MatchdayCalculator;
 
         $this->assertSame(350, $calculator->attendance(1000, 0, 0, 0));
-        $this->assertSame(700, $calculator->attendance(1000, 20, 0, 0));
-        $this->assertSame(500, $calculator->attendance(1000, 0, 20, 0));
+        $this->assertSame(650, $calculator->attendance(1000, 20, 0, 0));
+        $this->assertSame(450, $calculator->attendance(1000, 0, 20, 0));
         $this->assertSame(500, $calculator->attendance(1000, 0, 0, 10000));
-        $this->assertSame(1000, $calculator->attendance(1000, 200, 200, 100000));
+        $this->assertSame(1000, $calculator->attendance(1000, 200, 200, 100000, 100));
         $this->assertSame(0, $calculator->attendance(0, 20, 20, 10000));
     }
 
@@ -28,9 +28,9 @@ class MatchdayCalculatorTest extends TestCase
         $calculator = new MatchdayCalculator;
         $products = [['base_price' => 500, 'price_multiplier' => 1.0]];
 
-        $small = $calculator->settlement(10000, 20, 20, 10000, 100, [['size' => 1, 'products' => $products]]);
-        $medium = $calculator->settlement(10000, 20, 20, 10000, 100, [['size' => 2, 'products' => $products]]);
-        $large = $calculator->settlement(10000, 20, 20, 10000, 100, [['size' => 3, 'products' => $products]]);
+        $small = $calculator->settlement(10000, 20, 20, 10000, 100, [['size' => 1, 'products' => $products]], TicketType::LEAGUE, 0, 100);
+        $medium = $calculator->settlement(10000, 20, 20, 10000, 100, [['size' => 2, 'products' => $products]], TicketType::LEAGUE, 0, 100);
+        $large = $calculator->settlement(10000, 20, 20, 10000, 100, [['size' => 3, 'products' => $products]], TicketType::LEAGUE, 0, 100);
 
         $this->assertSame(1250, $small['commercial_income']);
         $this->assertSame(2500, $medium['commercial_income']);
@@ -53,7 +53,7 @@ class MatchdayCalculatorTest extends TestCase
         $calculator = new MatchdayCalculator;
 
         $league = $calculator->settlement(1000, 0, 0, 0, 100, [], TicketType::LEAGUE, 400);
-        $cup = $calculator->settlement(1000, 0, 0, 0, 80, [], TicketType::CUP, 400);
+        $cup = $calculator->settlement(1000, 0, 0, 0, 8, [], TicketType::CUP, 400);
 
         $this->assertSame(400, $league['attendance']);
         $this->assertSame(400, $league['season_ticket_attendance']);
@@ -61,7 +61,7 @@ class MatchdayCalculatorTest extends TestCase
         $this->assertSame(0, $league['gate_receipts']);
         $this->assertSame(0, $cup['season_ticket_attendance']);
         $this->assertSame(350, $cup['paying_attendance']);
-        $this->assertSame(28000, $cup['gate_receipts']);
+        $this->assertSame(2800, $cup['gate_receipts']);
     }
 
     #[Test]

@@ -2,11 +2,13 @@
 
 namespace App\Services\MatchdayService\Domain;
 
-use App\Services\CommercialService\CommercialRankingConfig;
+use App\Services\CommercialService\Domain\TicketDemandCalculator;
 use App\Services\CommercialService\Domain\TicketType;
 
 class MatchdayCalculator
 {
+    public function __construct(private readonly TicketDemandCalculator $demand = new TicketDemandCalculator) {}
+
     private const int FIXED_STADIUM_COST = 100;
 
     private const int COST_PER_SUPPORTER = 2;
@@ -25,23 +27,21 @@ class MatchdayCalculator
         return array_sum(array_map(fn (array $stand): int => $stand['available'] ? max(0, $stand['capacity']) : 0, $stands));
     }
 
-    public function attendance(int $capacity, int $homeRank, int $awayRank, int $competitionRank): int
+    public function attendance(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $countryRank = 0, float $performance = 0.5, ?int $ticketPrice = null, TicketType $type = TicketType::LEAGUE): int
     {
-        $occupancy = 0.35 + CommercialRankingConfig::normalizeClubRank($homeRank) * 0.35
-            + CommercialRankingConfig::normalizeClubRank($awayRank) * 0.15
-            + CommercialRankingConfig::normalizeCompetitionRank($competitionRank) * 0.15;
+        $ticketPrice ??= $this->demand->referencePrice($homeRank, $competitionRank, $countryRank, $type);
 
-        return max(0, min($capacity, (int) round($capacity * $occupancy)));
+        return $this->demand->attendance($capacity, $homeRank, $awayRank, $competitionRank, $countryRank, $performance, $ticketPrice, $type);
     }
 
     /**
      * @param  list<array{size: int, products: list<array{base_price: int, price_multiplier: float}>}>  $venues
      * @return array{attendance: int, ticket_type: string, ticket_price: int, season_ticket_attendance: int, paying_attendance: int, gate_receipts: int, commercial_income: int, operating_costs: int}
      */
-    public function settlement(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $ticketPrice, array $venues, TicketType $ticketType = TicketType::LEAGUE, int $seasonTicketHolders = 0): array
+    public function settlement(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $ticketPrice, array $venues, TicketType $ticketType = TicketType::LEAGUE, int $seasonTicketHolders = 0, int $countryRank = 0, float $performance = 0.5): array
     {
         $seasonAttendance = $ticketType === TicketType::LEAGUE ? min(max(0, $capacity), max(0, $seasonTicketHolders)) : 0;
-        $attendance = max($seasonAttendance, $this->attendance($capacity, $homeRank, $awayRank, $competitionRank));
+        $attendance = max($seasonAttendance, $this->attendance($capacity, $homeRank, $awayRank, $competitionRank, $countryRank, $performance, $ticketPrice, $ticketType));
         $payingAttendance = $attendance - $seasonAttendance;
         $ticketPrice = max(0, $ticketPrice);
         $commercialIncome = 0;

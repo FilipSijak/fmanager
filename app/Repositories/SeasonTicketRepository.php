@@ -48,6 +48,17 @@ class SeasonTicketRepository
 
     public function remainingHomeGames(Club $club, Season $season, string $date, ?int $currentGameId): int
     {
+        return $this->remainingHomeGamesQuery($club, $season, $date, $currentGameId)->count();
+    }
+
+    public function competitionRank(Club $club, Season $season, string $date, ?int $currentGameId): int
+    {
+        return (int) Competition::query()->forInstance($club->instance_id)->domesticLeague()
+            ->whereIn('id', $this->remainingHomeGamesQuery($club, $season, $date, $currentGameId)->select('competition_id'))->max('rank');
+    }
+
+    private function remainingHomeGamesQuery(Club $club, Season $season, string $date, ?int $currentGameId): Builder
+    {
         return Game::query()->forInstance($club->instance_id)->where('season_id', $season->id)->where('hometeam_id', $club->id)
             ->whereDate('match_start', '>=', $date)
             ->whereIn('competition_id', Competition::query()->forInstance($club->instance_id)->domesticLeague()->select('id'))
@@ -57,7 +68,7 @@ class SeasonTicketRepository
                 if ($currentGameId !== null) {
                     $query->orWhere('games.id', $currentGameId);
                 }
-            })->count();
+            });
     }
 
     public function stadium(Club $club): Stadium

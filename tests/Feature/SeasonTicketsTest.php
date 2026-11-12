@@ -7,6 +7,7 @@ use App\Listeners\SellSeasonTickets;
 use App\Models\Account;
 use App\Models\Club;
 use App\Models\Competition;
+use App\Models\Country;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Season;
@@ -137,7 +138,7 @@ class SeasonTicketsTest extends TestCase
         app(SeasonTicketService::class)->sellForSeason($instance);
 
         $this->assertSame(2, SeasonTicketSale::query()->forClub($home)->count());
-        $this->assertDatabaseHas('season_ticket_sales', ['club_id' => $home->id, 'season_id' => $nextSeason->id, 'ticket_price' => 200, 'amount' => 80000]);
+        $this->assertDatabaseHas('season_ticket_sales', ['club_id' => $home->id, 'season_id' => $nextSeason->id, 'ticket_price' => 200, 'quantity' => 110, 'amount' => 22000]);
     }
 
     #[Test]
@@ -201,12 +202,15 @@ class SeasonTicketsTest extends TestCase
     /** @return array{Instance, Club, Club, Competition, Competition, Competition, Account} */
     private function world(): array
     {
+        if (! Country::query()->where('code', 'GBR')->exists()) {
+            Country::query()->forceCreate(['code' => 'GBR', 'name' => 'United Kingdom', 'ranking' => 100, 'population' => 60000000]);
+        }
         $instance = Instance::factory()->create(['instance_date' => '2030-07-01']);
         $season = Season::factory()->create(['instance_id' => $instance->id, 'start_date' => '2030-08-15', 'end_date' => '2031-06-15']);
         $instance->forceFill(['season_id' => $season->id])->save();
-        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'capacity' => 1000, 'active_capacity' => 1000, 'ticket_price' => 100]);
-        $home = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'rank' => 20]);
-        $away = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'rank' => 20]);
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'capacity' => 1000, 'active_capacity' => 1000, 'ticket_price' => 100, 'country_code' => 'GBR']);
+        $home = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'rank' => 20, 'country_code' => 'GBR']);
+        $away = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'rank' => 20, 'country_code' => 'GBR']);
         $league = Competition::factory()->create(['instance_id' => $instance->id, 'type' => 'league', 'rank' => 10000, 'competition_scope' => 'domestic']);
         $cup = Competition::factory()->create(['instance_id' => $instance->id, 'type' => 'tournament', 'rank' => 10000, 'competition_scope' => 'domestic']);
         $continental = Competition::factory()->create(['instance_id' => $instance->id, 'type' => 'tournament', 'rank' => 10000, 'competition_scope' => 'continental']);
