@@ -63,6 +63,7 @@ class StadiumApiTest extends TestCase
             ->assertJsonPath('data.id', $stadium->id)
             ->assertJsonPath('data.name', $stadium->name)
             ->assertJsonPath('data.ticket_price', 42)
+            ->assertJsonPath('data.ticket_prices', ['league' => 42, 'cup' => 34, 'continental' => 50])
             ->assertJsonPath('data.type', $stadium->type->value)
             ->assertJsonPath('data.stands.0.id', $stand->id)
             ->assertJsonPath('data.stands.0.construction.id', $construction->id)

@@ -51,7 +51,7 @@ class CommercialRepository
         $countryRank = (int) Country::query()->where('code', $club?->country_code ?? $stadium->country_code)->value('ranking');
         $seasonId = Instance::query()->whereKey($stadium->instance_id)->value('season_id');
         $competitionRank = $club === null ? 0 : (int) $this->competitionsForClub($club, $seasonId)
-            ->where('type', 'league')->max('rank');
+            ->where('type', 'league')->where('competition_scope', 'domestic')->max('rank');
 
         return ['club_rank' => (int) ($club?->rank ?? 0), 'competition_rank' => $competitionRank, 'country_rank' => $countryRank];
     }

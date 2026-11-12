@@ -31,8 +31,8 @@ class CommercialServiceTest extends TestCase
             'stadium_id' => $stadium->id, 'rank' => 20, 'rank_academy' => 20, 'rank_training' => 20, 'financial_rank' => 20,
         ]);
         DB::table('competitions')->insert([
-            ['id' => 20, 'instance_id' => 1, 'name' => 'Champions League', 'country_code' => 'EU', 'rank' => 10000, 'type' => 'tournament', 'groups' => 1, 'clubs_number' => 32],
-            ['id' => 21, 'instance_id' => 1, 'name' => 'Domestic Cup', 'country_code' => 'GBR', 'rank' => 7000, 'type' => 'tournament', 'groups' => 0, 'clubs_number' => 32],
+            ['id' => 20, 'instance_id' => 1, 'name' => 'Champions League', 'country_code' => 'EU', 'rank' => 10000, 'type' => 'tournament', 'competition_scope' => 'continental', 'groups' => 1, 'clubs_number' => 32],
+            ['id' => 21, 'instance_id' => 1, 'name' => 'Domestic Cup', 'country_code' => 'GBR', 'rank' => 7000, 'type' => 'tournament', 'competition_scope' => 'domestic', 'groups' => 0, 'clubs_number' => 32],
         ]);
         DB::table('competition_season')->insert([
             ['instance_id' => 1, 'season_id' => 1, 'competition_id' => 20, 'club_id' => 10, 'group_id' => 1],
@@ -43,6 +43,6 @@ class CommercialServiceTest extends TestCase
 
         $prices = app(CommercialService::class)->ticketPricesForClub($club);
 
-        $this->assertSame([20 => 42, 21 => 42], $prices->all());
+        $this->assertSame([20 => 50, 21 => 34], $prices->all());
     }
 }
