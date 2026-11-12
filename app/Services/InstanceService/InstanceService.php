@@ -7,6 +7,7 @@ use App\Events\MonthlyUpdate;
 use App\Events\NextDay;
 use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
+use App\Events\WeeklyUpdate;
 use App\Models\Club;
 use App\Models\Game;
 use App\Models\Instance;
@@ -107,6 +108,10 @@ class InstanceService implements IInstanceService
         $this->season = Season::findOrFail($instance->season_id);
         $currentGameDate = Carbon::parse($instance->instance_date);
         $isMonthlyUpdate = $currentGameDate->day === 1;
+
+        if ($currentGameDate->isMonday()) {
+            event(new WeeklyUpdate($instance));
+        }
 
         event(new NextDay($instance));
 

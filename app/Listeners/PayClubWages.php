@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Events\NextDay;
+use App\Events\WeeklyUpdate;
 use App\Services\FinanceService\PayrollService;
 
 class PayClubWages
@@ -12,7 +12,7 @@ class PayClubWages
     /**
      * Handle the event.
      */
-    public function handle(NextDay $event): void
+    public function handle(WeeklyUpdate $event): void
     {
         $this->payroll->payDueWages($event->instance);
     }

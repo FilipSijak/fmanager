@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Events\NextDay;
+use App\Events\WeeklyUpdate;
 use App\Listeners\PayClubWages;
 use App\Models\Account;
 use App\Models\Club;
@@ -162,14 +163,14 @@ class PayrollServiceTest extends TestCase
     }
 
     #[Test]
-    public function the_daily_wage_listener_is_registered_and_pays_wages_using_the_event_instance(): void
+    public function the_weekly_wage_listener_is_registered_and_pays_wages_using_the_event_instance(): void
     {
         [$instance, $club, $account] = $this->world();
         $this->player($club, 1000);
         Event::fake([NextDay::class]);
-        Event::assertListening(NextDay::class, PayClubWages::class);
+        Event::assertListening(WeeklyUpdate::class, PayClubWages::class);
 
-        app(PayClubWages::class)->handle(new NextDay($instance));
+        event(new WeeklyUpdate($instance));
 
         $this->assertSame(9000, $account->fresh()->balance);
     }

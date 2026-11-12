@@ -9,6 +9,7 @@ use App\Events\PostMatch;
 use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Events\Transfers\TransferEvent;
+use App\Events\WeeklyUpdate;
 use App\Listeners\CompleteSeason;
 use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
@@ -52,10 +53,12 @@ class EventServiceProvider extends ServiceProvider
             CompleteStadiumStandConstruction::class,
             ProcessFinanceEntityLoanInstallments::class,
             ProcessTransfers::class,
-            PayClubWages::class,
             ProcessPlayerContracts::class,
             RunDailyTraining::class,
             FillManagerVacancies::class,
+        ],
+        WeeklyUpdate::class => [
+            PayClubWages::class,
         ],
         MonthlyUpdate::class => [
             DispatchMonthlyPlayerReindex::class,
