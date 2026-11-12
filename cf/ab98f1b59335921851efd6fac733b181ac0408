@@ -1,0 +1,33 @@
+app/Models/FinanceTransactions.php
+  s_6d5908e4b507d4::t_e8c58622038739 17,19
+  s_6d5908e4b507d4::t_0bce29769f7f2b 14-15
+app/Services/FinanceService/FinanceService.php
+  s_6d5908e4b507d4::t_48e804dc905dc6 41,357-359,814-818
+database/migrations/2026_11_12_093709_add_posting_details_to_finance_transactions.php
+  s_6d5908e4b507d4::t_e8c58622038739 6
+  s_6d5908e4b507d4::t_0bce29769f7f2b 5,16-19,28-31,33-36
+  s_6d5908e4b507d4::t_3166bee4b6ebf9 1-4,7-15,20-27,32,37-39
+tests/Feature/AccountingServiceTest.php
+  s_6d5908e4b507d4::t_e8c58622038739 11
+  s_6d5908e4b507d4::t_3166bee4b6ebf9 1-4,16-19,134,136,138-139
+  s_6d5908e4b507d4::t_17a10f4fa9db98 5-10,12-15,20-133,135,137
+app/Services/FinanceService/AccountingService.php
+  s_6d5908e4b507d4::t_0bce29769f7f2b 5-15,18-139
+  s_6d5908e4b507d4::t_3166bee4b6ebf9 1-4,16-17,140-141
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "cfab98f1b59335921851efd6fac733b181ac0408",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
