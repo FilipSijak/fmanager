@@ -1,0 +1,36 @@
+app/Services/CommercialService/CommercialService.php
+  s_6d5908e4b507d4::t_3e050048554958 10-11,21,55-57,66-68
+tests/Integration/Services/CommercialService/CommercialServiceTest.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 34-35,46
+tests/Feature/StadiumApiTest.php
+  s_6d5908e4b507d4::t_e4fddfb4e15714 66
+app/Http/Resources/StadiumResource.php
+  s_6d5908e4b507d4::t_3e050048554958 5,20
+app/Services/CommercialService/Domain/TicketPriceCalculator.php
+  s_6d5908e4b507d4::t_3e050048554958 18-31
+  s_6d5908e4b507d4::t_e4fddfb4e15714 17
+app/Services/CommercialService/Domain/TicketType.php
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-6,28
+  s_6d5908e4b507d4::t_3e050048554958 7-27
+tests/Unit/TicketTypeTest.php
+  s_6d5908e4b507d4::t_561ca032f49ac8 1-12,15,38-39
+  s_6d5908e4b507d4::t_1610bfcfa31d23 13-14,16-37
+app/Repositories/CommercialRepository.php
+  s_6d5908e4b507d4::t_c9a286e1dd843b 54
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f45450beaf3549c0733b3d84a741f51ad600053a",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
