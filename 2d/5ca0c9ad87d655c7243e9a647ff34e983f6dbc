@@ -1,0 +1,35 @@
+app/Listeners/PayClubWages.php
+  s_6d5908e4b507d4::t_32c611290ce7d5 6
+app/Services/AccountingService/AccountingService.php
+  s_6d5908e4b507d4::t_a3ca6a8806742e 3,12
+app/Services/AccountingService/Domain/AccountingRules.php
+  s_6d5908e4b507d4::t_dd9a2b404cddaa 3
+app/Services/FinanceService/FinanceService.php
+  s_6d5908e4b507d4::t_8c41d0e9b19701 21
+app/Services/PayrollService/Domain/PayrollCalculator.php
+  s_6d5908e4b507d4::t_ef08fcc34c8e0a 3
+app/Services/PayrollService/PayrollService.php
+  s_6d5908e4b507d4::t_b01024420e833b 3,8-9
+app/Services/TransferService/TransferFinancialSettlement.php
+  s_6d5908e4b507d4::t_66aa587dfe8cd5 11
+tests/Feature/AccountingServiceTest.php
+  s_6d5908e4b507d4::t_77128e2f3cf36b 8
+tests/Feature/PayrollServiceTest.php
+  s_6d5908e4b507d4::t_a2d928d5b98a0e 18
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "2d5ca0c9ad87d655c7243e9a647ff34e983f6dbc",
+  "prompts": {},
+  "sessions": {
+    "s_6d5908e4b507d4": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1cf17-12aa-7ed1-ac70-53adf9bbb98e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
