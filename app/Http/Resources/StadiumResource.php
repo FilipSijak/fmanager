@@ -15,6 +15,7 @@ class StadiumResource extends JsonResource
             'type' => $this->type?->value,
             'commercial_limit' => $this->commercial_limit,
             'capacity' => $this->capacity,
+            'ticket_price' => $this->ticket_price,
             'active_capacity' => $this->active_capacity,
             'stands' => StadiumStandResource::collection($this->whenLoaded('stands')),
             'commercial_venues' => StadiumCommercialVenueResource::collection($this->whenLoaded('commercialVenues')),

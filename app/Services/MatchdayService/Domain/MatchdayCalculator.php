@@ -3,7 +3,6 @@
 namespace App\Services\MatchdayService\Domain;
 
 use App\Services\CommercialService\CommercialRankingConfig;
-use App\Services\CommercialService\Domain\TicketPriceCalculator;
 
 class MatchdayCalculator
 {
@@ -14,8 +13,6 @@ class MatchdayCalculator
     private const int CUSTOMERS_PER_VENUE_SIZE = 250;
 
     private const int STAFF_COST_PER_VENUE_SIZE = 50;
-
-    public function __construct(private readonly TicketPriceCalculator $ticketPriceCalculator) {}
 
     /** @param list<array{capacity: int, available: bool}> $stands */
     public function availableCapacity(int $activeCapacity, array $stands): int
@@ -40,10 +37,10 @@ class MatchdayCalculator
      * @param  list<array{size: int, products: list<array{base_price: int, price_multiplier: float}>}>  $venues
      * @return array{attendance: int, ticket_price: int, gate_receipts: int, commercial_income: int, operating_costs: int}
      */
-    public function settlement(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $countryRank, array $venues): array
+    public function settlement(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $ticketPrice, array $venues): array
     {
         $attendance = $this->attendance($capacity, $homeRank, $awayRank, $competitionRank);
-        $ticketPrice = $this->ticketPriceCalculator->calculate($homeRank, $competitionRank, $countryRank);
+        $ticketPrice = max(0, $ticketPrice);
         $commercialIncome = 0;
         $operatingCosts = self::FIXED_STADIUM_COST + $attendance * self::COST_PER_SUPPORTER;
 

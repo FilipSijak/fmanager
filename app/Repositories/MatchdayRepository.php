@@ -5,7 +5,6 @@ namespace App\Repositories;
 use App\Models\Account;
 use App\Models\Club;
 use App\Models\Competition;
-use App\Models\Country;
 use App\Models\Game;
 use App\Models\MatchdaySettlement;
 use App\Models\Stadium;
@@ -47,11 +46,6 @@ class MatchdayRepository
     public function stadium(Game $game): Stadium
     {
         return Stadium::query()->where('instance_id', $game->instance_id)->findOrFail($game->stadium_id);
-    }
-
-    public function countryRank(Club $club): int
-    {
-        return (int) Country::query()->where('code', $club->country_code)->firstOrFail()->ranking;
     }
 
     public function accountForUpdate(Club $club): Account

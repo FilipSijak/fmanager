@@ -8,6 +8,7 @@ use App\Models\Instance;
 use App\Models\Season;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionSeasonRepository;
+use App\Services\CommercialService\CommercialService;
 use App\Services\CompetitionService\CompetitionService;
 use App\Services\FinanceService\SponsorshipService;
 use App\Services\InstanceService\InstanceData\InitialSeed;
@@ -37,6 +38,7 @@ class CreateInstance
         CompetitionSeasonRepository $competitionRepository,
         private readonly SponsorshipService $sponsorships,
         private readonly PlayerService $playerService,
+        private readonly CommercialService $commercial,
     ) {
         $this->competitionService = $competitionService;
         $this->personService = $personService;
@@ -54,6 +56,7 @@ class CreateInstance
         app(GameContext::class)->set($this->instance->id, $this->season->id, (string) $this->instance->instance_date);
         $this->sponsorships->createInitialContracts($this->instance);
         $this->mapInitialCompetitionsToSeasonsWithClubs();
+        $this->commercial->initializeStadiums($this->instance->id);
         $this->setCompetitionsForTheFirstSeason();
         $this->assignPeopleToClubs();
         $this->generateFreeAgents();

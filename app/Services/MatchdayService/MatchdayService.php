@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Models\MatchdaySettlement;
 use App\Repositories\MatchdayRepository;
 use App\Services\AccountingService\AccountingService;
+use App\Services\CommercialService\CommercialService;
 use App\Services\MatchdayService\Domain\MatchdayCalculator;
 use Carbon\CarbonImmutable;
 
@@ -15,6 +16,7 @@ class MatchdayService
         private readonly MatchdayRepository $repository,
         private readonly MatchdayCalculator $calculator,
         private readonly AccountingService $accounting,
+        private readonly CommercialService $commercial,
     ) {}
 
     public function settle(Game $game): ?MatchdaySettlement
@@ -31,12 +33,12 @@ class MatchdayService
 
             $home = $this->repository->club($game, $game->hometeam_id);
             $away = $this->repository->club($game, $game->awayteam_id);
-            $stadium = $this->repository->stadium($game);
+            $stadium = $this->commercial->initializeStadium($this->repository->stadium($game));
             $competition = $this->repository->competition($game);
             $date = CarbonImmutable::parse($game->match_start)->startOfDay();
             $capacity = $this->calculator->availableCapacity((int) $stadium->active_capacity, $this->repository->stands($stadium));
             $amounts = $this->calculator->settlement($capacity, (int) $home->rank, (int) $away->rank,
-                (int) $competition->rank, $this->repository->countryRank($home), $this->repository->venues($stadium));
+                (int) $competition->rank, (int) $stadium->ticket_price, $this->repository->venues($stadium));
             $account = $this->repository->accountForUpdate($home);
 
             foreach (['gate_receipts', 'commercial_income'] as $category) {

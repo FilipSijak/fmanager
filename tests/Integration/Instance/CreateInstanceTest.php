@@ -18,6 +18,7 @@ use App\Models\User;
 use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Repositories\Competition\CompetitionStandingsRepository;
 use App\Repositories\Competition\CompetitionTournamentRepository;
+use App\Services\CommercialService\CommercialService;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
 use App\Services\CompetitionService\CompetitionService;
@@ -173,6 +174,8 @@ class CreateInstanceTest extends TestCase
             ->where('instance_id', $instance->id)
             ->distinct()
             ->pluck('stadium_id');
+        $this->assertFalse(DB::table('stadiums')->where('instance_id', $instance->id)->whereNull('ticket_price')->exists());
+        $this->assertGreaterThan(0, DB::table('stadium_commercial_products')->where('instance_id', $instance->id)->count());
         $venueCounts = DB::table('stadium_commercial_venues')
             ->where('instance_id', $instance->id)
             ->select('stadium_id', DB::raw('COUNT(*) AS venue_count'))
@@ -429,7 +432,8 @@ class CreateInstanceTest extends TestCase
                 app()->make(PersonService::class),
                 app()->make(CompetitionSeasonRepository::class),
                 app()->make(SponsorshipService::class),
-                app()->make(PlayerService::class)
+                app()->make(PlayerService::class),
+                app()->make(CommercialService::class)
             );
     }
 }

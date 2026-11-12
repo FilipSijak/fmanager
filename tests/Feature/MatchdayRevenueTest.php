@@ -204,6 +204,38 @@ class MatchdayRevenueTest extends TestCase
         }
     }
 
+    #[Test]
+    public function stored_stadium_prices_are_used_and_completed_match_snapshots_do_not_change(): void
+    {
+        [$game, , , $stadium] = $this->match();
+        $stadium->forceFill(['ticket_price' => 37])->save();
+        $game->forceFill(['status' => Game::STATUS_COMPLETED])->save();
+        $first = app(MatchdayService::class)->settle($game);
+        $stadium->forceFill(['ticket_price' => 80])->save();
+
+        $repeated = app(MatchdayService::class)->settle($game);
+
+        $this->assertSame(37, $first->ticket_price);
+        $this->assertSame(37000, $first->gate_receipts);
+        $this->assertSame(37, $repeated->ticket_price);
+        $this->assertSame(80, $stadium->fresh()->ticket_price);
+    }
+
+    #[Test]
+    public function a_stored_zero_ticket_price_gives_free_admission_without_creating_gate_receipts(): void
+    {
+        [$game, , , $stadium] = $this->match();
+        $stadium->forceFill(['ticket_price' => 0])->save();
+        $game->forceFill(['status' => Game::STATUS_COMPLETED])->save();
+
+        $settlement = app(MatchdayService::class)->settle($game);
+
+        $this->assertSame(1000, $settlement->attendance);
+        $this->assertSame(0, $settlement->ticket_price);
+        $this->assertSame(0, $settlement->gate_receipts);
+        $this->assertDatabaseCount('finance_transactions', 1);
+    }
+
     /** @return array{Game, Account, Account, Stadium} */
     private function match(): array
     {
@@ -212,7 +244,7 @@ class MatchdayRevenueTest extends TestCase
         $instance->forceFill(['season_id' => $season->id])->save();
         $competition = Competition::factory()->create(['instance_id' => $instance->id, 'rank' => 10000, 'type' => 'league', 'groups' => null, 'clubs_number' => 2]);
         Country::query()->forceCreate(['code' => 'GBR', 'name' => 'United Kingdom', 'ranking' => 100, 'population' => 60000000]);
-        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'capacity' => 1000, 'active_capacity' => 1000]);
+        $stadium = Stadium::factory()->create(['instance_id' => $instance->id, 'capacity' => 1000, 'active_capacity' => 1000, 'ticket_price' => 100]);
         $home = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id, 'rank' => 20, 'country_code' => 'GBR']);
         $away = Club::factory()->create(['instance_id' => $instance->id, 'rank' => 20]);
         foreach ([$home, $away] as $club) {

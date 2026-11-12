@@ -62,6 +62,7 @@ class StadiumApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.id', $stadium->id)
             ->assertJsonPath('data.name', $stadium->name)
+            ->assertJsonPath('data.ticket_price', 42)
             ->assertJsonPath('data.type', $stadium->type->value)
             ->assertJsonPath('data.stands.0.id', $stand->id)
             ->assertJsonPath('data.stands.0.construction.id', $construction->id)
@@ -296,6 +297,9 @@ class StadiumApiTest extends TestCase
             'instance_id' => $instance->id,
             'type' => $type,
             'commercial_limit' => 3,
+            'ticket_price' => 42,
+            'capacity' => 1000,
+            'active_capacity' => 1000,
             'country_code' => 'GBR',
         ]);
         $club = Club::factory()->create([
