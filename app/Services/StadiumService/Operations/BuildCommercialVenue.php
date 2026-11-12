@@ -5,6 +5,7 @@ namespace App\Services\StadiumService\Operations;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialVenue;
 use App\Repositories\StadiumRepository;
+use App\Services\CommercialService\CommercialService;
 use App\Services\CommercialService\CommercialVenueSize;
 use App\Services\CommercialService\VenueConstructionCostCalculator;
 use DomainException;
@@ -15,6 +16,7 @@ class BuildCommercialVenue
     public function __construct(
         private readonly StadiumRepository $stadiumRepository,
         private readonly VenueConstructionCostCalculator $venueConstructionCostCalculator,
+        private readonly CommercialService $commercial,
     ) {}
 
     public function handle(Stadium $stadium, int $categoryId, CommercialVenueSize $size): StadiumCommercialVenue
@@ -35,7 +37,7 @@ class BuildCommercialVenue
                 throw new DomainException('The stadium has reached its commercial venue limit.');
             }
 
-            return $this->stadiumRepository->createCommercialVenue([
+            $venue = $this->stadiumRepository->createCommercialVenue([
                 'instance_id' => $lockedStadium->instance_id,
                 'stadium_id' => $lockedStadium->id,
                 'category_id' => $categoryId,
@@ -46,6 +48,9 @@ class BuildCommercialVenue
                     $size,
                 ),
             ]);
+            $this->commercial->initializeStadium($lockedStadium);
+
+            return $venue;
         });
     }
 }

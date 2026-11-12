@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToGameInstance;
 use App\Services\StadiumService\StadiumType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Stadium extends Model
 {
-    use HasFactory;
+    use BelongsToGameInstance, HasFactory;
 
     protected $table = 'stadiums';
 
@@ -18,7 +19,7 @@ class Stadium extends Model
 
     protected function casts(): array
     {
-        return ['type' => StadiumType::class, 'commercial_limit' => 'integer'];
+        return ['type' => StadiumType::class, 'commercial_limit' => 'integer', 'ticket_price' => 'integer'];
     }
 
     public function instance(): BelongsTo

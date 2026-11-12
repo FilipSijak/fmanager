@@ -4,59 +4,67 @@ namespace App\Services\CommercialService;
 
 use App\Models\Club;
 use App\Models\Competition;
-use App\Models\Country;
+use App\Models\Stadium;
+use App\Repositories\CommercialRepository;
+use App\Services\CommercialService\Domain\StadiumCommercialDefaults;
+use App\Services\CommercialService\Domain\TicketPriceCalculator;
+use App\Services\CommercialService\Domain\TicketType;
 use App\Support\GameContext;
 use Illuminate\Support\Collection;
 
 class CommercialService
 {
-    private const int MINIMUM_TICKET_PRICE = 10;
+    public function __construct(
+        private readonly GameContext $gameContext,
+        private readonly CommercialRepository $repository,
+        private readonly StadiumCommercialDefaults $defaults,
+        private readonly TicketPriceCalculator $ticketPriceCalculator,
+    ) {}
 
-    private const int MAXIMUM_TICKET_PRICE = 100;
+    public function initializeStadium(Stadium $stadium): Stadium
+    {
+        return $this->repository->transaction(function () use ($stadium): Stadium {
+            $stadium = $this->repository->lockStadium($stadium);
+            if ($stadium->ticket_price === null) {
+                $this->repository->storeTicketPrice($stadium, $this->defaults->ticketPrice($this->repository->ticketPriceInputs($stadium)));
+            }
+            $this->repository->insertProducts($this->defaults->productRows(
+                $stadium->instance_id, $stadium->id, $this->repository->missingProducts($stadium),
+            ));
 
-    private const float COUNTRY_WEIGHT = 0.25;
+            return $stadium;
+        });
+    }
 
-    private const float COMPETITION_WEIGHT = 0.45;
+    public function initializeStadiums(?int $instanceId = null): int
+    {
+        if ($instanceId !== null) {
+            $this->repository->requireInstance($instanceId);
+        }
+        $processed = 0;
+        foreach ($this->repository->stadiums($instanceId) as $stadium) {
+            $this->initializeStadium($stadium);
+            $processed++;
+        }
 
-    private const float CLUB_WEIGHT = 0.30;
-
-    public function __construct(private readonly GameContext $gameContext) {}
+        return $processed;
+    }
 
     public function ticketPriceForCompetition(Club $club, Competition $competition): int
     {
-        $country = Country::query()->where('code', $club->country_code)->firstOrFail();
+        $price = $this->initializeStadium($this->repository->stadiumForClub($club))->ticket_price;
 
-        return $this->calculateTicketPrice($club, $competition, $country);
+        return $this->ticketPriceCalculator->forType($price, TicketType::forCompetition($competition->type, $competition->competition_scope ?? 'domestic'));
     }
 
     /** @return Collection<int, int> */
     public function ticketPricesForClub(Club $club): Collection
     {
-        $country = Country::query()->where('code', $club->country_code)->firstOrFail();
-        $competitions = Competition::query()
-            ->join('competition_season', 'competition_season.competition_id', '=', 'competitions.id')
-            ->where('competition_season.club_id', $club->id)
-            ->where('competition_season.instance_id', $this->gameContext->instanceId())
-            ->where('competition_season.season_id', $this->gameContext->seasonId())
-            ->where('competitions.instance_id', $this->gameContext->instanceId())
-            ->select('competitions.*')
-            ->distinct()
-            ->get();
+        $price = $this->initializeStadium($this->repository->stadiumForClub($club))->ticket_price;
 
-        return $competitions->mapWithKeys(
-            fn (Competition $competition): array => [
-                $competition->id => $this->calculateTicketPrice($club, $competition, $country),
-            ]
-        );
-    }
-
-    private function calculateTicketPrice(Club $club, Competition $competition, Country $country): int
-    {
-        $demandScore = (CommercialRankingConfig::normalizeCountryRank((int) $country->ranking) * self::COUNTRY_WEIGHT)
-            + (CommercialRankingConfig::normalizeCompetitionRank((int) $competition->rank) * self::COMPETITION_WEIGHT)
-            + (CommercialRankingConfig::normalizeClubRank((int) $club->rank) * self::CLUB_WEIGHT);
-
-        return (int) round(self::MINIMUM_TICKET_PRICE
-            + ((self::MAXIMUM_TICKET_PRICE - self::MINIMUM_TICKET_PRICE) * $demandScore));
+        return $this->repository->competitionsForClub($club, $this->gameContext->seasonId())
+            ->mapWithKeys(fn (Competition $competition): array => [
+                $competition->id => $this->ticketPriceCalculator->forType($price, TicketType::forCompetition($competition->type, $competition->competition_scope ?? 'domestic')),
+            ]);
     }
 }
