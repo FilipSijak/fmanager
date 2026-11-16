@@ -1,0 +1,68 @@
+tests/Unit/MatchdayCalculatorTest.php
+  s_5e452473821948::t_532db3d6ccee88 14-29
+  s_5e452473821948::t_d6120ed719056b 13
+  s_5e452473821948::t_546955090c7610 12
+app/Listeners/RefreshCommercialDemand.php
+  s_5e452473821948::t_2afc9454897162 6,10,17
+  s_5e452473821948::t_6291be1c04ef48 1-5,7-9,11-16,18-19
+app/Services/MatchdayService/Domain/MatchdayCalculator.php
+  s_5e452473821948::t_532db3d6ccee88 41,57-59
+  s_5e452473821948::t_47a2fe1eab44a4 30,34,44
+app/Services/MatchdayService/MatchdayService.php
+  s_5e452473821948::t_532db3d6ccee88 54
+  s_5e452473821948::t_47a2fe1eab44a4 9,26,50,52-53
+app/Services/CommercialService/CommercialDemandService.php
+  s_5e452473821948::t_2afc9454897162 5-12,15-20,22-53
+  s_5e452473821948::t_6291be1c04ef48 1-4,13-14,21,54-55
+app/Models/ClubDemandProfile.php
+  s_5e452473821948::t_6291be1c04ef48 1-4,8-9,11-13,42
+  s_5e452473821948::t_2afc9454897162 5,10,15-41
+  s_5e452473821948::t_b575c4814f4c79 6-7,14
+tests/Feature/MatchdayRevenueTest.php
+  s_5e452473821948::t_d711672bc7c0b9 10,49-50,56-57,61-62,79,241-256
+  s_5e452473821948::t_ef9b043211a465 257-258
+database/migrations/2026_11_16_151515_create_club_demand_profiles_table.php
+  s_5e452473821948::t_d6120ed719056b 14
+  s_5e452473821948::t_6291be1c04ef48 1-13,15,26-36
+  s_5e452473821948::t_2afc9454897162 16-25
+tests/Unit/TicketDemandCalculatorTest.php
+  s_5e452473821948::t_3d74c39ee9a33e 12-57
+  s_5e452473821948::t_662902ed94d6ee 63-66,74-78
+database/factories/ClubDemandProfileFactory.php
+  s_5e452473821948::t_b575c4814f4c79 7
+  s_5e452473821948::t_6291be1c04ef48 1-4,6,8-22,31-33
+  s_5e452473821948::t_2afc9454897162 5,23-30
+app/Providers/EventServiceProvider.php
+  s_5e452473821948::t_2afc9454897162 30,68
+tests/Feature/SeasonTicketsTest.php
+  s_5e452473821948::t_5d976de4a3f9d5 141
+app/Repositories/TicketDemandRepository.php
+  s_5e452473821948::t_2afc9454897162 6,9,11-13,17-46,48
+  s_5e452473821948::t_3b8235a579c568 47
+app/Services/SeasonTicketService/SeasonTicketService.php
+  s_5e452473821948::t_47a2fe1eab44a4 13,29,68,70-71
+tests/Feature/TicketDemandTest.php
+  s_5e452473821948::t_3b8235a579c568 205,207-236
+  s_5e452473821948::t_532db3d6ccee88 5-6,9,18,81,85-86,96,152-204
+  s_5e452473821948::t_5d976de4a3f9d5 45,63,122,127-151
+  s_5e452473821948::t_ba4939ce217f1d 206
+app/Services/CommercialService/Domain/TicketDemandCalculator.php
+  s_5e452473821948::t_47a2fe1eab44a4 36-43,56,61,69,74,81
+  s_5e452473821948::t_5d976de4a3f9d5 57
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "42284742d51a79e10d08909373a9980684bbcf25",
+  "prompts": {},
+  "sessions": {
+    "s_5e452473821948": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1e4d2-f808-7dc0-b512-c5d9d96ab36e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
