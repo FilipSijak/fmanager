@@ -10,8 +10,6 @@ use App\Models\MatchdaySettlement;
 use App\Models\Stadium;
 use App\Models\StadiumCommercialProduct;
 use App\Models\StadiumCommercialVenue;
-use App\Models\StadiumStand;
-use App\StadiumStandStatus;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -53,15 +51,6 @@ class MatchdayRepository
         return Account::query()->where('club_id', $club->id)->lockForUpdate()->firstOrFail();
     }
 
-    /** @return list<array{capacity: int, available: bool}> */
-    public function stands(Stadium $stadium): array
-    {
-        return $stadium->stands()->get()->map(fn (StadiumStand $stand): array => [
-            'capacity' => (int) $stand->capacity,
-            'available' => $stand->status === StadiumStandStatus::ACTIVE,
-        ])->all();
-    }
-
     /** @return list<array{size: int, products: list<array{base_price: int, price_multiplier: float}>}> */
     public function venues(Stadium $stadium): array
     {
@@ -80,7 +69,7 @@ class MatchdayRepository
             ])->all();
     }
 
-    /** @param array{attendance: int, ticket_type: string, ticket_price: int, season_ticket_attendance: int, paying_attendance: int, gate_receipts: int, commercial_income: int, operating_costs: int} $amounts */
+    /** @param array{attendance: int, ticket_type: string, ticket_price: int, season_ticket_attendance: int, paying_attendance: int, gate_receipts: int, commercial_income: int, operating_costs: int, season_ticket_refund_quantity: int, season_ticket_refund_amount: int} $amounts */
     public function recordSettlement(Game $game, string $date, array $amounts): MatchdaySettlement
     {
         $game->forceFill(['attendance' => $amounts['attendance']])->save();

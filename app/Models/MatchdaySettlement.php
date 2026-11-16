@@ -15,7 +15,8 @@ class MatchdaySettlement extends Model
     protected function casts(): array
     {
         return ['ticket_type' => TicketType::class, 'season_ticket_attendance' => 'integer', 'paying_attendance' => 'integer', 'attendance' => 'integer', 'ticket_price' => 'integer', 'gate_receipts' => 'integer',
-            'commercial_income' => 'integer', 'operating_costs' => 'integer', 'settled_on' => 'date'];
+            'commercial_income' => 'integer', 'operating_costs' => 'integer', 'season_ticket_refund_quantity' => 'integer',
+            'season_ticket_refund_amount' => 'integer', 'settled_on' => 'date'];
     }
 
     public function game(): BelongsTo

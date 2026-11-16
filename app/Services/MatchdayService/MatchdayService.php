@@ -5,6 +5,7 @@ namespace App\Services\MatchdayService;
 use App\Models\Game;
 use App\Models\MatchdaySettlement;
 use App\Repositories\MatchdayRepository;
+use App\Repositories\StadiumCapacityRepository;
 use App\Services\AccountingService\AccountingService;
 use App\Services\CommercialService\CommercialDemandService;
 use App\Services\CommercialService\CommercialService;
@@ -18,6 +19,7 @@ class MatchdayService
 {
     public function __construct(
         private readonly MatchdayRepository $repository,
+        private readonly StadiumCapacityRepository $stadiumCapacity,
         private readonly MatchdayCalculator $calculator,
         private readonly AccountingService $accounting,
         private readonly CommercialService $commercial,
@@ -42,16 +44,19 @@ class MatchdayService
             $away = $this->repository->club($game, $game->awayteam_id);
             $stadium = $this->repository->stadium($game);
             $competition = $this->repository->competition($game);
-            $seasonTicketHolders = $this->seasonTickets->holdersForMatch($home, $game, $competition);
+            $seasonTicketSale = $this->seasonTickets->saleForMatch($home, $game, $competition);
+            $seasonTicketHolders = $seasonTicketSale?->quantity ?? 0;
             $stadium = $this->commercial->initializeStadium($stadium);
             $ticketType = TicketType::forCompetition($competition->type, $competition->competition_scope ?? 'domestic');
             $ticketPrice = $this->ticketPriceCalculator->forType((int) $stadium->ticket_price, $ticketType);
             $date = CarbonImmutable::parse($game->match_start)->startOfDay();
             $profile = $this->demand->forClub($home, $date);
-            $capacity = $this->calculator->availableCapacity((int) $stadium->active_capacity, $this->repository->stands($stadium));
+            $stands = $this->stadiumCapacity->standsAtDate($stadium, $date);
+            $capacity = $this->calculator->availableCapacity((int) $stadium->active_capacity, $stands);
             $amounts = $this->calculator->settlement($capacity, $profile->club_rank, (int) $away->rank,
                 (int) $competition->rank, $ticketPrice, $this->repository->venues($stadium), $ticketType, $seasonTicketHolders,
                 $profile->country_rank, $profile->performance_score, $profile->ticket_price_sensitivity, $profile->commercial_price_sensitivity);
+            $amounts += $this->seasonTickets->constructionRefund($seasonTicketSale, $capacity, array_sum(array_column($stands, 'construction_capacity')));
             $account = $this->repository->accountForUpdate($home);
 
             foreach (['gate_receipts', 'commercial_income'] as $category) {
@@ -60,6 +65,10 @@ class MatchdayService
                 }
             }
             $this->accounting->expense($account, $amounts['operating_costs'], $date, 'matchday_operating_costs', 'matchday:'.$game->id.':operating_costs');
+            if ($amounts['season_ticket_refund_amount'] > 0) {
+                $this->accounting->expense($account, $amounts['season_ticket_refund_amount'], $date,
+                    'season_ticket_refunds', 'matchday:'.$game->id.':season_ticket_refund');
+            }
 
             return $this->repository->recordSettlement($game, $date->toDateString(), $amounts);
         });

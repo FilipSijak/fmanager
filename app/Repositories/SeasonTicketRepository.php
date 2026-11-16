@@ -11,8 +11,6 @@ use App\Models\Instance;
 use App\Models\Season;
 use App\Models\SeasonTicketSale;
 use App\Models\Stadium;
-use App\Models\StadiumStand;
-use App\StadiumStandStatus;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -74,14 +72,6 @@ class SeasonTicketRepository
     public function stadium(Club $club): Stadium
     {
         return Stadium::query()->forInstance($club->instance_id)->findOrFail($club->stadium_id);
-    }
-
-    /** @return list<array{capacity: int, available: bool}> */
-    public function stands(Stadium $stadium): array
-    {
-        return $stadium->stands()->get()->map(fn (StadiumStand $stand): array => [
-            'capacity' => (int) $stand->capacity, 'available' => $stand->status === StadiumStandStatus::ACTIVE,
-        ])->all();
     }
 
     public function accountForUpdate(Club $club): Account

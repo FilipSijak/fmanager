@@ -9,6 +9,7 @@ use App\Models\Instance;
 use App\Models\Season;
 use App\Models\SeasonTicketSale;
 use App\Repositories\SeasonTicketRepository;
+use App\Repositories\StadiumCapacityRepository;
 use App\Services\AccountingService\AccountingService;
 use App\Services\CommercialService\CommercialDemandService;
 use App\Services\CommercialService\CommercialService;
@@ -22,6 +23,7 @@ class SeasonTicketService
 {
     public function __construct(
         private readonly SeasonTicketRepository $repository,
+        private readonly StadiumCapacityRepository $stadiumCapacity,
         private readonly SeasonTicketCalculator $calculator,
         private readonly MatchdayCalculator $matchdayCalculator,
         private readonly CommercialService $commercial,
@@ -39,16 +41,23 @@ class SeasonTicketService
         }
     }
 
-    public function holdersForMatch(Club $club, Game $game, Competition $competition): int
+    public function saleForMatch(Club $club, Game $game, Competition $competition): ?SeasonTicketSale
     {
         if (TicketType::forCompetition($competition->type, $competition->competition_scope ?? 'domestic') !== TicketType::LEAGUE) {
-            return 0;
+            return null;
         }
         $season = $this->repository->season($game->instance_id, $game->season_id);
         $date = CarbonImmutable::parse($game->match_start)->startOfDay();
         $sale = $this->sellForClub($club, $season, $date, $game->id);
 
-        return $sale !== null && $sale->sold_on->lessThanOrEqualTo($date) ? $sale->quantity : 0;
+        return $sale !== null && $sale->sold_on->lessThanOrEqualTo($date) ? $sale : null;
+    }
+
+    /** @return array{season_ticket_refund_quantity: int, season_ticket_refund_amount: int} */
+    public function constructionRefund(?SeasonTicketSale $sale, int $availableCapacity, int $constructionCapacity): array
+    {
+        return $this->calculator->constructionRefund($sale?->quantity ?? 0, $availableCapacity,
+            $constructionCapacity, $sale?->league_ticket_price ?? 0);
     }
 
     private function sellForClub(Club $club, Season $season, CarbonImmutable $date, ?int $currentGameId = null): ?SeasonTicketSale
@@ -64,7 +73,7 @@ class SeasonTicketService
                 return null;
             }
             $stadium = $this->commercial->initializeStadium($this->repository->stadium($club));
-            $capacity = $this->matchdayCalculator->availableCapacity((int) $stadium->active_capacity, $this->repository->stands($stadium));
+            $capacity = $this->matchdayCalculator->availableCapacity((int) $stadium->active_capacity, $this->stadiumCapacity->standsAtDate($stadium, $date));
             $profile = $this->demand->forClub($club, $date);
             $competitionRank = $this->repository->competitionRank($club, $season, $date->toDateString(), $currentGameId);
             $demand = $this->demandCalculator->seasonTicketDemand($profile->club_rank, $competitionRank, $profile->country_rank,
