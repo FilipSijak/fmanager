@@ -138,7 +138,7 @@ class SeasonTicketsTest extends TestCase
         app(SeasonTicketService::class)->sellForSeason($instance);
 
         $this->assertSame(2, SeasonTicketSale::query()->forClub($home)->count());
-        $this->assertDatabaseHas('season_ticket_sales', ['club_id' => $home->id, 'season_id' => $nextSeason->id, 'ticket_price' => 200, 'quantity' => 110, 'amount' => 22000]);
+        $this->assertDatabaseHas('season_ticket_sales', ['club_id' => $home->id, 'season_id' => $nextSeason->id, 'ticket_price' => 200, 'quantity' => 72, 'amount' => 14400]);
     }
 
     #[Test]

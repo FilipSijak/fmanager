@@ -3,13 +3,49 @@
 namespace App\Repositories;
 
 use App\Models\Club;
+use App\Models\ClubDemandProfile;
 use App\Models\Country;
 use App\Models\Game;
+use App\Models\Instance;
 use Carbon\CarbonInterface;
+use Closure;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 
 class TicketDemandRepository
 {
-    private const int RECENT_MATCH_LIMIT = 5;
+    private const int RECENT_MATCH_LIMIT = 10;
+
+    public function transaction(Closure $callback): mixed
+    {
+        return DB::transaction($callback);
+    }
+
+    /** @return LazyCollection<int, Club> */
+    public function clubs(Instance $instance): LazyCollection
+    {
+        return Club::query()->forInstance($instance->id)->lazyById(200);
+    }
+
+    public function lockClub(Club $club): Club
+    {
+        return Club::query()->forInstance($club->instance_id)->lockForUpdate()->findOrFail($club->id);
+    }
+
+    public function profile(Club $club, CarbonInterface $periodStart): ?ClubDemandProfile
+    {
+        return ClubDemandProfile::query()->forClub($club)->where('period_start', $periodStart->toDateString())->first();
+    }
+
+    /** @param array{club_rank: int, country_rank: int, performance_score: float, ticket_price_sensitivity: float, commercial_price_sensitivity: float} $values */
+    public function recordProfile(Club $club, CarbonInterface $periodStart, array $values): ClubDemandProfile
+    {
+        return ClubDemandProfile::query()->create($values + [
+            'instance_id' => $club->instance_id,
+            'club_id' => $club->id,
+            'period_start' => $periodStart->toDateString(),
+        ])->refresh();
+    }
 
     /** @return array{country_rank: int, results: list<array{home_club_id: int, home_goals: int, away_goals: int}>} */
     public function inputs(Club $club, CarbonInterface $before): array

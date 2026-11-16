@@ -9,8 +9,8 @@ use App\Models\Instance;
 use App\Models\Season;
 use App\Models\SeasonTicketSale;
 use App\Repositories\SeasonTicketRepository;
-use App\Repositories\TicketDemandRepository;
 use App\Services\AccountingService\AccountingService;
+use App\Services\CommercialService\CommercialDemandService;
 use App\Services\CommercialService\CommercialService;
 use App\Services\CommercialService\Domain\TicketDemandCalculator;
 use App\Services\CommercialService\Domain\TicketType;
@@ -26,7 +26,7 @@ class SeasonTicketService
         private readonly MatchdayCalculator $matchdayCalculator,
         private readonly CommercialService $commercial,
         private readonly AccountingService $accounting,
-        private readonly TicketDemandRepository $demandRepository,
+        private readonly CommercialDemandService $demand,
         private readonly TicketDemandCalculator $demandCalculator,
     ) {}
 
@@ -65,10 +65,10 @@ class SeasonTicketService
             }
             $stadium = $this->commercial->initializeStadium($this->repository->stadium($club));
             $capacity = $this->matchdayCalculator->availableCapacity((int) $stadium->active_capacity, $this->repository->stands($stadium));
-            $inputs = $this->demandRepository->inputs($club, $date);
-            $performance = $this->demandCalculator->performanceScore($club->id, $inputs['results']);
+            $profile = $this->demand->forClub($club, $date);
             $competitionRank = $this->repository->competitionRank($club, $season, $date->toDateString(), $currentGameId);
-            $demand = $this->demandCalculator->seasonTicketDemand((int) $club->rank, $competitionRank, $inputs['country_rank'], $performance, (int) $stadium->ticket_price);
+            $demand = $this->demandCalculator->seasonTicketDemand($profile->club_rank, $competitionRank, $profile->country_rank,
+                $profile->performance_score, (int) $stadium->ticket_price, $profile->ticket_price_sensitivity);
             $offer = $this->calculator->offer($capacity, (int) $stadium->ticket_price, $homeGames, $demand);
             $transaction = $offer['amount'] > 0 ? $this->accounting->income(
                 $this->repository->accountForUpdate($club), $offer['amount'], $date,

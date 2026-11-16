@@ -27,6 +27,7 @@ use App\Listeners\ProcessFinanceEntityLoanInstallments;
 use App\Listeners\ProcessPlayerContracts;
 use App\Listeners\ProcessSponsorshipOffers;
 use App\Listeners\ProcessTransfers;
+use App\Listeners\RefreshCommercialDemand;
 use App\Listeners\RunDailyTraining;
 use App\Listeners\SellSeasonTickets;
 use App\Listeners\SettleMatchdayRevenue;
@@ -64,6 +65,7 @@ class EventServiceProvider extends ServiceProvider
             PayClubWages::class,
         ],
         MonthlyUpdate::class => [
+            RefreshCommercialDemand::class,
             DispatchMonthlyPlayerReindex::class,
         ],
         SeasonCompleted::class => [

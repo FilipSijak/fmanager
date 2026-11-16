@@ -5,10 +5,9 @@ namespace App\Services\MatchdayService;
 use App\Models\Game;
 use App\Models\MatchdaySettlement;
 use App\Repositories\MatchdayRepository;
-use App\Repositories\TicketDemandRepository;
 use App\Services\AccountingService\AccountingService;
+use App\Services\CommercialService\CommercialDemandService;
 use App\Services\CommercialService\CommercialService;
-use App\Services\CommercialService\Domain\TicketDemandCalculator;
 use App\Services\CommercialService\Domain\TicketPriceCalculator;
 use App\Services\CommercialService\Domain\TicketType;
 use App\Services\MatchdayService\Domain\MatchdayCalculator;
@@ -24,8 +23,7 @@ class MatchdayService
         private readonly CommercialService $commercial,
         private readonly TicketPriceCalculator $ticketPriceCalculator,
         private readonly SeasonTicketService $seasonTickets,
-        private readonly TicketDemandRepository $demandRepository,
-        private readonly TicketDemandCalculator $demandCalculator,
+        private readonly CommercialDemandService $demand,
     ) {}
 
     public function settle(Game $game): ?MatchdaySettlement
@@ -49,11 +47,11 @@ class MatchdayService
             $ticketType = TicketType::forCompetition($competition->type, $competition->competition_scope ?? 'domestic');
             $ticketPrice = $this->ticketPriceCalculator->forType((int) $stadium->ticket_price, $ticketType);
             $date = CarbonImmutable::parse($game->match_start)->startOfDay();
-            $demandInputs = $this->demandRepository->inputs($home, CarbonImmutable::parse($game->match_start));
-            $performance = $this->demandCalculator->performanceScore($home->id, $demandInputs['results']);
+            $profile = $this->demand->forClub($home, $date);
             $capacity = $this->calculator->availableCapacity((int) $stadium->active_capacity, $this->repository->stands($stadium));
-            $amounts = $this->calculator->settlement($capacity, (int) $home->rank, (int) $away->rank,
-                (int) $competition->rank, $ticketPrice, $this->repository->venues($stadium), $ticketType, $seasonTicketHolders, $demandInputs['country_rank'], $performance);
+            $amounts = $this->calculator->settlement($capacity, $profile->club_rank, (int) $away->rank,
+                (int) $competition->rank, $ticketPrice, $this->repository->venues($stadium), $ticketType, $seasonTicketHolders,
+                $profile->country_rank, $profile->performance_score, $profile->ticket_price_sensitivity, $profile->commercial_price_sensitivity);
             $account = $this->repository->accountForUpdate($home);
 
             foreach (['gate_receipts', 'commercial_income'] as $category) {

@@ -10,6 +10,24 @@ use PHPUnit\Framework\TestCase;
 class MatchdayCalculatorTest extends TestCase
 {
     #[Test]
+    public function higher_product_prices_reduce_sales_using_commercial_sensitivity(): void
+    {
+        $calculator = new MatchdayCalculator;
+        $fairVenue = [['size' => 1, 'products' => [['base_price' => 500, 'price_multiplier' => 1.0]]]];
+        $expensiveVenue = [['size' => 1, 'products' => [['base_price' => 500, 'price_multiplier' => 2.0]]]];
+
+        $fair = $calculator->settlement(1000, 20, 20, 10000, 100, $fairVenue, TicketType::LEAGUE, 0, 100, 1.0, 1.0, 1.0);
+        $expensive = $calculator->settlement(1000, 20, 20, 10000, 100, $expensiveVenue, TicketType::LEAGUE, 0, 100, 1.0, 1.0, 1.0);
+        $sensitive = $calculator->settlement(1000, 20, 20, 10000, 100, $expensiveVenue, TicketType::LEAGUE, 0, 100, 1.0, 1.0, 3.0);
+
+        $this->assertSame(1000, $fair['commercial_income']);
+        $this->assertSame(550, $expensive['commercial_income']);
+        $this->assertSame(140, $sensitive['commercial_income']);
+        $this->assertSame(2185, $sensitive['operating_costs']);
+        $this->assertSame(1000, $sensitive['attendance']);
+    }
+
+    #[Test]
     public function home_away_and_competition_appeal_increase_attendance_without_exceeding_capacity(): void
     {
         $calculator = new MatchdayCalculator;

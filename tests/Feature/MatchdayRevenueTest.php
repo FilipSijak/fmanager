@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\BaseData\BaseCommercialCategory;
 use App\Models\BaseData\BaseCommercialProducts;
 use App\Models\Club;
+use App\Models\ClubDemandProfile;
 use App\Models\Competition;
 use App\Models\Country;
 use App\Models\FinanceTransactions;
@@ -45,20 +46,20 @@ class MatchdayRevenueTest extends TestCase
         $completed = app(CompleteGameService::class)->complete($game->id, 2, 1);
 
         $this->assertSame(1000, $completed->attendance);
-        $this->assertSame(109200, $homeAccount->fresh()->balance);
-        $this->assertSame(109200, $homeAccount->fresh()->future_balance);
+        $this->assertSame(108093, $homeAccount->fresh()->balance);
+        $this->assertSame(108093, $homeAccount->fresh()->future_balance);
         $this->assertSame($budget, $homeAccount->fresh()->transfer_budget);
         $this->assertSame(10000, $awayAccount->fresh()->balance);
         $settlement = $completed->matchdaySettlement()->sole();
         $this->assertSame(100, $settlement->ticket_price);
         $this->assertSame(60000, $settlement->gate_receipts);
-        $this->assertSame(1800, $settlement->commercial_income);
-        $this->assertSame(2600, $settlement->operating_costs);
+        $this->assertSame(324, $settlement->commercial_income);
+        $this->assertSame(2231, $settlement->operating_costs);
         $this->assertSame('2030-01-07', $settlement->settled_on->toDateString());
         $this->assertDatabaseCount('finance_transactions', 4);
         $this->assertDatabaseHas('finance_transactions', ['reference' => 'matchday:'.$game->id.':gate_receipts', 'amount' => 60000, 'transaction_date' => '2030-01-07 00:00:00']);
-        $this->assertDatabaseHas('finance_transactions', ['reference' => 'matchday:'.$game->id.':commercial_income', 'amount' => 1800]);
-        $this->assertDatabaseHas('finance_transactions', ['reference' => 'matchday:'.$game->id.':operating_costs', 'amount' => 2600, 'sending_account_id' => $homeAccount->id]);
+        $this->assertDatabaseHas('finance_transactions', ['reference' => 'matchday:'.$game->id.':commercial_income', 'amount' => 324]);
+        $this->assertDatabaseHas('finance_transactions', ['reference' => 'matchday:'.$game->id.':operating_costs', 'amount' => 2231, 'sending_account_id' => $homeAccount->id]);
     }
 
     #[Test]
@@ -75,7 +76,7 @@ class MatchdayRevenueTest extends TestCase
         event(new PostMatch($game->fresh()));
         event(new PostMatch($game->fresh()));
 
-        $this->assertSame(109200, $account->fresh()->balance);
+        $this->assertSame(108093, $account->fresh()->balance);
         $this->assertSame(1000, $game->fresh()->attendance);
         $this->assertDatabaseCount('matchday_settlements', 1);
         $this->assertDatabaseCount('finance_transactions', 4);
@@ -235,6 +236,24 @@ class MatchdayRevenueTest extends TestCase
         $this->assertSame(0, $settlement->ticket_price);
         $this->assertSame(0, $settlement->gate_receipts);
         $this->assertDatabaseCount('finance_transactions', 1);
+    }
+
+    #[Test]
+    public function venue_sales_use_the_stored_commercial_sensitivity_independently_of_ticket_sensitivity(): void
+    {
+        [$game, $account, , $stadium] = $this->match();
+        $this->commercialVenue($stadium);
+        ClubDemandProfile::factory()->create(['instance_id' => $game->instance_id, 'club_id' => $game->hometeam_id,
+            'period_start' => '2030-01-01', 'club_rank' => 20, 'ticket_price_sensitivity' => 1.5, 'commercial_price_sensitivity' => 3.0]);
+
+        $completed = app(CompleteGameService::class)->complete($game->id, 2, 1);
+
+        $settlement = $completed->matchdaySettlement()->sole();
+        $this->assertSame(1000, $settlement->attendance);
+        $this->assertSame(60000, $settlement->gate_receipts);
+        $this->assertSame(126, $settlement->commercial_income);
+        $this->assertSame(2182, $settlement->operating_costs);
+        $this->assertSame(107944, $account->fresh()->balance);
     }
 
     /** @return array{Game, Account, Account, Stadium} */

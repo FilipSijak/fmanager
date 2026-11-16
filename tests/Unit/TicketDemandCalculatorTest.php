@@ -10,14 +10,60 @@ use PHPUnit\Framework\TestCase;
 class TicketDemandCalculatorTest extends TestCase
 {
     #[Test]
+    public function lower_club_rank_increases_the_penalty_for_the_same_price_premium(): void
+    {
+        $calculator = new TicketDemandCalculator;
+
+        $established = $calculator->priceFactor(150, 100, 100, 20, 1.0);
+        $lowerRanked = $calculator->priceFactor(150, 100, 100, 5, 1.0);
+
+        $this->assertLessThan($established, $lowerRanked);
+        $this->assertEqualsWithDelta(0.346021, $lowerRanked, 0.000001);
+    }
+
+    #[Test]
+    public function poor_form_increases_the_penalty_for_the_same_price_premium(): void
+    {
+        $calculator = new TicketDemandCalculator;
+
+        $winning = $calculator->priceFactor(150, 100, 100, 20, 1.0);
+        $losing = $calculator->priceFactor(150, 100, 100, 20, 0.0);
+        $lowerRankedAndLosing = $calculator->priceFactor(150, 100, 100, 5, 0.0);
+
+        $this->assertLessThan($winning, $losing);
+        $this->assertLessThan($losing, $lowerRankedAndLosing);
+        $this->assertEqualsWithDelta(0.226757, $lowerRankedAndLosing, 0.000001);
+    }
+
+    #[Test]
+    public function club_rank_and_form_do_not_change_discounts_or_prices_within_tolerance(): void
+    {
+        $calculator = new TicketDemandCalculator;
+
+        $this->assertSame(1.25, $calculator->priceFactor(50, 100, 100, 0, 0.0));
+        $this->assertSame(1.0, $calculator->priceFactor(100, 100, 100, 0, 0.0));
+        $this->assertSame(1.0, $calculator->priceFactor(110, 100, 100, 0, 0.0));
+        $this->assertLessThan(1.0, $calculator->priceFactor(111, 100, 100, 0, 0.0));
+    }
+
+    #[Test]
+    public function price_sensitivity_clamps_club_rank_and_form_to_their_valid_ranges(): void
+    {
+        $calculator = new TicketDemandCalculator;
+
+        $this->assertSame($calculator->priceFactor(150, 100, 100, 20, 1.0), $calculator->priceFactor(150, 100, 100, 200, 2.0));
+        $this->assertSame($calculator->priceFactor(150, 100, 100, 0, 0.0), $calculator->priceFactor(150, 100, 100, -20, -1.0));
+    }
+
+    #[Test]
     public function top_ranked_countries_tolerate_ten_percent_above_reference_before_demand_drops(): void
     {
         $calculator = new TicketDemandCalculator;
 
-        $this->assertSame(1.0, $calculator->priceFactor(100, 100, 100));
-        $this->assertSame(1.0, $calculator->priceFactor(110, 100, 100));
-        $this->assertLessThan(1.0, $calculator->priceFactor(111, 100, 100));
-        $this->assertLessThan($calculator->priceFactor(111, 100, 100), $calculator->priceFactor(150, 100, 100));
+        $this->assertSame(1.0, $calculator->priceFactor(100, 100, 100, 20, 1.0));
+        $this->assertSame(1.0, $calculator->priceFactor(110, 100, 100, 20, 1.0));
+        $this->assertLessThan(1.0, $calculator->priceFactor(111, 100, 100, 20, 1.0));
+        $this->assertLessThan($calculator->priceFactor(111, 100, 100, 20, 1.0), $calculator->priceFactor(150, 100, 100, 20, 1.0));
     }
 
     #[Test]
@@ -25,11 +71,11 @@ class TicketDemandCalculatorTest extends TestCase
     {
         $calculator = new TicketDemandCalculator;
 
-        $this->assertGreaterThan(1.0, $calculator->priceFactor(75, 100, 100));
-        $this->assertGreaterThan($calculator->priceFactor(75, 100, 100), $calculator->priceFactor(75, 100, 0));
-        $this->assertLessThan(1.0, $calculator->priceFactor(105, 100, 0));
-        $this->assertLessThan($calculator->priceFactor(105, 100, 50), $calculator->priceFactor(105, 100, 0));
-        $this->assertLessThan($calculator->priceFactor(200, 100, 100), $calculator->priceFactor(200, 100, 0));
+        $this->assertGreaterThan(1.0, $calculator->priceFactor(75, 100, 100, 20, 1.0));
+        $this->assertGreaterThan($calculator->priceFactor(75, 100, 100, 20, 1.0), $calculator->priceFactor(75, 100, 0, 20, 1.0));
+        $this->assertLessThan(1.0, $calculator->priceFactor(105, 100, 0, 20, 1.0));
+        $this->assertLessThan($calculator->priceFactor(105, 100, 50, 20, 1.0), $calculator->priceFactor(105, 100, 0, 20, 1.0));
+        $this->assertLessThan($calculator->priceFactor(200, 100, 100, 20, 1.0), $calculator->priceFactor(200, 100, 0, 20, 1.0));
     }
 
     #[Test]

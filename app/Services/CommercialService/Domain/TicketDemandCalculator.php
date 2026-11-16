@@ -33,7 +33,14 @@ class TicketDemandCalculator
         return $this->ticketPriceCalculator->forType($this->ticketPriceCalculator->calculate($clubRank, $competitionRank, $countryRank), $type);
     }
 
-    public function priceFactor(int $price, int $referencePrice, int $countryRank): float
+    public function priceSensitivity(int $countryRank, int $clubRank, float $performance): float
+    {
+        return 1 + 2 * (1 - CommercialRankingConfig::normalizeCountryRank($countryRank))
+            + (1 - CommercialRankingConfig::normalizeClubRank($clubRank))
+            + (1 - max(0.0, min(1.0, $performance)));
+    }
+
+    public function priceFactor(int $price, int $referencePrice, int $countryRank, int $clubRank, float $performance, ?float $sensitivity = null): float
     {
         $country = CommercialRankingConfig::normalizeCountryRank($countryRank);
         $ratio = max(0, $price) / max(1, $referencePrice);
@@ -46,10 +53,12 @@ class TicketDemandCalculator
             return 1.0;
         }
 
+        $elasticity = max(1.0, $sensitivity ?? $this->priceSensitivity($countryRank, $clubRank, $performance));
+
         return 1 / (1 + $elasticity * ($ratio - 1 - $tolerance)) ** 2;
     }
 
-    public function attendance(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $countryRank, float $performance, int $ticketPrice, TicketType $type): int
+    public function attendance(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $countryRank, float $performance, int $ticketPrice, TicketType $type, ?float $sensitivity = null): int
     {
         $interest = 0.25
             + CommercialRankingConfig::normalizeClubRank($homeRank) * 0.30
@@ -57,19 +66,19 @@ class TicketDemandCalculator
             + CommercialRankingConfig::normalizeCompetitionRank($competitionRank) * 0.15
             + CommercialRankingConfig::normalizeCountryRank($countryRank) * 0.10
             + max(0.0, min(1.0, $performance)) * 0.20;
-        $factor = $this->priceFactor($ticketPrice, $this->referencePrice($homeRank, $competitionRank, $countryRank, $type), $countryRank);
+        $factor = $this->priceFactor($ticketPrice, $this->referencePrice($homeRank, $competitionRank, $countryRank, $type), $countryRank, $homeRank, $performance, $sensitivity);
 
         return (int) round(max(0, $capacity) * max(0.0, min(1.0, $interest * $factor)));
     }
 
-    public function seasonTicketDemand(int $clubRank, int $competitionRank, int $countryRank, float $performance, int $leaguePrice): float
+    public function seasonTicketDemand(int $clubRank, int $competitionRank, int $countryRank, float $performance, int $leaguePrice, ?float $sensitivity = null): float
     {
         $interest = 0.25
             + CommercialRankingConfig::normalizeClubRank($clubRank) * 0.35
             + CommercialRankingConfig::normalizeCompetitionRank($competitionRank) * 0.20
             + CommercialRankingConfig::normalizeCountryRank($countryRank) * 0.10
             + max(0.0, min(1.0, $performance)) * 0.20;
-        $factor = $this->priceFactor($leaguePrice, $this->referencePrice($clubRank, $competitionRank, $countryRank, TicketType::LEAGUE), $countryRank);
+        $factor = $this->priceFactor($leaguePrice, $this->referencePrice($clubRank, $competitionRank, $countryRank, TicketType::LEAGUE), $countryRank, $clubRank, $performance, $sensitivity);
 
         return max(0.0, min(1.0, $interest * $factor));
     }

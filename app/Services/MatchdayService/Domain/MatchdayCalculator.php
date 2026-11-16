@@ -27,21 +27,21 @@ class MatchdayCalculator
         return array_sum(array_map(fn (array $stand): int => $stand['available'] ? max(0, $stand['capacity']) : 0, $stands));
     }
 
-    public function attendance(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $countryRank = 0, float $performance = 0.5, ?int $ticketPrice = null, TicketType $type = TicketType::LEAGUE): int
+    public function attendance(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $countryRank = 0, float $performance = 0.5, ?int $ticketPrice = null, TicketType $type = TicketType::LEAGUE, ?float $sensitivity = null): int
     {
         $ticketPrice ??= $this->demand->referencePrice($homeRank, $competitionRank, $countryRank, $type);
 
-        return $this->demand->attendance($capacity, $homeRank, $awayRank, $competitionRank, $countryRank, $performance, $ticketPrice, $type);
+        return $this->demand->attendance($capacity, $homeRank, $awayRank, $competitionRank, $countryRank, $performance, $ticketPrice, $type, $sensitivity);
     }
 
     /**
      * @param  list<array{size: int, products: list<array{base_price: int, price_multiplier: float}>}>  $venues
      * @return array{attendance: int, ticket_type: string, ticket_price: int, season_ticket_attendance: int, paying_attendance: int, gate_receipts: int, commercial_income: int, operating_costs: int}
      */
-    public function settlement(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $ticketPrice, array $venues, TicketType $ticketType = TicketType::LEAGUE, int $seasonTicketHolders = 0, int $countryRank = 0, float $performance = 0.5): array
+    public function settlement(int $capacity, int $homeRank, int $awayRank, int $competitionRank, int $ticketPrice, array $venues, TicketType $ticketType = TicketType::LEAGUE, int $seasonTicketHolders = 0, int $countryRank = 0, float $performance = 0.5, ?float $ticketPriceSensitivity = null, ?float $commercialPriceSensitivity = null): array
     {
         $seasonAttendance = $ticketType === TicketType::LEAGUE ? min(max(0, $capacity), max(0, $seasonTicketHolders)) : 0;
-        $attendance = max($seasonAttendance, $this->attendance($capacity, $homeRank, $awayRank, $competitionRank, $countryRank, $performance, $ticketPrice, $ticketType));
+        $attendance = max($seasonAttendance, $this->attendance($capacity, $homeRank, $awayRank, $competitionRank, $countryRank, $performance, $ticketPrice, $ticketType, $ticketPriceSensitivity));
         $payingAttendance = $attendance - $seasonAttendance;
         $ticketPrice = max(0, $ticketPrice);
         $commercialIncome = 0;
@@ -52,9 +52,11 @@ class MatchdayCalculator
                 continue;
             }
 
-            $customers = min((int) floor($attendance * 0.20), self::CUSTOMERS_PER_VENUE_SIZE * $venue['size']);
             $basePrices = array_column($venue['products'], 'base_price');
             $salePrices = array_map(fn (array $product): float => $product['base_price'] * max(0, $product['price_multiplier']), $venue['products']);
+            $commercialDemand = $this->demand->priceFactor((int) round(array_sum($salePrices)), array_sum($basePrices),
+                $countryRank, $homeRank, $performance, $commercialPriceSensitivity);
+            $customers = min((int) floor($attendance * 0.20 * $commercialDemand), self::CUSTOMERS_PER_VENUE_SIZE * $venue['size']);
             $numberOfProducts = count($venue['products']);
             $commercialIncome += $this->wholeCurrency($customers * array_sum($salePrices) / $numberOfProducts);
             $operatingCosts += $this->wholeCurrency($customers * array_sum($basePrices) / $numberOfProducts * 0.50)
