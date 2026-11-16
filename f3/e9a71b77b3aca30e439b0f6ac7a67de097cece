@@ -1,0 +1,42 @@
+app/Models/MatchdaySettlement.php
+  s_5e452473821948::t_024b4b41edab33 18-19
+tests/Feature/SeasonTicketsTest.php
+  s_5e452473821948::t_81c57596af1ead 5,12,18-19,21,24-27,30,212-350,371-380
+  s_5e452473821948::t_f75d6a751f7384 351-370,381
+  s_5e452473821948::t_a61f8bccafa73c 382
+database/migrations/2026_11_16_163333_add_season_ticket_refunds_to_matchday_settlements_table.php
+  s_5e452473821948::t_7a836a04acba6e 1-13,17-24,27-29
+  s_5e452473821948::t_024b4b41edab33 14-16,25-26
+app/Services/SeasonTicketService/SeasonTicketService.php
+  s_5e452473821948::t_024b4b41edab33 44,47,53-60
+  s_5e452473821948::t_f75d6a751f7384 12,26,76
+app/Services/SeasonTicketService/Domain/SeasonTicketCalculator.php
+  s_5e452473821948::t_024b4b41edab33 7-17
+app/Services/MatchdayService/MatchdayService.php
+  s_5e452473821948::t_f75d6a751f7384 8,22,54
+  s_5e452473821948::t_024b4b41edab33 47-48,55,59,68-71
+tests/Unit/SeasonTicketCalculatorTest.php
+  s_5e452473821948::t_f88b2590e72cbe 1-4,8-11,15,33-34
+  s_5e452473821948::t_d727587c559809 5-7,12-14,16-32
+app/Repositories/StadiumCapacityRepository.php
+  s_5e452473821948::t_a3f2e35a20b021 9-10,16-39
+  s_5e452473821948::t_247c91e61cd2b7 12
+app/Repositories/MatchdayRepository.php
+  s_5e452473821948::t_024b4b41edab33 72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f3e9a71b77b3aca30e439b0f6ac7a67de097cece",
+  "prompts": {},
+  "sessions": {
+    "s_5e452473821948": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1e4d2-f808-7dc0-b512-c5d9d96ab36e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
