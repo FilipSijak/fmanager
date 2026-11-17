@@ -1,0 +1,52 @@
+tests/Unit/AiCommercialPriceCalculatorTest.php
+  s_5e452473821948::t_c83832cc38781b 5-7,12-66,68-83
+  s_5e452473821948::t_9eec5dbb0a801b 1-4,8-11,84-85
+  s_5e452473821948::t_7a99b3158c2619 67
+tests/Feature/TicketDemandTest.php
+  s_5e452473821948::t_5f9eacdea3cda7 158
+app/Listeners/AdjustAiCommercialPrices.php
+  s_5e452473821948::t_5f9eacdea3cda7 6,10,17
+  s_5e452473821948::t_9eec5dbb0a801b 1-5,7-9,11-16,18-19
+app/Services/CommercialService/Domain/AiCommercialPriceCalculator.php
+  s_5e452473821948::t_ab533a4ab058fd 5-6,9-15,20,22,24-61,65-77
+  s_5e452473821948::t_9eec5dbb0a801b 1-4,7-8,16,21,23,78-79
+  s_5e452473821948::t_2112ecb1446c29 17-19,62-64
+app/Models/Stadium.php
+  s_5e452473821948::t_ab533a4ab058fd 22
+app/Repositories/AiCommercialPricingRepository.php
+  s_5e452473821948::t_9eec5dbb0a801b 1-4,18-19,90-91
+  s_5e452473821948::t_ab533a4ab058fd 5,7-17,20-58,60-72,81-89
+  s_5e452473821948::t_5f9eacdea3cda7 6,59,73-80
+app/Services/CommercialService/AiCommercialPricingService.php
+  s_5e452473821948::t_5f9eacdea3cda7 5-14,17-27,29-65
+  s_5e452473821948::t_9eec5dbb0a801b 1-4,15-16,28,66-67
+app/Repositories/MatchdayRepository.php
+  s_5e452473821948::t_ab533a4ab058fd 54,66
+app/Providers/EventServiceProvider.php
+  s_5e452473821948::t_5f9eacdea3cda7 13,70
+tests/Feature/AiCommercialPricingTest.php
+  s_5e452473821948::t_d8552ef113b1fe 176-205,218-219
+  s_5e452473821948::t_e545795b7b7556 223-225,245-246
+  s_5e452473821948::t_9eec5dbb0a801b 1-4,23,28-31,222,252,254-255
+  s_5e452473821948::t_d1dfa9a8943e83 5-22,24-27,32-75,82-175,220-221,226-244,247-251,253
+  s_5e452473821948::t_455b73a98b7854 76-81,206-217
+database/migrations/2026_11_17_102619_add_ai_prices_reviewed_on_to_stadiums_table.php
+  s_5e452473821948::t_ab533a4ab058fd 14-15,24-25
+  s_5e452473821948::t_9eec5dbb0a801b 1-13,16-23,26-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "c04832ff3e7188be62d03363338a135dd49a28e3",
+  "prompts": {},
+  "sessions": {
+    "s_5e452473821948": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1e4d2-f808-7dc0-b512-c5d9d96ab36e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
