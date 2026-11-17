@@ -1,0 +1,53 @@
+tests/Integration/Services/StadiumService/StadiumServiceTest.php
+  s_5e452473821948::t_ef021b8f54dd57 8,513
+tests/Feature/StadiumApiTest.php
+  s_5e452473821948::t_ef021b8f54dd57 8,277-298,341,343-345
+app/Repositories/StadiumRepository.php
+  s_5e452473821948::t_dc48acc6e5952c 49,98-100
+  s_fcb451db3335d1::t_81498cdbbf63da 101-102
+app/Services/StadiumService/Operations/BuildCommercialVenue.php
+  s_5e452473821948::t_dc48acc6e5952c 31-33
+app/Services/InstanceService/InstanceData/InitialSeed.php
+  s_5e452473821948::t_8a32b74a1001c2 186
+app/Repositories/MatchdayRepository.php
+  s_5e452473821948::t_dc48acc6e5952c 61
+tests/Integration/Instance/InitialSeedTest.php
+  s_5e452473821948::t_8a32b74a1001c2 6-7,14,26-38
+  s_5e452473821948::t_483b6eeae5b275 39
+database/seeders/CommercialProductsSeeder.php
+  s_5e452473821948::t_dc48acc6e5952c 28,46,77,80-93,114
+tests/Unit/MatchdayCalculatorTest.php
+  s_5e452473821948::t_ef021b8f54dd57 7,13-30
+app/Services/MatchdayService/Domain/MatchdayCalculator.php
+  s_5e452473821948::t_dc48acc6e5952c 51,63
+tests/Integration/Commercial/CommercialProductsTest.php
+  s_5e452473821948::t_acc863459c26a7 39
+  s_5e452473821948::t_96f872f7c458f3 7-11,30-31,37-38,40-71
+  s_5e452473821948::t_df8668fa4230fe 72
+tests/Feature/MatchdayRevenueTest.php
+  s_5e452473821948::t_ef021b8f54dd57 23,155-195
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "af38e2bfa189e59eaaa203ad7c29acae9641650e",
+  "prompts": {},
+  "sessions": {
+    "s_5e452473821948": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1e4d2-f808-7dc0-b512-c5d9d96ab36e",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    },
+    "s_fcb451db3335d1": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "53cf9550-168f-4997-be3e-44551f1475ce",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
