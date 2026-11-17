@@ -10,6 +10,7 @@ use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Events\Transfers\TransferEvent;
 use App\Events\WeeklyUpdate;
+use App\Listeners\AdjustAiCommercialPrices;
 use App\Listeners\CompleteSeason;
 use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
@@ -66,6 +67,7 @@ class EventServiceProvider extends ServiceProvider
         ],
         MonthlyUpdate::class => [
             RefreshCommercialDemand::class,
+            AdjustAiCommercialPrices::class,
             DispatchMonthlyPlayerReindex::class,
         ],
         SeasonCompleted::class => [

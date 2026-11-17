@@ -51,7 +51,7 @@ class MatchdayRepository
         return Account::query()->where('club_id', $club->id)->lockForUpdate()->firstOrFail();
     }
 
-    /** @return list<array{size: int, products: list<array{base_price: int, price_multiplier: float}>}> */
+    /** @return list<array{size: int, products: list<array{id: int, base_price: int, price_multiplier: float}>}> */
     public function venues(Stadium $stadium): array
     {
         $products = StadiumCommercialProduct::query()->forStadium($stadium)->available()
@@ -63,6 +63,7 @@ class MatchdayRepository
             ->map(fn (StadiumCommercialVenue $venue): array => [
                 'size' => $venue->size->value,
                 'products' => $products->get($venue->category_id, collect())->map(fn (StadiumCommercialProduct $product): array => [
+                    'id' => (int) $product->id,
                     'base_price' => (int) $product->base_price,
                     'price_multiplier' => (float) $product->price_change_coef,
                 ])->values()->all(),

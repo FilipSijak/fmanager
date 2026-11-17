@@ -155,6 +155,7 @@ class TicketDemandTest extends TestCase
     public function monthly_reviews_reduce_interest_after_ten_losses_without_changing_ticket_prices(): void
     {
         [$game, $club, $instance] = $this->world(66, 100, 10, 5000);
+        $instance->forceFill(['club_id' => $club->id])->save();
         [$foreignGame, $foreignClub] = $this->world(66, 100, 10, 5000);
         for ($day = 1; $day <= 10; $day++) {
             $this->completedResult($game, sprintf('2030-06-%02d', $day), 2, 0);

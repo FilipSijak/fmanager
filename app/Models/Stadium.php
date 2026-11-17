@@ -19,7 +19,7 @@ class Stadium extends Model
 
     protected function casts(): array
     {
-        return ['type' => StadiumType::class, 'commercial_limit' => 'integer', 'ticket_price' => 'integer'];
+        return ['type' => StadiumType::class, 'commercial_limit' => 'integer', 'ticket_price' => 'integer', 'ai_prices_reviewed_on' => 'immutable_date'];
     }
 
     public function instance(): BelongsTo
