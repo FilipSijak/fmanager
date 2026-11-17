@@ -183,7 +183,7 @@ class InitialSeed
             ->where('instance_id', $instanceId)
             ->get()
             ->keyBy(fn (Stadium $stadium): string => $stadium->name);
-        $categoryIds = BaseCommercialCategory::query()->pluck('id');
+        $categoryIds = BaseCommercialCategory::query()->whereHas('products')->pluck('id');
         $venueSizes = collect(CommercialVenueSize::cases());
 
         foreach ($baseClubs as $baseClub) {

@@ -46,6 +46,7 @@ class StadiumRepository
 
         return BaseCommercialCategory::query()
             ->active()
+            ->whereHas('products')
             ->whereNotIn('id', StadiumCommercialVenue::query()->forStadium($stadium)->select('category_id'))
             ->availableForStadiumType($stadium->type)
             ->orderBy('name')
@@ -92,6 +93,11 @@ class StadiumRepository
             ->whereKey($categoryId)
             ->availableForStadiumType($type)
             ->exists();
+    }
+
+    public function categoryHasProducts(int $categoryId): bool
+    {
+        return BaseCommercialCategory::query()->whereKey($categoryId)->whereHas('products')->exists();
     }
 
     public function commercialVenueExists(Stadium $stadium, int $categoryId): bool

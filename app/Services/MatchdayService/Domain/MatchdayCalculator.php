@@ -48,6 +48,7 @@ class MatchdayCalculator
         $operatingCosts = self::FIXED_STADIUM_COST + $attendance * self::COST_PER_SUPPORTER;
 
         foreach ($venues as $venue) {
+            $operatingCosts += self::STAFF_COST_PER_VENUE_SIZE * $venue['size'];
             if ($venue['products'] === []) {
                 continue;
             }
@@ -59,8 +60,7 @@ class MatchdayCalculator
             $customers = min((int) floor($attendance * 0.20 * $commercialDemand), self::CUSTOMERS_PER_VENUE_SIZE * $venue['size']);
             $numberOfProducts = count($venue['products']);
             $commercialIncome += $this->wholeCurrency($customers * array_sum($salePrices) / $numberOfProducts);
-            $operatingCosts += $this->wholeCurrency($customers * array_sum($basePrices) / $numberOfProducts * 0.50)
-                + self::STAFF_COST_PER_VENUE_SIZE * $venue['size'];
+            $operatingCosts += $this->wholeCurrency($customers * array_sum($basePrices) / $numberOfProducts * 0.50);
         }
 
         return [

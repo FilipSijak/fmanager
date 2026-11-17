@@ -20,6 +20,7 @@ use App\Models\StadiumCommercialVenue;
 use App\Models\StadiumStand;
 use App\Services\GameService\CompleteGameService;
 use App\Services\MatchdayService\MatchdayService;
+use App\Services\StadiumService\StadiumService;
 use App\StadiumStandPosition;
 use App\StadiumStandStatus;
 use App\Support\GameContext;
@@ -151,8 +152,47 @@ class MatchdayRevenueTest extends TestCase
         $settlement = app(MatchdayService::class)->settle($game);
 
         $this->assertSame(0, $settlement->commercial_income);
-        $this->assertSame(2100, $settlement->operating_costs);
-        $this->assertSame(107900, $account->fresh()->balance);
+        $this->assertSame(2150, $settlement->operating_costs);
+        $this->assertSame(107850, $account->fresh()->balance);
+    }
+
+    #[Test]
+    public function an_inactive_venue_category_still_pays_staff_until_the_venue_is_demolished(): void
+    {
+        [$game, , , $stadium] = $this->match();
+        $product = $this->commercialVenue($stadium);
+        $product->baseProduct->category->forceFill(['is_active' => false])->save();
+        $game->forceFill(['status' => Game::STATUS_COMPLETED])->save();
+
+        $settlement = app(MatchdayService::class)->settle($game);
+
+        $this->assertSame(0, $settlement->commercial_income);
+        $this->assertSame(2150, $settlement->operating_costs);
+    }
+
+    #[Test]
+    public function demolishing_a_venue_removes_its_staff_costs_from_future_matches_even_when_its_products_remain(): void
+    {
+        [$game, , , $stadium] = $this->match();
+        $product = $this->commercialVenue($stadium);
+        $product->forceFill(['is_available' => false])->save();
+        $venue = StadiumCommercialVenue::query()->forStadium($stadium)->sole();
+        $venue->forceFill(['size' => 3, 'build_cost' => 100000])->save();
+        $game->forceFill(['status' => Game::STATUS_COMPLETED])->save();
+        $service = app(MatchdayService::class);
+        $before = $service->settle($game);
+
+        app(StadiumService::class)->demolishCommercialVenue($stadium, $venue->id);
+        $nextGame = $game->replicate();
+        $nextGame->forceFill(['match_start' => '2030-01-14 15:00:00', 'attendance' => null])->save();
+        $after = $service->settle($nextGame);
+
+        $this->assertSame(2250, $before->operating_costs);
+        $this->assertSame(2100, $after->operating_costs);
+        $this->assertSame(0, $after->commercial_income);
+        $this->assertModelExists($product);
+        $this->assertModelMissing($venue);
+        $this->assertSame(2250, $service->settle($game)->operating_costs);
     }
 
     #[Test]

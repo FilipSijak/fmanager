@@ -28,6 +28,9 @@ class BuildCommercialVenue
             if (! $this->stadiumRepository->categoryIsAvailableForType($categoryId, $stadiumType)) {
                 throw new DomainException('This commercial category is not available for the stadium type.');
             }
+            if (! $this->stadiumRepository->categoryHasProducts($categoryId)) {
+                throw new DomainException('This commercial category has no products.');
+            }
 
             if ($this->stadiumRepository->commercialVenueExists($lockedStadium, $categoryId)) {
                 throw new DomainException('This commercial venue category has already been built at the stadium.');

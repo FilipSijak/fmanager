@@ -4,11 +4,30 @@ namespace Tests\Unit;
 
 use App\Services\CommercialService\Domain\TicketType;
 use App\Services\MatchdayService\Domain\MatchdayCalculator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
 class MatchdayCalculatorTest extends TestCase
 {
+    #[Test]
+    #[DataProvider('staffedVenues')]
+    public function existing_venues_pay_staff_even_without_products_or_supporters(int $size, int $capacity, int $costs): void
+    {
+        $calculator = new MatchdayCalculator;
+
+        $settlement = $calculator->settlement($capacity, 20, 20, 10000, 100, [['size' => $size, 'products' => []]], TicketType::LEAGUE, 0, 100);
+
+        $this->assertSame(0, $settlement['commercial_income']);
+        $this->assertSame($costs, $settlement['operating_costs']);
+    }
+
+    /** @return array<string, array{int, int, int}> */
+    public static function staffedVenues(): array
+    {
+        return ['small' => [1, 1000, 2150], 'medium' => [2, 1000, 2200], 'large' => [3, 1000, 2250], 'closed stadium' => [3, 0, 250]];
+    }
+
     #[Test]
     public function higher_product_prices_reduce_sales_using_commercial_sensitivity(): void
     {

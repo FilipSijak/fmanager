@@ -58,8 +58,7 @@ class MatchdayRepository
             ->whereHas('baseProduct.category', fn (Builder $query): Builder => $query->active())
             ->with('baseProduct')->get()->groupBy('baseProduct.category_id');
 
-        return StadiumCommercialVenue::query()->forStadium($stadium)
-            ->whereHas('category', fn (Builder $query): Builder => $query->active())->get()
+        return StadiumCommercialVenue::query()->forStadium($stadium)->get()
             ->map(fn (StadiumCommercialVenue $venue): array => [
                 'size' => $venue->size->value,
                 'products' => $products->get($venue->category_id, collect())->map(fn (StadiumCommercialProduct $product): array => [
