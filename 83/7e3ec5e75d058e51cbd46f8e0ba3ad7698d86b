@@ -1,0 +1,34 @@
+tests/Unit/PlayerFitnessCalculatorTest.php
+  s_4475bead5b8ab5::t_983329ad7bc333 25-33,39,41,47,51-52
+  s_4475bead5b8ab5::t_d0da77dcc5f8eb 16,20-24,55-56
+tests/Feature/PlayerFitnessTest.php
+  s_4475bead5b8ab5::t_983329ad7bc333 49
+  s_4475bead5b8ab5::t_19f01505e3ad08 35-36,151-152,165
+app/Services/TrainingService/PlayerFitnessCalculator.php
+  s_4475bead5b8ab5::t_983329ad7bc333 11
+  s_4475bead5b8ab5::t_81a46f7727a465 9,12
+app/Services/MatchEngineService/Data/MatchPlayer.php
+  s_4475bead5b8ab5::t_6d812937de30e2 31-32,38-39
+app/Services/MatchEngineService/MatchFitness.php
+  s_4475bead5b8ab5::t_f5a84abba7de47 24
+app/Services/MatchEngineService/MatchTeamBuilder.php
+  s_4475bead5b8ab5::t_1e4415c4c2be0d 272-273
+app/Services/TrainingService/PlayerFitnessService.php
+  s_4475bead5b8ab5::t_de5e061ca20f05 38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "837e3ec5e75d058e51cbd46f8e0ba3ad7698d86b",
+  "prompts": {},
+  "sessions": {
+    "s_4475bead5b8ab5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1ee21-a749-7401-a477-7c13af0fb0cb",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
