@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\MatchdaySettlementResource;
 use App\Models\Instance;
 use App\Repositories\GameRepository;
+use App\Services\MatchdayService\MatchdayFinanceService;
 use App\Services\MatchEngineService\LiveMatchService;
 use App\Services\TacticsService\TacticsService;
 use App\Support\GameContext;
@@ -14,7 +16,7 @@ use Inertia\Response;
 
 class MatchPageController extends Controller
 {
-    public function show(int $gameId, GameRepository $games): Response
+    public function show(int $gameId, GameRepository $games, MatchdayFinanceService $finances, GameContext $context): Response
     {
         $game = $games->details($gameId);
         abort_if($game === null, 404);
@@ -28,8 +30,14 @@ class MatchPageController extends Controller
                 'club_id' => isset($event['club_id']) ? (int) $event['club_id'] : null,
             ])->sortBy('minute')->values();
         unset($game['match_summary']);
+        $instance = Instance::query()->with('club')->findOrFail($context->instanceId());
+        $managedHomeMatch = $instance->club !== null && (int) $game['hometeam_id'] === $instance->club->id;
+        $settlement = $managedHomeMatch ? $finances->forMatch($instance->club, $gameId) : null;
 
-        return Inertia::render('matches/Match', ['match' => $game, 'events' => $events]);
+        return Inertia::render('matches/Match', ['match' => $game, 'events' => $events,
+            'isManagedHomeMatch' => $managedHomeMatch,
+            'matchdayFinances' => $settlement === null ? null : (new MatchdaySettlementResource($settlement))->resolve(),
+        ]);
     }
 
     /** The user's match screen while it is played live; other games open their normal match page. */

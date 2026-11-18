@@ -1,5 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import ClubLink from '@/components/game/ClubLink';
+import {
+    MatchdayBreakdown,
+    type MatchdaySettlement,
+} from '@/components/game/MatchdayFinances';
 import GameLayout from '@/layouts/GameLayout';
 import { show as showCompetition } from '@/routes/competitions';
 import { matchDate } from '../competitions/MatchList';
@@ -27,8 +31,12 @@ type MatchDetails = {
 export default function Match({
     match,
     events,
+    matchdayFinances,
+    isManagedHomeMatch,
 }: {
     match: MatchDetails;
+    matchdayFinances: MatchdaySettlement | null;
+    isManagedHomeMatch: boolean;
     events: {
         id: string;
         minute: number;
@@ -101,6 +109,32 @@ export default function Match({
                         </dd>
                     </div>
                 </dl>
+                {isManagedHomeMatch && (
+                    <section
+                        className="mt-6 border border-[#1f3a1f] bg-[#04120a]"
+                        aria-labelledby="match-finances-title"
+                    >
+                        <h2
+                            id="match-finances-title"
+                            className="border-b border-[#1f3a1f] bg-[#08210f] px-5 py-3 font-bold text-[#39ff14]"
+                        >
+                            Matchday finances
+                        </h2>
+                        <div className="p-5">
+                            {matchdayFinances ? (
+                                <MatchdayBreakdown
+                                    settlement={matchdayFinances}
+                                />
+                            ) : (
+                                <p className="text-sm text-[#8abb83]">
+                                    {completed
+                                        ? 'Financial details were not recorded for this match.'
+                                        : 'Matchday finances will appear after this home match is completed.'}
+                                </p>
+                            )}
+                        </div>
+                    </section>
+                )}
                 <section
                     className="mt-6 overflow-hidden border border-[#3355dd]/50"
                     aria-label="Match events"

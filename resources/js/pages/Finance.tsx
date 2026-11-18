@@ -8,6 +8,9 @@ import {
     reject as rejectSponsorOffer,
 } from '@/actions/App/Http/Controllers/Api/SponsorshipOfferController';
 import api from '@/api';
+import MatchdayFinances, {
+    type MatchdayFinanceOverview,
+} from '@/components/game/MatchdayFinances';
 import GameLayout from '@/layouts/GameLayout';
 
 type FinancialSummary = {
@@ -57,6 +60,7 @@ type SponsorOffer = {
 };
 
 type Props = {
+    matchdayFinances: MatchdayFinanceOverview;
     club: { id: number; name: string };
     season: { start_date: string; end_date: string };
     finances: FinancialSummary | null;
@@ -464,6 +468,7 @@ export default function Finance({
     sponsorOffers,
     sponsorOfferHistory,
     loanOptions,
+    matchdayFinances,
 }: Props) {
     const [amount, setAmount] = useState('');
     const [lengthMonths, setLengthMonths] = useState('12');
@@ -596,6 +601,8 @@ export default function Finance({
                             Financial information is unavailable for this club.
                         </p>
                     )}
+
+                    <MatchdayFinances data={matchdayFinances} />
 
                     <Panel title="Sponsorship Offers">
                         {sponsorOffers.length === 0 ? (
