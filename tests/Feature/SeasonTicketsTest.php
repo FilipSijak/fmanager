@@ -54,14 +54,14 @@ class SeasonTicketsTest extends TestCase
         $this->assertSame(400, $sale->quantity);
         $this->assertSame(1000, $sale->capacity);
         $this->assertSame(2, $sale->home_games);
-        $this->assertSame(200, $sale->ticket_price);
-        $this->assertSame(80000, $sale->amount);
+        $this->assertSame(140, $sale->ticket_price);
+        $this->assertSame(56000, $sale->amount);
         $this->assertSame('2030-07-01', $sale->sold_on->toDateString());
-        $this->assertSame(90000, $account->fresh()->balance);
-        $this->assertSame(90000, $account->fresh()->future_balance);
+        $this->assertSame(66000, $account->fresh()->balance);
+        $this->assertSame(66000, $account->fresh()->future_balance);
         $this->assertSame(2, SeasonTicketSale::query()->count());
         $this->assertDatabaseCount('finance_transactions', 2);
-        $this->assertDatabaseHas('finance_transactions', ['id' => $sale->transaction_id, 'category' => 'season_ticket_sales', 'amount' => 80000, 'transaction_date' => '2030-07-01 00:00:00']);
+        $this->assertDatabaseHas('finance_transactions', ['id' => $sale->transaction_id, 'category' => 'season_ticket_sales', 'amount' => 56000, 'transaction_date' => '2030-07-01 00:00:00']);
     }
 
     #[Test]
@@ -90,7 +90,7 @@ class SeasonTicketsTest extends TestCase
         $this->assertSame(120, $settlements[2]->ticket_price);
         $this->assertSame(0, $settlements[2]->season_ticket_attendance);
         $this->assertSame(120000, $settlements[2]->gate_receipts);
-        $this->assertSame(303700, $account->fresh()->balance);
+        $this->assertSame(291700, $account->fresh()->balance);
         $this->assertDatabaseCount('season_ticket_sales', 1);
     }
 
@@ -111,8 +111,8 @@ class SeasonTicketsTest extends TestCase
 
         $sale = SeasonTicketSale::query()->forClub($home)->sole();
         $this->assertSame(1, $sale->home_games);
-        $this->assertSame(100, $sale->ticket_price);
-        $this->assertSame(40000, $sale->amount);
+        $this->assertSame(70, $sale->ticket_price);
+        $this->assertSame(28000, $sale->amount);
     }
 
     #[Test]
@@ -130,7 +130,7 @@ class SeasonTicketsTest extends TestCase
         $sale = SeasonTicketSale::query()->forClub($home)->sole();
         $this->assertSame(493, $sale->quantity);
         $this->assertSame(100, $sale->league_ticket_price);
-        $this->assertSame(49300, $sale->amount);
+        $this->assertSame(34510, $sale->amount);
         $this->assertDatabaseCount('finance_transactions', 1);
     }
 
@@ -148,7 +148,7 @@ class SeasonTicketsTest extends TestCase
         app(SeasonTicketService::class)->sellForSeason($instance);
 
         $this->assertSame(2, SeasonTicketSale::query()->forClub($home)->count());
-        $this->assertDatabaseHas('season_ticket_sales', ['club_id' => $home->id, 'season_id' => $nextSeason->id, 'ticket_price' => 200, 'quantity' => 72, 'amount' => 14400]);
+        $this->assertDatabaseHas('season_ticket_sales', ['club_id' => $home->id, 'season_id' => $nextSeason->id, 'ticket_price' => 140, 'quantity' => 72, 'amount' => 10080]);
     }
 
     #[Test]
@@ -174,7 +174,7 @@ class SeasonTicketsTest extends TestCase
 
         app(SeasonTicketService::class)->sellForSeason($instance);
 
-        $this->assertSame(50000, $account->fresh()->balance);
+        $this->assertSame(38000, $account->fresh()->balance);
         $this->assertDatabaseCount('season_ticket_sales', 1);
     }
 
@@ -246,17 +246,17 @@ class SeasonTicketsTest extends TestCase
         $this->assertSame($refundAmount, (int) FinanceTransactions::query()->where('category', 'season_ticket_refunds')->sum('amount'));
         $this->assertSame($refundAmount > 0 ? 1 : 0, FinanceTransactions::query()->where('category', 'season_ticket_refunds')->count());
         $this->assertSame(400, SeasonTicketSale::query()->forClub($home)->sole()->quantity);
-        $this->assertSame(120000, SeasonTicketSale::query()->forClub($home)->sole()->amount);
+        $this->assertSame(84000, SeasonTicketSale::query()->forClub($home)->sole()->amount);
     }
 
     /** @return array<string, array{int, int, int, int}> */
     public static function constructionCapacities(): array
     {
         return [
-            'regular seats lost first' => [700, 0, 0, 372300],
-            'exactly enough seats for holders' => [400, 0, 0, 342900],
-            'half the holders displaced' => [200, 200, 20000, 323300],
-            'all holders displaced' => [0, 400, 40000, 303700],
+            'regular seats lost first' => [700, 0, 0, 336300],
+            'exactly enough seats for holders' => [400, 0, 0, 306900],
+            'half the holders displaced' => [200, 200, 14000, 293300],
+            'all holders displaced' => [0, 400, 28000, 279700],
         ];
     }
 
@@ -324,9 +324,9 @@ class SeasonTicketsTest extends TestCase
 
         $this->assertSame(200, $settlement->attendance);
         $this->assertSame(200, $settlement->season_ticket_refund_quantity);
-        $this->assertSame(20000, $settlement->season_ticket_refund_amount);
-        $this->assertSame(29500, $account->fresh()->balance);
-        $this->assertDatabaseHas('finance_transactions', ['category' => 'season_ticket_refunds', 'amount' => 20000,
+        $this->assertSame(14000, $settlement->season_ticket_refund_amount);
+        $this->assertSame(23500, $account->fresh()->balance);
+        $this->assertDatabaseHas('finance_transactions', ['category' => 'season_ticket_refunds', 'amount' => 14000,
             'transaction_date' => '2030-08-22 00:00:00', 'reference' => 'matchday:'.$game->id.':season_ticket_refund']);
     }
 

@@ -55,7 +55,7 @@ class SeasonTicketService
     public function constructionRefund(?SeasonTicketSale $sale, int $availableCapacity, int $constructionCapacity): array
     {
         return $this->calculator->constructionRefund($sale?->quantity ?? 0, $availableCapacity,
-            $constructionCapacity, $sale?->league_ticket_price ?? 0);
+            $constructionCapacity, $sale === null ? 0 : $sale->ticket_price / max(1, $sale->home_games));
     }
 
     private function sellForClub(Club $club, Season $season, CarbonImmutable $date, ?int $currentGameId = null): ?SeasonTicketSale

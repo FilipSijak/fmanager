@@ -4,14 +4,16 @@ namespace App\Services\CommercialService\Domain;
 
 class SeasonTicketCalculator
 {
+    private const int DISCOUNT_PERCENT = 30;
+
     /** @return array{season_ticket_refund_quantity: int, season_ticket_refund_amount: int} */
-    public function constructionRefund(int $holders, int $availableCapacity, int $constructionCapacity, int $originalLeaguePrice): array
+    public function constructionRefund(int $holders, int $availableCapacity, int $constructionCapacity, float $paidMatchPrice): array
     {
         $displaced = min(max(0, $constructionCapacity), max(0, $holders - max(0, $availableCapacity)));
 
         return [
             'season_ticket_refund_quantity' => $displaced,
-            'season_ticket_refund_amount' => $displaced * max(0, $originalLeaguePrice),
+            'season_ticket_refund_amount' => (int) round($displaced * max(0, $paidMatchPrice)),
         ];
     }
 
@@ -25,7 +27,7 @@ class SeasonTicketCalculator
         $allocation = intdiv($capacity * 40, 100);
         $quantity = (int) floor($allocation * max(0.0, min(1.0, $demand)));
         $leaguePrice = max(0, $leaguePrice);
-        $ticketPrice = $leaguePrice * $homeGames;
+        $ticketPrice = (int) round($leaguePrice * $homeGames * (100 - self::DISCOUNT_PERCENT) / 100);
 
         return [
             'capacity' => $capacity,

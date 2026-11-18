@@ -121,7 +121,7 @@ class TicketDemandTest extends TestCase
         $this->assertSame(250, $losing->quantity);
         $this->assertSame(72, $expensive->quantity);
         $this->assertLessThanOrEqual(400, $winning->quantity);
-        $this->assertSame(21780, $winning->amount);
+        $this->assertSame(15180, $winning->amount);
     }
 
     #[Test]
