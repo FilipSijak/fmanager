@@ -39,8 +39,7 @@ class TrainingRepositoryTest extends TestCase
             'condition' => 90,
             'pace' => 45,
         ]);
-        DB::table('injuries')->insert([
-            'id' => 1,
+        $injuryId = DB::table('injuries')->insertGetId([
             'type' => 'Knee injury',
             'severity' => 4,
             'duration_from' => 10,
@@ -50,7 +49,7 @@ class TrainingRepositoryTest extends TestCase
             'instance_id' => $instance->id,
             'season_id' => 1,
             'player_id' => $player->id,
-            'injury_id' => 1,
+            'injury_id' => $injuryId,
             'injury_start_date' => '2027-06-01',
             'injury_end_date' => '2027-06-20',
         ]);
@@ -98,10 +97,10 @@ class TrainingRepositoryTest extends TestCase
     {
         [$instance, $club, $player] = $this->trainingPlayer();
         $injuryInstance = $sameInstance ? $instance : Instance::factory()->create();
-        DB::table('injuries')->insert(['id' => 1, 'type' => 'Knee injury', 'severity' => 4, 'duration_from' => 1, 'duration_to' => 20]);
+        $injuryId = DB::table('injuries')->insertGetId(['type' => 'Knee injury', 'severity' => 4, 'duration_from' => 1, 'duration_to' => 20]);
         DB::table('player_injuries')->insert([
             'instance_id' => $injuryInstance->id, 'season_id' => $instance->season_id, 'player_id' => $player->id,
-            'injury_id' => 1, 'injury_start_date' => $start, 'injury_end_date' => $end,
+            'injury_id' => $injuryId, 'injury_start_date' => $start, 'injury_end_date' => $end,
         ]);
         $repository = app(TrainingRepository::class);
 

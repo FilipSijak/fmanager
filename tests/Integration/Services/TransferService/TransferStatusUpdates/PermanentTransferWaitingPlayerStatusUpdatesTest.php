@@ -120,8 +120,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
         $transfer->transfer_status = TransferStatusTypes::WAITING_PAPERWORK->value;
         $transfer->save();
 
-        DB::table('injuries')->insert([
-            'id' => 1,
+        $injuryId = DB::table('injuries')->insertGetId([
             'type' => 'Knee injury',
             'severity' => 4,
             'duration_from' => 30,
@@ -131,7 +130,7 @@ class PermanentTransferWaitingPlayerStatusUpdatesTest extends TestCase
             'instance_id' => 1,
             'season_id' => 1,
             'player_id' => $transfer->player_id,
-            'injury_id' => 1,
+            'injury_id' => $injuryId,
             'injury_start_date' => '2024-07-20',
             'injury_end_date' => '2024-08-20',
         ]);

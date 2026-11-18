@@ -5,6 +5,7 @@ const EVENT_LABELS: Record<MatchEvent['type'], string> = {
     yellow_card: 'Yellow card',
     red_card: 'Red card',
     substitution: 'Substitution',
+    injury: 'Injury',
 };
 
 function percentage(part: number, whole: number): string {

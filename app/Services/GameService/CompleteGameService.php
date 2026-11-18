@@ -9,6 +9,7 @@ use App\Models\GamePlayerStat;
 use App\Models\Season;
 use App\Services\CompetitionService\Competitions\CompetitionUpdater;
 use App\Services\CompetitionService\Competitions\TournamentUpdater;
+use App\Services\TrainingService\PlayerFitnessService;
 use App\Support\GameContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -19,7 +20,8 @@ class CompleteGameService
     public function __construct(
         private readonly CompetitionUpdater $competitionUpdater,
         private readonly TournamentUpdater $tournamentUpdater,
-        private readonly GameContext $gameContext
+        private readonly GameContext $gameContext,
+        private readonly PlayerFitnessService $fitness,
     ) {}
 
     /**
@@ -54,6 +56,8 @@ class CompleteGameService
                     'game_id' => $game->id,
                 ], $playerStats));
             }
+
+            $this->fitness->completeMatch($game);
 
             $this->competitionUpdater->setGamesByCompetition([
                 $game->competition_id => [$game->toArray()],

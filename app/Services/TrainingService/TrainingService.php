@@ -18,10 +18,12 @@ class TrainingService
         private readonly TrainingRepository $trainingRepository,
         private readonly PlayerProgressCalculator $playerProgressCalculator,
         private readonly GameContext $context,
+        private readonly PlayerFitnessService $fitness,
     ) {}
 
     public function processDay(Instance $instance): void
     {
+        $this->fitness->reportRecoveries($instance);
         $trainingDate = CarbonImmutable::parse($instance->instance_date)->startOfDay();
         $previousDate = $trainingDate->subDay();
         $games = $this->trainingRepository->scheduledGames(
@@ -44,7 +46,7 @@ class TrainingService
         $this->trainingRepository->clubsByIds((int) $instance->id, $postMatchRestIds)
             ->each(fn (Club $club) => $this->recoverCondition($club, $trainingDate));
         $this->trainingRepository->clubsExceptIds((int) $instance->id, $clubsWithoutTraining)
-            ->each(fn (Club $club) => $this->executeTrainingSession($club, $trainingDate));
+            ->each(fn (Club $club) => $this->executeTrainingSession($club, $trainingDate, $instance));
     }
 
     public function managedClub(): Club
@@ -93,8 +95,8 @@ class TrainingService
                 $condition = (int) ($player->training_condition ?? 100);
                 $change = $this->playerProgressCalculator->conditionChange($scheduleData, $player->position);
                 $canTrain = ! $player->is_injured && $condition >= PlayerProgressCalculator::MINIMUM_TRAINING_CONDITION;
-                $conditionAfterSession = $resting ? $this->playerProgressCalculator->recoveredCondition($condition)
-                    : ($canTrain ? min(100, max(PlayerProgressCalculator::MINIMUM_TRAINING_CONDITION, $condition + $change)) : $condition);
+                $conditionAfterSession = $resting || ! $canTrain ? $this->playerProgressCalculator->recoveredCondition($condition)
+                    : min(100, max(PlayerProgressCalculator::MINIMUM_TRAINING_CONDITION, $condition + $change));
 
                 return [
                     'id' => $player->id, 'name' => trim($player->person->first_name.' '.$player->person->last_name),
@@ -125,7 +127,7 @@ class TrainingService
         });
     }
 
-    private function executeTrainingSession(Club $club, CarbonImmutable $trainingDate): void
+    private function executeTrainingSession(Club $club, CarbonImmutable $trainingDate, Instance $instance): void
     {
         $trainingFields = array_merge(
             PlayerFields::TECHNICAL_FIELDS,
@@ -134,7 +136,7 @@ class TrainingService
             PlayerFields::GOALKEEPING_FIELDS
         );
 
-        $this->trainingRepository->transaction(function () use ($club, $trainingDate, $trainingFields): void {
+        $this->trainingRepository->transaction(function () use ($club, $trainingDate, $trainingFields, $instance): void {
             $players = $this->trainingRepository->playersForTraining($club, $trainingFields, $trainingDate);
             $playerIds = $players->pluck('id');
             $schedulesByPlayer = $this->trainingRepository->schedulesForPlayers($playerIds);
@@ -148,6 +150,7 @@ class TrainingService
                     $trainingFields,
                     $trainingDate
                 );
+                $this->fitness->train($player, $schedulesByPlayer->get($player->id, []), $instance, $trainingDate);
                 $progressUpdates[(int) $player->id] = $updates->progress;
 
                 if ($updates->player !== []) {
@@ -165,18 +168,15 @@ class TrainingService
     {
         $this->trainingRepository->transaction(function () use ($club, $trainingDate): void {
             $playerIds = $this->trainingRepository->activePlayerIds($club);
-            $progressRows = $this->trainingRepository->conditionProgressForPlayers($playerIds);
+            $progressRows = $this->trainingRepository->conditionProgressForPlayers($playerIds, $trainingDate);
             $progressUpdates = [];
 
             foreach ($progressRows as $progress) {
                 $condition = $this->playerProgressCalculator->recoveredCondition((int) $progress->condition);
 
-                if ($condition === (int) $progress->condition) {
-                    continue;
-                }
-
                 $progressUpdates[(int) $progress->player_id] = [
                     'condition' => $condition,
+                    'last_progressed_at' => $trainingDate,
                     'updated_at' => $trainingDate,
                 ];
             }

@@ -7,6 +7,7 @@ use App\Models\Instance;
 use App\Repositories\TrainingRepository;
 use App\Services\TrainingService\Data\ScheduledGameData;
 use App\Services\TrainingService\Data\TrainingPlayerData;
+use App\Services\TrainingService\PlayerFitnessService;
 use App\Services\TrainingService\PlayerProgressCalculator;
 use App\Services\TrainingService\PlayerProgressUpdate;
 use App\Services\TrainingService\TrainingService;
@@ -42,7 +43,7 @@ class TrainingServiceTest extends TestCase
             ->with(1, $this->callback(fn (Collection $ids): bool => $ids->sort()->values()->all() === [1, 2, 3]))
             ->willReturn(new Collection);
 
-        (new TrainingService($repository, $calculator, new GameContext))->processDay($instance);
+        (new TrainingService($repository, $calculator, new GameContext, $this->createMock(PlayerFitnessService::class)))->processDay($instance);
     }
 
     #[Test]
@@ -85,6 +86,6 @@ class TrainingServiceTest extends TestCase
             ->method('bulkUpdatePlayers')
             ->with([7 => ['pace' => 11]]);
 
-        (new TrainingService($repository, $calculator, new GameContext))->processDay($instance);
+        (new TrainingService($repository, $calculator, new GameContext, $this->createMock(PlayerFitnessService::class)))->processDay($instance);
     }
 }

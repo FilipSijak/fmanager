@@ -58,7 +58,7 @@ class PlayerProgressCalculator
 
         if ($player->injured || $player->condition < self::MINIMUM_TRAINING_CONDITION) {
             return new PlayerProgressUpdate(
-                progress: $this->missedSessionProgress($player, $trainingFields, $timestamp),
+                progress: $this->missedSessionProgress($player, $trainingFields, $timestamp) + ['condition' => $this->recoveredCondition($player->condition)],
                 player: [],
             );
         }

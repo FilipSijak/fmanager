@@ -14,6 +14,7 @@ use App\Services\TrainingService\TrainingIntensity;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Closure;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -54,7 +55,9 @@ class TrainingRepository
     ): Collection {
         return Player::query()->forClub($club)->active()
             ->withTrainingProgress($trainingFields)->withInjuryStatusOn($trainingDate->toDateString())
-            ->whereNotNull('players_progress.player_id')->lockForUpdate()->get()
+            ->whereNotNull('players_progress.player_id')
+            ->where(fn (EloquentBuilder $query): EloquentBuilder => $query->whereNull('players_progress.last_progressed_at')->orWhere('players_progress.last_progressed_at', '<', $trainingDate->copy()->startOfDay()))
+            ->lockForUpdate()->get()
             ->map(fn (Player $player): TrainingPlayerData => TrainingPlayerData::fromPlayer($player, $trainingFields));
     }
 
@@ -136,10 +139,11 @@ class TrainingRepository
             ->pluck('id');
     }
 
-    public function conditionProgressForPlayers(Collection $playerIds): Collection
+    public function conditionProgressForPlayers(Collection $playerIds, CarbonInterface $date): Collection
     {
         return DB::table('players_progress')
             ->whereIn('player_id', $playerIds)
+            ->where(fn (Builder $query): Builder => $query->whereNull('last_progressed_at')->orWhere('last_progressed_at', '<', $date->copy()->startOfDay()))
             ->lockForUpdate()
             ->get(['player_id', 'condition']);
     }

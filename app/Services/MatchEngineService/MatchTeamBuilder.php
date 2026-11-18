@@ -14,6 +14,7 @@ use App\Services\MatchEngineService\Data\MatchTeam;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use App\Services\TacticsService\FormationTendency;
 use App\Services\TacticsService\Mentality;
+use App\Services\TrainingService\PlayerFitnessCalculator;
 use Illuminate\Support\Collection;
 
 /**
@@ -43,6 +44,7 @@ class MatchTeamBuilder
 
     public function __construct(
         private readonly TeamRatings $teamRatings,
+        private readonly PlayerFitnessCalculator $fitness = new PlayerFitnessCalculator,
     ) {}
 
     /**
@@ -58,6 +60,7 @@ class MatchTeamBuilder
             ->where('club_id', $clubId)
             ->active()
             ->notInjuredOn($matchDate)
+            ->withTrainingProgress([])
             ->get()
             ->keyBy('id')
             ->collect();
@@ -264,6 +267,8 @@ class MatchTeamBuilder
             goalkeeping: $this->skillRating($player, 'goalkeeping'),
             playmaking: $this->skillRating($player, 'playmaking'),
             defending: $this->skillRating($player, 'defending'),
+            condition: (int) ($player->training_condition ?? 100),
+            stamina: (int) $player->stamina,
         );
     }
 
@@ -276,7 +281,8 @@ class MatchTeamBuilder
     {
         $attributes = self::SKILL_ATTRIBUTES[$skill];
 
-        return array_sum(array_map(fn (string $attribute): int => (int) $player->{$attribute}, $attributes)) / count($attributes);
+        return array_sum(array_map(fn (string $attribute): int => (int) $player->{$attribute}, $attributes)) / count($attributes)
+            * $this->fitness->performanceFactor((int) ($player->training_condition ?? 100));
     }
 
     private function lineSkill(PitchLine $line): string

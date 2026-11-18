@@ -16,7 +16,7 @@ use Random\Randomizer;
  */
 class MatchSimulationEngine
 {
-    public const ENGINE_VERSION = 5;
+    public const ENGINE_VERSION = 6;
 
     /** Chances an average side creates over a match against an equal opponent on neutral ground. */
     private const BASE_CHANCES = 10.0;
@@ -76,6 +76,8 @@ class MatchSimulationEngine
 
     private readonly TacticalChanges $tacticalChanges;
 
+    private readonly MatchFitness $fitness;
+
     public function __construct(Randomizer $randomizer = new Randomizer)
     {
         $this->teamRatings = new TeamRatings;
@@ -84,6 +86,7 @@ class MatchSimulationEngine
         $this->minuteSimulator = new MinuteSimulator(new MatchRandom($randomizer), $this->teamRatings);
         $this->aiSubstitutions = new AiSubstitutions($this->substitutions, $this->playerMatchRating);
         $this->tacticalChanges = new TacticalChanges($this->teamRatings);
+        $this->fitness = new MatchFitness(new MatchRandom($randomizer), $this->teamRatings, $this->substitutions);
     }
 
     /** Plays a whole match between two sides the AI manages. */
@@ -139,6 +142,7 @@ class MatchSimulationEngine
             );
 
             $state->minute = $minute;
+            $this->fitness->advance($state);
 
             if (! $state->isFinished()) {
                 $this->aiSubstitutions->apply($state, 'home');

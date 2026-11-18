@@ -140,9 +140,9 @@ class MatchEngineServiceTest extends TestCase
         $starters = $this->squad($game->hometeam_id, 10);
         $substitutes = $this->squad($game->hometeam_id, 8, positions: self::BENCH_POSITIONS);
         $this->saveLineup($tactic, $starters, $substitutes);
-        DB::table('injuries')->insert(['id' => 1, 'type' => 'Knee injury', 'severity' => 4, 'duration_from' => 10, 'duration_to' => 20]);
+        $injuryId = DB::table('injuries')->insertGetId(['type' => 'Knee injury', 'severity' => 4, 'duration_from' => 10, 'duration_to' => 20]);
         DB::table('player_injuries')->insert([
-            'instance_id' => 1, 'season_id' => 1, 'player_id' => $starters[1]->id, 'injury_id' => 1,
+            'instance_id' => 1, 'season_id' => 1, 'player_id' => $starters[1]->id, 'injury_id' => $injuryId,
             'injury_start_date' => '2026-08-10', 'injury_end_date' => '2026-08-15',
         ]);
 

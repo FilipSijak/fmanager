@@ -65,7 +65,7 @@ export type LiveSide = {
 
 export type MatchEvent = {
     minute: number;
-    type: 'goal' | 'yellow_card' | 'red_card' | 'substitution';
+    type: 'goal' | 'yellow_card' | 'red_card' | 'substitution' | 'injury';
     team: Side;
     club_id: number;
     player_id: number | null;
