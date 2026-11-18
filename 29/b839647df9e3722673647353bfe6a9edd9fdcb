@@ -1,0 +1,37 @@
+app/Services/InstanceService/CreateInstance.php
+  s_4475bead5b8ab5::t_61e21101cf586d 12
+app/Services/CommercialService/SeasonTicketService.php
+  s_4475bead5b8ab5::t_61e21101cf586d 1-88
+tests/Feature/SeasonTicketsTest.php
+  s_4475bead5b8ab5::t_61e21101cf586d 21
+app/Listeners/SellSeasonTickets.php
+  s_4475bead5b8ab5::t_61e21101cf586d 6
+app/Services/CommercialService/Domain/SeasonTicketCalculator.php
+  s_4475bead5b8ab5::t_61e21101cf586d 1-39
+tests/Feature/TicketDemandTest.php
+  s_4475bead5b8ab5::t_61e21101cf586d 20
+app/Services/MatchdayService/MatchdayService.php
+  s_4475bead5b8ab5::t_61e21101cf586d 14
+tests/Integration/Instance/CreateInstanceTest.php
+  s_4475bead5b8ab5::t_61e21101cf586d 22
+tests/Feature/AiCommercialPricingTest.php
+  s_4475bead5b8ab5::t_61e21101cf586d 22
+tests/Unit/SeasonTicketCalculatorTest.php
+  s_4475bead5b8ab5::t_61e21101cf586d 5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "29b839647df9e3722673647353bfe6a9edd9fdcb",
+  "prompts": {},
+  "sessions": {
+    "s_4475bead5b8ab5": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1ee21-a749-7401-a477-7c13af0fb0cb",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
