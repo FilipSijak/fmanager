@@ -10,6 +10,7 @@ use App\Events\SeasonCompleted;
 use App\Events\SeasonStarted;
 use App\Events\Transfers\TransferEvent;
 use App\Events\WeeklyUpdate;
+use App\Listeners\AdjustAiCommercialPrices;
 use App\Listeners\CompleteSeason;
 use App\Listeners\CompleteStadiumStandConstruction;
 use App\Listeners\DispatchMonthlyPlayerReindex;
@@ -27,7 +28,10 @@ use App\Listeners\ProcessFinanceEntityLoanInstallments;
 use App\Listeners\ProcessPlayerContracts;
 use App\Listeners\ProcessSponsorshipOffers;
 use App\Listeners\ProcessTransfers;
+use App\Listeners\RefreshCommercialDemand;
 use App\Listeners\RunDailyTraining;
+use App\Listeners\SellSeasonTickets;
+use App\Listeners\SettleMatchdayRevenue;
 use App\Listeners\StartSeason;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -45,6 +49,7 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
         PostMatch::class => [
+            SettleMatchdayRevenue::class,
             PayContinentalMatchPrizes::class,
         ],
         NextDay::class => [
@@ -61,6 +66,8 @@ class EventServiceProvider extends ServiceProvider
             PayClubWages::class,
         ],
         MonthlyUpdate::class => [
+            RefreshCommercialDemand::class,
+            AdjustAiCommercialPrices::class,
             DispatchMonthlyPlayerReindex::class,
         ],
         SeasonCompleted::class => [
@@ -72,6 +79,7 @@ class EventServiceProvider extends ServiceProvider
             PayClubSponsorships::class,
             PayLeagueTvRights::class,
             StartSeason::class,
+            SellSeasonTickets::class,
         ],
         TransferEvent::class => [
             CreateTransferNews::class,

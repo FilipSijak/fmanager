@@ -5,6 +5,7 @@ namespace Tests\Integration\Services\StadiumService;
 use App\Events\NextDay;
 use App\Listeners\CompleteStadiumStandConstruction;
 use App\Models\BaseData\BaseCommercialCategory;
+use App\Models\BaseData\BaseCommercialProducts;
 use App\Models\BaseData\BaseStadiumExpansionCost;
 use App\Models\Country;
 use App\Models\Instance;
@@ -509,6 +510,7 @@ class StadiumServiceTest extends TestCase
 
     private function mapCategoryToStadiumType(int $categoryId, StadiumType $stadiumType): void
     {
+        BaseCommercialProducts::query()->forceCreate(['category_id' => $categoryId, 'slug' => 'product-'.$categoryId, 'name' => 'Venue Product', 'base_price' => 500]);
         DB::table('base_commercial_category_stadium_type')->insert([
             'category_id' => $categoryId,
             'stadium_type' => $stadiumType->value,

@@ -25,7 +25,7 @@ class CommercialProductsSeeder extends Seeder
             ['slug' => 'events_venue', 'name' => 'Events Venue', 'description' => 'Concerts, conferences, and private events'],
         ];
 
-        DB::table('base_commercial_categories')->insert($categories);
+        DB::table('base_commercial_categories')->insertOrIgnore($categories);
 
         $categoryIds = DB::table('base_commercial_categories')->pluck('id', 'slug');
         $venueCosts = [
@@ -43,7 +43,7 @@ class CommercialProductsSeeder extends Seeder
 
         foreach ($venueCosts as $categorySlug => $costs) {
             foreach ($costs as $size => $baseCost) {
-                DB::table('base_commercial_venue_costs')->insert([
+                DB::table('base_commercial_venue_costs')->insertOrIgnore([
                     'category_id' => $categoryIds[$categorySlug],
                     'size' => $size + 1,
                     'base_cost' => $baseCost,
@@ -74,9 +74,23 @@ class CommercialProductsSeeder extends Seeder
             }
         }
 
-        DB::table('base_commercial_category_stadium_type')->insert($availability);
+        DB::table('base_commercial_category_stadium_type')->insertOrIgnore($availability);
 
         $products = [
+            ['slug' => 'cafe-espresso', 'category' => 'cafe', 'name' => 'Espresso', 'description' => 'Freshly brewed espresso', 'base_price' => 250],
+            ['slug' => 'cafe-tea', 'category' => 'cafe', 'name' => 'Tea', 'description' => 'Hot tea', 'base_price' => 200],
+            ['slug' => 'kiosk-burger', 'category' => 'food_kiosk', 'name' => 'Burger', 'description' => 'Matchday burger', 'base_price' => 650],
+            ['slug' => 'kiosk-hot-dog', 'category' => 'food_kiosk', 'name' => 'Hot Dog', 'description' => 'Matchday hot dog', 'base_price' => 450],
+            ['slug' => 'casino-entry', 'category' => 'casino', 'name' => 'Casino Admission', 'description' => 'Admission to the casino', 'base_price' => 2000],
+            ['slug' => 'casino-refreshments', 'category' => 'casino', 'name' => 'Casino Refreshments', 'description' => 'Drinks and snacks', 'base_price' => 600],
+            ['slug' => 'hotel-room', 'category' => 'hotel', 'name' => 'Hotel Room', 'description' => 'Overnight accommodation', 'base_price' => 10000],
+            ['slug' => 'hotel-breakfast', 'category' => 'hotel', 'name' => 'Hotel Breakfast', 'description' => 'Breakfast for hotel guests', 'base_price' => 1500],
+            ['slug' => 'vip-hospitality-package', 'category' => 'vip_hospitality', 'name' => 'Hospitality Package', 'description' => 'Premium matchday hospitality', 'base_price' => 7500],
+            ['slug' => 'vip-drinks-package', 'category' => 'vip_hospitality', 'name' => 'VIP Drinks Package', 'description' => 'Drinks for hospitality guests', 'base_price' => 1500],
+            ['slug' => 'fine-dining-menu', 'category' => 'fine_dining', 'name' => 'Tasting Menu', 'description' => 'A selection of fine dining courses', 'base_price' => 6500],
+            ['slug' => 'fine-dining-wine-pairing', 'category' => 'fine_dining', 'name' => 'Wine Pairing', 'description' => 'Wines selected for the tasting menu', 'base_price' => 2500],
+            ['slug' => 'event-admission', 'category' => 'events_venue', 'name' => 'Event Admission', 'description' => 'Admission to a hosted event', 'base_price' => 2500],
+            ['slug' => 'event-catering', 'category' => 'events_venue', 'name' => 'Event Catering', 'description' => 'Catering for event guests', 'base_price' => 1500],
             ['slug' => 'draft-lager', 'category' => 'bar', 'name' => 'Draft Lager', 'description' => 'Cold one, on tap', 'base_price' => 450],
             ['slug' => 'craft-ipa', 'category' => 'bar', 'name' => 'Craft IPA', 'description' => 'Hoppy and bitter', 'base_price' => 550],
             ['slug' => 'house-wine', 'category' => 'bar', 'name' => 'House Wine', 'description' => 'Red or white', 'base_price' => 600],
@@ -97,7 +111,7 @@ class CommercialProductsSeeder extends Seeder
             ['slug' => 'green-curry', 'category' => 'restaurant', 'name' => 'Green Curry', 'description' => 'Good Thai coconut curry, medium spice', 'base_price' => 900],
         ];
 
-        DB::table('base_commercial_products')->insert(array_map(
+        DB::table('base_commercial_products')->insertOrIgnore(array_map(
             function (array $product) use ($categoryIds): array {
                 $product['category_id'] = $categoryIds[$product['category']];
                 unset($product['category']);

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\GameEntityType;
 use App\Models\Account;
 use App\Models\BaseData\BaseCommercialCategory;
+use App\Models\BaseData\BaseCommercialProducts;
 use App\Models\Club;
 use App\Models\Country;
 use App\Models\GameEntity;
@@ -62,6 +63,8 @@ class StadiumApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.id', $stadium->id)
             ->assertJsonPath('data.name', $stadium->name)
+            ->assertJsonPath('data.ticket_price', 42)
+            ->assertJsonPath('data.ticket_prices', ['league' => 42, 'cup' => 34, 'continental' => 50])
             ->assertJsonPath('data.type', $stadium->type->value)
             ->assertJsonPath('data.stands.0.id', $stand->id)
             ->assertJsonPath('data.stands.0.construction.id', $construction->id)
@@ -271,6 +274,28 @@ class StadiumApiTest extends TestCase
         $this->assertDatabaseCount('finance_transactions_entities', 0);
     }
 
+    #[Test]
+    public function empty_commercial_categories_are_not_buildable_and_rejected_construction_does_not_charge_the_club(): void
+    {
+        [$instance] = $this->createManagedStadium(StadiumType::LOCAL);
+        $category = BaseCommercialCategory::query()->forceCreate(['slug' => 'empty-cafe', 'name' => 'Empty Cafe']);
+        $this->mapCategoryToType($category->id, StadiumType::LOCAL, false);
+        $account = Account::query()->where('club_id', $instance->club_id)->firstOrFail();
+
+        $categories = $this->apiRequest($instance)->getJson('/api/stadium/commercial-categories');
+        $response = $this->apiRequest($instance)->postJson('/api/stadium/construction', [
+            'building_type' => 'commercial_venue', 'category_id' => $category->id, 'size' => CommercialVenueSize::SMALL->value,
+            'payment_method' => 'cash', 'length_years' => 0,
+        ]);
+
+        $categories->assertOk()->assertJsonCount(0, 'data');
+        $response->assertUnprocessable()->assertJsonPath('error', 'This commercial category has no products.');
+        $this->assertSame(1000000, $account->fresh()->balance);
+        $this->assertSame(1000000, $account->fresh()->future_balance);
+        $this->assertDatabaseCount('stadium_commercial_venues', 0);
+        $this->assertDatabaseCount('finance_transactions_entities', 0);
+    }
+
     private function seedStandConstructionData(): void
     {
         DB::table('base_stadium_expansion_costs')->insert(['stadium_type' => StadiumType::LOCAL->value, 'cost_per_1000_seats' => 250000]);
@@ -296,6 +321,9 @@ class StadiumApiTest extends TestCase
             'instance_id' => $instance->id,
             'type' => $type,
             'commercial_limit' => 3,
+            'ticket_price' => 42,
+            'capacity' => 1000,
+            'active_capacity' => 1000,
             'country_code' => 'GBR',
         ]);
         $club = Club::factory()->create([
@@ -310,8 +338,11 @@ class StadiumApiTest extends TestCase
         return [$instance->fresh(), $stadium->fresh()];
     }
 
-    private function mapCategoryToType(int $categoryId, StadiumType $type): void
+    private function mapCategoryToType(int $categoryId, StadiumType $type, bool $withProducts = true): void
     {
+        if ($withProducts) {
+            BaseCommercialProducts::query()->forceCreate(['category_id' => $categoryId, 'slug' => 'product-'.$categoryId, 'name' => 'Venue Product', 'base_price' => 500]);
+        }
         DB::table('base_commercial_category_stadium_type')->insert([
             'category_id' => $categoryId,
             'stadium_type' => $type->value,

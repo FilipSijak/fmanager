@@ -3,12 +3,15 @@
 namespace Tests\Integration\Instance;
 
 use App\GameEntityType;
+use App\Models\BaseData\BaseCommercialCategory;
+use App\Models\BaseData\BaseCommercialProducts;
 use App\Models\BaseData\BaseStadiumStandCapacityLimit;
 use App\Models\Club;
 use App\Models\Competition;
 use App\Models\GameEntityAccount;
 use App\Models\Instance;
 use App\Models\Stadium;
+use App\Models\StadiumCommercialVenue;
 use App\Services\InstanceService\InstanceData\InitialSeed;
 use App\StadiumStandStatus;
 use Database\Seeders\DatabaseSeeder;
@@ -19,6 +22,20 @@ use Tests\TestCase;
 class InitialSeedTest extends TestCase
 {
     use RefreshDatabase;
+
+    #[Test]
+    public function new_world_venues_are_only_created_for_categories_with_products(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        $barId = BaseCommercialCategory::query()->where('slug', 'bar')->value('id');
+        BaseCommercialProducts::query()->where('category_id', '!=', $barId)->delete();
+        $instance = Instance::factory()->create();
+
+        app(InitialSeed::class)->seedFromBaseTables($instance->id);
+
+        $categories = StadiumCommercialVenue::query()->where('instance_id', $instance->id)->pluck('category_id')->unique()->values()->all();
+        $this->assertSame([$barId], $categories);
+    }
 
     #[Test]
     public function it_seeds_normalized_stadium_capacities_and_active_stands(): void

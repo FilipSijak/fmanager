@@ -4,13 +4,16 @@ namespace Tests\Feature;
 
 use App\Events\MatchDayCompleted;
 use App\Events\NextDay;
+use App\Models\Account;
 use App\Models\BaseData\BaseFormation;
 use App\Models\Club;
 use App\Models\Competition;
+use App\Models\Country;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\Season;
+use App\Models\Stadium;
 use App\Models\StaffCoaching;
 use App\Services\PersonService\PersonConfig\PersonTypes;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -247,10 +250,13 @@ class LiveMatchApiTest extends TestCase
         $this->formation('4-4-2', 'balanced', array_slice(self::SQUAD_POSITIONS, 0, 11));
 
         $competition = Competition::factory()->create(['instance_id' => $instance->id, 'type' => 'league', 'groups' => null, 'clubs_number' => 2]);
-        [$userClub, $aiClub] = Club::factory()->count(2)->create(['instance_id' => $instance->id])->all();
+        Country::query()->forceCreate(['code' => 'GBR', 'name' => 'United Kingdom', 'ranking' => 100, 'population' => 60000000]);
+        Stadium::factory()->create(['id' => 1, 'instance_id' => $instance->id, 'capacity' => 1000, 'active_capacity' => 1000]);
+        [$userClub, $aiClub] = Club::factory()->count(2)->create(['instance_id' => $instance->id, 'stadium_id' => 1, 'country_code' => 'GBR'])->all();
         $instance->forceFill(['club_id' => $userClub->id])->saveQuietly();
 
         foreach ([$userClub, $aiClub] as $club) {
+            Account::factory()->create(['club_id' => $club->id]);
             DB::table('competition_season')->insert(['instance_id' => $instance->id, 'competition_id' => $competition->id, 'season_id' => 1, 'club_id' => $club->id]);
             StaffCoaching::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'type' => PersonTypes::MANAGER]);
 

@@ -2,12 +2,15 @@
 
 namespace Tests\Integration\Services\GameService;
 
+use App\Models\Account;
 use App\Models\Club;
 use App\Models\Competition;
+use App\Models\Country;
 use App\Models\Game;
 use App\Models\Instance;
 use App\Models\Player;
 use App\Models\Season;
+use App\Models\Stadium;
 use App\Services\GameService\CompleteGameService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -93,9 +96,12 @@ class GameCompletionTest extends TestCase
         $instance = Instance::factory()->create(['id' => 1, 'season_id' => 1]);
         $season = Season::factory()->create(['id' => 1, 'instance_id' => 1, 'start_date' => '2026-08-15', 'end_date' => '2027-08-15']);
         $competition = Competition::factory()->create(['id' => 1, 'instance_id' => 1, 'type' => $type, 'groups' => $groups, 'clubs_number' => $clubCount]);
+        Country::query()->forceCreate(['code' => 'GBR', 'name' => 'United Kingdom', 'ranking' => 100, 'population' => 60000000]);
         $clubs = collect();
         for ($id = 1; $id <= $clubCount; $id++) {
-            $clubs->push(Club::factory()->create(['id' => $id, 'instance_id' => 1, 'stadium_id' => 1000 + $id]));
+            Stadium::factory()->create(['id' => 1000 + $id, 'instance_id' => 1, 'capacity' => 1000, 'active_capacity' => 1000]);
+            $clubs->push(Club::factory()->create(['id' => $id, 'instance_id' => 1, 'stadium_id' => 1000 + $id, 'country_code' => 'GBR']));
+            Account::factory()->create(['club_id' => $id]);
             DB::table('competition_season')->insert(['instance_id' => 1, 'competition_id' => 1, 'season_id' => 1, 'club_id' => $id, 'group_id' => $groups === 1 ? ($id <= 2 ? 1 : 2) : null, 'groups_active' => $groups === 1, 'points' => $groups === 1 ? $clubCount - $id : 0]);
         }
 

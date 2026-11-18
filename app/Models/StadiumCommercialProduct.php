@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\BaseData\BaseCommercialProducts;
 use Database\Factories\StadiumCommercialProductFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,16 @@ class StadiumCommercialProduct extends Model
     public $timestamps = false;
 
     protected $fillable = ['instance_id', 'stadium_id', 'base_product_id', 'base_price', 'price_change_coef', 'is_available'];
+
+    public function scopeForStadium(Builder $query, Stadium $stadium): Builder
+    {
+        return $query->whereBelongsTo($stadium)->where('instance_id', $stadium->instance_id);
+    }
+
+    public function scopeAvailable(Builder $query): Builder
+    {
+        return $query->where('is_available', true);
+    }
 
     protected function casts(): array
     {
