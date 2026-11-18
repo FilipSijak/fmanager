@@ -28,13 +28,15 @@ final class MatchPlayer
         public readonly int $condition = 100,
         public readonly int $stamina = 10,
         public readonly int $playedMinutes = 0,
+        public readonly int $workrate = 10,
+        public readonly int $teamwork = 10,
     ) {}
 
     public function fatigued(int $minutes): self
     {
         $fitness = new PlayerFitnessCalculator;
-        $before = $fitness->conditionAfterMatch($this->condition, $this->playedMinutes, $this->stamina, $this->position);
-        $after = $fitness->conditionAfterMatch($this->condition, $minutes, $this->stamina, $this->position);
+        $before = $fitness->conditionAfterMatch($this->condition, $this->playedMinutes, $this->stamina, $this->position, $this->workrate, $this->teamwork);
+        $after = $fitness->conditionAfterMatch($this->condition, $minutes, $this->stamina, $this->position, $this->workrate, $this->teamwork);
         $ratio = $fitness->performanceFactor($after) / $fitness->performanceFactor($before);
         $data = $this->toArray();
         foreach (['shooting', 'creating', 'passing', 'tackling', 'intercepting', 'dribbling', 'goalkeeping', 'playmaking', 'defending'] as $skill) {

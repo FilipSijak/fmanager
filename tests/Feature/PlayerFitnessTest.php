@@ -32,7 +32,8 @@ class PlayerFitnessTest extends TestCase
     public function completing_a_match_applies_minutes_based_fatigue_and_injuries_once(): void
     {
         [$instance, $club, $player, $game] = $this->world();
-        $substitute = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'stamina' => 10]);
+        $player->forceFill(['workrate' => 20, 'teamwork' => 20])->save();
+        $substitute = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'stamina' => 10, 'workrate' => 10, 'teamwork' => 10]);
         $unused = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id]);
         Event::fake([PostMatch::class]);
         $stats = [
@@ -45,7 +46,7 @@ class PlayerFitnessTest extends TestCase
         $service->complete($game->id, 0, 0, $summary, $stats);
         $service->complete($game->id, 0, 0, $summary, $stats);
 
-        $this->assertDatabaseHas('players_progress', ['player_id' => $player->id, 'condition' => 84]);
+        $this->assertDatabaseHas('players_progress', ['player_id' => $player->id, 'condition' => 80]);
         $this->assertDatabaseHas('players_progress', ['player_id' => $substitute->id, 'condition' => 92]);
         $this->assertDatabaseHas('players_progress', ['player_id' => $unused->id, 'condition' => 100]);
         $this->assertDatabaseCount('player_injuries', 1);
@@ -147,6 +148,8 @@ class PlayerFitnessTest extends TestCase
 
         $this->assertEqualsWithDelta($fresh->passing * 0.75, $tired->passing, 0.00001);
         $this->assertSame(50, $tired->condition);
+        $this->assertSame($player->workrate, $tired->workrate);
+        $this->assertSame($player->teamwork, $tired->teamwork);
         $this->assertSame($player->passing, $player->fresh()->passing);
     }
 
@@ -159,7 +162,7 @@ class PlayerFitnessTest extends TestCase
         $club = Club::factory()->create(['instance_id' => $instance->id, 'stadium_id' => $stadium->id]);
         $away = Club::factory()->create(['instance_id' => $instance->id]);
         $instance->forceFill(['season_id' => $season->id, 'club_id' => $club->id])->save();
-        $player = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'position' => 'CM', 'stamina' => 10]);
+        $player = Player::factory()->create(['instance_id' => $instance->id, 'club_id' => $club->id, 'position' => 'CM', 'stamina' => 10, 'workrate' => 10, 'teamwork' => 10]);
         $competition = Competition::factory()->create(['instance_id' => $instance->id, 'type' => 'league', 'clubs_number' => 2]);
         foreach ([$club, $away] as $participant) {
             DB::table('competition_season')->insert(['instance_id' => $instance->id, 'season_id' => $season->id, 'competition_id' => $competition->id, 'club_id' => $participant->id]);

@@ -35,7 +35,7 @@ class PlayerFitnessService
                 continue;
             }
             $this->repository->storeCondition($player, $this->calculator->conditionAfterMatch(
-                (int) ($player->training_condition ?? 100), $stats->minutes_played, (int) $player->stamina, $stats->position,
+                (int) ($player->training_condition ?? 100), $stats->minutes_played, (int) $player->stamina, $stats->position, (int) $player->workrate, (int) $player->teamwork,
             ));
         }
         $summary = json_decode($game->match_summary ?? '{}', true, flags: JSON_THROW_ON_ERROR);

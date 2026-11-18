@@ -21,7 +21,7 @@ class MatchFitness
             foreach ($team->onPitch() as $playerId => $player) {
                 $minutes = $state->minute - $team->stats[$playerId]['entered_minute'];
                 $team->players[$playerId] = $player->fatigued($minutes);
-                $condition = $this->fitness->conditionAfterMatch($player->condition, $minutes, $player->stamina, $player->position);
+                $condition = $this->fitness->conditionAfterMatch($player->condition, $minutes, $player->stamina, $player->position, $player->workrate, $player->teamwork);
                 if (! $this->random->happens($this->fitness->matchInjuryProbability($condition, 1))) {
                     continue;
                 }

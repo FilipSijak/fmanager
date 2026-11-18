@@ -269,6 +269,8 @@ class MatchTeamBuilder
             defending: $this->skillRating($player, 'defending'),
             condition: (int) ($player->training_condition ?? 100),
             stamina: (int) $player->stamina,
+            workrate: (int) $player->workrate,
+            teamwork: (int) $player->teamwork,
         );
     }
 

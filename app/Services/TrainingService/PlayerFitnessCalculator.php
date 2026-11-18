@@ -6,9 +6,10 @@ use App\Domain\PlayerDevelopment\TrainingCategory;
 
 class PlayerFitnessCalculator
 {
-    public function conditionAfterMatch(int $condition, int $minutes, int $stamina, string $position): int
+    public function conditionAfterMatch(int $condition, int $minutes, int $stamina, string $position, int $workrate = 10, int $teamwork = 10): int
     {
-        $cost = (34 - max(1, min(20, $stamina))) * max(0, $minutes) / 90;
+        $effort = 0.75 + (max(1, min(20, $workrate)) + max(1, min(20, $teamwork))) / 80;
+        $cost = (34 - max(1, min(20, $stamina))) * $effort * max(0, $minutes) / 90;
         if ($position === 'GK') {
             $cost *= 0.5;
         }
