@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Services\SeasonTicketService\Domain\SeasonTicketCalculator;
+use App\Services\CommercialService\Domain\SeasonTicketCalculator;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;

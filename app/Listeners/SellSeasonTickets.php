@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\SeasonStarted;
-use App\Services\SeasonTicketService\SeasonTicketService;
+use App\Services\CommercialService\SeasonTicketService;
 
 class SellSeasonTickets
 {

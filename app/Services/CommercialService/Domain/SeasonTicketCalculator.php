@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\SeasonTicketService\Domain;
+namespace App\Services\CommercialService\Domain;
 
 class SeasonTicketCalculator
 {

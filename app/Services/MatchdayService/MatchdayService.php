@@ -11,8 +11,8 @@ use App\Services\CommercialService\CommercialDemandService;
 use App\Services\CommercialService\CommercialService;
 use App\Services\CommercialService\Domain\TicketPriceCalculator;
 use App\Services\CommercialService\Domain\TicketType;
+use App\Services\CommercialService\SeasonTicketService;
 use App\Services\MatchdayService\Domain\MatchdayCalculator;
-use App\Services\SeasonTicketService\SeasonTicketService;
 use Carbon\CarbonImmutable;
 
 class MatchdayService

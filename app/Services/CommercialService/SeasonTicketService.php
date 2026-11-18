@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\SeasonTicketService;
+namespace App\Services\CommercialService;
 
 use App\Models\Club;
 use App\Models\Competition;
@@ -11,12 +11,10 @@ use App\Models\SeasonTicketSale;
 use App\Repositories\SeasonTicketRepository;
 use App\Repositories\StadiumCapacityRepository;
 use App\Services\AccountingService\AccountingService;
-use App\Services\CommercialService\CommercialDemandService;
-use App\Services\CommercialService\CommercialService;
+use App\Services\CommercialService\Domain\SeasonTicketCalculator;
 use App\Services\CommercialService\Domain\TicketDemandCalculator;
 use App\Services\CommercialService\Domain\TicketType;
 use App\Services\MatchdayService\Domain\MatchdayCalculator;
-use App\Services\SeasonTicketService\Domain\SeasonTicketCalculator;
 use Carbon\CarbonImmutable;
 
 class SeasonTicketService

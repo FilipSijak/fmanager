@@ -19,7 +19,7 @@ use App\Models\Stadium;
 use App\Models\StadiumCommercialProduct;
 use App\Models\StadiumCommercialVenue;
 use App\Services\CommercialService\AiCommercialPricingService;
-use App\Services\SeasonTicketService\SeasonTicketService;
+use App\Services\CommercialService\SeasonTicketService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
