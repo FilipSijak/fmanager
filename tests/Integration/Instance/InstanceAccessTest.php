@@ -38,9 +38,9 @@ class InstanceAccessTest extends TestCase
         $this->getJson('/api/competition/1/table')->assertUnauthorized();
         $this->postJson('/api/startNewGame')->assertUnauthorized();
         $this->postJson('/api/instance/next-day')->assertUnauthorized();
-        $this->postJson('/api/transfer')->assertUnauthorized();
+        $this->postJson('/api/transfers')->assertUnauthorized();
         $this->postJson('/api/news/1/read')->assertUnauthorized();
-        $this->postJson('/api/game/1/complete')->assertUnauthorized();
+        $this->postJson('/api/live-match/1/advance', ['minutes' => 1])->assertUnauthorized();
     }
 
     #[Test]

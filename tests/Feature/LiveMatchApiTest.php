@@ -79,13 +79,18 @@ class LiveMatchApiTest extends TestCase
     {
         [$instance, $game] = $this->liveMatch();
 
-        $response = $this->apiRequest($instance)->postJson("/api/live-match/{$game->id}/advance", ['minutes' => 90]);
+        $response = $this->apiRequest($instance)->postJson("/api/live-match/{$game->id}/advance", [
+            'minutes' => 90, 'home_team_goals' => 999, 'away_team_goals' => 888,
+        ]);
 
         $response->assertOk()->assertJsonPath('data.minute', 90)->assertJsonPath('data.finished', true);
         $completed = $game->fresh();
         $this->assertSame(Game::STATUS_COMPLETED, $completed->status);
         $this->assertNotNull($completed->processed_at);
         $this->assertSame($response->json('data.home.goals'), $completed->home_team_goals);
+        $this->assertSame($response->json('data.away.goals'), $completed->away_team_goals);
+        $this->assertNotSame(999, $completed->home_team_goals);
+        $this->assertNotSame(888, $completed->away_team_goals);
         $this->assertSame(11, $completed->playerStats()->where('club_id', $game->hometeam_id)->count());
         $this->assertSame(11, $completed->playerStats()->where('club_id', $game->awayteam_id)->where('started', true)->count());
     }
