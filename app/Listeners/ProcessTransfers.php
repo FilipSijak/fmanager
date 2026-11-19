@@ -3,29 +3,14 @@
 namespace App\Listeners;
 
 use App\Events\NextDay;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Queue\InteractsWithQueue;
+use App\Services\TransferService\TransferFinancialSettlement;
 
 class ProcessTransfers
 {
-    /**
-     * Create the event listener.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function __construct(private readonly TransferFinancialSettlement $settlement) {}
+
+    public function handle(NextDay $event): void
     {
-
-    }
-
-    /**
-     * Handle the event.
-     *
-     * @param  \App\Events\NextDay  $event
-     * @return void
-     */
-    public function handle(NextDay $event)
-    {
-
+        $this->settlement->processDueInstallments($event->instance);
     }
 }
