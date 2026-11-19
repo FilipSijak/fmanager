@@ -1,0 +1,65 @@
+app/Events/BoardReviewDue.php
+  s_f836b26f3461bb::t_649d808b2aeb48 1-4,7-11,13,19
+  s_f836b26f3461bb::t_f2ea7f9a887856 5-6,12,14-18
+tests/Feature/BoardReviewTest.php
+  s_f836b26f3461bb::t_e5e8e1371c0190 5-20,22-23,25-29,34-127,182-210,225-229,233-267,269-270,272-306,313-353
+  s_f836b26f3461bb::t_579cb7f430577a 21,128-137,139-153,155
+  s_f836b26f3461bb::t_9b0e542fa9f58d 1-4,24,30-33,268,271,354-355
+  s_f836b26f3461bb::t_e7dd3384f7b945 138,154,156-181
+  s_f836b26f3461bb::t_2107816aacf940 211-224
+  s_f836b26f3461bb::t_bdcf88568b143e 230-232,307-312
+database/migrations/2026_11_19_153459_create_club_board_reviews_table.php
+  s_f836b26f3461bb::t_f2ea7f9a887856 14,16-26
+  s_f836b26f3461bb::t_e63c45a1f34f3a 1-13,15,27-37
+tests/Unit/BoardReviewPolicyTest.php
+  s_f836b26f3461bb::t_3e75356e937b69 5-8,13-67
+  s_f836b26f3461bb::t_099eeb0ce3dd8e 1-4,9-12,68-69
+app/Providers/EventServiceProvider.php
+  s_f836b26f3461bb::t_f2ea7f9a887856 5,50-52
+  s_f836b26f3461bb::t_bdcf88568b143e 33
+app/Services/ManagerJobService/ManagerJobService.php
+  s_f836b26f3461bb::t_579cb7f430577a 6-7,84-85,87-88,137,147,149,160,162-165,185-186,191,202-206,208,210
+  s_f836b26f3461bb::t_e7dd3384f7b945 86,161,207,209
+  s_f836b26f3461bb::t_15b24fd146bac3 211-212
+app/Services/NewsService/NewsType.php
+  s_f836b26f3461bb::t_f2ea7f9a887856 14
+app/Models/ClubBoardReview.php
+  s_f836b26f3461bb::t_f2ea7f9a887856 5,14-31
+  s_f836b26f3461bb::t_bdcf88568b143e 6,9,13
+  s_f836b26f3461bb::t_e63c45a1f34f3a 1-4,7-8,10-12,32
+app/Services/ClubService/BoardReviewService.php
+  s_f836b26f3461bb::t_3f09a1bb0ec7f8 1-4,23-24,35,133-134
+  s_f836b26f3461bb::t_fadf5b1f890e99 5-22,25-34,36-132
+database/factories/ClubBoardReviewFactory.php
+  s_f836b26f3461bb::t_fadf5b1f890e99 6,22-30
+  s_f836b26f3461bb::t_e63c45a1f34f3a 1-5,7-21,31-33
+app/Services/ClubService/Domain/BoardReviewPolicy.php
+  s_f836b26f3461bb::t_f2ea7f9a887856 5-7,10-12,14-43
+  s_f836b26f3461bb::t_183acf8f4d6068 1-4,8-9,13,44-45
+app/Listeners/ReviewClubBoards.php
+  s_f836b26f3461bb::t_7565d5924c73c6 1-5,7-9,11-16,18-19
+  s_f836b26f3461bb::t_f2ea7f9a887856 6,10,17
+app/Services/InstanceService/InstanceService.php
+  s_f836b26f3461bb::t_f2ea7f9a887856 5,21,27,51
+  s_f836b26f3461bb::t_80811c18458508 137-149
+  s_f836b26f3461bb::t_24b6e4ab461219 150
+app/Models/ClubSeasonExpectation.php
+  s_f836b26f3461bb::t_f2ea7f9a887856 52,62-63,66,75-76
+  s_f836b26f3461bb::t_7039619a63dc29 77-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "6dcfc24e50c2617094516bb5ce095321f1e0660e",
+  "prompts": {},
+  "sessions": {
+    "s_f836b26f3461bb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f354-627e-78d3-9bd1-1d0cd833444d",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
