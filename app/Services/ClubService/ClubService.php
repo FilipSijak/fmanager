@@ -15,7 +15,13 @@ class ClubService
         private readonly SquadLineup $squadLineup,
         private readonly AiLineupSelector $aiLineupSelector,
         private readonly AnnualYouthIntake $youthIntake,
+        private readonly SeasonExpectations $seasonExpectations,
     ) {}
+
+    public function setSeasonExpectations(Instance $instance): void
+    {
+        $this->seasonExpectations->process($instance);
+    }
 
     public function annualYouthIntake(Instance $instance): void
     {

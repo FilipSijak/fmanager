@@ -9,6 +9,7 @@ use App\Models\Season;
 use App\Services\PersonService\PersonConfig\Player\PlayerFields;
 use App\Support\GameContext;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection as SupportCollection;
@@ -30,6 +31,41 @@ class ClubRepository
     ];
 
     public function __construct(private readonly GameContext $gameContext) {}
+
+    public function seasonForExpectations(int $instanceId, int $seasonId): Season
+    {
+        return Season::query()->forInstance($instanceId)->lockForUpdate()->findOrFail($seasonId);
+    }
+
+    /** @return Collection<int, Club> */
+    public function clubsForExpectations(int $instanceId): Collection
+    {
+        return Club::query()->forInstance($instanceId)->with('account')->orderBy('id')->get();
+    }
+
+    /** @return Collection<int, Player> */
+    public function playersForExpectations(int $instanceId): Collection
+    {
+        return Player::query()->forInstance($instanceId)->where('is_retired', false)
+            ->where(fn (Builder $query) => $query->whereNotNull('club_id')->orWhereNotNull('loan_club_id'))
+            ->get([
+                'id', 'club_id', 'loan_club_id', 'position',
+                ...PlayerFields::TECHNICAL_FIELDS, ...PlayerFields::MENTAL_FIELDS,
+                ...PlayerFields::PHYSICAL_FIELDS, ...PlayerFields::GOALKEEPING_FIELDS,
+            ]);
+    }
+
+    /** @return SupportCollection<int, object{club_id: int, competition_id: int}> */
+    public function leagueMembershipsForExpectations(int $instanceId, int $seasonId): SupportCollection
+    {
+        return DB::table('competition_season AS membership')
+            ->join('competitions AS competition', 'competition.id', '=', 'membership.competition_id')
+            ->where('membership.instance_id', $instanceId)->where('competition.instance_id', $instanceId)
+            ->where('membership.season_id', $seasonId)
+            ->where('competition.type', 'league')->where('competition.competition_scope', 'domestic')
+            ->orderBy('competition.id')->distinct()
+            ->get(['membership.club_id', 'membership.competition_id']);
+    }
 
     public function youthIntakeSeason(int $instanceId, int $seasonId): Season
     {

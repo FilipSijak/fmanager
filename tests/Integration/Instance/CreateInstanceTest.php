@@ -3,6 +3,7 @@
 namespace Tests\Integration\Instance;
 
 use App\Models\Club;
+use App\Models\ClubSeasonExpectation;
 use App\Models\Competition;
 use App\Models\Game;
 use App\Models\Instance;
@@ -18,6 +19,7 @@ use App\Models\User;
 use App\Repositories\Competition\CompetitionSeasonRepository;
 use App\Repositories\Competition\CompetitionStandingsRepository;
 use App\Repositories\Competition\CompetitionTournamentRepository;
+use App\Services\ClubService\ClubService;
 use App\Services\CommercialService\CommercialService;
 use App\Services\CommercialService\SeasonTicketService;
 use App\Services\CompetitionService\Competitions\LeagueUpdater;
@@ -65,6 +67,9 @@ class CreateInstanceTest extends TestCase
         $this->assertSame(2, User::findOrFail($this->userId)->instances()->count());
         $instance = Instance::findOrFail($response->json('data.id'));
         $initialSeason = Season::query()->findOrFail($instance->season_id);
+        $expectations = ClubSeasonExpectation::query()->forInstance($instance->id)->where('season_id', $initialSeason->id)->get();
+        $this->assertCount(Club::query()->forInstance($instance->id)->count(), $expectations);
+        $this->assertTrue($expectations->every(fn (ClubSeasonExpectation $expectation): bool => $expectation->team_quality > 0));
         $this->assertSame(date('Y').'-08-15', $initialSeason->start_date);
         $this->assertSame(((int) date('Y') + 1).'-06-15', $initialSeason->end_date);
         $contracts = SponsorshipContract::query()->where('instance_id', $instance->id)->with(['club', 'sponsorAccount.gameEntity'])->get();
@@ -436,7 +441,8 @@ class CreateInstanceTest extends TestCase
                 app()->make(SponsorshipService::class),
                 app()->make(PlayerService::class),
                 app()->make(CommercialService::class),
-                app()->make(SeasonTicketService::class)
+                app()->make(SeasonTicketService::class),
+                app()->make(ClubService::class)
             );
     }
 }

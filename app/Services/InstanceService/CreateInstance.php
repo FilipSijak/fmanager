@@ -8,6 +8,7 @@ use App\Models\Instance;
 use App\Models\Season;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionSeasonRepository;
+use App\Services\ClubService\ClubService;
 use App\Services\CommercialService\CommercialService;
 use App\Services\CommercialService\SeasonTicketService;
 use App\Services\CompetitionService\CompetitionService;
@@ -41,6 +42,7 @@ class CreateInstance
         private readonly PlayerService $playerService,
         private readonly CommercialService $commercial,
         private readonly SeasonTicketService $seasonTickets,
+        private readonly ClubService $clubService,
     ) {
         $this->competitionService = $competitionService;
         $this->personService = $personService;
@@ -63,6 +65,7 @@ class CreateInstance
         $this->seasonTickets->sellForSeason($this->instance);
         $this->assignPeopleToClubs();
         $this->generateFreeAgents();
+        $this->clubService->setSeasonExpectations($this->instance);
 
         return $this->instance;
     }

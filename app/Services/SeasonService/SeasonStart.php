@@ -43,6 +43,7 @@ class SeasonStart
         $this->retiredPlayerTransitionToStaff($retiredPlayers);
         $this->staffRetirement->retireEligibleStaff($instance);
         $this->generateMissingStaff($instance);
+        $this->clubService->setSeasonExpectations($instance);
 
         Competition::query()
             ->forInstance($instance->id)
