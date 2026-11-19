@@ -1,0 +1,33 @@
+app/Models/ClubSeasonExpectation.php
+  s_f836b26f3461bb::t_63b90f9e00364a 62-87
+database/factories/ClubSeasonExpectationFactory.php
+  s_f836b26f3461bb::t_63b90f9e00364a 32
+tests/Feature/SeasonExpectationsTest.php
+  s_f836b26f3461bb::t_190077d0f37300 52,226-227,230
+  s_f836b26f3461bb::t_63b90f9e00364a 9,12,57
+  s_f836b26f3461bb::t_32b2edc049893f 235-291,293-306,358-381
+  s_f836b26f3461bb::t_79090d973e5711 292
+  s_f836b26f3461bb::t_a523ebffe4c25f 382
+database/migrations/2026_11_19_152145_relax_mid_table_expectation_tolerance.php
+  s_f836b26f3461bb::t_8008b4d6b163a6 1-3,5-12,14-20,22-23
+  s_f836b26f3461bb::t_32b2edc049893f 4,13,21
+database/migrations/2026_11_19_151622_relax_title_expectation_tolerance.php
+  s_f836b26f3461bb::t_693bf67fd6358b 1-3,5-12,14-20,22-23
+  s_f836b26f3461bb::t_190077d0f37300 4,13,21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "7c599658100fad030819ea88824e22098b6ccc4a",
+  "prompts": {},
+  "sessions": {
+    "s_f836b26f3461bb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f354-627e-78d3-9bd1-1d0cd833444d",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
