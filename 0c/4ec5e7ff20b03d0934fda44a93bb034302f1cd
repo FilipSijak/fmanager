@@ -1,0 +1,43 @@
+app/Listeners/ProcessTransfers.php
+  s_f836b26f3461bb::t_9c90b74c1e9846 6,10,12,14
+database/migrations/2026_11_19_104850_add_settlement_tracking_to_transfer_installments.php
+  s_f836b26f3461bb::t_9c90b74c1e9846 5,15-16,18-28,30,38-45
+  s_f836b26f3461bb::t_8beef934a406a9 1-4,6-14,17,31-37,46-48
+  s_f836b26f3461bb::t_e118133b32c322 29
+app/Models/AccountsDebtLines.php
+  s_f836b26f3461bb::t_976fc79faca2c5 10
+  s_f836b26f3461bb::t_9c90b74c1e9846 19-22
+tests/Feature/TransferInstallmentConcurrencyTest.php
+  s_f836b26f3461bb::t_2e3f348c246cb3 12,23-51
+  s_f836b26f3461bb::t_073a1fe187e4d9 1-4,18-21,55,89,98-99
+  s_f836b26f3461bb::t_b5e871c1846dbd 5-11,14,16-17,22,52-54,56-71,74-87,90-97
+  s_f836b26f3461bb::t_4f62553c7e453a 13,15,72-73,88
+tests/Integration/Services/TransferService/TransferFinancialSettlementTest.php
+  s_f836b26f3461bb::t_fc862d5470fd94 5,7,19,22,96-249,251,254-273,334-335
+  s_f836b26f3461bb::t_0d334beedf1e25 6,250,252-253
+  s_f836b26f3461bb::t_cad6ad279205c7 17,308-328
+  s_f836b26f3461bb::t_4e6f57ec193675 21,274-276,278-307
+  s_f836b26f3461bb::t_b5e871c1846dbd 277
+app/Services/AccountingService/AccountingService.php
+  s_f836b26f3461bb::t_9c90b74c1e9846 22,26,73,77,95,98
+app/Services/TransferService/TransferFinancialSettlement.php
+  s_f836b26f3461bb::t_93dd888b18fc72 8,10,15,28,32-47,51-52,64-65,70,90,99-101,104-114,116-143
+  s_f836b26f3461bb::t_4e6f57ec193675 16,115
+  s_f836b26f3461bb::t_3ddc4c3e93e59a 144
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0c4ec5e7ff20b03d0934fda44a93bb034302f1cd",
+  "prompts": {},
+  "sessions": {
+    "s_f836b26f3461bb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f354-627e-78d3-9bd1-1d0cd833444d",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
