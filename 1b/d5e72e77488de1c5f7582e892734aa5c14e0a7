@@ -1,0 +1,71 @@
+app/Repositories/ClubRepository.php
+  s_f836b26f3461bb::t_480f4ad8a1245c 12,35-68
+  s_f836b26f3461bb::t_706defbc2d196d 69
+database/migrations/2026_11_19_135753_create_club_season_expectations_table.php
+  s_f836b26f3461bb::t_514995f1fdb481 1-13,15,36-46
+  s_f836b26f3461bb::t_b7c1efd5578d72 14,16-35
+app/Models/BoardExpectationType.php
+  s_f836b26f3461bb::t_87cb9b6a2cc962 5,11
+  s_f836b26f3461bb::t_b7c1efd5578d72 13-18
+  s_f836b26f3461bb::t_2f450c85c2b0f2 1-4,6-10,12,19
+database/migrations/2026_11_19_135753_create_board_expectation_types_table.php
+  s_f836b26f3461bb::t_2f450c85c2b0f2 1-4,6-14,16,20,29-38
+  s_f836b26f3461bb::t_b7c1efd5578d72 5,15,17-19,21-25,27-28
+  s_f836b26f3461bb::t_bad66932867a7c 26
+database/factories/ClubSeasonExpectationFactory.php
+  s_f836b26f3461bb::t_87cb9b6a2cc962 7
+  s_f836b26f3461bb::t_514995f1fdb481 1-4,10-24,41-43
+  s_f836b26f3461bb::t_fde7c004c02633 5-6,8-9,25-40
+tests/Feature/SeasonExpectationsTest.php
+  s_f836b26f3461bb::t_bad66932867a7c 5-17,20,22-24,26-28,33-60,62-160,164-204,206-209,211-229,281-295,300-306,309-313
+  s_f836b26f3461bb::t_d5c028048d42df 161-163,296-299
+  s_f836b26f3461bb::t_87cb9b6a2cc962 19,307-308
+  s_f836b26f3461bb::t_30abbf011753b9 1-4,21,29-32,205,210,314-315
+  s_f836b26f3461bb::t_b9f52b527c1e60 18,25,61,230-280
+tests/Integration/Instance/CreateInstanceTest.php
+  s_f836b26f3461bb::t_fde7c004c02633 6,70-72,444-445
+  s_f836b26f3461bb::t_87cb9b6a2cc962 22
+app/Models/ClubSeasonExpectation.php
+  s_f836b26f3461bb::t_514995f1fdb481 1-4,7-8,11-13,64
+  s_f836b26f3461bb::t_b7c1efd5578d72 5,15-63
+  s_f836b26f3461bb::t_87cb9b6a2cc962 6,9-10,14
+app/Services/SeasonService/SeasonStart.php
+  s_f836b26f3461bb::t_480f4ad8a1245c 46
+app/Models/Club.php
+  s_f836b26f3461bb::t_480f4ad8a1245c 54-58
+app/Services/InstanceService/CreateInstance.php
+  s_f836b26f3461bb::t_87cb9b6a2cc962 11
+  s_f836b26f3461bb::t_480f4ad8a1245c 45,68
+database/factories/BoardExpectationTypeFactory.php
+  s_f836b26f3461bb::t_fde7c004c02633 21-23
+  s_f836b26f3461bb::t_2f450c85c2b0f2 1-20,24-26
+app/Services/ClubService/Domain/BoardExpectationCalculator.php
+  s_f836b26f3461bb::t_b7c1efd5578d72 9-11,13,15-29
+  s_f836b26f3461bb::t_35e391650a5830 1-7,12,14,30-31
+  s_f836b26f3461bb::t_c79410192822b1 8
+app/Services/ClubService/ClubService.php
+  s_f836b26f3461bb::t_480f4ad8a1245c 18,21-24
+  s_f836b26f3461bb::t_429ff58c74aab9 25
+tests/Unit/BoardExpectationCalculatorTest.php
+  s_f836b26f3461bb::t_bad66932867a7c 5-7,12-17,19-46
+  s_f836b26f3461bb::t_cad4d5e75d73e2 1-4,8-11,18,47-48
+app/Services/ClubService/SeasonExpectations.php
+  s_f836b26f3461bb::t_480f4ad8a1245c 5-17,20-25,27-94
+  s_f836b26f3461bb::t_11911e9e7651e9 1-4,18-19,26,95-96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1bd5e72e77488de1c5f7582e892734aa5c14e0a7",
+  "prompts": {},
+  "sessions": {
+    "s_f836b26f3461bb": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a1f354-627e-78d3-9bd1-1d0cd833444d",
+        "model": "gpt-6.1-sol"
+      },
+      "human_author": "Filip <sijakfil@gmail.com>"
+    }
+  }
+}
