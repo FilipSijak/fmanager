@@ -19,11 +19,11 @@ class AccountingService
         private readonly AccountingRules $rules,
     ) {}
 
-    public function transfer(Account $sender, Account $receiver, int $amount, CarbonInterface $date, string $category, string $reference): FinanceTransactions
+    public function transfer(Account $sender, Account $receiver, int $amount, CarbonInterface $date, string $category, string $reference, bool $settlesCommitment = false): FinanceTransactions
     {
         $this->rules->ensureDifferentAccounts((int) $sender->id, (int) $receiver->id);
 
-        return $this->post($sender, $receiver, $amount, $date, $category, $reference);
+        return $this->post($sender, $receiver, $amount, $date, $category, $reference, $settlesCommitment);
     }
 
     public function expense(Account $account, int $amount, CarbonInterface $date, string $category, string $reference): FinanceTransactions
@@ -70,11 +70,11 @@ class AccountingService
         });
     }
 
-    private function post(?Account $sender, ?Account $receiver, int $amount, CarbonInterface $date, string $category, string $reference): FinanceTransactions
+    private function post(?Account $sender, ?Account $receiver, int $amount, CarbonInterface $date, string $category, string $reference, bool $settlesCommitment = false): FinanceTransactions
     {
         $attributes = $this->rules->postingAttributes($sender?->id, $receiver?->id, $amount, $date, $category, $reference);
 
-        return $this->repository->transaction(function () use ($sender, $receiver, $amount, $reference, $attributes): FinanceTransactions {
+        return $this->repository->transaction(function () use ($sender, $receiver, $amount, $reference, $attributes, $settlesCommitment): FinanceTransactions {
             $accounts = $this->repository->clubAccountsForUpdate(array_values(array_filter([$sender?->id, $receiver?->id])));
             $lockedSender = $sender === null ? null : $accounts->get($sender->id);
             $lockedReceiver = $receiver === null ? null : $accounts->get($receiver->id);
@@ -92,10 +92,10 @@ class AccountingService
             }
 
             if ($lockedSender !== null) {
-                $this->repository->applyBalanceChanges($lockedSender, $this->rules->balanceChanges(-$amount));
+                $this->repository->applyBalanceChanges($lockedSender, $this->rules->balanceChanges(-$amount, $settlesCommitment));
             }
             if ($lockedReceiver !== null) {
-                $this->repository->applyBalanceChanges($lockedReceiver, $this->rules->balanceChanges($amount));
+                $this->repository->applyBalanceChanges($lockedReceiver, $this->rules->balanceChanges($amount, $settlesCommitment));
             }
 
             return $this->repository->createPosting($attributes);

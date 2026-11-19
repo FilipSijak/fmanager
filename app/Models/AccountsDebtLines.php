@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class AccountsDebtLines extends Model
 {
     public $table = 'accounts_debt_lines';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -15,5 +16,9 @@ class AccountsDebtLines extends Model
         'created_at',
         'due_date',
         'amount',
+        'transfer_id',
+        'installment_number',
+        'paid_on',
+        'transaction_id',
     ];
 }
