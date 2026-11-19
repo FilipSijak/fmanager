@@ -59,6 +59,31 @@ class ClubSeasonExpectation extends Model
             throw new InvalidArgumentException('The finishing position must belong to this league.');
         }
 
-        return $position <= min($this->league_size, $this->target_position + $this->tolerance);
+        return $position <= min($this->league_size, $this->target_position + $this->tolerance)
+            && ! $this->isRelegatedAtPosition($position);
+    }
+
+    private function isRelegatedAtPosition(int $position): bool
+    {
+        if (ClubCompetitionProgression::query()
+            ->where('instance_id', $this->instance_id)->where('source_season_id', $this->season_id)
+            ->where('club_id', $this->club_id)->where('source_competition_id', $this->competition_id)
+            ->where('progression_type', 'relegation')->whereIn('status', ['pending', 'applied'])->exists()) {
+            return true;
+        }
+
+        $competition = $this->competition()->forInstance($this->instance_id)->first();
+        if ($competition?->base_competition_id === null) {
+            return false;
+        }
+
+        return CompetitionProgressionRule::query()
+            ->where('source_base_competition_id', $competition->base_competition_id)
+            ->where('progression_type', 'relegation')->where('active', true)->get()
+            ->contains(fn (CompetitionProgressionRule $rule): bool => match ($rule->selector_type) {
+                'bottom_positions' => $position > $this->league_size - (int) $rule->places,
+                'position_range' => $position >= (int) $rule->position_from && $position <= (int) $rule->position_to,
+                default => false,
+            });
     }
 }

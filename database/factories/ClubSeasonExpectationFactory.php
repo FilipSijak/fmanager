@@ -29,7 +29,7 @@ class ClubSeasonExpectationFactory extends Factory
             'board_expectation_type_id' => BoardExpectationType::query()->where('rating', 40)->value('id') ?? BoardExpectationType::factory(),
             'description' => 'Finish in mid-table',
             'rating' => 40,
-            'tolerance' => 3,
+            'tolerance' => 4,
             'expectation_score' => 50,
             'target_position' => null,
             'league_size' => null,
