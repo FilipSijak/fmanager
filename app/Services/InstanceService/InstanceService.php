@@ -2,6 +2,7 @@
 
 namespace App\Services\InstanceService;
 
+use App\Events\BoardReviewDue;
 use App\Events\MatchDayCompleted;
 use App\Events\MonthlyUpdate;
 use App\Events\NextDay;
@@ -17,11 +18,13 @@ use App\Models\StaffCoaching;
 use App\Models\User;
 use App\Repositories\Competition\CompetitionScheduleRepository;
 use App\Services\ClubService\ClubService;
+use App\Services\ClubService\Domain\BoardReviewPolicy;
 use App\Services\GameService\CompleteGameService;
 use App\Services\MatchEngineService\MatchEngineService;
 use App\Services\PersonService\PersonService;
 use App\Support\GameContext;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use DomainException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -45,6 +48,7 @@ class InstanceService implements IInstanceService
         CompleteGameService $completeGameService,
         private readonly GameContext $gameContext,
         private readonly ClubService $clubService,
+        private readonly BoardReviewPolicy $boardReviewPolicy,
 
     ) {
         $this->competitionRepository = $competitionRepository;
@@ -115,10 +119,6 @@ class InstanceService implements IInstanceService
 
         event(new NextDay($instance));
 
-        if ($currentGameDate->month === 6 && $currentGameDate->day === 15) {
-            event(new SeasonCompleted($instance));
-        }
-
         if ($currentGameDate->month === 6 && $currentGameDate->day === 16) {
             event(new SeasonStarted($instance));
         }
@@ -133,6 +133,20 @@ class InstanceService implements IInstanceService
 
         // simulates only the games that are not user played and that are not already simulated while user was playing
         $this->simulateGames();
+
+        $reviewDate = CarbonImmutable::parse($instance->instance_date)->startOfDay();
+        if ($this->boardReviewPolicy->isDue(
+            CarbonImmutable::parse($this->season->start_date),
+            CarbonImmutable::parse($this->season->end_date),
+            $reviewDate,
+        )) {
+            event(new BoardReviewDue($instance, $this->season->id, $reviewDate));
+            $instance->refresh();
+        }
+
+        if ($currentGameDate->month === 6 && $currentGameDate->day === 15) {
+            event(new SeasonCompleted($instance));
+        }
 
         $instance->instance_date = $currentGameDate->addDay()->format('Y-m-d');
 

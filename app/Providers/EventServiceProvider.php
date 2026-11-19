@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Events\BoardReviewDue;
 use App\Events\MatchDayCompleted;
 use App\Events\MonthlyUpdate;
 use App\Events\NextDay;
@@ -29,6 +30,7 @@ use App\Listeners\ProcessPlayerContracts;
 use App\Listeners\ProcessSponsorshipOffers;
 use App\Listeners\ProcessTransfers;
 use App\Listeners\RefreshCommercialDemand;
+use App\Listeners\ReviewClubBoards;
 use App\Listeners\RunDailyTraining;
 use App\Listeners\SellSeasonTickets;
 use App\Listeners\SettleMatchdayRevenue;
@@ -45,6 +47,9 @@ class EventServiceProvider extends ServiceProvider
      * @var array<class-string, array<int, class-string>>
      */
     protected $listen = [
+        BoardReviewDue::class => [
+            ReviewClubBoards::class,
+        ],
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],

@@ -49,7 +49,7 @@ class ClubSeasonExpectation extends Model
         return $this->belongsTo(Competition::class);
     }
 
-    public function acceptsLeaguePosition(int $position): bool
+    public function acceptsLeaguePosition(int $position, ?int $tolerance = null, bool $finalReview = true): bool
     {
         if ($this->target_position === null || $this->league_size === null) {
             throw new InvalidArgumentException('This expectation has no league position target.');
@@ -59,17 +59,21 @@ class ClubSeasonExpectation extends Model
             throw new InvalidArgumentException('The finishing position must belong to this league.');
         }
 
-        return $position <= min($this->league_size, $this->target_position + $this->tolerance)
-            && ! $this->isRelegatedAtPosition($position);
+        return $position <= min($this->league_size, $this->target_position + ($tolerance ?? $this->tolerance))
+            && ! $this->isRelegatedAtPosition($position, $finalReview);
     }
 
-    private function isRelegatedAtPosition(int $position): bool
+    private function isRelegatedAtPosition(int $position, bool $finalReview): bool
     {
         if (ClubCompetitionProgression::query()
             ->where('instance_id', $this->instance_id)->where('source_season_id', $this->season_id)
             ->where('club_id', $this->club_id)->where('source_competition_id', $this->competition_id)
             ->where('progression_type', 'relegation')->whereIn('status', ['pending', 'applied'])->exists()) {
             return true;
+        }
+
+        if (! $finalReview) {
+            return false;
         }
 
         $competition = $this->competition()->forInstance($this->instance_id)->first();
