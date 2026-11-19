@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Models\BaseData\InjuryType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PlayerInjury extends Model
 {
@@ -13,6 +15,16 @@ class PlayerInjury extends Model
     protected $table = 'player_injuries';
 
     public $timestamps = false;
+
+    public function player(): BelongsTo
+    {
+        return $this->belongsTo(Player::class);
+    }
+
+    public function injuryType(): BelongsTo
+    {
+        return $this->belongsTo(InjuryType::class, 'injury_id');
+    }
 
     public function scopeForPlayer(Builder $query, Player $player): Builder
     {

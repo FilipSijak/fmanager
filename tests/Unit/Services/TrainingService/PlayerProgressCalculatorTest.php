@@ -77,7 +77,7 @@ class PlayerProgressCalculatorTest extends TestCase
         );
 
         $this->assertSame(48, $updates->progress['pace']);
-        $this->assertArrayNotHasKey('condition', $updates->progress);
+        $this->assertSame(79, $updates->progress['condition']);
         $this->assertSame([], $updates->player);
     }
 

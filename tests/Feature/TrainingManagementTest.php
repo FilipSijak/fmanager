@@ -150,8 +150,8 @@ class TrainingManagementTest extends TestCase
     public function injured_players_are_identified_using_the_game_date(): void
     {
         [$instance, , $player] = $this->world();
-        DB::table('injuries')->insert(['id' => 1, 'type' => 'Knee injury', 'severity' => 4, 'duration_from' => 1, 'duration_to' => 20]);
-        DB::table('player_injuries')->insert(['instance_id' => $instance->id, 'season_id' => $instance->season_id, 'player_id' => $player->id, 'injury_id' => 1, 'injury_start_date' => '2026-08-31', 'injury_end_date' => '2026-09-05']);
+        $injuryId = DB::table('injuries')->insertGetId(['type' => 'Knee injury', 'severity' => 4, 'duration_from' => 1, 'duration_to' => 20]);
+        DB::table('player_injuries')->insert(['instance_id' => $instance->id, 'season_id' => $instance->season_id, 'player_id' => $player->id, 'injury_id' => $injuryId, 'injury_start_date' => '2026-08-31', 'injury_end_date' => '2026-09-05']);
 
         $this->getJson('/api/training')->assertOk()->assertJsonPath('data.players.0.is_injured', true)
             ->assertJsonPath('data.players.0.workload', 'Unavailable')->assertJsonPath('data.players.0.condition_change', 0);

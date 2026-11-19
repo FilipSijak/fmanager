@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
         (new CompetitionsSeeder)->run();
         (new EuropeanClubsSeeder)->run();
         (new TransferStatusSeeder)->run();
+        (new InjuryTypesSeeder)->run();
 
         $path = 'database/positions.sql';
         DB::unprepared(file_get_contents($path));

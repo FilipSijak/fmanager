@@ -6,6 +6,7 @@ import api from '@/api';
 import GameLayout from '@/layouts/GameLayout';
 import { jobs } from '@/routes';
 import { show as showCompetition } from '@/routes/competitions';
+import { getNewsFeed, type NewsTab, newsTabs } from './dashboard-news';
 
 type NewsItem = {
     id: number;
@@ -36,12 +37,6 @@ type DashboardData = {
         published_at: string;
     }>;
 };
-const newsTabs = [
-    'All',
-    'Messages',
-    'Competitions',
-    'Injuries and Bans',
-] as const;
 const bottomTabs = [
     'Contracts and Media',
     'Transfers',
@@ -74,10 +69,13 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
         headline: item.title,
         body: item.content.split('\n'),
     }));
-    const [activeTab, setActiveTab] =
-        useState<(typeof newsTabs)[number]>('All');
-    const [selectedIndex, setSelectedIndex] = useState(0);
-    const selected = newsItems[selectedIndex] ?? newsItems[0];
+    const [activeTab, setActiveTab] = useState<NewsTab>('All');
+    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const { items: visibleNews, selected } = getNewsFeed(
+        newsItems,
+        activeTab,
+        selectedId,
+    );
     const [confirmingResign, setConfirmingResign] = useState(false);
     const [resigning, setResigning] = useState(false);
     const [resignError, setResignError] = useState<string | null>(null);
@@ -196,7 +194,11 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
                     <button
                         key={tab}
                         type="button"
-                        onClick={() => setActiveTab(tab)}
+                        onClick={() => {
+                            setActiveTab(tab);
+                            setSelectedId(null);
+                        }}
+                        aria-pressed={activeTab === tab}
                         className={`flex-1 border-r border-white/10 py-4 text-sm font-bold last:border-r-0 ${
                             activeTab === tab
                                 ? 'bg-[#1a0050] text-[#f5f000] ring-2 ring-inset ring-[#f5f000]'
@@ -210,18 +212,21 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
 
             <div className="flex flex-1 flex-col overflow-hidden bg-[#0c0c14]">
                 <div className="overflow-y-auto">
-                    {newsItems.length === 0 && (
+                    {visibleNews.length === 0 && (
                         <p className="bg-white px-4 py-6 text-center text-sm font-semibold text-slate-900">
-                            There is no news to display.
+                            {activeTab === 'All'
+                                ? 'There is no news to display.'
+                                : `There is no news in ${activeTab.toLowerCase()}.`}
                         </p>
                     )}
-                    {newsItems.map((item, index) => (
+                    {visibleNews.map((item, index) => (
                         <button
-                            key={`${item.date}-${item.headline}`}
+                            key={item.id}
                             type="button"
-                            onClick={() => setSelectedIndex(index)}
+                            onClick={() => setSelectedId(item.id)}
+                            aria-pressed={selected?.id === item.id}
                             className={`flex w-full text-left text-sm font-semibold ${
-                                index === selectedIndex
+                                selected?.id === item.id
                                     ? ''
                                     : index % 2 === 0
                                       ? 'bg-white'
@@ -233,7 +238,7 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
                             </span>
                             <span
                                 className={`flex-1 px-3 py-2 ${
-                                    index === selectedIndex
+                                    selected?.id === item.id
                                         ? 'bg-[#a41c1c] text-white'
                                         : 'text-slate-900'
                                 }`}
@@ -246,7 +251,7 @@ export default function Dashboard({ dashboard }: { dashboard: DashboardData }) {
 
                 <div className="flex items-center justify-between border-t border-b border-black/40 bg-[#c9c9cc] px-4 py-2">
                     <p className="text-sm font-semibold text-slate-700">
-                        Filter :
+                        Filter: {activeTab}
                     </p>
                     <button
                         type="button"
