@@ -6,7 +6,6 @@ use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\FinanceController;
 use App\Http\Controllers\Api\FinanceLoanController;
 use App\Http\Controllers\Api\FinanceSponsorController;
-use App\Http\Controllers\Api\GameController;
 use App\Http\Controllers\Api\InstanceController;
 use App\Http\Controllers\Api\LiveMatchController;
 use App\Http\Controllers\Api\NewsController;
@@ -18,7 +17,6 @@ use App\Http\Controllers\Api\SquadLineupController;
 use App\Http\Controllers\Api\StadiumController;
 use App\Http\Controllers\Api\TacticsController;
 use App\Http\Controllers\Api\TrainingController;
-use App\Http\Controllers\Api\TransferController;
 use App\Http\Controllers\Api\TransferManagementController;
 use App\Http\Middleware\EnsureGameIsValid;
 use App\Http\Middleware\EnsureUserHasClub;
@@ -79,10 +77,6 @@ Route::middleware('auth:sanctum')->group(function () {
             });
         });
 
-        Route::post('/game/{gameId}/complete', [GameController::class, 'complete']);
-        Route::post('/game/{gameId}/postpone', [GameController::class, 'postpone']);
-        Route::post('/game/{gameId}/cancel', [GameController::class, 'cancel']);
-
         Route::group(
             [
                 'prefix' => 'club',
@@ -127,15 +121,6 @@ Route::middleware('auth:sanctum')->group(function () {
             }
         );
 
-        Route::group(
-            [
-                'prefix' => 'transfer',
-            ],
-            function () {
-                Route::post('/free-transfer', [TransferController::class, 'makeFreeTransferRequest']);
-                Route::post('/', [TransferController::class, 'makeTransferRequest']);
-            }
-        );
     });
 
 });

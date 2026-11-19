@@ -149,6 +149,23 @@ class TransferManagementTest extends TestCase
     }
 
     #[Test]
+    #[TestWith(['salary'])]
+    #[TestWith(['transfer_fee'])]
+    #[TestWith(['appearance'])]
+    public function negative_free_transfer_contract_terms_are_rejected(string $field): void
+    {
+        [, , , $player] = $this->world();
+        $player->forceFill(['club_id' => null, 'contract_id' => null])->save();
+        $data = ['player_id' => $player->id, 'transfer_type' => 3, 'salary' => 1000];
+        $data[$field] = -1;
+
+        $this->postJson('/api/transfers', $data)->assertUnprocessable()->assertJsonValidationErrors($field);
+
+        $this->assertDatabaseCount('transfers', 0);
+        $this->assertDatabaseCount('transfer_contract_offers', 0);
+    }
+
+    #[Test]
     public function offers_cannot_exceed_the_transfer_budget(): void
     {
         [, , , $player] = $this->world();
