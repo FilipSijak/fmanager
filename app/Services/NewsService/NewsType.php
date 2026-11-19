@@ -11,4 +11,5 @@ enum NewsType: string
     case Job = 'job';
     case Sponsorship = 'sponsorship';
     case YouthIntake = 'youth_intake';
+    case BoardReview = 'board_review';
 }

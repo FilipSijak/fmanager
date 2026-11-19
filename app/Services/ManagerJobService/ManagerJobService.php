@@ -3,6 +3,8 @@
 namespace App\Services\ManagerJobService;
 
 use App\Models\Club;
+use App\Models\ClubBoardReview;
+use App\Models\ClubSeasonExpectation;
 use App\Models\Instance;
 use App\Models\ManagerJobApplication;
 use App\Models\StaffCoaching;
@@ -79,6 +81,11 @@ class ManagerJobService
                 throw new DomainException('This club is not looking for a manager.');
             }
 
+            $club = Club::query()->forInstance($instance->id)->findOrFail($clubId);
+            if (in_array((int) $instance->manager_id, $this->dismissedManagerIds($instance, $club), true)) {
+                throw new DomainException('This club will not reconsider a manager it dismissed in the last two months.');
+            }
+
             $alreadyApplied = ManagerJobApplication::query()
                 ->forInstance($instance->id)
                 ->pending()
@@ -127,6 +134,7 @@ class ManagerJobService
     private function fillVacancy(Instance $instance, Club $club): void
     {
         $target = $club->managerReputationTarget();
+        $dismissed = $this->dismissedManagerIds($instance, $club);
         $applications = ManagerJobApplication::query()
             ->forInstance($instance->id)
             ->pending()
@@ -136,9 +144,9 @@ class ManagerJobService
 
         $applicants = $applications
             ->map(fn (ManagerJobApplication $application): StaffCoaching => $application->staffCoaching)
-            ->filter(fn (StaffCoaching $manager): bool => $manager->club_id === null
+            ->filter(fn (StaffCoaching $manager): bool => ! in_array((int) $manager->id, $dismissed, true) && $manager->club_id === null
                 && abs($manager->reputation - $target) <= self::REPUTATION_TOLERANCE);
-        $aiCandidate = $this->closestFreeAiManager($instance, $target);
+        $aiCandidate = $this->closestFreeAiManager($instance, $target, $dismissed);
         $appointed = $applicants
             ->when($aiCandidate !== null, fn ($candidates) => $candidates->push($aiCandidate))
             ->sortBy(fn (StaffCoaching $manager): array => [abs($manager->reputation - $target), -$manager->reputation, $manager->id])
@@ -149,6 +157,12 @@ class ManagerJobService
         }
 
         foreach ($applications as $application) {
+            if (in_array((int) $application->staff_coaching_id, $dismissed, true)) {
+                $this->reject($instance, $application, 'This club will not reconsider a manager it dismissed in the last two months.');
+
+                continue;
+            }
+
             if ($appointed !== null && $application->staff_coaching_id === $appointed->id) {
                 $application->status = ManagerJobApplicationStatus::Accepted;
                 $application->save();
@@ -168,11 +182,13 @@ class ManagerJobService
         }
     }
 
-    private function closestFreeAiManager(Instance $instance, int $target): ?StaffCoaching
+    /** @param list<int> $dismissed */
+    private function closestFreeAiManager(Instance $instance, int $target, array $dismissed): ?StaffCoaching
     {
         return StaffCoaching::query()
             ->forInstance($instance->id)
             ->whereNull('club_id')
+            ->whereNotIn('id', $dismissed)
             ->where('type', PersonTypes::MANAGER)
             ->active()
             ->aiControlled()
@@ -181,6 +197,17 @@ class ManagerJobService
             ->orderByDesc('reputation')
             ->orderBy('id')
             ->first();
+    }
+
+    /** @return list<int> */
+    private function dismissedManagerIds(Instance $instance, Club $club): array
+    {
+        return ClubBoardReview::query()->forInstance($instance->id)->where('outcome', 'dismissed')
+            ->whereNotNull('staff_coaching_id')
+            ->where('reviewed_on', '>', Carbon::parse($instance->instance_date)->subMonthsNoOverflow(2)->toDateString())
+            ->whereIn('club_season_expectation_id', ClubSeasonExpectation::query()->select('id')
+                ->forInstance($instance->id)->where('club_id', $club->id))
+            ->pluck('staff_coaching_id')->map(fn ($id): int => (int) $id)->all();
     }
 
     private function appoint(Instance $instance, Club $club, StaffCoaching $manager): void

@@ -51,6 +51,11 @@ class Club extends Model
         return $this->hasMany(SponsorshipContract::class);
     }
 
+    public function seasonExpectations(): HasMany
+    {
+        return $this->hasMany(ClubSeasonExpectation::class);
+    }
+
     /**
      * The manager reputation the club looks for, on the same 30-200 scale as staff reputation.
      */
